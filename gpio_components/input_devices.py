@@ -18,6 +18,7 @@ class InputDevice(object):
         self.inactive = 1
         GPIO.setup(pin, GPIO.IN, self.pull)
 
+    @property
     def is_active(self):
         return GPIO.input(self.pin) == self.active
 
