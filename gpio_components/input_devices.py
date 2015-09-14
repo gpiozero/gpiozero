@@ -1,4 +1,5 @@
 from RPi import GPIO
+from w1thermsensor import W1ThermSensor
 
 
 GPIO.setmode(GPIO.BCM)
@@ -45,6 +46,55 @@ class MotionSensor(InputDevice):
     def motion_detected(self):
         n = 20
         return sum(self._is_active_with_pause() for i in range(n)) > n/2
+
+
+class LightSensor(object):
+    def __init__(self, pin=None, darkness_level=0.01):
+        if pin is None:
+            raise InputDeviceError('No GPIO pin number given')
+
+        self.pin = pin
+        self.darkness_level = darkness_level
+
+    @property
+    def value(self):
+        return self._get_average_light_level(5)
+
+    def _get_light_level(self):
+        time_taken = self._time_charging_light_capacitor()
+        value = 100 * time_taken / self.darkness_level
+        return 100 - value
+
+    def _time_charging_light_capacitor(self):
+        GPIO.setup(self.pin, GPIO.OUT)
+        GPIO.output(self.pin, GPIO.LOW)
+        sleep(0.1)
+        GPIO.setup(self.pin, GPIO.IN)
+        start_time = time()
+        end_time = time()
+        while (
+            GPIO.input(self.pin) == GPIO.LOW and
+            time() - start_time < self.darkness_level
+        ):
+            end_time = time()
+        time_taken = end_time - start_time
+        return min(time_taken, self.darkness_level)
+
+    def _get_average_light_level(self, num):
+        values = [self._get_light_level() for n in range(num)]
+        average_value = sum(values) / len(values)
+        return average_value
+
+    def _get_average_light_level(self, num):
+        values = [self._get_light_level() for n in range(num)]
+        average_value = sum(values) / len(values)
+        return average_value
+
+
+class TemperatureSensor(W1ThermSensor):
+    @property
+    def value(self):
+        return self.get_temperature()
 
 
 class InputDeviceError(Exception):

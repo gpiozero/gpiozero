@@ -23,3 +23,7 @@ class LED(OutputDevice):
 
 class Buzzer(OutputDevice):
     pass
+
+
+class Motor(OutputDevice):
+    pass
