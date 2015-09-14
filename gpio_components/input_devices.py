@@ -37,5 +37,15 @@ class Button(InputDevice):
     pass
 
 
+class MotionSensor(InputDevice):
+    def _is_active_with_pause(self):
+        sleep(0.1)
+        return self.is_active()
+
+    def motion_detected(self):
+        n = 20
+        return sum(self._is_active_with_pause() for i in range(n)) > n/2
+
+
 class InputDeviceError(Exception):
     pass

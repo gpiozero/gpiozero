@@ -7,3 +7,4 @@ Abstraction classes for everyday GPIO components, based on RPi.GPIO
 - LED
 - Buzzer
 - Button
+- MotionSensor
