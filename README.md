@@ -126,7 +126,7 @@ from gpio_components import MotionSensor
 pir = MotionSensor(5)
 
 while True:
-    if pir.motion_detected():
+    if pir.motion_detected:
         print("Motion detected")
 ```
 
