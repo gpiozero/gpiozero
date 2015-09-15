@@ -1,10 +1,6 @@
 from RPi import GPIO
 
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-
 class OutputDevice(object):
     def __init__(self, pin):
         self.pin = pin

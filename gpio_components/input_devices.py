@@ -2,10 +2,6 @@ from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-
 class InputDevice(object):
     def __init__(self, pin=None):
         if pin is None:
@@ -42,8 +38,9 @@ class Button(InputDevice):
 class MotionSensor(InputDevice):
     def _is_active_with_pause(self):
         sleep(0.1)
-        return self.is_active()
+        return self.is_active
 
+    @property
     def motion_detected(self):
         n = 20
         return sum(self._is_active_with_pause() for i in range(n)) > n/2
@@ -80,11 +77,6 @@ class LightSensor(object):
             end_time = time()
         time_taken = end_time - start_time
         return min(time_taken, self.darkness_level)
-
-    def _get_average_light_level(self, num):
-        values = [self._get_light_level() for n in range(num)]
-        average_value = sum(values) / len(values)
-        return average_value
 
     def _get_average_light_level(self, num):
         values = [self._get_light_level() for n in range(num)]
