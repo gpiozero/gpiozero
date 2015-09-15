@@ -6,15 +6,15 @@ If a proposed change added an advanced feature but made basic usage more complex
 
 ## Suggestions
 
-Please make suggestions by opening an [issue](https://github.com/RPi-Distro/gpio-zero/issues) explaining your reasoning clearly.
+Please make suggestions by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining your reasoning clearly.
 
 ## Bugs
 
-Please submit bug reports by opening an [issue](https://github.com/RPi-Distro/gpio-zero/issues) explaining the problem clearly using code examples.
+Please submit bug reports by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining the problem clearly using code examples.
 
 ## Documentation
 
-The documentation source lives in the [docs](https://github.com/RPi-Distro/gpio-zero/tree/master/docs) folder and is rendered from markdown into HTML using [mkdocs](http://www.mkdocs.org/). Contributions to the documentation are welcome but should be easy to read and understand.
+The documentation source lives in the [docs](https://github.com/RPi-Distro/python-gpiozero/tree/master/docs) folder and is rendered from markdown into HTML using [mkdocs](http://www.mkdocs.org/). Contributions to the documentation are welcome but should be easy to read and understand.
 
 ## Python
 
