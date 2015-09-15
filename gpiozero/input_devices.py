@@ -1,3 +1,9 @@
+from __future__ import division
+
+from time import sleep
+from threading import Thread, Event
+from collections import deque
+
 from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 
@@ -36,14 +42,34 @@ class Button(InputDevice):
 
 
 class MotionSensor(InputDevice):
-    def _is_active_with_pause(self):
-        sleep(0.1)
-        return self.is_active
+    def __init__(self, pin=None, queue_len=20, sample_rate=10, partial=False):
+        super(MotionSensor, self).__init__(pin)
+        self._sample_rate = sample_rate
+        self._partial = partial
+        self._queue = deque(maxlen=queue_len)
+        self._queue_full = Event()
+        self._terminated = False
+        self._queue_thread = Thread(target=self._fill_queue)
+        self._queue_thread.start()
+
+    def __del__(self):
+        self._terminated = True
+        self._queue_thread.join()
+
+    def _fill_queue(self):
+        while not self._terminated and len(self._queue) < self._queue.maxlen:
+            self._queue.append(self.is_active)
+            sleep(1 / self._sample_rate)
+        self._queue_full.set()
+        while not self._terminated:
+            self._queue.append(self.is_active)
+            sleep(1 / self._sample_rate)
 
     @property
     def motion_detected(self):
-        n = 20
-        return sum(self._is_active_with_pause() for i in range(n)) > n/2
+        if not self._partial:
+            self._queue_full.wait()
+        return sum(self._queue) > (len(self._queue) / 2)
 
 
 class LightSensor(object):
