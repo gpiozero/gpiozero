@@ -1,0 +1,10 @@
+site_name: gpio-zero
+theme: readthedocs
+site_url: http://pythonhosted.org/gpiozero
+repo_url: https://github.com/RPi-Distro/gpio-zero
+site_description: A simple interface to everyday GPIO components used with Raspberry Pi
+site_author: Ben Nuttall
+site_dir: pythonhosted
+google_analytics: ['UA-46270871-6', 'pythonhosted.org/gpiozero']
+pages:
+- 'Home': 'index.md'

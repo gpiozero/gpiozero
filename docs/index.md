@@ -1,6 +1,6 @@
-# gpio-components
+# gpio-zero
 
-Abstraction for everyday GPIO components, based on Ben Croston's `RPi.GPIO` library.
+A simple interface to everyday GPIO components used with Raspberry Pi
 
 ## Why?
 
