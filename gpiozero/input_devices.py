@@ -7,22 +7,21 @@ from collections import deque
 from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 
+from .devices import GPIODevice, GPIODeviceError
 
-class InputDevice(object):
+
+class InputDeviceError(GPIODeviceError):
+    pass
+
+
+class InputDevice(GPIODevice):
     def __init__(self, pin=None):
-        if pin is None:
-            raise InputDeviceError('No GPIO pin number given')
-
-        self._pin = pin
+        super(InputDevice, self).__init__(pin)
         self._pull = GPIO.PUD_UP
         self._edge = GPIO.FALLING
         self._active_state = 0
         self._inactive_state = 1
         GPIO.setup(pin, GPIO.IN, self._pull)
-
-    @property
-    def pin(self):
-        return self._pin
 
     @property
     def is_active(self):
@@ -79,7 +78,7 @@ class MotionSensor(InputDevice):
 class LightSensor(object):
     def __init__(self, pin=None, darkness_level=0.01):
         if pin is None:
-            raise InputDeviceError('No GPIO pin number given')
+            raise GPIODeviceError('No GPIO pin number given')
 
         self._pin = pin
         self.darkness_level = darkness_level
@@ -123,6 +122,3 @@ class TemperatureSensor(W1ThermSensor):
     def value(self):
         return self.get_temperature()
 
-
-class InputDeviceError(Exception):
-    pass

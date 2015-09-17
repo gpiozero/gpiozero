@@ -4,6 +4,11 @@ from RPi import GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+
+from .devices import (
+    GPIODevice,
+    GPIODeviceError,
+)
 from .input_devices import (
     InputDeviceError,
     InputDevice,
@@ -14,6 +19,7 @@ from .input_devices import (
 )
 from .output_devices import (
     OutputDevice,
+    OutputDeviceError,
     LED,
     Buzzer,
     Motor,
