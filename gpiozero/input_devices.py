@@ -13,12 +13,16 @@ class InputDevice(object):
         if pin is None:
             raise InputDeviceError('No GPIO pin number given')
 
-        self.pin = pin
+        self._pin = pin
         self._pull = GPIO.PUD_UP
         self._edge = GPIO.FALLING
         self._active_state = 0
         self._inactive_state = 1
         GPIO.setup(pin, GPIO.IN, self._pull)
+
+    @property
+    def pin(self):
+        return self._pin
 
     @property
     def is_active(self):
@@ -77,8 +81,12 @@ class LightSensor(object):
         if pin is None:
             raise InputDeviceError('No GPIO pin number given')
 
-        self.pin = pin
+        self._pin = pin
         self.darkness_level = darkness_level
+
+    @property
+    def pin(self):
+        return self._pin
 
     @property
     def value(self):
