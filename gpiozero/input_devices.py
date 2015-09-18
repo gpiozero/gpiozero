@@ -1,28 +1,27 @@
 from __future__ import division
 
 from time import sleep
-from threading import Thread, Event
+from threading import Event
 from collections import deque
 
 from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 
+from .devices import GPIODeviceError, GPIODevice, GPIOThread
 
-class InputDevice(object):
+
+class InputDeviceError(GPIODeviceError):
+    pass
+
+
+class InputDevice(GPIODevice):
     def __init__(self, pin=None):
-        if pin is None:
-            raise InputDeviceError('No GPIO pin number given')
-
-        self._pin = pin
+        super(InputDevice, self).__init__(pin)
         self._pull = GPIO.PUD_UP
         self._edge = GPIO.FALLING
         self._active_state = 0
         self._inactive_state = 1
         GPIO.setup(pin, GPIO.IN, self._pull)
-
-    @property
-    def pin(self):
-        return self._pin
 
     @property
     def is_active(self):
@@ -34,7 +33,6 @@ class InputDevice(object):
     def add_callback(self, callback=None, bouncetime=1000):
         if callback is None:
             raise InputDeviceError('No callback function given')
-
         GPIO.add_event_detect(self.pin, self._edge, callback, bouncetime)
 
     def remove_callback(self):
@@ -48,30 +46,30 @@ class Button(InputDevice):
 class MotionSensor(InputDevice):
     def __init__(self, pin=None, queue_len=20, sample_rate=10, partial=False):
         super(MotionSensor, self).__init__(pin)
-        self._sample_rate = sample_rate
-        self._partial = partial
+        self.sample_rate = sample_rate
+        self.partial = partial
         self._queue = deque(maxlen=queue_len)
         self._queue_full = Event()
-        self._terminated = False
-        self._queue_thread = Thread(target=self._fill_queue)
+        self._queue_thread = GPIOThread(target=self._fill_queue)
         self._queue_thread.start()
 
-    def __del__(self):
-        self._terminated = True
-        self._queue_thread.join()
+    @property
+    def queue_len(self):
+        return self._queue.maxlen
 
     def _fill_queue(self):
-        while not self._terminated and len(self._queue) < self._queue.maxlen:
+        while (
+                not self._queue_thread.stopping.wait(1 / self.sample_rate) and
+                len(self._queue) < self._queue.maxlen
+            ):
             self._queue.append(self.is_active)
-            sleep(1 / self._sample_rate)
         self._queue_full.set()
-        while not self._terminated:
+        while not self._queue_thread.stopping.wait(1 / self.sample_rate):
             self._queue.append(self.is_active)
-            sleep(1 / self._sample_rate)
 
     @property
     def motion_detected(self):
-        if not self._partial:
+        if not self.partial:
             self._queue_full.wait()
         return sum(self._queue) > (len(self._queue) / 2)
 
@@ -124,5 +122,3 @@ class TemperatureSensor(W1ThermSensor):
         return self.get_temperature()
 
 
-class InputDeviceError(Exception):
-    pass
