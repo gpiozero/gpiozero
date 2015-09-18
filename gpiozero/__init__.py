@@ -4,14 +4,11 @@ import atexit
 
 from RPi import GPIO
 
-
-def gpiozero_shutdown():
-    GPIO.cleanup()
-
-atexit.register(gpiozero_shutdown)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
+from .devices import (
+    _gpio_threads_shutdown,
+    GPIODeviceError,
+    GPIODevice,
+    )
 from .input_devices import (
     InputDeviceError,
     InputDevice,
@@ -26,3 +23,13 @@ from .output_devices import (
     Buzzer,
     Motor,
 )
+
+
+def gpiozero_shutdown():
+    _gpio_threads_shutdown()
+    GPIO.cleanup()
+
+atexit.register(gpiozero_shutdown)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
