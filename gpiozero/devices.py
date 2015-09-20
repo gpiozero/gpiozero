@@ -12,10 +12,16 @@ class GPIODevice(object):
         if pin is None:
             raise GPIODeviceError('No GPIO pin number given')
         self._pin = pin
+        self._active_state = 1
+        self._inactive_state = 0
 
     @property
     def pin(self):
         return self._pin
+
+    @property
+    def is_active(self):
+        return GPIO.input(self.pin) == self._active_state
 
 
 _GPIO_THREADS = set()
