@@ -24,10 +24,8 @@ class TrafficLights(object):
 
 class PiTraffic(TrafficLights):
     def __init__(self):
-        self.red = LED(9)
-        self.amber = LED(10)
-        self.green = LED(11)
-        self._lights = (self.red, self.amber, self.green)
+        red, amber, green = (9, 10, 11)
+        super(FishDish, self).__init__(red, amber, green)
 
 
 class FishDish(TrafficLights):
