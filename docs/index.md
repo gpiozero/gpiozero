@@ -154,13 +154,17 @@ while True:
 Retrieve light sensor value:
 
 ```python
+from time import sleep
 from gpiozero import LightSensor
 
-light = LightSensor(6)
+sensor = LightSensor(18)
+led = LED(16)
+
+sensor.when_dark = led.on
+sensor.when_light = led.off
 
 while True:
-    if light.light_detected:
-        print("Light detected")
+    sleep(1)
 ```
 
 ### Temperature Sensor
