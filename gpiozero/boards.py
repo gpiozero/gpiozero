@@ -11,15 +11,19 @@ class TrafficLights(object):
         self.red = LED(red)
         self.amber = LED(amber)
         self.green = LED(green)
-        self._lights = (self.red, self.amber, self.green)
+        self._leds = (self.red, self.amber, self.green)
 
     def on(self):
-        for led in self._lights:
+        for led in self._leds:
             led.on()
 
     def off(self):
-        for led in self._lights:
+        for led in self._leds:
             led.off()
+
+    def blink(self, on_time=1, off_time=1):
+        for led in self._leds:
+            led.blink(on_time, off_time)
 
 
 class PiTraffic(TrafficLights):
@@ -34,7 +38,7 @@ class FishDish(TrafficLights):
         super(FishDish, self).__init__(red, amber, green)
         self.buzzer = Buzzer(8)
         self.button = Button(pin=7, pull_up=False)
-        self._all = tuple(list(self._lights) + [self.buzzer])
+        self._all = tuple(list(self._leds) + [self.buzzer])
 
     def on(self):
         for thing in self._all:
@@ -53,13 +57,17 @@ class FishDish(TrafficLights):
 
 class PiLiter(object):
     def __init__(self):
-        leds = [4, 17, 27, 18, 22, 23, 24, 25]
-        self.leds = tuple([LED(led) for led in leds])
+        leds = (4, 17, 27, 18, 22, 23, 24, 25)
+        self._leds = tuple([LED(led) for led in leds])
 
     def on(self):
-        for led in self.leds:
+        for led in self._leds:
             led.on()
 
     def off(self):
-        for led in self.leds:
+        for led in self._leds:
             led.off()
+
+    def blink(self, on_time=1, off_time=1):
+        for led in self._leds:
+            led.blink(on_time, off_time)
