@@ -24,7 +24,7 @@ class LED(OutputDevice):
         super(LED, self).__init__(pin)
         self._blink_thread = None
 
-    def blink(self, on_time, off_time):
+    def blink(self, on_time=1, off_time=1):
         self._stop_blink()
         self._blink_thread = GPIOThread(target=self._blink_led, args=(on_time, off_time))
         self._blink_thread.start()
