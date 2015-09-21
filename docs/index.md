@@ -4,7 +4,10 @@ A simple interface to everyday GPIO components used with Raspberry Pi
 
 ## Why?
 
-The "hello world" program in Java is at least 5 lines long, and contains 11 jargon words which are to be ignored. The "hello world" program in Python is one simple line. However, the "hello world" of physical computing in Python (flashing an LED) is similar to the Java program:
+The "hello world" program in Java is at least 5 lines long, and contains 11
+jargon words which are to be ignored. The "hello world" program in Python is
+one simple line. However, the "hello world" of physical computing in Python
+(flashing an LED) is similar to the Java program:
 
 ```python
 import RPi.GPIO as GPIO
@@ -19,10 +22,15 @@ GPIO.setup(red, GPIO.OUT)
 GPIO.output(red, True)
 ```
 
-6 lines of code to flash an LED. And skipping over why `GPIO` is used twice in the first line; what `BCM` means; why set warnings to False; and so on. Young children and beginners shouldn't need to sit and copy out several lines of text they're told to ignore. They should be able to read their code and understand what it means. This module provides a simple interface to everyday components. The LED example becomes:
+6 lines of code to flash an LED. And skipping over why `GPIO` is used twice in
+the first line; what `BCM` means; why set warnings to False; and so on. Young
+children and beginners shouldn't need to sit and copy out several lines of text
+they're told to ignore. They should be able to read their code and understand
+what it means. This module provides a simple interface to everyday components.
+The LED example becomes:
 
 ```python
-from gpio_components import LED
+from gpiozero import LED
 
 red = LED(2)
 
@@ -48,7 +56,7 @@ Any guesses how to turn it off?
 Turn an LED on and off repeatedly:
 
 ```python
-from gpio_components import LED
+from gpiozero import LED
 from time import sleep
 
 red = LED(2)
@@ -60,12 +68,23 @@ while True:
     sleep(1)
 ```
 
+Alternatively:
+
+```python
+from gpiozero import LED
+from time import sleep
+
+red = LED(2)
+red.blink(1, 1)
+sleep(10)
+```
+
 ### Buzzer
 
 Turn a buzzer on and off repeatedly:
 
 ```python
-from gpio_components import Buzzer
+from gpiozero import Buzzer
 from time import sleep
 
 buzzer = Buzzer(3)
@@ -82,7 +101,7 @@ while True:
 Check if a button is pressed:
 
 ```python
-from gpio_components import Button
+from gpiozero import Button
 
 button = Button(4)
 
@@ -95,7 +114,7 @@ else:
 Wait for a button to be pressed before continuing:
 
 ```python
-from gpio_components import Button
+from gpiozero import Button
 
 button = Button(4)
 
@@ -106,7 +125,7 @@ print("Button was pressed")
 Run a function every time the button is pressed:
 
 ```python
-from gpio_components import Button
+from gpiozero import Button
 
 def hello(pin):
     print("Button was pressed")
@@ -121,7 +140,7 @@ button.add_callback(hello)
 Detect motion:
 
 ```python
-from gpio_components import MotionSensor
+from gpiozero import MotionSensor
 
 pir = MotionSensor(5)
 
@@ -135,11 +154,13 @@ while True:
 Retrieve light sensor value:
 
 ```python
-from gpio_components import LightSensor
+from gpiozero import LightSensor
 
 light = LightSensor(6)
 
-print(light.value)
+while True:
+    if light.light_detected:
+        print("Light detected")
 ```
 
 ### Temperature Sensor
@@ -147,7 +168,7 @@ print(light.value)
 Retrieve light sensor value:
 
 ```python
-from gpio_components import TemperatureSensor
+from gpiozero import TemperatureSensor
 
 temperature = TemperatureSensor(6)
 
@@ -159,7 +180,7 @@ print(temperature.value)
 Drive two motors forwards for 5 seconds:
 
 ```python
-from gpio_components import Motor
+from gpiozero import Motor
 from time import sleep
 
 left_motor = Motor(7)
