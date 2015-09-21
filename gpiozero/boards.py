@@ -35,7 +35,7 @@ class FishDish(TrafficLights):
         red, amber, green = (9, 22, 4)
         super(FishDish, self).__init__(red, amber, green)
         self.buzzer = Buzzer(8)
-        self.button = Button(7)
+        self.button = Button(pin=7, pull_up=False)
         self._all = tuple(list(self._lights) + [self.buzzer])
 
     def on(self):
