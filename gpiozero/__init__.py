@@ -33,3 +33,4 @@ atexit.register(gpiozero_shutdown)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+__version__ = '0.2.0'
