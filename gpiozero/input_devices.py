@@ -34,6 +34,7 @@ class InputDevice(GPIODevice):
     def add_callback(self, callback=None, bouncetime=1000):
         if callback is None:
             raise InputDeviceError('No callback function given')
+        self.remove_callback()
         GPIO.add_event_detect(self.pin, self._edge, callback, bouncetime)
 
     def remove_callback(self):
