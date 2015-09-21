@@ -9,11 +9,16 @@ A simple interface to everyday GPIO components used with Raspberry Pi
 Motivation
 ==========
 
-The "hello world" program in Java is at least 5 lines long, and contains 11 jargon words which students are taught to ignore.
+The "hello world" program in Java is at least 5 lines long, and contains 11
+jargon words which students are taught to ignore.
 
-The "hello world" program in Python is one simple line. However, the "hello world" of physical computing in Python (flashing an LED) is similar to the Java program: 6 lines of code to flash an LED.
+The "hello world" program in Python is one simple line. However, the "hello
+world" of physical computing in Python (flashing an LED) is similar to the Java
+program: 6 lines of code to flash an LED.
 
-Young children and beginners shouldn't need to sit and copy out several lines of text they're told to ignore. They should be able to read their code and understand what it means.
+Young children and beginners shouldn't need to sit and copy out several lines
+of text they're told to ignore. They should be able to read their code and
+understand what it means.
 
 Install
 =======
