@@ -1,4 +1,5 @@
 from RPi import GPIO
+from time import sleep
 
 from .devices import GPIODeviceError, GPIODevice, GPIOThread
 
@@ -58,3 +59,37 @@ class Buzzer(OutputDevice):
 
 class Motor(OutputDevice):
     pass
+
+
+class Robot(object):
+    def __init__(self, left=None, right=None):
+        if not all([left, right]):
+            raise GPIODeviceError(
+                'left and right pins must be provided'
+            )
+
+        self._left = Motor(left)
+        self._right = Motor(right)
+
+    def left(self, seconds=None):
+        self._left.on()
+        if seconds is not None:
+            sleep(seconds)
+            self._left.off()
+
+    def right(self, seconds=None):
+        self._right.on()
+        if seconds is not None:
+            sleep(seconds)
+            self._right.off()
+
+    def forwards(self, seconds=None):
+        self.left()
+        self.right()
+        if seconds is not None:
+            sleep(seconds)
+            self.stop()
+
+    def stop(self):
+        self._left.off()
+        self._right.off()
