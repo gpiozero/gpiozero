@@ -24,7 +24,7 @@ from .output_devices import (
     Motor,
 )
 from .boards import (
-    TrafficLights
+    TrafficLights,
     PiTraffic,
     FishDish,
     PiLiter,
