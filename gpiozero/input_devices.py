@@ -28,18 +28,6 @@ class InputDevice(GPIODevice):
     def pull_up(self):
         return self._pull_up
 
-    def wait_for_input(self):
-        GPIO.wait_for_edge(self.pin, self._edge)
-
-    def add_callback(self, callback=None, bouncetime=1000):
-        if callback is None:
-            raise InputDeviceError('No callback function given')
-        self.remove_callback()
-        GPIO.add_event_detect(self.pin, self._edge, callback, bouncetime)
-
-    def remove_callback(self):
-        GPIO.remove_event_detect(self.pin)
-
 
 class Button(InputDevice):
     pass
@@ -120,6 +108,11 @@ class LightSensor(InputDevice):
         self._queue = deque(maxlen=queue_len)
         self._queue_full = Event()
         self._queue_thread = GPIOThread(target=self._fill_queue)
+        self._last_state = None
+        self._when_light = None
+        self._when_dark = None
+        self._when_light_event = Event()
+        self._when_dark_event = Event()
         self._queue_thread.start()
 
     @property
@@ -139,6 +132,27 @@ class LightSensor(InputDevice):
     @property
     def light_detected(self):
         return self.value > self.threshold
+
+    def _get_when_light(self):
+        return self._when_light
+    def _set_when_light(self, value):
+        if not callable(value) and value is not None:
+            raise InputDeviceError('when_light must be None or a function')
+        self._when_light = value
+    when_light = property(_get_when_light, _set_when_light)
+
+    def _get_when_dark(self):
+        return self._when_dark
+    def _set_when_dark(self, value):
+        if not callable(value) and value is not None:
+            raise InputDeviceError('when_dark must be None or a function')
+        self._when_dark = value
+
+    def wait_for_light(self, timeout=None):
+        self._when_light_event.wait(timeout)
+
+    def wait_for_dark(self, timeout=None):
+        self._when_dark_event.wait(timeout)
 
     def _get_darkness_time(self):
         return self._darkness_time
@@ -164,9 +178,12 @@ class LightSensor(InputDevice):
                     len(self._queue) < self._queue.maxlen
                 ):
                 self._queue.append(self._time_charging())
+                if self.partial:
+                    self._fire_events()
             self._queue_full.set()
             while not self._queue_thread.stopping.is_set():
                 self._queue.append(self._time_charging())
+                self._fire_events()
         finally:
             GPIO.remove_event_detect(self.pin)
 
@@ -182,6 +199,19 @@ class LightSensor(InputDevice):
         self._charged.wait(self.darkness_time)
         return min(self.darkness_time, time() - start)
 
+    def _fire_events(self):
+        last_state = self._last_state
+        self._last_state = state = self.light_detected
+        if not last_state and state:
+            self._when_dark_event.clear()
+            self._when_light_event.set()
+            if self.when_light:
+                self.when_light()
+        elif last_state and not state:
+            self._when_light_event.clear()
+            self._when_dark_event.set()
+            if self.when_dark:
+                self.when_dark()
 
 class TemperatureSensor(W1ThermSensor):
     @property
