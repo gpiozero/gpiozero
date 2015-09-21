@@ -1,5 +1,5 @@
 from .input_devices import Button
-from .output_devices import LED
+from .output_devices import LED, Buzzer
 from .devices import GPIODeviceError
 
 
