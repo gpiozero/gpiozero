@@ -26,6 +26,12 @@ class TrafficLights(object):
             led.blink(on_time, off_time)
 
 
+class PiTraffic(TrafficLights):
+    def __init__(self):
+        red, amber, green = (9, 10, 11)
+        super(FishDish, self).__init__(red, amber, green)
+
+
 class FishDish(TrafficLights):
     def __init__(self):
         red, amber, green = (9, 22, 4)
@@ -52,7 +58,7 @@ class FishDish(TrafficLights):
 class TrafficHat(FishDish):
     def __init__(self):
         red, amber, green = (24, 23, 22)
-        super(PiTraffic, self).__init__(red, amber, green)
+        super(TrafficHat, self).__init__(red, amber, green)
         self.buzzer = Buzzer(5)
         self.button = Button(25)
         self._all = self._leds + (self.buzzer,)
@@ -74,4 +80,3 @@ class PiLiter(object):
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
             led.blink(on_time, off_time)
-
