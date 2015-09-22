@@ -32,7 +32,7 @@ class FishDish(TrafficLights):
         super(FishDish, self).__init__(red, amber, green)
         self.buzzer = Buzzer(8)
         self.button = Button(pin=7, pull_up=False)
-        self._all = tuple(list(self._leds) + [self.buzzer])
+        self._all = self._leds + (self.buzzer,)
 
     def on(self):
         for thing in self._all:
@@ -43,10 +43,10 @@ class FishDish(TrafficLights):
             thing.off()
 
     def lights_on(self):
-        super.on()
+        super(FishDish, self).on()
 
     def lights_off(self):
-        super.off()
+        super(FishDish, self).off()
 
 
 class TrafficHat(FishDish):
@@ -55,13 +55,13 @@ class TrafficHat(FishDish):
         super(PiTraffic, self).__init__(red, amber, green)
         self.buzzer = Buzzer(5)
         self.button = Button(25)
-        self._all = tuple(list(self._leds) + [self.buzzer])
+        self._all = self._leds + (self.buzzer,)
 
 
 class PiLiter(object):
     def __init__(self):
         leds = (4, 17, 27, 18, 22, 23, 24, 25)
-        self._leds = tuple([LED(led) for led in leds])
+        self._leds = tuple(LED(led) for led in leds)
 
     def on(self):
         for led in self._leds:
@@ -74,3 +74,4 @@ class PiLiter(object):
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
             led.blink(on_time, off_time)
+
