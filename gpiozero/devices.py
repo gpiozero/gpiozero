@@ -25,6 +25,8 @@ class GPIODevice(object):
 
 
 _GPIO_THREADS = set()
+
+
 def _gpio_threads_shutdown():
     while _GPIO_THREADS:
         for t in _GPIO_THREADS.copy():
@@ -46,4 +48,3 @@ class GPIOThread(Thread):
         self.stopping.set()
         self.join()
         _GPIO_THREADS.discard(self)
-

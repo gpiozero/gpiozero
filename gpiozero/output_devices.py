@@ -27,7 +27,9 @@ class LED(OutputDevice):
 
     def blink(self, on_time=1, off_time=1):
         self._stop_blink()
-        self._blink_thread = GPIOThread(target=self._blink_led, args=(on_time, off_time))
+        self._blink_thread = GPIOThread(
+            target=self._blink_led, args=(on_time, off_time)
+        )
         self._blink_thread.start()
 
     def _stop_blink(self):
@@ -64,9 +66,7 @@ class Motor(OutputDevice):
 class Robot(object):
     def __init__(self, left=None, right=None):
         if not all([left, right]):
-            raise GPIODeviceError(
-                'left and right pins must be provided'
-            )
+            raise GPIODeviceError('left and right pins must be provided')
 
         self._left = Motor(left)
         self._right = Motor(right)
