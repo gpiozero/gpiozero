@@ -1,4 +1,6 @@
+import weakref
 from threading import Thread, Event
+from collections import deque
 
 from RPi import GPIO
 
@@ -12,8 +14,14 @@ class GPIODevice(object):
         if pin is None:
             raise GPIODeviceError('No GPIO pin number given')
         self._pin = pin
-        self._active_state = 1
-        self._inactive_state = 0
+        self._active_state = GPIO.HIGH
+        self._inactive_state = GPIO.LOW
+
+    def _read(self):
+        return GPIO.input(self.pin) == self._active_state
+
+    def _fire_events(self):
+        pass
 
     @property
     def pin(self):
@@ -21,7 +29,7 @@ class GPIODevice(object):
 
     @property
     def is_active(self):
-        return GPIO.input(self.pin) == self._active_state
+        return self._read()
 
 
 _GPIO_THREADS = set()
@@ -46,4 +54,45 @@ class GPIOThread(Thread):
         self.stopping.set()
         self.join()
         _GPIO_THREADS.discard(self)
+
+
+class GPIOQueue(GPIOThread):
+    def __init__(self, parent, queue_len=5, sample_wait=0.0, partial=False):
+        assert isinstance(parent, GPIODevice)
+        super(GPIOQueue, self).__init__(target=self.fill)
+        if queue_len < 1:
+            raise InputDeviceError('queue_len must be at least one')
+        self.queue = deque(maxlen=queue_len)
+        self.partial = partial
+        self.sample_wait = sample_wait
+        self.full = Event()
+        self.parent = weakref.proxy(parent)
+
+    @property
+    def value(self):
+        if not self.partial:
+            self.full.wait()
+        try:
+            return sum(self.queue) / len(self.queue)
+        except ZeroDivisionError:
+            # No data == inactive value
+            return 0.0
+
+    def fill(self):
+        try:
+            while (
+                    not self.stopping.wait(self.sample_wait) and
+                    len(self.queue) < self.queue.maxlen
+                ):
+                self.queue.append(self.parent._read())
+                if self.partial:
+                    self.parent._fire_events()
+            self.full.set()
+            while not self.stopping.wait(self.sample_wait):
+                self.queue.append(self.parent._read())
+                self.parent._fire_events()
+        except ReferenceError:
+            # Parent is dead; time to die!
+            pass
+
 
