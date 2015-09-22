@@ -82,10 +82,8 @@ class GPIOQueue(GPIOThread):
 
     def fill(self):
         try:
-            while (
-                    not self.stopping.wait(self.sample_wait) and
-                    len(self.queue) < self.queue.maxlen
-                ):
+            while (not self.stopping.wait(self.sample_wait) and
+                    len(self.queue) < self.queue.maxlen):
                 self.queue.append(self.parent._read())
                 if self.partial:
                     self.parent._fire_events()
@@ -96,4 +94,3 @@ class GPIOQueue(GPIOThread):
         except ReferenceError:
             # Parent is dead; time to die!
             pass
-

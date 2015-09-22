@@ -22,11 +22,13 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    Robot,
 )
 from .boards import (
     TrafficLights,
-    PiTraffic,
+    PiTraffic
     FishDish,
+    TrafficHat
     PiLiter,
 )
 
@@ -39,4 +41,4 @@ atexit.register(gpiozero_shutdown)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'

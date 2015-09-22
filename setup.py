@@ -24,7 +24,7 @@ setup(
     ],
     long_description=read('README.rst'),
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Education",
         "Topic :: Education",
         "Topic :: System :: Hardware",

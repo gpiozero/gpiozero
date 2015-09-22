@@ -52,6 +52,7 @@ class WaitableInputDevice(InputDevice):
 
     def _get_when_activated(self):
         return self._when_activated
+
     def _set_when_activated(self, value):
         if not callable(value) and value is not None:
             raise InputDeviceError('value must be None or a function')
@@ -60,10 +61,12 @@ class WaitableInputDevice(InputDevice):
 
     def _get_when_deactivated(self):
         return self._when_deactivated
+
     def _set_when_deactivated(self, value):
         if not callable(value) and value is not None:
             raise InputDeviceError('value must be None or a function')
         self._when_deactivated = value
+
     when_deactivated = property(_get_when_deactivated, _set_when_deactivated)
 
     def _fire_events(self):
@@ -94,8 +97,9 @@ class DigitalInputDevice(WaitableInputDevice):
         super(DigitalInputDevice, self).__init__(pin, pull_up)
         # Yes, that's really the default bouncetime in RPi.GPIO...
         GPIO.add_event_detect(
-                self.pin, GPIO.BOTH, callback=self._fire_events,
-                bouncetime=-666 if bouncetime is None else bouncetime)
+            self.pin, GPIO.BOTH, callback=self._fire_events,
+            bouncetime=-666 if bouncetime is None else bouncetime
+        )
         # Call _fire_events once to set initial state of events
         super(DigitalInputDevice, self)._fire_events()
 
@@ -131,8 +135,11 @@ class SmoothedInputDevice(WaitableInputDevice):
 
     def _set_threshold(self, value):
         if not (0.0 < value < 1.0):
-            raise InputDeviceError('threshold must be between zero and one exclusive')
+            raise InputDeviceError(
+                'threshold must be between zero and one exclusive'
+            )
         self._threshold = float(value)
+
     threshold = property(_get_threshold, _set_threshold)
 
     @property
@@ -156,8 +163,9 @@ class MotionSensor(SmoothedInputDevice):
             self, pin=None, queue_len=5, sample_rate=10, threshold=0.5,
             partial=False):
         super(MotionSensor, self).__init__(
-                pin, pull_up=False, threshold=threshold,
-                queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial)
+            pin, pull_up=False, threshold=threshold,
+            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
+        )
         self._queue.start()
 
     motion_detected = _alias('is_active')
@@ -174,11 +182,14 @@ class LightSensor(SmoothedInputDevice):
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False):
         super(LightSensor, self).__init__(
-                pin, pull_up=False, threshold=threshold,
-                queue_len=queue_len, sample_wait=0.0, partial=partial)
+            pin, pull_up=False, threshold=threshold,
+            queue_len=queue_len, sample_wait=0.0, partial=partial
+        )
         self._charge_time_limit = charge_time_limit
         self._charged = Event()
-        GPIO.add_event_detect(self.pin, GPIO.RISING, lambda channel: self._charged.set())
+        GPIO.add_event_detect(
+            self.pin, GPIO.RISING, lambda channel: self._charged.set()
+        )
         self._queue.start()
 
     def __del__(self):
@@ -198,7 +209,10 @@ class LightSensor(SmoothedInputDevice):
         self._charged.clear()
         GPIO.setup(self.pin, GPIO.IN)
         self._charged.wait(self.charge_time_limit)
-        return 1.0 - min(self.charge_time_limit, time() - start) / self.charge_time_limit
+        return (
+            1.0 - min(self.charge_time_limit, time() - start) /
+            self.charge_time_limit
+        )
 
     light_detected = _alias('is_active')
 
@@ -209,9 +223,7 @@ class LightSensor(SmoothedInputDevice):
     wait_for_dark = _alias('wait_for_inactive')
 
 
-
 class TemperatureSensor(W1ThermSensor):
     @property
     def value(self):
         return self.get_temperature()
-
