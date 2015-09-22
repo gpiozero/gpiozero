@@ -128,6 +128,7 @@ class SmoothedInputDevice(WaitableInputDevice):
 
     def _get_threshold(self):
         return self._threshold
+
     def _set_threshold(self, value):
         if not (0.0 < value < 1.0):
             raise InputDeviceError('threshold must be between zero and one exclusive')
@@ -206,6 +207,7 @@ class LightSensor(SmoothedInputDevice):
 
     wait_for_light = _alias('wait_for_active')
     wait_for_dark = _alias('wait_for_inactive')
+
 
 
 class TemperatureSensor(W1ThermSensor):

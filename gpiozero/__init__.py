@@ -8,7 +8,7 @@ from .devices import (
     _gpio_threads_shutdown,
     GPIODeviceError,
     GPIODevice,
-    )
+)
 from .input_devices import (
     InputDeviceError,
     InputDevice,
@@ -22,6 +22,12 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+)
+from .boards import (
+    TrafficLights,
+    PiTraffic,
+    FishDish,
+    PiLiter,
 )
 
 

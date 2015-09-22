@@ -33,6 +33,8 @@ class GPIODevice(object):
 
 
 _GPIO_THREADS = set()
+
+
 def _gpio_threads_shutdown():
     while _GPIO_THREADS:
         for t in _GPIO_THREADS.copy():
@@ -94,5 +96,4 @@ class GPIOQueue(GPIOThread):
         except ReferenceError:
             # Parent is dead; time to die!
             pass
-
 
