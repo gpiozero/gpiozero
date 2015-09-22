@@ -26,7 +26,7 @@ from .output_devices import (
 )
 from .boards import (
     TrafficLights,
-    PiTraffic
+    PiTraffic,
     FishDish,
     TrafficHat
     PiLiter,
@@ -41,4 +41,4 @@ atexit.register(gpiozero_shutdown)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'

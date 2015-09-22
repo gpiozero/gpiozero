@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="gpiozero",
-    version="0.3.1",
+    version="0.3.2",
     author="Ben Nuttall",
     description="A simple interface to everyday GPIO components used with Raspberry Pi",
     license="BSD",
