@@ -72,7 +72,6 @@ Alternatively:
 
 ```python
 from gpiozero import LED
-from time import sleep
 
 red = LED(2)
 red.blink(1, 1)
@@ -118,7 +117,7 @@ from gpiozero import Button
 
 button = Button(4)
 
-button.wait_for_input()
+button.wait_for_press()
 print("Button was pressed")
 ```
 
@@ -127,44 +126,54 @@ Run a function every time the button is pressed:
 ```python
 from gpiozero import Button
 
-def hello(pin):
-    print("Button was pressed")
+def warning():
+    print("Don't push the button!")
 
 button = Button(4)
 
-button.add_callback(hello)
+button.when_pressed = warning
 ```
 
 ### Motion Sensor
 
-Detect motion:
+Detect motion and light an LED when it's detected:
 
 ```python
-from gpiozero import MotionSensor
+from gpiozero import MotionSensor, LED
 
 pir = MotionSensor(5)
+led = LED(16)
 
-while True:
-    if pir.motion_detected:
-        print("Motion detected")
+pir.when_motion = led.on
+pir.when_no_motion = led.off
 ```
 
 ### Light Sensor
 
-Retrieve light sensor value:
+Wait for light and dark:
 
 ```python
-from time import sleep
 from gpiozero import LightSensor
+
+sensor = LightSensor(18)
+
+while True:
+    sensor.wait_for_light()
+    print("It's light! :)")
+    sensor.wait_for_dark()
+    print("It's dark :(")
+```
+
+Run a function when the light changes:
+
+```python
+from gpiozero import LightSensor, LED
 
 sensor = LightSensor(18)
 led = LED(16)
 
 sensor.when_dark = led.on
 sensor.when_light = led.off
-
-while True:
-    sleep(1)
 ```
 
 ### Temperature Sensor
@@ -196,3 +205,4 @@ sleep(5)
 left_motor.off()
 right_motor.off()
 ```
+
