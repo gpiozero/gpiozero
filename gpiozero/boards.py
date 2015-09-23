@@ -101,9 +101,8 @@ class TrafficHat(FishDish):
         self._all = self._leds + (self.buzzer,)
 
 
-class PiLiter(object):
-    def __init__(self):
-        leds = (4, 17, 27, 18, 22, 23, 24, 25)
+class LEDBoard(object):
+    def __init__(self, leds):
         self._leds = tuple(LED(led) for led in leds)
 
     @property
@@ -133,3 +132,9 @@ class PiLiter(object):
             self.off()
             if i+1 < n:  # don't sleep on final iteration
                 sleep(off_time)
+
+
+class PiLiter(LEDBoard):
+    def __init__(self):
+        leds = (4, 17, 27, 18, 22, 23, 24, 25)
+        super(PiLiter, self).__init__(leds)
