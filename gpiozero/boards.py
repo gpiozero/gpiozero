@@ -5,15 +5,9 @@ from .devices import GPIODeviceError
 from time import sleep
 
 
-class TrafficLights(object):
-    def __init__(self, red=None, amber=None, green=None):
-        if not all([red, amber, green]):
-            raise GPIODeviceError('Red, Amber and Green pins must be provided')
-
-        self.red = LED(red)
-        self.amber = LED(amber)
-        self.green = LED(green)
-        self._leds = (self.red, self.amber, self.green)
+class LEDBoard(object):
+    def __init__(self, leds):
+        self._leds = tuple(LED(led) for led in leds)
 
     @property
     def leds(self):
@@ -42,6 +36,23 @@ class TrafficLights(object):
             self.off()
             if i+1 < n:  # don't sleep on final iteration
                 sleep(off_time)
+
+
+class PiLiter(LEDBoard):
+    def __init__(self):
+        leds = (4, 17, 27, 18, 22, 23, 24, 25)
+        super(PiLiter, self).__init__(leds)
+
+
+class TrafficLights(LEDBoard):
+    def __init__(self, red=None, amber=None, green=None):
+        if not all([red, amber, green]):
+            raise GPIODeviceError('Red, Amber and Green pins must be provided')
+
+        self.red = LED(red)
+        self.amber = LED(amber)
+        self.green = LED(green)
+        self._leds = (self.red, self.amber, self.green)
 
 
 class PiTraffic(TrafficLights):
@@ -99,42 +110,3 @@ class TrafficHat(FishDish):
         self.buzzer = Buzzer(5)
         self.button = Button(25)
         self._all = self._leds + (self.buzzer,)
-
-
-class LEDBoard(object):
-    def __init__(self, leds):
-        self._leds = tuple(LED(led) for led in leds)
-
-    @property
-    def leds(self):
-        return self._leds
-
-    def on(self):
-        for led in self._leds:
-            led.on()
-
-    def off(self):
-        for led in self._leds:
-            led.off()
-
-    def toggle(self):
-        for led in self._leds:
-            led.toggle()
-
-    def blink(self, on_time=1, off_time=1):
-        for led in self._leds:
-            led.blink(on_time, off_time)
-
-    def flash(self, on_time=1, off_time=1, n=1):
-        for i in range(n):
-            self.on()
-            sleep(on_time)
-            self.off()
-            if i+1 < n:  # don't sleep on final iteration
-                sleep(off_time)
-
-
-class PiLiter(LEDBoard):
-    def __init__(self):
-        leds = (4, 17, 27, 18, 22, 23, 24, 25)
-        super(PiLiter, self).__init__(leds)
