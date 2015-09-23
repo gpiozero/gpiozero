@@ -1,5 +1,7 @@
-from RPi import GPIO
 from time import sleep
+from threading import Lock
+
+from RPi import GPIO
 
 from .devices import GPIODeviceError, GPIODevice, GPIOThread
 
@@ -24,6 +26,7 @@ class LED(OutputDevice):
     def __init__(self, pin=None):
         super(LED, self).__init__(pin)
         self._blink_thread = None
+        self._lock = Lock()
 
     def blink(self, on_time=1, off_time=1):
         self._stop_blink()
@@ -53,6 +56,13 @@ class LED(OutputDevice):
     def off(self):
         self._stop_blink()
         super(LED, self).off()
+
+    def toggle(self):
+        with self._lock:
+            if self.is_active:
+                self.off()
+            else:
+                self.on()
 
 
 class Buzzer(OutputDevice):
