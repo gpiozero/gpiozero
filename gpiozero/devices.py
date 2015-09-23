@@ -31,6 +31,10 @@ class GPIODevice(object):
     def is_active(self):
         return self._read()
 
+    def __repr__(self):
+        return "<gpiozero.%s object on pin=%d, is_active=%s>" % (
+            self.__class__.__name__, self.pin, self.is_active)
+
 
 _GPIO_THREADS = set()
 
