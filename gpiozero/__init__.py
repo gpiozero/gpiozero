@@ -28,7 +28,7 @@ from .boards import (
     TrafficLights,
     PiTraffic,
     FishDish,
-    TrafficHat
+    TrafficHat,
     PiLiter,
 )
 
