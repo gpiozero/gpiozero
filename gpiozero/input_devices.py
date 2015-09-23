@@ -36,6 +36,10 @@ class InputDevice(GPIODevice):
     def pull_up(self):
         return self._pull_up
 
+    def __repr__(self):
+        return "<gpiozero.%s object on pin=%d, pull_up=%s, is_active=%s>" % (
+            self.__class__.__name__, self.pin, self.pull_up, self.is_active)
+
 
 class WaitableInputDevice(InputDevice):
     def __init__(self, pin=None, pull_up=False):
@@ -142,6 +146,13 @@ class SmoothedInputDevice(WaitableInputDevice):
         super(SmoothedInputDevice, self).__init__(pin, pull_up)
         self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
         self.threshold = float(threshold)
+
+    def __repr__(self):
+        if self.partial or self._queue.full.wait(0):
+            return super(SmoothedInputDevice, self).__repr__()
+        else:
+            return "<gpiozero.%s object on pin=%d, pull_up=%s>" % (
+                self.__class__.__name__, self.pin, self.pull_up)
 
     @property
     def queue_len(self):
