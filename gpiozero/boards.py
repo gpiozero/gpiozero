@@ -25,6 +25,10 @@ class TrafficLights(object):
         for led in self._leds:
             led.off()
 
+    def toggle(self):
+        for led in self._leds:
+            led.toggle()
+
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
             led.blink(on_time, off_time)
@@ -56,11 +60,18 @@ class FishDish(TrafficLights):
         for thing in self._all:
             thing.off()
 
+    def toggle(self):
+        for thing in self._all:
+            thing.toggle()
+
     def lights_on(self):
         super(FishDish, self).on()
 
     def lights_off(self):
         super(FishDish, self).off()
+
+    def toggle_lights(self):
+        super(FishDish, self).toggle()
 
 
 class TrafficHat(FishDish):
@@ -88,6 +99,10 @@ class PiLiter(object):
     def off(self):
         for led in self._leds:
             led.off()
+
+    def toggle(self):
+        for led in self._leds:
+            led.toggle()
 
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
