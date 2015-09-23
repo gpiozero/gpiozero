@@ -26,9 +26,9 @@ from .output_devices import (
 )
 from .boards import (
     TrafficLights,
-    PiTraffic
+    PiTraffic,
     FishDish,
-    TrafficHat
+    TrafficHat,
     PiLiter,
 )
 

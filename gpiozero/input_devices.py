@@ -1,5 +1,7 @@
 from __future__ import division
 
+import inspect
+from functools import wraps
 from time import sleep, time
 from threading import Event
 
@@ -54,20 +56,41 @@ class WaitableInputDevice(InputDevice):
         return self._when_activated
 
     def _set_when_activated(self, value):
-        if not callable(value) and value is not None:
-            raise InputDeviceError('value must be None or a function')
-        self._when_activated = value
+        self._when_activated = self._wrap_callback(value)
+
     when_activated = property(_get_when_activated, _set_when_activated)
 
     def _get_when_deactivated(self):
         return self._when_deactivated
 
     def _set_when_deactivated(self, value):
-        if not callable(value) and value is not None:
-            raise InputDeviceError('value must be None or a function')
-        self._when_deactivated = value
+        self._when_deactivated = self._wrap_callback(value)
 
     when_deactivated = property(_get_when_deactivated, _set_when_deactivated)
+
+    def _wrap_callback(self, fn):
+        if fn is None:
+            return None
+        elif not callable(fn):
+            raise InputDeviceError('value must be None or a callable')
+        else:
+            # Try binding ourselves to the argspec of the provided callable.
+            # If this works, assume the function is capable of accepting us
+            # as the only (mandatory) parameter.
+            try:
+                inspect.getcallargs(fn, self)
+                @wraps(fn)
+                def wrapper():
+                    return fn(self)
+                return wrapper
+            except TypeError:
+                try:
+                    inspect.getcallargs(fn)
+                    return fn
+                except TypeError:
+                    raise InputDeviceError(
+                        'value must be a callable which accepts up to one '
+                        'mandatory parameter')
 
     def _fire_events(self):
         old_state = self._last_state
