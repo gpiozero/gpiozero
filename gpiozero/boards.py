@@ -2,6 +2,8 @@ from .input_devices import Button
 from .output_devices import LED, Buzzer
 from .devices import GPIODeviceError
 
+from time import sleep
+
 
 class TrafficLights(object):
     def __init__(self, red=None, amber=None, green=None):
@@ -32,6 +34,14 @@ class TrafficLights(object):
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
             led.blink(on_time, off_time)
+
+    def flash(self, on_time=1, off_time=1, n=1):
+        for i in range(n):
+            self.on()
+            sleep(on_time)
+            self.off()
+            if i+1 < n:  # don't sleep on final iteration
+                sleep(off_time)
 
 
 class PiTraffic(TrafficLights):
@@ -73,6 +83,14 @@ class FishDish(TrafficLights):
     def toggle_lights(self):
         super(FishDish, self).toggle()
 
+    def flash_lights(self, on_time=1, off_time=1, n=1):
+        for i in range(n):
+            [led.on() for led in self.leds]
+            sleep(on_time)
+            [led.off() for led in self.leds]
+            if i+1 < n:  # don't sleep on final iteration
+                sleep(off_time)
+
 
 class TrafficHat(FishDish):
     def __init__(self):
@@ -107,3 +125,11 @@ class PiLiter(object):
     def blink(self, on_time=1, off_time=1):
         for led in self._leds:
             led.blink(on_time, off_time)
+
+    def flash(self, on_time=1, off_time=1, n=1):
+        for i in range(n):
+            self.on()
+            sleep(on_time)
+            self.off()
+            if i+1 < n:  # don't sleep on final iteration
+                sleep(off_time)

@@ -64,6 +64,14 @@ class DigitalOutputDevice(OutputDevice):
             else:
                 self.on()
 
+    def flash(self, on_time=1, off_time=1, n=1):
+        for i in range(n):
+            self.on()
+            sleep(on_time)
+            self.off()
+            if i+1 < n:  # don't sleep on final iteration
+                sleep(off_time)
+
 
 class LED(DigitalOutputDevice):
     pass
