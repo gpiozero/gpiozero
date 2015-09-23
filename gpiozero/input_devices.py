@@ -75,18 +75,20 @@ class WaitableInputDevice(InputDevice):
             raise InputDeviceError('value must be None or a callable')
         else:
             # Try binding ourselves to the argspec of the provided callable.
-            # If this works, assume the function is capable of accepting us
-            # as the only (mandatory) parameter.
+            # If this works, assume the function is capable of accepting no
+            # parameters
             try:
-                inspect.getcallargs(fn, self)
-                @wraps(fn)
-                def wrapper():
-                    return fn(self)
-                return wrapper
+                inspect.getcallargs(fn)
+                return fn
             except TypeError:
                 try:
-                    inspect.getcallargs(fn)
-                    return fn
+                    # If the above fails, try binding with a single parameter
+                    # (ourselves). If this works, wrap the specified callback
+                    inspect.getcallargs(fn, self)
+                    @wraps(fn)
+                    def wrapper():
+                        return fn(self)
+                    return wrapper
                 except TypeError:
                     raise InputDeviceError(
                         'value must be a callable which accepts up to one '
