@@ -22,11 +22,19 @@ class OutputDevice(GPIODevice):
         GPIO.output(self.pin, False)
 
 
-class LED(OutputDevice):
+class DigitalOutputDevice(OutputDevice):
     def __init__(self, pin=None):
-        super(LED, self).__init__(pin)
+        super(DigitalOutputDevice, self).__init__(pin)
         self._blink_thread = None
         self._lock = Lock()
+
+    def on(self):
+        self._stop_blink()
+        super(DigitalOutputDevice, self).on()
+
+    def off(self):
+        self._stop_blink()
+        super(DigitalOutputDevice, self).off()
 
     def blink(self, on_time=1, off_time=1):
         self._stop_blink()
@@ -42,20 +50,12 @@ class LED(OutputDevice):
 
     def _blink_led(self, on_time, off_time):
         while True:
-            super(LED, self).on()
+            super(DigitalOutputDevice, self).on()
             if self._blink_thread.stopping.wait(on_time):
                 break
-            super(LED, self).off()
+            super(DigitalOutputDevice, self).off()
             if self._blink_thread.stopping.wait(off_time):
                 break
-
-    def on(self):
-        self._stop_blink()
-        super(LED, self).on()
-
-    def off(self):
-        self._stop_blink()
-        super(LED, self).off()
 
     def toggle(self):
         with self._lock:
@@ -65,7 +65,11 @@ class LED(OutputDevice):
                 self.on()
 
 
-class Buzzer(OutputDevice):
+class LED(DigitalOutputDevice):
+    pass
+
+
+class Buzzer(DigitalOutputDevice):
     pass
 
 
