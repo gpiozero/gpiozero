@@ -13,6 +13,10 @@ class TrafficLights(object):
         self.green = LED(green)
         self._leds = (self.red, self.amber, self.green)
 
+    @property
+    def leds(self):
+        return self._leds
+
     def on(self):
         for led in self._leds:
             led.on()
@@ -39,6 +43,10 @@ class FishDish(TrafficLights):
         self.buzzer = Buzzer(8)
         self.button = Button(pin=7, pull_up=False)
         self._all = self._leds + (self.buzzer,)
+
+    @property
+    def all(self):
+        return self._all
 
     def on(self):
         for thing in self._all:
@@ -68,6 +76,10 @@ class PiLiter(object):
     def __init__(self):
         leds = (4, 17, 27, 18, 22, 23, 24, 25)
         self._leds = tuple(LED(led) for led in leds)
+
+    @property
+    def leds(self):
+        return self._leds
 
     def on(self):
         for led in self._leds:
