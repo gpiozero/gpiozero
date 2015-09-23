@@ -40,5 +40,3 @@ def gpiozero_shutdown():
 atexit.register(gpiozero_shutdown)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-
-__version__ = '0.3.2'
