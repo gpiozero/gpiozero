@@ -25,11 +25,12 @@ from .output_devices import (
     Robot,
 )
 from .boards import (
+    LEDBoard,
+    PiLiter,
     TrafficLights,
     PiTraffic,
     FishDish,
     TrafficHat,
-    PiLiter,
 )
 
 
