@@ -22,6 +22,9 @@ class InputDeviceError(GPIODeviceError):
 
 
 class InputDevice(GPIODevice):
+    """
+    Generic GPIO Input Device.
+    """
     def __init__(self, pin=None, pull_up=False):
         super(InputDevice, self).__init__(pin)
         self._pull_up = pull_up
@@ -42,6 +45,9 @@ class InputDevice(GPIODevice):
 
 
 class WaitableInputDevice(InputDevice):
+    """
+    A time-dependent Generic Input Device.
+    """
     def __init__(self, pin=None, pull_up=False):
         super(WaitableInputDevice, self).__init__(pin, pull_up)
         self._active_event = Event()
@@ -51,9 +57,23 @@ class WaitableInputDevice(InputDevice):
         self._last_state = None
 
     def wait_for_active(self, timeout=None):
+        """
+        Halt the program until the device is activated, or the timeout is
+        reached.
+
+        timeout: None
+            Number of seconds (?) to wait before proceeding
+        """
         return self._active_event.wait(timeout)
 
     def wait_for_inactive(self, timeout=None):
+        """
+        Halt the program until the device is inactivated, or the timeout is
+        reached.
+
+        timeout: None
+            Number of seconds (?) to wait before proceeding
+        """
         return self._inactive_event.wait(timeout)
 
     def _get_when_activated(self):
@@ -122,6 +142,9 @@ class WaitableInputDevice(InputDevice):
 
 
 class DigitalInputDevice(WaitableInputDevice):
+    """
+    A Generic Digital Input Device.
+    """
     def __init__(self, pin=None, pull_up=False, bouncetime=None):
         super(DigitalInputDevice, self).__init__(pin, pull_up)
         # Yes, that's really the default bouncetime in RPi.GPIO...
@@ -140,6 +163,9 @@ class DigitalInputDevice(WaitableInputDevice):
 
 
 class SmoothedInputDevice(WaitableInputDevice):
+    """
+    A Generic Digital Input Device with background polling.
+    """
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5,
             queue_len=5, sample_wait=0.0, partial=False):
@@ -184,6 +210,9 @@ class SmoothedInputDevice(WaitableInputDevice):
 
 
 class Button(DigitalInputDevice):
+    """
+    A physical push button or switch.
+    """
     def __init__(self, pin=None, pull_up=True, bouncetime=None):
         super(Button, self).__init__(pin, pull_up, bouncetime)
 
@@ -195,6 +224,9 @@ class Button(DigitalInputDevice):
 
 
 class MotionSensor(SmoothedInputDevice):
+    """
+    A PIR (Passive Infra-Red) motion sensor.
+    """
     def __init__(
             self, pin=None, queue_len=5, sample_rate=10, threshold=0.5,
             partial=False):
@@ -214,6 +246,9 @@ class MotionSensor(SmoothedInputDevice):
 
 
 class LightSensor(SmoothedInputDevice):
+    """
+    An LDR (Light Dependent Resistor) Light Sensor.
+    """
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False):
@@ -260,6 +295,9 @@ class LightSensor(SmoothedInputDevice):
 
 
 class TemperatureSensor(W1ThermSensor):
+    """
+    A Digital Temperature Sensor.
+    """
     @property
     def value(self):
         return self.get_temperature()

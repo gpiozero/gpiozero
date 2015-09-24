@@ -10,6 +10,9 @@ class GPIODeviceError(Exception):
 
 
 class GPIODevice(object):
+    """
+    Generic GPIO Device.
+    """
     def __init__(self, pin=None):
         if pin is None:
             raise GPIODeviceError('No GPIO pin number given')
