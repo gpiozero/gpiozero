@@ -62,6 +62,9 @@ class GPIOThread(Thread):
     def stop(self):
         self.stopping.set()
         self.join()
+
+    def join(self):
+        super(GPIOThread, self).join()
         _GPIO_THREADS.discard(self)
 
 

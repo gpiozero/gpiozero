@@ -1,5 +1,6 @@
 from time import sleep
 from threading import Lock
+from itertools import repeat
 
 from RPi import GPIO
 
@@ -42,19 +43,19 @@ class DigitalOutputDevice(OutputDevice):
 
     def on(self):
         """
-        Turn the device on.
+        Turns the device on.
         """
         self._stop_blink()
         super(DigitalOutputDevice, self).on()
 
     def off(self):
         """
-        Turn the device off.
+        Turns the device off.
         """
         self._stop_blink()
         super(DigitalOutputDevice, self).off()
 
-    def blink(self, on_time=1, off_time=1):
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
         Make the device turn on and off repeatedly in the background.
 
@@ -63,12 +64,24 @@ class DigitalOutputDevice(OutputDevice):
 
         off_time: 1
             Number of seconds off
+
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_led, args=(on_time, off_time)
+            target=self._blink_led, args=(on_time, off_time, n)
         )
         self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
 
     def toggle(self):
         """
@@ -81,33 +94,14 @@ class DigitalOutputDevice(OutputDevice):
             else:
                 self.on()
 
-    def flash(self, on_time=1, off_time=1, n=1):
-        """
-        Turn the device on and off a given number of times.
-
-        on_time: 1
-            Number of seconds on
-
-        off_time: 1
-            Number of seconds off
-
-        n: 1
-            Number of iterations
-        """
-        for i in range(n):
-            self.on()
-            sleep(on_time)
-            self.off()
-            if i+1 < n:  # don't sleep on final iteration
-                sleep(off_time)
-
     def _stop_blink(self):
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_led(self, on_time, off_time):
-        while True:
+    def _blink_led(self, on_time, off_time, n):
+        iterable = repeat(0) if n is None else repeat(0, n)
+        for i in iterable:
             super(DigitalOutputDevice, self).on()
             if self._blink_thread.stopping.wait(on_time):
                 break
@@ -132,7 +126,7 @@ class LED(DigitalOutputDevice):
         """
         super(LED, self).off()
 
-    def blink(self, on_time=1, off_time=1):
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
         Make the LED turn on and off repeatedly in the background.
 
@@ -141,8 +135,17 @@ class LED(DigitalOutputDevice):
 
         off_time: 1
             Number of seconds off
+
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
         """
-        super(LED, self).blink(on_time, off_time)
+        super(LED, self).blink(on_time, off_time, n, background)
 
     def toggle(self):
         """
@@ -150,6 +153,7 @@ class LED(DigitalOutputDevice):
         If it's on, turn it off; if it's off, turn it on.
         """
         super(LED, self).toggle()
+
 
 class Buzzer(DigitalOutputDevice):
     """
@@ -167,7 +171,7 @@ class Buzzer(DigitalOutputDevice):
         """
         super(Buzzer, self).off()
 
-    def blink(self, on_time=1, off_time=1):
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
         Make the Buzzer turn on and off repeatedly in the background.
 
@@ -176,8 +180,17 @@ class Buzzer(DigitalOutputDevice):
 
         off_time: 1
             Number of seconds off
+
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
         """
-        super(Buzzer, self).blink()
+        super(Buzzer, self).blink(on_time, off_time, n, background)
 
     def toggle(self):
         """
