@@ -142,7 +142,7 @@ class LED(DigitalOutputDevice):
         off_time: 1
             Number of seconds off
         """
-        super(LED, self).blink()
+        super(LED, self).blink(on_time, off_time)
 
     def toggle(self):
         """
