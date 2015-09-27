@@ -1,6 +1,7 @@
 from __future__ import division
 
 import inspect
+import warnings
 from functools import wraps
 from time import sleep, time
 from threading import Event
@@ -26,6 +27,10 @@ class InputDevice(GPIODevice):
     Generic GPIO Input Device.
     """
     def __init__(self, pin=None, pull_up=False):
+        if pin in (2, 3) and not pull_up:
+            raise InputDeviceError(
+                    'GPIO pins 2 and 3 are fitted with physical pull up '
+                    'resistors; you cannot initialize them with pull_up=False')
         super(InputDevice, self).__init__(pin)
         self._pull_up = pull_up
         self._active_edge = (GPIO.RISING, GPIO.FALLING)[pull_up]
@@ -33,7 +38,17 @@ class InputDevice(GPIODevice):
         if pull_up:
             self._active_state = GPIO.LOW
             self._inactive_state = GPIO.HIGH
-        GPIO.setup(pin, GPIO.IN, (GPIO.PUD_DOWN, GPIO.PUD_UP)[pull_up])
+        # NOTE: catch_warnings isn't thread-safe but hopefully no-one's messing
+        # around with GPIO init within background threads...
+        with warnings.catch_warnings(record=True) as w:
+            GPIO.setup(pin, GPIO.IN, (GPIO.PUD_DOWN, GPIO.PUD_UP)[pull_up])
+        # The only warning we want to squash is a RuntimeWarning that is thrown
+        # when setting pins 2 or 3. Anything else should be replayed
+        for warning in w:
+            if warning.category != RuntimeWarning or pin not in (2, 3):
+                warnings.showwarning(
+                        warning.message, warning.category, warning.filename,
+                        warning.lineno, warning.file, warning.line)
 
     @property
     def pull_up(self):
