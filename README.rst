@@ -4,7 +4,7 @@ gpiozero
 
 A simple interface to everyday GPIO components used with Raspberry Pi
 
-v0.6.0 Public beta
+Latest release: v0.6.0 Public beta
 
 Motivation
 ==========
@@ -59,7 +59,7 @@ Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to t
 
 
 .. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero
-.. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero/issues
 .. _`GitHub`: https://github.com/RPi-Distro/python-gpiozero
+.. _`Issues`: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _`API`: https://github.com/RPi-Distro/python-gpiozero/issues/7
 .. _`Google Doc`: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing
