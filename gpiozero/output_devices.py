@@ -1,3 +1,4 @@
+import warnings
 from time import sleep
 from threading import Lock
 from itertools import repeat
@@ -17,7 +18,17 @@ class OutputDevice(GPIODevice):
     """
     def __init__(self, pin=None):
         super(OutputDevice, self).__init__(pin)
-        GPIO.setup(pin, GPIO.OUT)
+        # NOTE: catch_warnings isn't thread-safe but hopefully no-one's messing
+        # around with GPIO init within background threads...
+        with warnings.catch_warnings(record=True) as w:
+            GPIO.setup(pin, GPIO.OUT)
+        # The only warning we want to squash is a RuntimeWarning that is thrown
+        # when setting pins 2 or 3. Anything else should be replayed
+        for warning in w:
+            if warning.category != RuntimeWarning or pin not in (2, 3):
+                warnings.showwarning(
+                        warning.message, warning.category, warning.filename,
+                        warning.lineno, warning.file, warning.line)
 
     def on(self):
         """
