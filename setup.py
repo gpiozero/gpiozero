@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="gpiozero",
-    version="0.5.0",
+    version="0.6.0",
     author="Ben Nuttall",
     description="A simple interface to everyday GPIO components used with Raspberry Pi",
     license="BSD",
@@ -24,8 +24,9 @@ setup(
     ],
     long_description=read('README.rst'),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Education",
+        "Intended Audience :: Developers",
         "Topic :: Education",
         "Topic :: System :: Hardware",
         "License :: OSI Approved :: BSD License",

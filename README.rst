@@ -4,7 +4,7 @@ gpiozero
 
 A simple interface to everyday GPIO components used with Raspberry Pi
 
-*A work in progress*
+v0.6.0 Public beta
 
 Motivation
 ==========
@@ -28,33 +28,38 @@ Install with pip::
     sudo pip install gpiozero
     sudo pip-3.2 install gpiozero
 
+Both Python 3 and Python 2 are supported. Python 3 is recommended!
+
 Usage
 =====
 
-Example usage for flashing an LED::
+Example usage for lighting up an LED::
 
     from gpiozero import LED
-    from time import sleep
 
     led = LED(2)
 
-    while True:
-        led.on()
-        sleep(1)
-        led.off()
-        sleep(1)
+    led.on()
+
+Documentation
+=============
+
+Comprehensive documentation is available at `pythonhosted.org/gpiozero`_.
 
 Development
 ===========
 
 This project is being developed on `GitHub`_. Join in:
 
-* Provide suggestions
+* Provide suggestions, report bugs and ask questions as `Issues`_
 * Help design the `API`_
 * Contribute to the code
 
-Alternatively, email suggestions and feedback to ben@raspberrypi.org
+Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to the `Google Doc`_.
 
 
+.. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero
+.. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero/issues
 .. _`GitHub`: https://github.com/RPi-Distro/python-gpiozero
 .. _`API`: https://github.com/RPi-Distro/python-gpiozero/issues/7
+.. _`Google Doc`: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing

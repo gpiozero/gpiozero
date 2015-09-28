@@ -7,7 +7,7 @@ from time import sleep
 
 class LEDBoard(object):
     """
-    A Generic LED Board or collecfion of LEDs.
+    A Generic LED Board or collection of LEDs.
     """
     def __init__(self, leds):
         self._leds = tuple(LED(led) for led in leds)
@@ -38,38 +38,27 @@ class LEDBoard(object):
         for led in self._leds:
             led.toggle()
 
-    def blink(self, on_time=1, off_time=1):
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
-        Make all the LEDs turn on and off repeatedly in the background.
+        Make all the LEDs turn on and off repeatedly.
 
         on_time: 1
             Number of seconds to be on
 
         off_time: 1
             Number of seconds to be off
+
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
         """
         for led in self._leds:
-            led.blink(on_time, off_time)
-
-    def flash(self, on_time=1, off_time=1, n=1):
-        """
-        Turn all the LEDs on and off a given number of times.
-
-        on_time: 1
-            Number of seconds on
-
-        off_time: 1
-            Number of seconds off
-
-        n: 1
-            Number of iterations
-        """
-        for i in range(n):
-            self.on()
-            sleep(on_time)
-            self.off()
-            if i+1 < n:  # don't sleep on final iteration
-                sleep(off_time)
+            led.blink(on_time, off_time, n, background)
 
 
 class PiLiter(LEDBoard):
@@ -116,7 +105,7 @@ class PiTraffic(TrafficLights):
 
 class FishDish(TrafficLights):
     """
-    Pi Supply FishDish: horizontal traffic light LEDs, a button and a buzzer.
+    Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
         red, amber, green = (9, 22, 4)
@@ -151,6 +140,28 @@ class FishDish(TrafficLights):
         for thing in self._all:
             thing.toggle()
 
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
+        """
+        Make all the board's components turn on and off repeatedly.
+
+        on_time: 1
+            Number of seconds to be on
+
+        off_time: 1
+            Number of seconds to be off
+
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
+        """
+        for thing in self._all:
+            led.blink(on_time, off_time, n, background)
+
     def lights_on(self):
         """
         Turn all the board's LEDs on.
@@ -170,30 +181,31 @@ class FishDish(TrafficLights):
         """
         super(FishDish, self).toggle()
 
-    def flash_lights(self, on_time=1, off_time=1, n=1):
+    def blink_lights(self, on_time=1, off_time=1, n=None, background=True):
         """
-        Turn all the LEDs on and off a given number of times.
+        Make all the board's LEDs turn on and off repeatedly.
 
         on_time: 1
-            Number of seconds on
+            Number of seconds to be on
 
         off_time: 1
-            Number of seconds off
+            Number of seconds to be off
 
-        n: 1
-            Number of iterations
+        n: None
+            Number of times to blink; None means forever
+
+        background: True
+            If True, start a background thread to continue blinking and return
+            immediately. If False, only return when the blink is finished
+            (warning: the default value of n will result in this method never
+            returning).
         """
-        for i in range(n):
-            [led.on() for led in self.leds]
-            sleep(on_time)
-            [led.off() for led in self.leds]
-            if i+1 < n:  # don't sleep on final iteration
-                sleep(off_time)
+        super(FishDish, self).blink(on_time, off_time, n, background)
 
 
 class TrafficHat(FishDish):
     """
-    Ryanteck Traffic HAT: horizontal traffic light LEDs, a button and a buzzer.
+    Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
         red, amber, green = (22, 23, 24)

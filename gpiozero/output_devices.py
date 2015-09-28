@@ -34,7 +34,7 @@ class OutputDevice(GPIODevice):
 
 class DigitalOutputDevice(OutputDevice):
     """
-    Generic Digital GPIO Output Device (on/off/blink/toggle/flash).
+    Generic Digital GPIO Output Device (on/off/toggle/blink).
     """
     def __init__(self, pin=None):
         super(DigitalOutputDevice, self).__init__(pin)
@@ -55,9 +55,20 @@ class DigitalOutputDevice(OutputDevice):
         self._stop_blink()
         super(DigitalOutputDevice, self).off()
 
+    def toggle(self):
+        """
+        Reverse the state of the device.
+        If it's on, turn it off; if it's off, turn it on.
+        """
+        with self._lock:
+            if self.is_active:
+                self.off()
+            else:
+                self.on()
+
     def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
-        Make the device turn on and off repeatedly in the background.
+        Make the device turn on and off repeatedly.
 
         on_time: 1
             Number of seconds on
@@ -83,17 +94,6 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread.join()
             self._blink_thread = None
 
-    def toggle(self):
-        """
-        Reverse the state of the device.
-        If it's on, turn it off; if it's off, turn it on.
-        """
-        with self._lock:
-            if self.is_active:
-                self.off()
-            else:
-                self.on()
-
     def _stop_blink(self):
         if self._blink_thread:
             self._blink_thread.stop()
@@ -114,104 +114,21 @@ class LED(DigitalOutputDevice):
     """
     An LED (Light Emmitting Diode) component.
     """
-    def on(self):
-        """
-        Turn the LED on.
-        """
-        super(LED, self).on()
-
-    def off(self):
-        """
-        Turn the LED off.
-        """
-        super(LED, self).off()
-
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
-        """
-        Make the LED turn on and off repeatedly in the background.
-
-        on_time: 1
-            Number of seconds on
-
-        off_time: 1
-            Number of seconds off
-
-        n: None
-            Number of times to blink; None means forever
-
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
-        """
-        super(LED, self).blink(on_time, off_time, n, background)
-
-    def toggle(self):
-        """
-        Reverse the state of the LED.
-        If it's on, turn it off; if it's off, turn it on.
-        """
-        super(LED, self).toggle()
+    pass
 
 
 class Buzzer(DigitalOutputDevice):
     """
-    A Buzzer component.
+    A digital Buzzer component.
     """
-    def on(self):
-        """
-        Turn the Buzzer on.
-        """
-        super(Buzzer, self).on()
-
-    def off(self):
-        """
-        Turn the Buzzer off.
-        """
-        super(Buzzer, self).off()
-
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
-        """
-        Make the Buzzer turn on and off repeatedly in the background.
-
-        on_time: 1
-            Number of seconds on
-
-        off_time: 1
-            Number of seconds off
-
-        n: None
-            Number of times to blink; None means forever
-
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
-        """
-        super(Buzzer, self).blink(on_time, off_time, n, background)
-
-    def toggle(self):
-        """
-        Reverse the state of the Buzzer.
-        If it's on, turn it off; if it's off, turn it on.
-        """
-        super(Buzzer, self).toggle()
+    pass
 
 
 class Motor(OutputDevice):
-    def on(self):
-        """
-        Turns the Motor on.
-        """
-        super(Motor, self).toggle()
-
-    def off(self):
-        """
-        Turns the Motor off.
-        """
-        super(Motor, self).toggle()
+    """
+    Generic single-direction motor.
+    """
+    pass
 
 
 class Robot(object):

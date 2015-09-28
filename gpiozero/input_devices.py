@@ -14,7 +14,8 @@ from .devices import GPIODeviceError, GPIODevice, GPIOQueue
 def _alias(key):
     return property(
         lambda self: getattr(self, key),
-        lambda self, val: setattr(self, key, val))
+        lambda self, val: setattr(self, key, val)
+    )
 
 
 class InputDeviceError(GPIODeviceError):
@@ -28,12 +29,12 @@ class InputDevice(GPIODevice):
     def __init__(self, pin=None, pull_up=False):
         super(InputDevice, self).__init__(pin)
         self._pull_up = pull_up
-        self._active_edge = (GPIO.RISING, GPIO.FALLING)[pull_up]
-        self._inactive_edge = (GPIO.FALLING, GPIO.RISING)[pull_up]
-        if pull_up:
-            self._active_state = GPIO.LOW
-            self._inactive_state = GPIO.HIGH
-        GPIO.setup(pin, GPIO.IN, (GPIO.PUD_DOWN, GPIO.PUD_UP)[pull_up])
+        self._active_edge = GPIO.FALLING if pull_up else GPIO.RISING
+        self._inactive_edge = GPIO.RISING if pull_up else GPIO.FALLING
+        self._active_state = GPIO.LOW if pull_up else GPIO.HIGH
+        self._inactive_state = GPIO.HIGH if pull_up else GPIO.LOW
+        pull = GPIO.PUD_UP if pull_up else GPIO.PUD_DOWN
+        GPIO.setup(pin, GPIO.IN, pull)
 
     @property
     def pull_up(self):
@@ -46,7 +47,7 @@ class InputDevice(GPIODevice):
 
 class WaitableInputDevice(InputDevice):
     """
-    A time-dependent Generic Input Device.
+    An action-dependent Generic Input Device.
     """
     def __init__(self, pin=None, pull_up=False):
         super(WaitableInputDevice, self).__init__(pin, pull_up)
@@ -215,6 +216,8 @@ class Button(DigitalInputDevice):
     """
     def __init__(self, pin=None, pull_up=True, bouncetime=None):
         super(Button, self).__init__(pin, pull_up, bouncetime)
+
+    is_pressed = alias('is_active')
 
     when_pressed = _alias('when_activated')
     when_released = _alias('when_deactivated')
