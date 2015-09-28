@@ -254,6 +254,34 @@ button.when_pressed = things_on
 button.when_released = things_off
 ```
 
+## RGB LED
+
+Making colours with an RGB LED:
+
+```python
+from gpiozero import RGBLED
+from time import sleep
+
+led = RGBLED(red=9, green=10, blue=11)
+
+led.red = 100  # full red
+led.red = 50  # half red
+
+led.rgb = (0, 100, 0)  # full green
+
+led.rgb = (100, 0, 100)  # magenta
+led.rgb = (100, 100, 0)  # yellow
+led.rgb = (0, 100, 100)  # cyan
+led.rgb = (100, 100, 100)  # white
+
+led.rgb = (0, 0, 0)  # off
+
+# slowly increase intensity of blue
+for n in range(100):
+    led.blue += 1
+    sleep(0.1)
+```
+
 ## Motion Sensor
 
 Light an LED when motion is detected:

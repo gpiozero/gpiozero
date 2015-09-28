@@ -30,8 +30,9 @@ class InputDevice(GPIODevice):
     def __init__(self, pin=None, pull_up=False):
         if pin in (2, 3) and not pull_up:
             raise InputDeviceError(
-                    'GPIO pins 2 and 3 are fitted with physical pull up '
-                    'resistors; you cannot initialize them with pull_up=False')
+                'GPIO pins 2 and 3 are fitted with physical pull up '
+                'resistors; you cannot initialize them with pull_up=False'
+            )
         super(InputDevice, self).__init__(pin)
         self._pull_up = pull_up
         self._active_edge = GPIO.FALLING if pull_up else GPIO.RISING

@@ -27,8 +27,9 @@ class OutputDevice(GPIODevice):
         for warning in w:
             if warning.category != RuntimeWarning or pin not in (2, 3):
                 warnings.showwarning(
-                        warning.message, warning.category, warning.filename,
-                        warning.lineno, warning.file, warning.line)
+                    warning.message, warning.category, warning.filename,
+                    warning.lineno, warning.file, warning.line
+                )
 
     def on(self):
         """
@@ -133,6 +134,113 @@ class Buzzer(DigitalOutputDevice):
     A digital Buzzer component.
     """
     pass
+
+
+class PWMOutputDevice(DigitalOutputDevice):
+    """
+    Generic Output device configured for PWM (Pulse-Width Modulation).
+    """
+    def __init__(self, pin):
+        super(PWMOutputDevice, self).__init__(pin)
+        self._frequency = 100
+        self._pwm = GPIO.PWM(self._pin, self._frequency)
+        self._pwm.start(0)
+        self.value = 0
+
+    def on(self):
+        """
+        Turn the device on
+        """
+        self.value = 100
+
+    def off(self):
+        """
+        Turn the device off
+        """
+        self.value = 0
+
+    def toggle(self):
+        """
+        Reverse the state of the device.
+        If it's on (a value greater than 0), turn it off; if it's off, turn it
+        on.
+        """
+        self.value = 100 if self.value == 0 else 0
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, n):
+        self._pwm.ChangeDutyCycle(n)
+        self._value = n
+
+
+class RGBLED(object):
+    """
+    Single LED with individually controllable Red, Green and Blue components.
+    """
+    def __init__(self, red=None, green=None, blue=None):
+        if not all([red, green, blue]):
+            raise GPIODeviceError('Red, Green and Blue pins must be provided')
+
+        self._red = PWMOutputDevice(red)
+        self._green = PWMOutputDevice(green)
+        self._blue = PWMOutputDevice(blue)
+        self._leds = (self._red, self._green, self._blue)
+
+    def on(self):
+        """
+        Turn the device on
+        """
+        for led in self._leds:
+            led.on()
+
+    def off(self):
+        """
+        Turn the device off
+        """
+        for led in self._leds:
+            led.off()
+
+    @property
+    def red(self):
+        return self._red.value
+
+    @red.setter
+    def red(self, value):
+        self._red.value = value
+
+    @property
+    def green(self):
+        return self._green.value
+
+    @green.setter
+    def green(self, value):
+        self._green.value = value
+
+    @property
+    def blue(self):
+        return self._blue.value
+
+    @blue.setter
+    def blue(self, value):
+        self._blue.value = value
+
+    @property
+    def rgb(self):
+        r = self._red.value
+        g = self._green.value
+        b = self._blue.value
+        return (r, g, b)
+
+    @rgb.setter
+    def rgb(self, values):
+        r, g, b = values
+        self._red.value = r
+        self._green.value = g
+        self._blue.value = b
 
 
 class Motor(OutputDevice):

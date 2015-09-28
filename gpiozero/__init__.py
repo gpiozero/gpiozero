@@ -19,10 +19,12 @@ from .input_devices import (
 )
 from .output_devices import (
     OutputDevice,
+    PWMOutputDevice,
     LED,
     Buzzer,
     Motor,
     Robot,
+    RGBLED,
 )
 from .boards import (
     LEDBoard,

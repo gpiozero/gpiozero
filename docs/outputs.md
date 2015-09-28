@@ -82,6 +82,50 @@ buzzer = Buzzer(3)
 | `pin`    | The GPIO pin number the buzzer is connected to. | Integer |
 | `is_active` | The current state of the pin (`True` if on; `False` if off). | Boolean |
 
+## RGB LED
+
+A full colour LED component (made up of Red, Green and Blue LEDs).
+
+### Wiring
+
+...
+
+### Code
+
+Ensure the `RGBLED` class is imported at the top of the file:
+
+```python
+from gpiozero import RGBLED
+```
+
+Create a `RGBLED` object by passing in the LED pin numbers by name:
+
+```python
+led = RGBLED(red=2, green=3, blue=4)
+```
+
+or just in order (red, green, blue):
+
+```python
+led = RGBLED(2, 3, 4)
+```
+
+### Methods
+
+| Method | Description | Arguments |
+| ------ | ----------- | --------- |
+| `on()` | Turn all the LEDs on (makes white light). | None |
+| `off()` | Turn all the LEDs off. | None |
+
+### Properties
+
+| Property | Description | Type |
+| -------- | ----------- | ---- |
+| `red`    | The brightness value of the red LED (0 to 100).     | Integer |
+| `green`  | The brightness value of the green LED (0 to 100).   | Integer |
+| `blue`   | The brightness value of the blue LED (0 to 100).    | Integer |
+| `rgb`    | The brightness values of the three LEDs (0 to 100). | Tuple   |
+
 ## Motor
 
 Generic single-direction motor.
