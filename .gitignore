@@ -1,4 +1,5 @@
 *.py[cdo]
+pythonhosted/
 
 # Editor detritus
 *.vim
