@@ -4,27 +4,14 @@ A simple interface to everyday GPIO components used with Raspberry Pi
 
 ## Latest release
 
-The latest release is **v0.6.0 public beta 1** released on 28th September 2015.
+The latest release is **v0.6.0 beta 1** released on 28th September 2015.
 
 ## Motivation
 
 The "hello world" program in Java is at least 5 lines long, and contains 11
 jargon words which are to be ignored. The "hello world" program in Python is
 one simple line. However, the "hello world" of physical computing in Python
-(flashing an LED) is similar to the Java program:
-
-```python
-import RPi.GPIO as GPIO
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-red = 2
-
-GPIO.setup(red, GPIO.OUT)
-
-GPIO.output(red, True)
-```
+(flashing an LED) is similar to the Java program.
 
 6 lines of code to flash an LED. And skipping over why `GPIO` is used twice in
 the first line; what `BCM` means; why set warnings to False; and so on. Young
@@ -45,7 +32,7 @@ Any guesses how to turn it off?
 
 ## Install
 
-Install with pip::
+Install with pip:
 
 ```bash
 sudo apt-get install python-pip python3-pip
