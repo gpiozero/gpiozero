@@ -129,7 +129,7 @@ while True:
 Capture a picture with the camera module every time a button is pressed:
 
 ```python
-from gpiozero import button
+from gpiozero import Button
 from picamera import PiCamera
 
 button = Button(17)
