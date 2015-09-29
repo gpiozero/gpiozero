@@ -1,11 +1,6 @@
 from __future__ import absolute_import
 
-import atexit
-
-from RPi import GPIO
-
 from .devices import (
-    _gpio_threads_shutdown,
     GPIODeviceError,
     GPIODevice,
 )
@@ -35,11 +30,3 @@ from .boards import (
     TrafficHat,
 )
 
-
-def gpiozero_shutdown():
-    _gpio_threads_shutdown()
-    GPIO.cleanup()
-
-atexit.register(gpiozero_shutdown)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
