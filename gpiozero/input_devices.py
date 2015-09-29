@@ -9,7 +9,7 @@ from threading import Event
 from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 
-from .devices import GPIODeviceError, GPIODevice, GPIOQueue
+from .devices import GPIODeviceError, GPIODeviceClosed, GPIODevice, GPIOQueue
 
 
 def _alias(key):
@@ -33,8 +33,12 @@ class InputDevice(GPIODevice):
                 'GPIO pins 2 and 3 are fitted with physical pull up '
                 'resistors; you cannot initialize them with pull_up=False'
             )
-        super(InputDevice, self).__init__(pin)
+        # _pull_up should be assigned first as __repr__ relies upon it to
+        # support the case where __repr__ is called during debugging of an
+        # instance that has failed to initialize (due to an exception in the
+        # super-class __init__)
         self._pull_up = pull_up
+        super(InputDevice, self).__init__(pin)
         self._active_edge = GPIO.FALLING if pull_up else GPIO.RISING
         self._inactive_edge = GPIO.RISING if pull_up else GPIO.FALLING
         self._active_state = GPIO.LOW if pull_up else GPIO.HIGH
@@ -59,8 +63,11 @@ class InputDevice(GPIODevice):
         return self._pull_up
 
     def __repr__(self):
-        return "<gpiozero.%s object on pin=%d, pull_up=%s, is_active=%s>" % (
-            self.__class__.__name__, self.pin, self.pull_up, self.is_active)
+        try:
+            return "<gpiozero.%s object on pin=%d, pull_up=%s, is_active=%s>" % (
+                self.__class__.__name__, self.pin, self.pull_up, self.is_active)
+        except:
+            return super(InputDevice, self).__repr__()
 
 
 class WaitableInputDevice(InputDevice):
@@ -174,9 +181,6 @@ class DigitalInputDevice(WaitableInputDevice):
         # Call _fire_events once to set initial state of events
         super(DigitalInputDevice, self)._fire_events()
 
-    def __del__(self):
-        GPIO.remove_event_detect(self.pin)
-
     def _fire_events(self, channel):
         super(DigitalInputDevice, self)._fire_events()
 
@@ -188,27 +192,50 @@ class SmoothedInputDevice(WaitableInputDevice):
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5,
             queue_len=5, sample_wait=0.0, partial=False):
+        self._queue = None
         super(SmoothedInputDevice, self).__init__(pin, pull_up)
         self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
         self.threshold = float(threshold)
 
+    def close(self):
+        try:
+            self._queue.stop()
+        except AttributeError:
+            if self._queue is not None:
+                raise
+        except RuntimeError:
+            # Cannot join thread before it starts; we don't care about this
+            # because we're trying to close the thread anyway
+            pass
+        else:
+            self._queue = None
+        super(SmoothedInputDevice, self).close()
+
     def __repr__(self):
-        if self.partial or self._queue.full.wait(0):
+        try:
+            self._check_open()
+        except GPIODeviceClosed:
             return super(SmoothedInputDevice, self).__repr__()
         else:
-            return "<gpiozero.%s object on pin=%d, pull_up=%s>" % (
-                self.__class__.__name__, self.pin, self.pull_up)
+            if self.partial or self._queue.full.wait(0):
+                return super(SmoothedInputDevice, self).__repr__()
+            else:
+                return "<gpiozero.%s object on pin=%d, pull_up=%s>" % (
+                    self.__class__.__name__, self.pin, self.pull_up)
 
     @property
     def queue_len(self):
+        self._check_open()
         return self._queue.queue.maxlen
 
     @property
     def partial(self):
+        self._check_open()
         return self._queue.partial
 
     @property
     def value(self):
+        self._check_open()
         return self._queue.value
 
     def _get_threshold(self):
@@ -283,9 +310,6 @@ class LightSensor(SmoothedInputDevice):
             self.pin, GPIO.RISING, lambda channel: self._charged.set()
         )
         self._queue.start()
-
-    def __del__(self):
-        GPIO.remove_event_detect(self.pin)
 
     @property
     def charge_time_limit(self):
