@@ -57,9 +57,19 @@ This project is being developed on `GitHub`_. Join in:
 
 Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to the `Google Doc`_.
 
+Contributors
+============
+
+- `Ben Nuttall`_ (project maintainer)
+- `Dave Jones`_
+- `Martin O'Hanlon`_
+
 
 .. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero
 .. _`GitHub`: https://github.com/RPi-Distro/python-gpiozero
 .. _`Issues`: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _`API`: https://github.com/RPi-Distro/python-gpiozero/issues/7
 .. _`Google Doc`: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing
+.. _`Ben Nuttall`: https://github.com/bennuttall
+.. _`Dave Jones`: https://github.com/waveform80
+.. _`Martin O'Hanlon`: https://github.com/martinohanlon
