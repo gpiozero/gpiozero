@@ -28,7 +28,7 @@ Create a `Button` object by passing in the pin number the button is connected to
 button = Button(2)
 ```
 
-The default bahaviour is to set the *pull* state of the button to *up*. To change this behaviour, set the `pull_up` argument to `False` when creating your `Button` object.
+The default behaviour is to set the *pull* state of the button to *up*. To change this behaviour, set the `pull_up` argument to `False` when creating your `Button` object.
 
 ```python
 button = Button(pin=2, pull_up=False)
@@ -39,7 +39,7 @@ button = Button(pin=2, pull_up=False)
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
 | `wait_for_press()` | Halt the program until the button is pressed. | `timeout` - The number of seconds to wait before proceeding if no event is detected. Default: `None` |
-| `wait_for_release()` | Halt the program until the button is released. | `timeout`- The number of seconds to wait before proceeding if no event is detected. Default: `None`  |
+| `wait_for_release()` | Halt the program until the button is released. | `timeout` - The number of seconds to wait before proceeding if no event is detected. Default: `None`  |
 
 ### Properties
 
@@ -140,3 +140,35 @@ temp = TemperatureSensor()
 ### Methods
 
 ...
+
+## MCP3008 Analogue-to-Digital Converter
+
+MCP3008 ADC (Analogue-to-Digital converter).
+
+The MCP3008 chip provides access to up to 8 analogue inputs, such as potentiometers, and read their values in digital form.
+
+### Wiring
+
+...
+
+### Code
+
+Ensure the `MCP3008` class is imported at the top of the file:
+
+```python
+from gpiozero import MCP3008
+```
+
+Access an input value with the `MCP3008`'s context manager:
+
+```python
+with MCP3008() as pot:
+    print(pot.read())
+```
+
+It is possible to specify the `bus`, the `device` and the `channel` you wish to access. The previous example used the default value of `0` for each of these. To specify them, pass them in as arguments:
+
+```python
+with MCP3008(bus=1, device=1, channel=4) as pot:
+    print(pot.read())
+```
