@@ -21,6 +21,7 @@ setup(
     install_requires=[
         "RPi.GPIO",
         "w1thermsensor",
+        "spidev",
     ],
     long_description=read('README.rst'),
     classifiers=[

@@ -343,3 +343,36 @@ sleep(5)
 left_motor.off()
 right_motor.off()
 ```
+
+## Potentiometer
+
+Continually print the value of a potentiometer (values between 0 and 1023):
+
+```python
+from gpiozero import MCP3008
+
+while True:
+    with MCP3008(channel=0) as pot:
+        print(pot.read())
+```
+
+## Full Colour LED controlled by 3 Potentiometers
+
+Wire up three potentiometers (for red, green and blue) and use each of their values to make up the colour of the LED:
+
+```python
+from gpiozero import RGBLED, MCP3008
+
+def read_pot(channel):
+    with MCP3008(channel=channel) as pot:
+        return 100 * pot.read() / 1023
+
+led = RGBLED(red=2, green=3, blue=4)
+
+while True:
+    red = read_pot(0)
+    green = read_pot(1)
+    blue = read_pot(2)
+    led.rgb = (red, green, blue)
+    print(red, green, blue)
+```

@@ -8,6 +8,7 @@ from threading import Event
 
 from RPi import GPIO
 from w1thermsensor import W1ThermSensor
+from spidev import SpiDev
 
 from .devices import GPIODeviceError, GPIODeviceClosed, GPIODevice, GPIOQueue
 
@@ -346,3 +347,32 @@ class TemperatureSensor(W1ThermSensor):
     @property
     def value(self):
         return self.get_temperature()
+
+
+class MCP3008(object):
+    """
+    MCP3008 ADC (Analogue-to-Digital converter).
+    """
+    def __init__(self, bus=0, device=0, channel=0):
+        self.bus = bus
+        self.device = device
+        self.channel = channel
+        self.spi = SpiDev()
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def open(self):
+        self.spi.open(self.bus, self.device)
+
+    def read(self):
+        adc = self.spi.xfer2([1, (8 + self.channel) << 4, 0])
+        data = ((adc[1] & 3) << 8) + adc[2]
+        return data
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
+        self.spi.close()

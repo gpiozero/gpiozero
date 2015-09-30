@@ -11,6 +11,7 @@ from .input_devices import (
     MotionSensor,
     LightSensor,
     TemperatureSensor,
+    MCP3008,
 )
 from .output_devices import (
     OutputDevice,
@@ -29,4 +30,3 @@ from .boards import (
     FishDish,
     TrafficHat,
 )
-
