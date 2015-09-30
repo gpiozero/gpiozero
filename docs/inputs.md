@@ -38,8 +38,8 @@ button = Button(pin=2, pull_up=False)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `wait_for_press()` | Halt the program until the button is pressed. | `timeout=None` |
-| `wait_for_release()` | Halt the program until the button is released. | `timeout=None` |
+| `wait_for_press()` | Halt the program until the button is pressed. | `timeout` - The number of seconds to wait before proceeding if no event is detected. Default: `None` |
+| `wait_for_release()` | Halt the program until the button is released. | `timeout`- The number of seconds to wait before proceeding if no event is detected. Default: `None`  |
 
 ### Properties
 

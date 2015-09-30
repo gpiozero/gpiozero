@@ -1,6 +1,6 @@
 # Notes
 
-1. BCM pin numbering
+1. **BCM pin numbering**
 
     This library uses BCM pin numbering for the GPIO pins, as opposed to BOARD. Unlike the `RPi.GPIO` library, it is not configurable.
 
@@ -36,6 +36,48 @@
     - *5V = 5 Volts*
     - *DNC = Do not connect (special use pins)*
 
-1. Wiring
+1. **Wiring**
 
     All components must be wired up correctly before using with this library.
+
+1. **Keep your program alive with `signal.pause`**
+
+    The following program looks like it should turn an LED on:
+
+    ```python
+    from gpiozero import led
+
+    led = LED(2)
+
+    led.on()
+    ```
+
+    And it does, if you're using the Python shell, IPython shell or IDLE shell, but if you saved this program as a Python file and ran it, it would flash on for a moment then the program would end and it would turn off.
+
+    The following file includes an intentional `pause` to keep the program alive:
+
+    ```python
+    from gpiozero import LED
+    from signal import pause
+
+    led = LED(2)
+
+    led.on()
+
+    pause()
+    ```
+
+    Now running the program will stay running, leaving the LED on, until it is forced to quit.
+
+    Similarly, when setting up callbacks on button presses or other input devices, the program needs to be running for the events to be detected:
+
+    ```python
+    from gpiozero import Button
+    from signal import pause
+
+    button = Button(2)
+
+    button.when_pressed = lambda: print("Button was pressed!")
+
+    pause()
+    ```

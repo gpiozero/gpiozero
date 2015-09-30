@@ -35,7 +35,10 @@ led = LED(2)
 | `on()` | Turn the LED on. | None |
 | `off()` | Turn the LED off. | None |
 | `toggle()` | Toggle the LED. If it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make the LED turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()` | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|           |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|           |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|           |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -73,7 +76,10 @@ buzzer = Buzzer(3)
 | `on()` | Turn the buzzer on. | None |
 | `off()` | Turn the buzzer off. | None |
 | `toggle()` | Toggle the buzzer. If it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make the buzzer turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()` | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|           |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|           |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|           |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -116,6 +122,7 @@ led = RGBLED(2, 3, 4)
 | ------ | ----------- | --------- |
 | `on()` | Turn all the LEDs on (makes white light). | None |
 | `off()` | Turn all the LEDs off. | None |
+| `toggle()` | Toggle the LED. If it's on (at all), turn it off; if it's off, turn it on. | None |
 
 ### Properties
 

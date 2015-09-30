@@ -1,5 +1,7 @@
 # Recipes
 
+*Note that reaching the end of a Python file will terminate the process and GPIOs may be reset. Keep your program alive with `signal.pause` - see the [notes](notes.md) page for more information.*
+
 ## LED
 
 Turn an LED on and off repeatedly:
