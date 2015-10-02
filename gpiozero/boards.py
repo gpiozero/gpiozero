@@ -231,7 +231,8 @@ class Robot(object):
 
     def left(self, seconds=None):
         """
-        Turn left. If seconds given, stop after given number of seconds.
+        Make the robot turn left. If seconds given, stop after given number of
+        seconds.
 
         seconds: None
             Number of seconds to turn left for
@@ -245,7 +246,8 @@ class Robot(object):
 
     def right(self, seconds=None):
         """
-        Turn right. If seconds given, stop after given number of seconds.
+        Make the robot turn right. If seconds given, stop after given number of
+        seconds.
 
         seconds: None
             Number of seconds to turn right for
@@ -259,7 +261,7 @@ class Robot(object):
 
     def forward(self, seconds=None):
         """
-        Drive forward. If seconds given, stop after given number of seconds.
+        Drive the robot forward. If seconds given, stop after given number of seconds.
 
         seconds: None
             Number of seconds to drive forward for
@@ -273,7 +275,7 @@ class Robot(object):
 
     def backward(self, seconds=None):
         """
-        Drive backward. If seconds given, stop after given number of seconds.
+        Drive the robot backward. If seconds given, stop after given number of seconds.
 
         seconds: None
             Number of seconds to drive backward for
@@ -287,13 +289,16 @@ class Robot(object):
 
     def stop(self):
         """
-        Stop both motors.
+        Stop the robot.
         """
         self._left.stop()
         self._right.stop()
 
 
 class RyanteckRobot(Robot):
+    """
+    RTK MCB Robot. Generic robot controller with pre-configured pin numbers.
+    """
     def __init__(self):
         left = (17, 18)
         right = (22, 23)

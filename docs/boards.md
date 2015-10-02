@@ -8,6 +8,8 @@ These additional interfaces have been provided to group collections of component
 
 A Generic LED Board or collection of LEDs.
 
+### Code
+
 Ensure the `LEDBoard` class is imported at the top of the file:
 
 ```python
@@ -38,6 +40,8 @@ leds = LEDBoard([2, 3, 4, 5, 6])
 ## Traffic Lights
 
 Generic Traffic Lights set.
+
+### Code
 
 Ensure the `TrafficLights` class is imported at the top of the file:
 
@@ -78,6 +82,8 @@ traffic = TrafficLights(2, 3, 4)
 ## PiLITEr
 
 Ciseco Pi-LITEr: strip of 8 very bright LEDs.
+
+### Code
 
 Ensure the `PiLiter` class is imported at the top of the file:
 
@@ -148,6 +154,8 @@ To use the PI-TRAFFIC board on another set of pins, just use the generic `Traffi
 
 Pi Supply Fish Dish: traffic light LEDs, a button and a buzzer.
 
+### Code
+
 Ensure the `FishDish` class is imported at the top of the file:
 
 ```python
@@ -189,6 +197,8 @@ fish = FishDish()
 
 Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
 
+### Code
+
 Ensure the `TrafficHat` class is imported at the top of the file:
 
 ```python
@@ -225,3 +235,43 @@ traffic = TrafficHat()
 | `button` | Direct access to the button as a single `Button` object. | LED |
 | `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
 | `all`    | A collection of the board's output components to access each one individually, or to iterate over them in sequence. | Tuple |
+
+## Traffic HAT
+
+Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
+
+### Code
+
+Ensure the `Robot` class is imported at the top of the file:
+
+```python
+from gpiozero import Robot
+```
+
+Create a `Robot` object by passing in the pin numbers of the forward and back pairs for each motor:
+
+```python
+robot = Robot(left=(4, 14), right=(17, 18))
+```
+
+### Methods
+
+| Method | Description | Arguments |
+| ------ | ----------- | --------- |
+| `forward()` | Drive the robot forwards. | `seconds` - The number of seconds to drive for. If `None`, stay on. Default: `None` |
+| `backward()` | Drive the robot backwards. | `seconds` - The number of seconds to drive for. If `None`, stay on. Default: `None` |
+| `left()` | Make the robot turn left. | `seconds` - The number of seconds to turn for. If `None`, stay on. Default: `None` |
+| `right()` | Make the robot turn right. | `seconds` - The number of seconds to turn for. If `None`, stay on. Default: `None` |
+| `stop()` | Stop the robot. | None |
+
+## Ryanteck MCB Robot
+
+Generic robot controller with pre-configured pin numbers.
+
+Same interface as generic `Robot` class, without the need to configure pins:
+
+```python
+from gpiozero import RyanteckRobot
+
+robot = RyanteckRobot()
+```

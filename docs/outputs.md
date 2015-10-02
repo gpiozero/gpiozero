@@ -149,22 +149,16 @@ Ensure the `Motor` class is imported at the top of the file:
 from gpiozero import Motor
 ```
 
-Create a `Motor` object by passing in the pin number the motor is connected to:
+Create a `Motor` object by passing in the pin numbers the motor is connected to:
 
 ```python
-motor = Motor(4)
+motor = Motor(forward=17, back=18)
 ```
 
 ### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn the motor on. | None |
-| `off()` | Turn the motor off. | None |
-
-### Properties
-
-| Property | Description | Type |
-| -------- | ----------- | ---- |
-| `pin`    | The GPIO pin number the motor is connected to. | Integer |
-| `is_active` | The current state of the pin (`True` if on; `False` if off). | Boolean |
+| `forward()` | Drive the motor forwards. | `seconds` - The number of seconds to stay on for. If `None`, stay on. Default: `None` |
+| `backward()` | Drive the motor backwards. | `seconds` - The number of seconds to stay on for. If `None`, stay on. Default: `None` |
+| `stop()` | Stop the motor. | None |

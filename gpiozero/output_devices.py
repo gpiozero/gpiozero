@@ -256,14 +256,14 @@ class Motor(object):
 
     def forward(self):
         """
-        Turn the motor on, forwards
+        Drive the motor forwards
         """
         self._forward.on()
         self._backward.off()
 
     def backward(self):
         """
-        Turn the motor on, backwards
+        Drive the motor backwards
         """
         self._backward.on()
         self._forward.off()
