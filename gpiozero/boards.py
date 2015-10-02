@@ -1,5 +1,5 @@
 from .input_devices import Button
-from .output_devices import LED, Buzzer
+from .output_devices import LED, Buzzer, Motor
 from .devices import GPIODeviceError
 
 from time import sleep
@@ -213,3 +213,88 @@ class TrafficHat(FishDish):
         self.buzzer = Buzzer(5)
         self.button = Button(25)
         self._all = self._leds + (self.buzzer,)
+
+
+class Robot(object):
+    """
+    Generic dual-motor Robot.
+    """
+    def __init__(self, left=None, right=None):
+        if not all([left, right]):
+            raise GPIODeviceError('left and right motor pins must be provided')
+
+        left_forward, left_back = left
+        right_forward, right_back = right
+
+        self._left = Motor(forward=left_forward, back=left_back)
+        self._right = Motor(forward=right_forward, back=right_back)
+
+    def left(self, seconds=None):
+        """
+        Turn left. If seconds given, stop after given number of seconds.
+
+        seconds: None
+            Number of seconds to turn left for
+        """
+        self._left.forward()
+        self._right.backward()
+        if seconds is not None:
+            sleep(seconds)
+            self._left.stop()
+            self._right.stop()
+
+    def right(self, seconds=None):
+        """
+        Turn right. If seconds given, stop after given number of seconds.
+
+        seconds: None
+            Number of seconds to turn right for
+        """
+        self._right.forward()
+        self._left.backward()
+        if seconds is not None:
+            sleep(seconds)
+            self._left.stop()
+            self._right.stop()
+
+    def forward(self, seconds=None):
+        """
+        Drive forward. If seconds given, stop after given number of seconds.
+
+        seconds: None
+            Number of seconds to drive forward for
+        """
+        self._left.forward()
+        self._right.forward()
+        if seconds is not None:
+            sleep(seconds)
+            self._left.stop()
+            self._right.stop()
+
+    def backward(self, seconds=None):
+        """
+        Drive backward. If seconds given, stop after given number of seconds.
+
+        seconds: None
+            Number of seconds to drive backward for
+        """
+        self._left.backward()
+        self._right.backward()
+        if seconds is not None:
+            sleep(seconds)
+            self._left.stop()
+            self._right.stop()
+
+    def stop(self):
+        """
+        Stop both motors.
+        """
+        self._left.stop()
+        self._right.stop()
+
+
+class RyanteckRobot(Robot):
+    def __init__(self):
+        left = (17, 18)
+        right = (22, 23)
+        super(RyanteckRobot, self).__init__(left=left, right=right)

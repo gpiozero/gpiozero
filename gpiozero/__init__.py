@@ -19,7 +19,6 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
-    Robot,
     RGBLED,
 )
 from .boards import (
@@ -29,4 +28,6 @@ from .boards import (
     PiTraffic,
     FishDish,
     TrafficHat,
+    Robot,
+    RyanteckRobot,
 )

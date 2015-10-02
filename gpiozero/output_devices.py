@@ -243,64 +243,34 @@ class RGBLED(object):
         self._blue.value = b
 
 
-class Motor(OutputDevice):
+class Motor(object):
     """
-    Generic single-direction motor.
+    Generic bi-directional motor.
     """
-    pass
+    def __init__(self, forward=None, back=None):
+        if not all([forward, back]):
+            raise GPIODeviceError('forward and back pins must be provided')
 
+        self._forward = OutputDevice(forward)
+        self._backward = OutputDevice(back)
 
-class Robot(object):
-    """
-    Generic single-direction dual-motor Robot.
-    """
-    def __init__(self, left=None, right=None):
-        if not all([left, right]):
-            raise GPIODeviceError('left and right pins must be provided')
-
-        self._left = Motor(left)
-        self._right = Motor(right)
-
-    def left(self, seconds=None):
+    def forward(self):
         """
-        Turns left for a given number of seconds.
-
-        seconds: None
-            Number of seconds to turn left for
+        Turn the motor on, forwards
         """
-        self._left.on()
-        if seconds is not None:
-            sleep(seconds)
-            self._left.off()
+        self._forward.on()
+        self._backward.off()
 
-    def right(self, seconds=None):
+    def backward(self):
         """
-        Turns right for a given number of seconds.
-
-        seconds: None
-            Number of seconds to turn right for
+        Turn the motor on, backwards
         """
-        self._right.on()
-        if seconds is not None:
-            sleep(seconds)
-            self._right.off()
-
-    def forwards(self, seconds=None):
-        """
-        Drives forward for a given number of seconds.
-
-        seconds: None
-            Number of seconds to drive forward for
-        """
-        self.left()
-        self.right()
-        if seconds is not None:
-            sleep(seconds)
-            self.stop()
+        self._backward.on()
+        self._forward.off()
 
     def stop(self):
         """
-        Stops both motors.
+        Stop the motor
         """
-        self._left.off()
-        self._right.off()
+        self._forward.off()
+        self._backward.off()
