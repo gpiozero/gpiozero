@@ -13,10 +13,13 @@ from spidev import SpiDev
 from .devices import GPIODeviceError, GPIODeviceClosed, GPIODevice, GPIOQueue
 
 
-def _alias(key):
+def _alias(key, doc=None):
+    if doc is None:
+        doc = 'Alias for %s' % key
     return property(
         lambda self: getattr(self, key),
-        lambda self, val: setattr(self, key, val)
+        lambda self, val: setattr(self, key, val),
+        doc=doc
     )
 
 
@@ -26,7 +29,21 @@ class InputDeviceError(GPIODeviceError):
 
 class InputDevice(GPIODevice):
     """
-    Generic GPIO Input Device.
+    Represents a generic GPIO input device.
+
+    This class extends `GPIODevice` to add facilities common to GPIO input
+    devices.  The constructor adds the optional `pull_up` parameter to specify
+    how the pin should be pulled by the internal resistors. The `is_active`
+    property is adjusted accordingly so that `True` still means active
+    regardless of the `pull_up` setting.
+
+    pin: `None`
+        The GPIO pin (in BCM numbering) that the device is connected to. If
+        this is `None` a GPIODeviceError will be raised.
+
+    pull_up: `False`
+        If `True`, the pin will be pulled high with an internal resistor. If
+        `False` (the default), the pin will be pulled low.
     """
     def __init__(self, pin=None, pull_up=False):
         if pin in (2, 3) and not pull_up:
@@ -73,7 +90,16 @@ class InputDevice(GPIODevice):
 
 class WaitableInputDevice(InputDevice):
     """
-    An action-dependent Generic Input Device.
+    Represents a generic input device with distinct waitable states.
+
+    This class extends `InputDevice` with methods for waiting on the device's
+    status (`wait_for_active` and `wait_for_inactive`), and properties that
+    hold functions to be called when the device changes state (`when_activated`
+    and `when_deactivated`). These are aliased appropriately in various
+    subclasses.
+
+    Note that this class provides no means of actually firing its events; it's
+    effectively an abstract base class.
     """
     def __init__(self, pin=None, pull_up=False):
         super(WaitableInputDevice, self).__init__(pin, pull_up)
@@ -88,18 +114,20 @@ class WaitableInputDevice(InputDevice):
         Halt the program until the device is activated, or the timeout is
         reached.
 
-        timeout: None
-            Number of seconds (?) to wait before proceeding
+        timeout: `None`
+            Number of seconds to wait before proceeding. If this is `None` (the
+            default), then wait indefinitely until the device is active.
         """
         return self._active_event.wait(timeout)
 
     def wait_for_inactive(self, timeout=None):
         """
-        Halt the program until the device is inactivated, or the timeout is
+        Halt the program until the device is deactivated, or the timeout is
         reached.
 
-        timeout: None
-            Number of seconds (?) to wait before proceeding
+        timeout: `None`
+            Number of seconds to wait before proceeding. If this is `None` (the
+            default), then wait indefinitely until the device is inactive.
         """
         return self._inactive_event.wait(timeout)
 
@@ -109,7 +137,20 @@ class WaitableInputDevice(InputDevice):
     def _set_when_activated(self, value):
         self._when_activated = self._wrap_callback(value)
 
-    when_activated = property(_get_when_activated, _set_when_activated)
+    when_activated = property(_get_when_activated, _set_when_activated, doc="""\
+        The function to run when the device changes state from inactive to
+        active.
+
+        This can be set to a function which accepts no (mandatory) parameters,
+        or a function which accepts a single mandatory parameter (with as many
+        optional parameters as you like). If the function accepts a single
+        mandatory parameter, the device that activates will be passed as that
+        parameter.
+
+        Set this property to `None` (the default) to disable the event.
+
+        See also: when_deactivated.
+        """)
 
     def _get_when_deactivated(self):
         return self._when_deactivated
@@ -117,7 +158,20 @@ class WaitableInputDevice(InputDevice):
     def _set_when_deactivated(self, value):
         self._when_deactivated = self._wrap_callback(value)
 
-    when_deactivated = property(_get_when_deactivated, _set_when_deactivated)
+    when_deactivated = property(_get_when_deactivated, _set_when_deactivated, doc="""\
+        The function to run when the device changes state from active to
+        inactive.
+
+        This can be set to a function which accepts no (mandatory) parameters,
+        or a function which accepts a single mandatory parameter (which as
+        many optional parameters as you like). If the function accepts a single
+        mandatory parameter, the device the deactives will be passed as that
+        parameter.
+
+        Set this property to `None` (the default) to disable the event.
+
+        See also: when_activated.
+        """)
 
     def _wrap_callback(self, fn):
         if fn is None:
@@ -170,14 +224,24 @@ class WaitableInputDevice(InputDevice):
 
 class DigitalInputDevice(WaitableInputDevice):
     """
-    A Generic Digital Input Device.
+    Represents a generic input device with typical on/off behaviour.
+
+    This class extends `WaitableInputDevice` with machinery to fire the active
+    and inactive events for devices that operate in a typical digital manner:
+    straight forward on / off states with (reasonably) clean transitions
+    between the two.
+
+    bounce_time: `None`
+        Specifies the length of time (in seconds) that the component will
+        ignore changes in state after an initial change. This defaults to
+        `None` which indicates that no bounce compensation will be performed.
     """
-    def __init__(self, pin=None, pull_up=False, bouncetime=None):
+    def __init__(self, pin=None, pull_up=False, bounce_time=None):
         super(DigitalInputDevice, self).__init__(pin, pull_up)
         # Yes, that's really the default bouncetime in RPi.GPIO...
         GPIO.add_event_detect(
             self.pin, GPIO.BOTH, callback=self._fire_events,
-            bouncetime=-666 if bouncetime is None else bouncetime
+            bouncetime=-666 if bounce_time is None else int(bounce_time * 1000)
         )
         # Call _fire_events once to set initial state of events
         super(DigitalInputDevice, self)._fire_events()
@@ -188,7 +252,35 @@ class DigitalInputDevice(WaitableInputDevice):
 
 class SmoothedInputDevice(WaitableInputDevice):
     """
-    A Generic Digital Input Device with background polling.
+    Represents a generic input device which takes its value from the mean of a
+    queue of historical values.
+
+    This class extends `WaitableInputDevice` with a queue which is filled by a
+    background thread which continually polls the state of the underlying
+    device. The mean of the values in the queue is compared to a threshold
+    which is used to determine the state of the `is_active` property.
+
+    This class is intended for use with devices which either exhibit analog
+    behaviour (such as the charging time of a capacitor with an LDR), or those
+    which exhibit "twitchy" behaviour (such as certain motion sensors).
+
+    threshold: `0.5`
+        The value above which the device will be considered "on".
+
+    queue_len: `5`
+        The length of the internal queue which is filled by the background
+        thread.
+
+    sample_wait: `0.0`
+        The length of time to wait between retrieving the state of the
+        underlying device. Defaults to 0.0 indicating that values are retrieved
+        as fast as possible.
+
+    partial: `False`
+        If `False` (the default), attempts to read the state of the device
+        (from the `is_active` property) will block until the queue has filled.
+        If `True`, a value will be returned immediately, but be aware that this
+        value is likely to fluctuate excessively.
     """
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5,
@@ -226,16 +318,28 @@ class SmoothedInputDevice(WaitableInputDevice):
 
     @property
     def queue_len(self):
+        """
+        The length of the internal queue of values which is averaged to
+        determine the overall state of the device. This defaults to `5`.
+        """
         self._check_open()
         return self._queue.queue.maxlen
 
     @property
     def partial(self):
+        """
+        If `False` (the default), attempts to read the `value` or `is_active`
+        properties will block until the queue has filled.
+        """
         self._check_open()
         return self._queue.partial
 
     @property
     def value(self):
+        """
+        Returns the mean of the values in the internal queue. This is
+        compared to `threshold` to determine whether `is_active` is `True`.
+        """
         self._check_open()
         return self._queue.value
 
@@ -249,7 +353,9 @@ class SmoothedInputDevice(WaitableInputDevice):
             )
         self._threshold = float(value)
 
-    threshold = property(_get_threshold, _set_threshold)
+    threshold = property(_get_threshold, _set_threshold, doc="""\
+        If `value` exceeds this amount, then `is_active` will return `True`.
+        """)
 
     @property
     def is_active(self):
@@ -259,6 +365,10 @@ class SmoothedInputDevice(WaitableInputDevice):
 class Button(DigitalInputDevice):
     """
     A physical push button or switch.
+
+    A typical configuration of such a device is to connect a GPIO pin to one
+    side of the switch, and ground to the other (the default `pull_up` value
+    is `True`).
     """
     def __init__(self, pin=None, pull_up=True, bouncetime=None):
         super(Button, self).__init__(pin, pull_up, bouncetime)
@@ -275,6 +385,11 @@ class Button(DigitalInputDevice):
 class MotionSensor(SmoothedInputDevice):
     """
     A PIR (Passive Infra-Red) motion sensor.
+
+    A typical PIR device has a small circuit board with three pins: VCC, OUT,
+    and GND. VCC should be connected to the Pi's +5V pin, GND to one of the
+    Pi's ground pins, and finally OUT to the GPIO specified as the value of the
+    `pin` parameter in the constructor.
     """
     def __init__(
             self, pin=None, queue_len=5, sample_rate=10, threshold=0.5,
@@ -297,6 +412,11 @@ class MotionSensor(SmoothedInputDevice):
 class LightSensor(SmoothedInputDevice):
     """
     An LDR (Light Dependent Resistor) Light Sensor.
+
+    A typical LDR circuit connects one side of the LDR to the 3v3 line from the
+    Pi, and the other side to a GPIO pin, and a capacitor tied to ground. This
+    class repeatedly discharges the capacitor, then times the duration it takes
+    to charge (which will vary according to the light falling on the LDR).
     """
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,

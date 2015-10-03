@@ -14,7 +14,11 @@ class OutputDeviceError(GPIODeviceError):
 
 class OutputDevice(GPIODevice):
     """
-    Generic GPIO Output Device (on/off).
+    Represents a generic GPIO output device.
+
+    This class extends `GPIODevice` to add facilities common to GPIO output
+    devices: an `on` method to switch the device on, and a corresponding `off`
+    method.
     """
     def __init__(self, pin=None):
         super(OutputDevice, self).__init__(pin)
@@ -46,7 +50,12 @@ class OutputDevice(GPIODevice):
 
 class DigitalOutputDevice(OutputDevice):
     """
-    Generic Digital GPIO Output Device (on/off/toggle/blink).
+    Represents a generic output device with typical on/off behaviour.
+
+    This class extends `OutputDevice` with a `toggle` method to switch the
+    device between its on and off states, and a `blink` method which uses an
+    optional background thread to handle toggling the device state without
+    further interaction.
     """
     def __init__(self, pin=None):
         super(DigitalOutputDevice, self).__init__(pin)
@@ -125,6 +134,10 @@ class DigitalOutputDevice(OutputDevice):
 class LED(DigitalOutputDevice):
     """
     An LED (Light Emmitting Diode) component.
+
+    A typical configuration of such a device is to connect a GPIO pin to the
+    anode (long leg) of the LED, and the cathode (short leg) to ground, with
+    an optional resistor to prevent the LED from burning out.
     """
     pass
 
@@ -132,6 +145,9 @@ class LED(DigitalOutputDevice):
 class Buzzer(DigitalOutputDevice):
     """
     A digital Buzzer component.
+
+    A typical configuration of such a device is to connect a GPIO pin to the
+    anode (long leg) of the buzzer, and the cathode (short leg) to ground.
     """
     pass
 

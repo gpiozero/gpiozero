@@ -74,6 +74,9 @@ Boards & accessories:
 
 ## Getting started
 
-See the [input devices](inputs.md) and [output devices](outputs.md) to get started. Also see the [boards & accessories](boards.md) page for examples of using the included accessories.
+See the [input devices](inputs.md) and [output devices](outputs.md) to get
+started. Also see the [boards & accessories](boards.md) page for examples of
+using the included accessories.
 
-For common programs using multiple components together, see the [recipes](recipes.md) page.
+For common programs using multiple components together, see the
+[recipes](recipes.md) page.
