@@ -1,20 +1,32 @@
 # Contributing
 
-This module was designed for use in education; particularly for young children. It is not intended to replace `RPi.GPIO` and it does not claim to be suitable for all purposes. It is intended to provide a simple interface to everyday components.
+This module was designed for use in education; particularly for young children.
+It is not intended to replace `RPi.GPIO` and it does not claim to be suitable
+for all purposes. It is intended to provide a simple interface to everyday
+components.
 
-If a proposed change added an advanced feature but made basic usage more complex, it is unlikely to be added.
+If a proposed change added an advanced feature but made basic usage more
+complex, it is unlikely to be added.
 
 ## Suggestions
 
-Please make suggestions by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining your reasoning clearly.
+Please make suggestions by opening an
+[issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining your
+reasoning clearly.
 
 ## Bugs
 
-Please submit bug reports by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining the problem clearly using code examples.
+Please submit bug reports by opening an
+[issue](https://github.com/RPi-Distro/python-gpiozero/issues) explaining the
+problem clearly using code examples.
 
 ## Documentation
 
-The documentation source lives in the [docs](https://github.com/RPi-Distro/python-gpiozero/tree/master/docs) folder and is rendered from markdown into HTML using [mkdocs](http://www.mkdocs.org/). Contributions to the documentation are welcome but should be easy to read and understand.
+The documentation source lives in the
+[docs](https://github.com/RPi-Distro/python-gpiozero/tree/master/docs) folder
+and is rendered from markdown into HTML using [mkdocs](http://www.mkdocs.org/).
+Contributions to the documentation are welcome but should be easy to read and
+understand.
 
 ## Python
 

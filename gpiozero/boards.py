@@ -42,20 +42,20 @@ class LEDBoard(object):
         """
         Make all the LEDs turn on and off repeatedly.
 
-        on_time: 1
+        on_time: `1`
             Number of seconds to be on
 
-        off_time: 1
+        off_time: `1`
             Number of seconds to be off
 
-        n: None
+        n: `None`
             Number of times to blink; None means forever
 
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
+        background: `True`
+            If `True`, start a background thread to continue blinking and
+            return immediately. If `False`, only return when the blink is
+            finished (warning: the default value of `n` will result in this
+            method never returning).
         """
         for led in self._leds:
             led.blink(on_time, off_time, n, background)
@@ -74,13 +74,13 @@ class TrafficLights(LEDBoard):
     """
     Generic Traffic Lights set.
 
-    red: None
+    red: `None`
         Red LED pin
 
-    amber: None
+    amber: `None`
         Amber LED pin
 
-    green: None
+    green: `None`
         Green LED pin
     """
     def __init__(self, red=None, amber=None, green=None):
@@ -144,20 +144,20 @@ class FishDish(TrafficLights):
         """
         Make all the board's components turn on and off repeatedly.
 
-        on_time: 1
+        on_time: `1`
             Number of seconds to be on
 
-        off_time: 1
+        off_time: `1`
             Number of seconds to be off
 
-        n: None
+        n: `None`
             Number of times to blink; None means forever
 
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
+        background: `True`
+            If `True`, start a background thread to continue blinking and
+            return immediately. If `False`, only return when the blink is
+            finished (warning: the default value of `n` will result in this
+            method never returning).
         """
         for thing in self._all:
             led.blink(on_time, off_time, n, background)
@@ -185,20 +185,20 @@ class FishDish(TrafficLights):
         """
         Make all the board's LEDs turn on and off repeatedly.
 
-        on_time: 1
+        on_time: `1`
             Number of seconds to be on
 
-        off_time: 1
+        off_time: `1`
             Number of seconds to be off
 
-        n: None
+        n: `None`
             Number of times to blink; None means forever
 
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
+        background: `True`
+            If `True`, start a background thread to continue blinking and
+            return immediately. If `False`, only return when the blink is
+            finished (warning: the default value of `n` will result in this
+            method never returning).
         """
         super(FishDish, self).blink(on_time, off_time, n, background)
 
@@ -234,7 +234,7 @@ class Robot(object):
         Make the robot turn left. If seconds given, stop after given number of
         seconds.
 
-        seconds: None
+        seconds: `None`
             Number of seconds to turn left for
         """
         self._left.forward()
@@ -249,7 +249,7 @@ class Robot(object):
         Make the robot turn right. If seconds given, stop after given number of
         seconds.
 
-        seconds: None
+        seconds: `None`
             Number of seconds to turn right for
         """
         self._right.forward()
@@ -261,9 +261,10 @@ class Robot(object):
 
     def forward(self, seconds=None):
         """
-        Drive the robot forward. If seconds given, stop after given number of seconds.
+        Drive the robot forward. If seconds given, stop after given number of
+        seconds.
 
-        seconds: None
+        seconds: `None`
             Number of seconds to drive forward for
         """
         self._left.forward()
@@ -275,9 +276,10 @@ class Robot(object):
 
     def backward(self, seconds=None):
         """
-        Drive the robot backward. If seconds given, stop after given number of seconds.
+        Drive the robot backward. If seconds given, stop after given number of
+        seconds.
 
-        seconds: None
+        seconds: `None`
             Number of seconds to drive backward for
         """
         self._left.backward()

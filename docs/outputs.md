@@ -1,10 +1,12 @@
 # Output Devices
 
-These output device component interfaces have been provided for simple use of everyday components.
+These output device component interfaces have been provided for simple use of
+everyday components.
 
 Components must be wired up correctly before used in code.
 
-*Note all GPIO pin numbers use BCM numbering. See the [notes](notes.md) page for more information.*
+*Note all GPIO pin numbers use BCM numbering. See the [notes](notes.md) page
+for more information.*
 
 ## LED
 

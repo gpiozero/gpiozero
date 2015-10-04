@@ -36,7 +36,16 @@ class GPIODeviceClosed(GPIODeviceError):
 
 class GPIODevice(object):
     """
-    Generic GPIO Device.
+    Represents a generic GPIO device.
+
+    This is the class at the root of the gpiozero class hierarchy. It handles
+    ensuring that two GPIO devices do not share the same pin, and provides
+    basic services applicable to all devices (specifically the `pin` property,
+    `is_active` property, and the `close` method).
+
+    pin: `None`
+        The GPIO pin (in BCM numbering) that the device is connected to. If
+        this is `None` a `GPIODeviceError` will be raised.
     """
     def __init__(self, pin=None):
         # self._pin must be set before any possible exceptions can be raised
@@ -74,9 +83,50 @@ class GPIODevice(object):
 
     @property
     def closed(self):
+        """
+        Returns `True` if the device is closed (see the `close` method). Once a
+        device is closed you can no longer use any other methods or properties
+        to control or query the device.
+        """
         return self._pin is None
 
     def close(self):
+        """
+        Shut down the device and release all associated resources.
+
+        This method is primarily intended for interactive use at the command
+        line. It disables the device and releases its pin for use by another
+        device.
+
+        You can attempt to do this simply by deleting an object, but unless
+        you've cleaned up all references to the object this may not work (even
+        if you've cleaned up all references, there's still no guarantee the
+        garbage collector will actually delete the object at that point).  By
+        contrast, the close method provides a means of ensuring that the object
+        is shut down.
+
+        For example, if you have a breadboard with a buzzer connected to pin
+        16, but then wish to attach an LED instead:
+
+            >>> from gpiozero import *
+            >>> bz = Buzzer(16)
+            >>> bz.on()
+            >>> bz.off()
+            >>> bz.close()
+            >>> led = LED(16)
+            >>> led.blink()
+
+        GPIODevice descendents can also be used as context managers using the
+        `with` statement. For example:
+
+            >>> from gpiozero import *
+            >>> with Buzzer(16) as bz:
+            ...     bz.on()
+            ...
+            >>> with LED(16) as led:
+            ...     led.on()
+            ...
+        """
         with _GPIO_PINS_LOCK:
             pin = self._pin
             self._pin = None
@@ -93,10 +143,17 @@ class GPIODevice(object):
 
     @property
     def pin(self):
+        """
+        The pin (in BCM numbering) that the device is connected to. This will
+        be `None` if the device has been closed (see the `close` method).
+        """
         return self._pin
 
     @property
     def is_active(self):
+        """
+        Returns `True` if the device is currently active and `False` otherwise.
+        """
         return self._read()
 
     def __repr__(self):
