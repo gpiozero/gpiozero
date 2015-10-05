@@ -156,7 +156,7 @@ class PWMOutputDevice(DigitalOutputDevice):
     """
     Generic Output device configured for PWM (Pulse-Width Modulation).
     """
-    def __init__(self, pin):
+    def __init__(self, pin=None):
         super(PWMOutputDevice, self).__init__(pin)
         self._frequency = 100
         self._pwm = GPIO.PWM(self._pin, self._frequency)
