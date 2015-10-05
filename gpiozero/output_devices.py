@@ -161,19 +161,21 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._frequency = 100
         self._pwm = GPIO.PWM(self._pin, self._frequency)
         self._pwm.start(0)
+        self._min_pwm = 0
+        self._max_pwm = 1
         self.value = 0
 
     def on(self):
         """
         Turn the device on
         """
-        self.value = 100
+        self.value = self._max_pwm
 
     def off(self):
         """
         Turn the device off
         """
-        self.value = 0
+        self.value = self._min_pwm
 
     def toggle(self):
         """
@@ -181,7 +183,9 @@ class PWMOutputDevice(DigitalOutputDevice):
         If it's on (a value greater than 0), turn it off; if it's off, turn it
         on.
         """
-        self.value = 100 if self.value == 0 else 0
+        _min = self._min_pwm
+        _max = self._max_pwm
+        self.value = _max if self.value == _min else _min
 
     @property
     def value(self):
@@ -189,6 +193,14 @@ class PWMOutputDevice(DigitalOutputDevice):
 
     @value.setter
     def value(self, n):
+        _min = self._min_pwm
+        _max = self._max_pwm
+        if _min >= n >= _max:
+            n *= 100
+        else:
+            raise GPIODeviceError(
+                "Value must be between %s and %s" % (_min, _max)
+            )
         self._pwm.ChangeDutyCycle(n)
         self._value = n
 
