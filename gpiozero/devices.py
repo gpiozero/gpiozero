@@ -57,7 +57,8 @@ class GPIODevice(object):
         with _GPIO_PINS_LOCK:
             if pin in _GPIO_PINS:
                 raise GPIODeviceError(
-                    'pin %d is already in use by another gpiozero object' % pin)
+                    'pin %d is already in use by another gpiozero object' % pin
+                )
             _GPIO_PINS.add(pin)
         self._pin = pin
         self._active_state = GPIO.HIGH
