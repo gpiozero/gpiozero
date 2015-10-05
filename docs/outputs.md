@@ -130,14 +130,14 @@ led = RGBLED(2, 3, 4)
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`    | The brightness value of the red LED (0 to 100).     | Integer |
-| `green`  | The brightness value of the green LED (0 to 100).   | Integer |
-| `blue`   | The brightness value of the blue LED (0 to 100).    | Integer |
-| `rgb`    | The brightness values of the three LEDs (0 to 100). | Tuple   |
+| `red`    | The brightness value of the red LED (0 to 255).     | Integer |
+| `green`  | The brightness value of the green LED (0 to 255).   | Integer |
+| `blue`   | The brightness value of the blue LED (0 to 255).    | Integer |
+| `rgb`    | The brightness values of the three LEDs (0 to 255). | Tuple   |
 
 ## Motor
 
-Generic single-direction motor.
+Generic bi-directional motor.
 
 ### Wiring
 

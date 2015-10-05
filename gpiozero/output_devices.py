@@ -238,7 +238,7 @@ class RGBLED(object):
 
     @red.setter
     def red(self, value):
-        self._red.value = value
+        self._red.value = self._validate(value)
 
     @property
     def green(self):
@@ -246,7 +246,7 @@ class RGBLED(object):
 
     @green.setter
     def green(self, value):
-        self._green.value = value
+        self._green.value = self._validate(value)
 
     @property
     def blue(self):
@@ -254,21 +254,31 @@ class RGBLED(object):
 
     @blue.setter
     def blue(self, value):
-        self._blue.value = value
+        self._blue.value = self._validate(value)
 
     @property
     def rgb(self):
-        r = self._red.value
-        g = self._green.value
-        b = self._blue.value
+        r = self.red
+        g = self.green
+        b = self.blue
         return (r, g, b)
 
     @rgb.setter
     def rgb(self, values):
         r, g, b = values
-        self._red.value = r
-        self._green.value = g
-        self._blue.value = b
+        self.red = r
+        self.green = g
+        self.blue = b
+
+    def _validate(self, value):
+        _min = self._min_value
+        _max = self._max_value
+        if _min >= value >= _max:
+            return value
+        else:
+            raise GPIODeviceError(
+                "Colour value must be between %s and %s" % (_min, _max)
+            )
 
 
 class Motor(object):

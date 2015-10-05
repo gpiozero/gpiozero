@@ -266,20 +266,20 @@ from time import sleep
 
 led = RGBLED(red=9, green=10, blue=11)
 
-led.red = 100  # full red
-led.red = 50  # half red
+led.red = 255  # full red
+led.red = 128  # half red
 
-led.rgb = (0, 100, 0)  # full green
+led.rgb = (0, 255, 0)  # full green
 
-led.rgb = (100, 0, 100)  # magenta
-led.rgb = (100, 100, 0)  # yellow
-led.rgb = (0, 100, 100)  # cyan
-led.rgb = (100, 100, 100)  # white
+led.rgb = (255, 0, 255)  # magenta
+led.rgb = (255, 255, 0)  # yellow
+led.rgb = (0, 255, 100)  # cyan
+led.rgb = (255, 255, 255)  # white
 
 led.rgb = (0, 0, 0)  # off
 
 # slowly increase intensity of blue
-for n in range(100):
+for n in range(256):
     led.blue += 1
     sleep(0.1)
 ```
@@ -365,7 +365,7 @@ from gpiozero import RGBLED, MCP3008
 
 def read_pot(channel):
     with MCP3008(channel=channel) as pot:
-        return 100 * pot.read() / 1023
+        return 255 * pot.read() / 1023
 
 led = RGBLED(red=2, green=3, blue=4)
 
