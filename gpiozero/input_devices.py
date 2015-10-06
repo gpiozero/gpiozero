@@ -7,8 +7,6 @@ from time import sleep, time
 from threading import Event
 
 from RPi import GPIO
-from w1thermsensor import W1ThermSensor
-from spidev import SpiDev
 
 from .devices import GPIODeviceError, GPIODeviceClosed, GPIODevice, GPIOQueue
 
@@ -460,13 +458,22 @@ class LightSensor(SmoothedInputDevice):
     wait_for_dark = _alias('wait_for_inactive')
 
 
-class TemperatureSensor(W1ThermSensor):
-    """
-    A Digital Temperature Sensor.
-    """
-    @property
-    def value(self):
-        return self.get_temperature()
+try:
+    from w1thermsensor import W1ThermSensor
+except ImportError:
+    class TemperatureSensor(object):
+        def __init__(self, *args, **kwargs):
+            raise ImportError(
+                'Failed to import w1thermsensor module; please run '
+                '"sudo pip install w1thermsensor"')
+else:
+    class TemperatureSensor(W1ThermSensor):
+        """
+        A Digital Temperature Sensor.
+        """
+        @property
+        def value(self):
+            return self.get_temperature()
 
 
 class MCP3008(object):
@@ -474,6 +481,12 @@ class MCP3008(object):
     MCP3008 ADC (Analogue-to-Digital converter).
     """
     def __init__(self, bus=0, device=0, channel=0):
+        try:
+            from spidev import SpiDev
+        except ImportError:
+            raise ImportError(
+                'Failed to import spidev module; please run '
+                '"sudo pip install spidev"')
         self.bus = bus
         self.device = device
         self.channel = channel
@@ -496,3 +509,4 @@ class MCP3008(object):
 
     def close(self):
         self.spi.close()
+

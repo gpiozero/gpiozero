@@ -1,0 +1,32 @@
+Source: gpiozero
+Maintainer: Ben Nuttall <ben@raspberrypi.org>
+Homepage: http://github.com/RPi-Distro/python-gpiozero
+Section: python
+Priority: extra
+Build-Depends: debhelper (>= 8), python-all (>= 2.7), python-setuptools, python3-all, python3-setuptools
+Standards-Version: 3.9.3
+X-Python-Version: >= 2.7
+X-Python3-Version: >= 3.2
+
+Package: python-gpiozero
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-rpi.gpio
+Description: Simple API for controlling devices attached to the GPIO pins.
+ gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
+ interaction with devices connected to the GPIO pins, from simple buttons and
+ LEDs, up to various add-on boards. The API tries to adhere closely to Python's
+ idioms and naming conventions.
+ .
+ This is the Python 2 version of the package.
+
+Package: python3-gpiozero
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-rpi.gpio
+Description: Simple API for controlling devices attached to the GPIO pins.
+ gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
+ interaction with devices connected to the GPIO pins, from simple buttons and
+ LEDs, up to various add-on boards. The API tries to adhere closely to Python's
+ idioms and naming conventions.
+ .
+ This is the Python 3 version of the package.
+
