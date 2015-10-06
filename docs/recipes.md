@@ -328,20 +328,50 @@ sensor.when_light = led.off
 
 ## Motors
 
-Drive two motors forwards for 5 seconds:
+Spin a motor around forwards and backwards:
 
 ```python
 from gpiozero import Motor
 from time import sleep
 
-left_motor = Motor(7)
-right_motor = Motor(8)
+motor = Motor(forward=4, back=14)
 
-left_motor.on()
-right_motor.on()
-sleep(5)
-left_motor.off()
-right_motor.off()
+while True:
+    motor.forward()
+    sleep(5)
+    motor.backward()
+    sleep(5)
+```
+
+## Robot
+
+Make a robot drive around in (roughly) a square:
+
+```python
+from gpiozero import Robot
+from time import sleep
+
+robot = Robot(left=(4, 14), right=(17, 18))
+
+for i in range(4):
+    robot.forwards()
+    sleep(10)
+    robot.right()
+    sleep(1)
+```
+
+## Motion Sensor Robot
+
+Make a robot drive forward when it detects motion:
+
+```python
+from gpiozero import Robot, MotionSensor
+
+robot = Robot(left=(4, 14), right=(17, 18))
+pir = MotionSensor(5)
+
+pir.when_motion = robot.forward
+pir.when_no_motion = robot.stop
 ```
 
 ## Potentiometer
