@@ -236,9 +236,9 @@ traffic = TrafficHat()
 | `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
 | `all`    | A collection of the board's output components to access each one individually, or to iterate over them in sequence. | Tuple |
 
-## Traffic HAT
+## Robot
 
-Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
+Generic two-motor robot.
 
 ### Code
 
