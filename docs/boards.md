@@ -26,10 +26,13 @@ leds = LEDBoard([2, 3, 4, 5, 6])
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn all the LEDs on. | None |
-| `off()` | Turn all the LEDs off. | None |
+| `on()`     | Turn all the LEDs on. | None |
+| `off()`    | Turn all the LEDs off. | None |
 | `toggle()` | Toggle all the LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all the LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()`  | Make the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                           | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -68,7 +71,10 @@ traffic = TrafficLights(2, 3, 4)
 | `on()` | Turn all three LEDs on. | None |
 | `off()` | Turn all three LEDs off. | None |
 | `toggle()` | Toggle all three LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all three LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()`  | Make the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                           | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -104,7 +110,10 @@ lite = PiLiter()
 | `on()` | Turn all eight LEDs on. | None |
 | `off()` | Turn all eight LEDs off. | None |
 | `toggle()` | Toggle all eight LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all eight LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()`  | Make all the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                               | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                               | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                               | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -136,10 +145,13 @@ To use the PI-TRAFFIC board on another set of pins, just use the generic `Traffi
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn all three LEDs on. | None |
-| `off()` | Turn all three LEDs off. | None |
+| `on()`     | Turn all three LEDs on.  | None |
+| `off()`    | Turn all three LEDs off. | None |
 | `toggle()` | Toggle all three LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all three LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink()`  | Make the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                           | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -172,14 +184,20 @@ fish = FishDish()
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn all the board's output components on. | None |
-| `off()` | Turn all the board's output components off. | None |
-| `toggle()` | Toggle all the board's output components. For each component, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all the board's output components turn on and off repeatedly. | `on_time=1`, `off_time=1`, `nx=1`, `background=True` |
-| `lights_on()` | Turn all three LEDs on. | None |
-| `lights_off()` | Turn all three LEDs off. | None |
+| `on()`            | Turn all the board's output components on.  | None |
+| `off()`           | Turn all the board's output components off. | None |
+| `toggle()`        | Toggle all the board's output components. For each component, if it's on, turn it off; if it's off, turn it on. | None || `toggle()` | Toggle all the LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
+| `blink()`         | Make the LEDs turn on and off repeatedly.   | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|                   |                                             | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|                   |                                             | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|                   |                                             | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
+| `lights_on()`     | Turn all three LEDs on.  | None |
+| `lights_off()`    | Turn all three LEDs off. | None |
 | `toggle_lights()` | Toggle all the board's LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink_lights()` | Make all the board's LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
+| `blink_lights()`  | Make the board's LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|                   |                                                   | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|                   |                                                   | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|                   |                                                   | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
@@ -211,30 +229,7 @@ Create a `TrafficHat` object by passing in the LED pin numbers by name:
 traffic = TrafficHat()
 ```
 
-### Methods
-
-| Method | Description | Arguments |
-| ------ | ----------- | --------- |
-| `on()` | Turn all the board's output components on. | None |
-| `off()` | Turn all the board's output components off. | None |
-| `toggle()` | Toggle all the board's output components. For each component, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make all the board's output components turn on and off repeatedly. | `on_time=1`, `off_time=1`, `nx=1`, `background=True` |
-| `lights_on()` | Turn all three LEDs on. | None |
-| `lights_off()` | Turn all three LEDs off. | None |
-| `toggle_lights()` | Toggle all the board's LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink_lights()` | Make all the board's LEDs turn on and off repeatedly. | `on_time=1`, `off_time=1`, `n=1`, `background=True` |
-
-### Properties
-
-| Property | Description | Type |
-| -------- | ----------- | ---- |
-| `red`    | Direct access to the red light as a single `LED` object. | LED |
-| `amber`  | Direct access to the amber light as a single `LED` object. | LED |
-| `green`  | Direct access to the green light as a single `LED` object. | LED |
-| `buzzer` | Direct access to the buzzer as a single `Buzzer` object. | LED |
-| `button` | Direct access to the button as a single `Button` object. | LED |
-| `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
-| `all`    | A collection of the board's output components to access each one individually, or to iterate over them in sequence. | Tuple |
+The interface is identical to the `FishDish`
 
 ## Robot
 
