@@ -229,65 +229,76 @@ class Robot(object):
         self._left = Motor(forward=left_forward, back=left_back)
         self._right = Motor(forward=right_forward, back=right_back)
 
-    def left(self, seconds=None):
-        """
-        Make the robot turn left. If seconds given, stop after given number of
-        seconds.
+        self._min_pwm = self._left._min_pwm
+        self._max_pwm = self._left._max_pwm
 
-        seconds: `None`
-            Number of seconds to turn left for
+    def forward(self, speed=1):
         """
-        self._left.forward()
-        self._right.backward()
-        if seconds is not None:
-            sleep(seconds)
-            self._left.stop()
-            self._right.stop()
+        Drive the robot forward.
 
-    def right(self, seconds=None):
+        speed: `1`
+            Speed at which to drive the motors, 0 to 1.
         """
-        Make the robot turn right. If seconds given, stop after given number of
-        seconds.
+        self._left._backward.off()
+        self._right._backward.off()
 
-        seconds: `None`
-            Number of seconds to turn right for
-        """
-        self._right.forward()
-        self._left.backward()
-        if seconds is not None:
-            sleep(seconds)
-            self._left.stop()
-            self._right.stop()
+        self._left._forward.on()
+        self._right._forward.on()
+        if speed < 1:
+            sleep(0.1)  # warm up the motors
+            self._left._forward.value = speed
+            self._right._forward.value = speed
 
-    def forward(self, seconds=None):
+    def backward(self, speed=1):
         """
-        Drive the robot forward. If seconds given, stop after given number of
-        seconds.
+        Drive the robot backward.
 
-        seconds: `None`
-            Number of seconds to drive forward for
+        speed: `1`
+            Speed at which to drive the motors, 0 to 1.
         """
-        self._left.forward()
-        self._right.forward()
-        if seconds is not None:
-            sleep(seconds)
-            self._left.stop()
-            self._right.stop()
+        self._left._forward.off()
+        self._right._forward.off()
 
-    def backward(self, seconds=None):
-        """
-        Drive the robot backward. If seconds given, stop after given number of
-        seconds.
+        self._left._backward.on()
+        self._right._backward.on()
+        if speed < 1:
+            sleep(0.1)  # warm up the motors
+            self._left._backward.value = speed
+            self._right._backward.value = speed
 
-        seconds: `None`
-            Number of seconds to drive backward for
+    def left(self, speed=1):
         """
-        self._left.backward()
-        self._right.backward()
-        if seconds is not None:
-            sleep(seconds)
-            self._left.stop()
-            self._right.stop()
+        Make the robot turn left.
+
+        speed: `1`
+            Speed at which to drive the motors, 0 to 1.
+        """
+        self._right._backward.off()
+        self._left._forward.off()
+
+        self._right._forward.on()
+        self._left._backward.on()
+        if speed < 1:
+            sleep(0.1)  # warm up the motors
+            self._right._forward.value = speed
+            self._left._backward.value = speed
+
+    def right(self, speed=1):
+        """
+        Make the robot turn right.
+
+        speed: `1`
+            Speed at which to drive the motors, 0 to 1.
+        """
+        self._left._backward.off()
+        self._right._forward.off()
+
+        self._left._forward.on()
+        self._right._backward.on()
+        if speed < 1:
+            sleep(0.1)  # warm up the motors
+            self._left._forward.value = speed
+            self._right._backward.value = speed
 
     def stop(self):
         """

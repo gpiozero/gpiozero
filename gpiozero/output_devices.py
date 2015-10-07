@@ -195,7 +195,7 @@ class PWMOutputDevice(DigitalOutputDevice):
     def value(self, n):
         _min = self._min_pwm
         _max = self._max_pwm
-        if _min >= n >= _max:
+        if _min <= n <= _max:
             n *= 100
         else:
             raise GPIODeviceError(
@@ -289,22 +289,31 @@ class Motor(object):
         if not all([forward, back]):
             raise GPIODeviceError('forward and back pins must be provided')
 
-        self._forward = OutputDevice(forward)
-        self._backward = OutputDevice(back)
+        self._forward = PWMOutputDevice(forward)
+        self._backward = PWMOutputDevice(back)
 
-    def forward(self):
+        self._min_pwm = self._forward._min_pwm
+        self._max_pwm = self._forward._max_pwm
+
+    def forward(self, speed=1):
         """
         Drive the motor forwards
         """
-        self._forward.on()
-        self._backward.off()
+        self._backward.value = self._min_pwm
+        self._forward.value = self._max_pwm
+        if speed < 1:
+            sleep(0.1)  # warm up the motor
+            self._forward.value = speed
 
-    def backward(self):
+    def backward(self, speed=1):
         """
         Drive the motor backwards
         """
-        self._backward.on()
-        self._forward.off()
+        self._forward.value = self._min_pwm
+        self._backward.value = self._max_pwm
+        if speed < 1:
+            sleep(0.1)  # warm up the motor
+            self._backward.value = speed
 
     def stop(self):
         """

@@ -253,11 +253,11 @@ robot = Robot(left=(4, 14), right=(17, 18))
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `forward()` | Drive the robot forwards. | `seconds` - The number of seconds to drive for. If `None`, stay on. Default: `None` |
-| `backward()` | Drive the robot backwards. | `seconds` - The number of seconds to drive for. If `None`, stay on. Default: `None` |
-| `left()` | Make the robot turn left. | `seconds` - The number of seconds to turn for. If `None`, stay on. Default: `None` |
-| `right()` | Make the robot turn right. | `seconds` - The number of seconds to turn for. If `None`, stay on. Default: `None` |
-| `stop()` | Stop the robot. | None |
+| `forward()`  | Drive the robot forwards.  | `speed` - Speed at which to drive the motors, `0` to `1`. Default: `1` |
+| `backward()` | Drive the robot backwards. | `speed` - Speed at which to drive the motors, `0` to `1`. Default: `1` |
+| `left()`     | Make the robot turn left.  | `speed` - Speed at which to drive the motors, `0` to `1`. Default: `1` |
+| `right()`    | Make the robot turn right. | `speed` - Speed at which to drive the motors, `0` to `1`. Default: `1` |
+| `stop()`     | Stop the robot.            | None |
 
 ## Ryanteck MCB Robot
 

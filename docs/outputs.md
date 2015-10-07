@@ -161,6 +161,6 @@ motor = Motor(forward=17, back=18)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `forward()` | Drive the motor forwards. | `seconds` - The number of seconds to stay on for. If `None`, stay on. Default: `None` |
-| `backward()` | Drive the motor backwards. | `seconds` - The number of seconds to stay on for. If `None`, stay on. Default: `None` |
+| `forward()` | Drive the motor forwards. | `speed` - Speed at which to drive the motor, `0` to `1`. Default: `1` |
+| `backward()` | Drive the motor backwards. | `speed` - Speed at which to drive the motor, `0` to `1`. Default: `1` |
 | `stop()` | Stop the motor. | None |
