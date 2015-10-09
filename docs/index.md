@@ -4,7 +4,7 @@ A simple interface to everyday GPIO components used with Raspberry Pi
 
 ## Latest release
 
-The latest release is **v0.6.0 beta 1** released on 28th September 2015.
+The latest release is **v0.7.0 beta 2** released on 9th October 2015.
 
 ## Motivation
 
@@ -62,6 +62,8 @@ Components:
 - Light Sensor
 - Temperature Sensor
 - Motor
+- RGB LED
+- MCP3008 ADC
 
 Boards & accessories:
 
@@ -71,6 +73,8 @@ Boards & accessories:
 - PI-TRAFFIC
 - Fish Dish
 - Traffic HAT
+- Robot
+- Ryanteck MCB Robot
 
 ## Getting started
 

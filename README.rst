@@ -4,7 +4,7 @@ gpiozero
 
 A simple interface to everyday GPIO components used with Raspberry Pi
 
-Latest release: v0.6.0 Public beta
+Latest release: v0.7.0 Beta 2
 
 Motivation
 ==========
