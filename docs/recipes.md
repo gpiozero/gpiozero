@@ -360,6 +360,64 @@ for i in range(4):
     sleep(1)
 ```
 
+## Button controlled Robot
+
+Use four GPIO buttons as forward/back/left/right controls for a robot:
+
+```python
+from gpiozero import RyanteckRobot, Button
+from signal import pause
+
+robot = RyanteckRobot()
+
+left = Button(26)
+right = Button(16)
+fw = Button(21)
+bw = Button(20)
+
+fw.when_pressed = robot.forward
+fw.when_released = robot.stop
+
+left.when_pressed = robot.left
+left.when_released = robot.stop
+
+right.when_pressed = robot.right
+right.when_released = robot.stop
+
+bw.when_pressed = robot.backward
+bw.when_released = robot.stop
+
+pause()
+```
+
+## Keyboard controlled Robot
+
+Use up/down/left/right keys to control a robot:
+
+```python
+from gpiozero import RyanteckRobot
+from evdev import InputDevice, list_devices, ecodes
+
+robot = RyanteckRobot()
+
+devices = [InputDevice(device) for device in list_devices()]
+keyboard = devices[0]  # this may vary
+
+keypress_actions = {
+    ecodes.KEY_UP: robot.forward,
+    ecodes.KEY_DOWN: robot.backward,
+    ecodes.KEY_LEFT: robot.left,
+    ecodes.KEY_RIGHT: robot.right,
+}
+
+for event in keyboard.read_loop():
+    if event.type == ecodes.EV_KEY:
+        if event.value == 1:  # key down
+            keypress_actions[event.code]()
+        if event.value == 0:  # key up
+            robot.stop()
+```
+
 ## Motion Sensor Robot
 
 Make a robot drive forward when it detects motion:
