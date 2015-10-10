@@ -38,7 +38,6 @@ Example usage for lighting up an LED::
     from gpiozero import LED
 
     led = LED(2)
-
     led.on()
 
 Documentation
@@ -55,7 +54,8 @@ This project is being developed on `GitHub`_. Join in:
 * Help design the `API`_
 * Contribute to the code
 
-Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to the `Google Doc`_.
+Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to
+the `Google Doc`_.
 
 Contributors
 ============
@@ -65,11 +65,12 @@ Contributors
 - `Martin O'Hanlon`_
 
 
-.. _`pythonhosted.org/gpiozero`: http://pythonhosted.org/gpiozero
-.. _`GitHub`: https://github.com/RPi-Distro/python-gpiozero
-.. _`Issues`: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _`API`: https://github.com/RPi-Distro/python-gpiozero/issues/7
-.. _`Google Doc`: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing
-.. _`Ben Nuttall`: https://github.com/bennuttall
-.. _`Dave Jones`: https://github.com/waveform80
-.. _`Martin O'Hanlon`: https://github.com/martinohanlon
+.. _pythonhosted.org/gpiozero: http://pythonhosted.org/gpiozero
+.. _GitHub: https://github.com/RPi-Distro/python-gpiozero
+.. _Issues: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _API: https://github.com/RPi-Distro/python-gpiozero/issues/7
+.. _Google Doc: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing
+.. _Ben Nuttall: https://github.com/bennuttall
+.. _Dave Jones: https://github.com/waveform80
+.. _Martin O'Hanlon: https://github.com/martinohanlon
+
