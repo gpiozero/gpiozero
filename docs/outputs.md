@@ -14,7 +14,13 @@ An LED (Light emitting diode) component.
 
 ### Wiring
 
-...
+Connect the cathode (the short leg) of the LED to a ground pin, and connect the
+anode (the longer leg) to any GPIO pin, with a current limiting resistor in
+between:
+
+![LED wiring](images/led.png)
+
+*Altenatively, use a breadboard to wire up the LED in the same way*
 
 ### Code
 
@@ -27,7 +33,7 @@ from gpiozero import LED
 Create an `LED` object by passing in the pin number the LED is connected to:
 
 ```python
-led = LED(2)
+led = LED(17)
 ```
 
 ### Methods
@@ -55,6 +61,9 @@ A digital Buzzer component.
 
 ### Wiring
 
+Connect the negative pin of the buzzer to a ground pin, and connect the
+positive side to any GPIO pin:
+
 ...
 
 ### Code
@@ -65,7 +74,8 @@ Ensure the `Buzzer` class is imported at the top of the file:
 from gpiozero import Buzzer
 ```
 
-Create a `Buzzer` object by passing in the pin number the buzzer is connected to:
+Create a `Buzzer` object by passing in the pin number the buzzer is connected
+to:
 
 ```python
 buzzer = Buzzer(3)
@@ -95,6 +105,10 @@ buzzer = Buzzer(3)
 A full colour LED component (made up of Red, Green and Blue LEDs).
 
 ### Wiring
+
+Connect the common cathode (the longest leg) to a ground pin; connect each of
+the other legs (representing the red, green and blue components of the LED) to
+any GPIO pins, each with a current limiting resistor in between:
 
 ...
 
@@ -140,6 +154,9 @@ led = RGBLED(2, 3, 4)
 Generic bi-directional motor.
 
 ### Wiring
+
+Attach a Motor Controller Board to your Pi, connect a battery pack to the Motor
+Controller Board, and connect each side of the motor to any GPIO pin:
 
 ...
 

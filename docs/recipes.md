@@ -1,6 +1,8 @@
 # Recipes
 
-*Note that reaching the end of a Python file will terminate the process and GPIOs may be reset. Keep your program alive with `signal.pause` - see the [notes](notes.md) page for more information.*
+*Note that reaching the end of a Python file will terminate the process and
+GPIOs may be reset. Keep your program alive with `signal.pause` - see the
+[notes](notes.md) page for more information.*
 
 ## LED
 
@@ -174,7 +176,9 @@ while True:
 led.off()
 ```
 
-See [Quick Reaction Game](https://www.raspberrypi.org/learning/quick-reaction-game/) for a full resource.
+See
+[Quick Reaction Game](https://www.raspberrypi.org/learning/quick-reaction-game/)
+for a full resource.
 
 ## GPIO Music Box
 
@@ -203,7 +207,8 @@ for button in buttons:
     button.when_pressed = sound.play
 ```
 
-See [GPIO Music Box](https://www.raspberrypi.org/learning/gpio-music-box/) for a full resource.
+See [GPIO Music Box](https://www.raspberrypi.org/learning/gpio-music-box/)
+for a full resource.
 
 ## All on when pressed
 
@@ -446,7 +451,8 @@ while True:
 
 ## Full Colour LED controlled by 3 Potentiometers
 
-Wire up three potentiometers (for red, green and blue) and use each of their values to make up the colour of the LED:
+Wire up three potentiometers (for red, green and blue) and use each of their
+values to make up the colour of the LED:
 
 ```python
 from gpiozero import RGBLED, MCP3008

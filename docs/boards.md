@@ -1,8 +1,13 @@
 # Add-on boards and accessories
 
-These additional interfaces have been provided to group collections of components together for ease of use, and as examples. They are made up of components from the various [input devices](inputs.md) and [output devices](outputs.md) provided by `gpiozero`. See those pages for more information on using components individually.
+These additional interfaces have been provided to group collections of
+components together for ease of use, and as examples. They are made up of
+components from the various [input devices](inputs.md) and
+[output devices](outputs.md) provided by `gpiozero`. See those pages for more
+information on using components individually.
 
-*Note all GPIO pin numbers use BCM numbering. See the [notes](notes.md) page for more information.*
+*Note all GPIO pin numbers use BCM numbering. See the [notes](notes.md) page
+for more information.*
 
 ## LED Board
 
@@ -137,30 +142,13 @@ Create a `PiTraffic` object:
 traffic = PiTraffic()
 ```
 
-`PiTraffic` provides an identical interface to the generic `TrafficLights` interface, without the need to specify the pin numbers to be used.
+`PiTraffic` provides an identical interface to the generic `TrafficLights`
+interface, without the need to specify the pin numbers to be used.
 
-To use the PI-TRAFFIC board on another set of pins, just use the generic `TrafficLights` interface.
+The interface is identical to the generic `TrafficLights` interface.
 
-### Methods
-
-| Method | Description | Arguments |
-| ------ | ----------- | --------- |
-| `on()`     | Turn all three LEDs on.  | None |
-| `off()`    | Turn all three LEDs off. | None |
-| `toggle()` | Toggle all three LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink()`  | Make the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
-|            |                                           | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
-|            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
-|            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
-
-### Properties
-
-| Property | Description | Type |
-| -------- | ----------- | ---- |
-| `red`    | Direct access to the red light as a single `LED` object. | LED |
-| `amber`  | Direct access to the amber light as a single `LED` object. | LED |
-| `green`  | Direct access to the green light as a single `LED` object. | LED |
-| `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
+To use the PI-TRAFFIC board on another set of pins, just use the generic
+`TrafficLights` interface.
 
 ## Fish Dish
 
@@ -229,7 +217,7 @@ Create a `TrafficHat` object by passing in the LED pin numbers by name:
 traffic = TrafficHat()
 ```
 
-The interface is identical to the `FishDish`
+The interface is identical to the `FishDish`.
 
 ## Robot
 
@@ -243,7 +231,8 @@ Ensure the `Robot` class is imported at the top of the file:
 from gpiozero import Robot
 ```
 
-Create a `Robot` object by passing in the pin numbers of the forward and back pairs for each motor:
+Create a `Robot` object by passing in the pin numbers of the forward and back
+pairs for each motor:
 
 ```python
 robot = Robot(left=(4, 14), right=(17, 18))
@@ -263,10 +252,22 @@ robot = Robot(left=(4, 14), right=(17, 18))
 
 Generic robot controller with pre-configured pin numbers.
 
-Same interface as generic `Robot` class, without the need to configure pins:
+Ensure the `RyanteckRobot` class is imported at the top of the file:
 
 ```python
 from gpiozero import RyanteckRobot
+```
 
+Create a `RyanteckRobot` object:
+
+```python
 robot = RyanteckRobot()
 ```
+
+There's no need to configure the pins if you're using the default pins
+`(17, 18)` for the left motor and `(22, 23)` for the right motor.
+
+The interface is identical to the generic `Robot` interface.
+
+To use the Ryanteck MCB on another set of pins, just use the generic `Robot`
+interface.

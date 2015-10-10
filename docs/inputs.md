@@ -14,7 +14,12 @@ A physical push button or switch.
 
 ### Wiring
 
-...
+Connect one side of the button to a ground pin, and the other to any GPIO pin:
+
+![GPIO Button wiring](images/button.png)
+
+*Alternatively, connect to 3V3 and to a GPIO, and set `pull_up` to `False` when
+you create your `Button` object.*
 
 ### Code
 
@@ -62,7 +67,10 @@ A PIR (Passive Infra-Red) motion sensor.
 
 ### Wiring
 
-...
+Connect the pin labelled `VCC` to a 5V pin; connect the one labelled `GND` to
+a ground pin; and connect the one labelled `OUT` to any GPIO pin:
+
+![Motion Sensor wiring](images/motion-sensor.png)
 
 ### Code
 
@@ -76,7 +84,7 @@ Create a `MotionSensor` object by passing in the pin number the sensor is
 connected to:
 
 ```python
-pir = MotionSensor(3)
+pir = MotionSensor(4)
 ```
 
 ### Methods
