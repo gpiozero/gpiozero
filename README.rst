@@ -2,7 +2,10 @@
 gpiozero
 ========
 
-A simple interface to everyday GPIO components used with Raspberry Pi
+A simple interface to everyday GPIO components used with Raspberry Pi.
+
+Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
+other contributors.
 
 Latest release
 ==============
@@ -62,6 +65,9 @@ Contributors
 - `Martin O'Hanlon`_
 
 
+.. _Ben Nuttall: https://github.com/bennuttall
+.. _Raspberry Pi Foundation: https://www.raspberrypi.org/
+.. _Dave Jones: https://github.com/waveform80
 .. _pythonhosted.org/gpiozero: http://pythonhosted.org/gpiozero
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _Issues: https://github.com/RPi-Distro/python-gpiozero/issues
