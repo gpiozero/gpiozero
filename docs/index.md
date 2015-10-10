@@ -1,34 +1,31 @@
 # GPIO Zero
 
-A simple interface to everyday GPIO components used with Raspberry Pi
+A simple interface to everyday GPIO components used with Raspberry Pi.
+
+Created by [Ben Nuttall](https://github.com/bennuttall) of the [Raspberry Pi
+Foundation](https://www.raspberrypi.org/), [Dave
+Jones](https://github.com/waveform80), and other contributors.
 
 ## Latest release
 
 The latest release is **v0.7.0 beta 2** released on 9th October 2015.
 
-## Motivation
+## About
 
-The "hello world" program in Java is at least 5 lines long, and contains 11
-jargon words which are to be ignored. The "hello world" program in Python is
-one simple line. However, the "hello world" of physical computing in Python
-(flashing an LED) is similar to the Java program.
+With very little code, you can quickly get going connecting your physical
+components together:
 
-6 lines of code to flash an LED. And skipping over why `GPIO` is used twice in
-the first line; what `BCM` means; why set warnings to False; and so on. Young
-children and beginners shouldn't need to sit and copy out several lines of text
-they're told to ignore. They should be able to read their code and understand
-what it means. This module provides a simple interface to everyday components.
-The LED example becomes:
+    from gpiozero import LED, Button
 
-```python
-from gpiozero import LED
+    led = LED(2)
+    button = Button(3)
 
-red = LED(2)
+    button.when_pressed = led.on
+    button.when_released = led.off
 
-red.on()
-```
-
-Any guesses how to turn it off?
+The library includes interfaces to many simple everyday components, as well as
+some more complex things like sensors, analogue-to-digital converters, full
+colour LEDs, robotics kits and more.
 
 ## Install
 
@@ -51,31 +48,6 @@ sudo pip install gpiozero --upgrade
 sudo pip-3.2 install gpiozero --upgrade
 ```
 
-## What's included?
-
-Components:
-
-- LED
-- Buzzer
-- Button
-- Motion Sensor
-- Light Sensor
-- Temperature Sensor
-- Motor
-- RGB LED
-- MCP3008 ADC
-
-Boards & accessories:
-
-- LED Board
-- Traffic Lights
-- PiLITEr
-- PI-TRAFFIC
-- Fish Dish
-- Traffic HAT
-- Robot
-- Ryanteck MCB Robot
-
 ## Getting started
 
 See the [input devices](inputs.md) and [output devices](outputs.md) to get
@@ -84,3 +56,23 @@ using the included accessories.
 
 For common programs using multiple components together, see the
 [recipes](recipes.md) page.
+
+## Development
+
+This project is being developed on
+[GitHub](https://github.com/RPi-Distro/python-gpiozero). Join in:
+
+* Provide suggestions, report bugs and ask questions as
+[Issues](https://github.com/RPi-Distro/python-gpiozero/issues)
+* Provide examples we can use as
+[recipes](http://pythonhosted.org/gpiozero/recipes/)
+* Contribute to the code
+
+Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to
+the [Google Doc](https://goo.gl/8zJLif).
+
+## Contributors
+
+- [Ben Nuttall](https://github.com/bennuttall) (project maintainer)
+- [Dave Jones](https://github.com/waveform80)
+- [Martin O'Hanlon](https://github.com/martinohanlon)

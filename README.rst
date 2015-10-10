@@ -4,21 +4,28 @@ gpiozero
 
 A simple interface to everyday GPIO components used with Raspberry Pi
 
-Latest release: v0.7.0 Beta 2
+Latest release
+==============
 
-Motivation
-==========
+The latest release is **v0.7.0 beta 2** released on 9th October 2015.
 
-The "hello world" program in Java is at least 5 lines long, and contains 11
-jargon words which students are taught to ignore.
+About
+=====
 
-The "hello world" program in Python is one simple line. However, the "hello
-world" of physical computing in Python (flashing an LED) is similar to the Java
-program: 6 lines of code to flash an LED.
+With very little code, you can quickly get going connecting your physical
+components together::
 
-Young children and beginners shouldn't need to sit and copy out several lines
-of text they're told to ignore. They should be able to read their code and
-understand what it means.
+    from gpiozero import LED, Button
+
+    led = LED(2)
+    button = Button(3)
+
+    button.when_pressed = led.on
+    button.when_released = led.off
+
+The library includes interfaces to many simple everyday components, as well as
+some more complex things like sensors, analogue-to-digital converters, full
+colour LEDs, robotics kits and more.
 
 Install
 =======
@@ -29,16 +36,6 @@ Install with pip::
     sudo pip-3.2 install gpiozero
 
 Both Python 3 and Python 2 are supported. Python 3 is recommended!
-
-Usage
-=====
-
-Example usage for lighting up an LED::
-
-    from gpiozero import LED
-
-    led = LED(2)
-    led.on()
 
 Documentation
 =============
@@ -51,7 +48,7 @@ Development
 This project is being developed on `GitHub`_. Join in:
 
 * Provide suggestions, report bugs and ask questions as `Issues`_
-* Help design the `API`_
+* Provide examples we can use as `recipes`_
 * Contribute to the code
 
 Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to
@@ -68,9 +65,8 @@ Contributors
 .. _pythonhosted.org/gpiozero: http://pythonhosted.org/gpiozero
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _Issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _API: https://github.com/RPi-Distro/python-gpiozero/issues/7
-.. _Google Doc: https://docs.google.com/document/d/1EbbVjdgXbKVPFlgH_pEEtPZ0zOZVSPHT4sQNW88Am7w/edit?usp=sharing
+.. _recipes: http://pythonhosted.org/gpiozero/recipes/
+.. _Google Doc: https://goo.gl/8zJLif
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
-
