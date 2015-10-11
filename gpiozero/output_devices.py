@@ -196,12 +196,12 @@ class PWMOutputDevice(DigitalOutputDevice):
         _min = self._min_pwm
         _max = self._max_pwm
         if _min <= n <= _max:
-            n *= 100
+            dc = n * 100
         else:
             raise GPIODeviceError(
                 "Value must be between %s and %s" % (_min, _max)
             )
-        self._pwm.ChangeDutyCycle(n)
+        self._pwm.ChangeDutyCycle(dc)
         self._value = n
 
 
