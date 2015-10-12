@@ -22,18 +22,22 @@ class OutputDevice(GPIODevice):
     """
     def __init__(self, pin=None):
         super(OutputDevice, self).__init__(pin)
-        # NOTE: catch_warnings isn't thread-safe but hopefully no-one's messing
-        # around with GPIO init within background threads...
-        with warnings.catch_warnings(record=True) as w:
-            GPIO.setup(pin, GPIO.OUT)
-        # The only warning we want to squash is a RuntimeWarning that is thrown
-        # when setting pins 2 or 3. Anything else should be replayed
-        for warning in w:
-            if warning.category != RuntimeWarning or pin not in (2, 3):
-                warnings.showwarning(
-                    warning.message, warning.category, warning.filename,
-                    warning.lineno, warning.file, warning.line
-                )
+        try:
+            # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
+            # messing around with GPIO init within background threads...
+            with warnings.catch_warnings(record=True) as w:
+                GPIO.setup(pin, GPIO.OUT)
+            # The only warning we want to squash is a RuntimeWarning that is
+            # thrown when setting pins 2 or 3. Anything else should be replayed
+            for warning in w:
+                if warning.category != RuntimeWarning or pin not in (2, 3):
+                    warnings.showwarning(
+                        warning.message, warning.category, warning.filename,
+                        warning.lineno, warning.file, warning.line
+                    )
+        except:
+            self.close()
+            raise
 
     def on(self):
         """
@@ -158,12 +162,16 @@ class PWMOutputDevice(DigitalOutputDevice):
     """
     def __init__(self, pin=None):
         super(PWMOutputDevice, self).__init__(pin)
-        self._frequency = 100
-        self._pwm = GPIO.PWM(self._pin, self._frequency)
-        self._pwm.start(0)
-        self._min_pwm = 0
-        self._max_pwm = 1
-        self.value = 0
+        try:
+            self._frequency = 100
+            self._pwm = GPIO.PWM(self._pin, self._frequency)
+            self._pwm.start(0)
+            self._min_pwm = 0
+            self._max_pwm = 1
+            self.value = 0
+        except:
+            self.close()
+            raise
 
     def on(self):
         """
@@ -195,13 +203,11 @@ class PWMOutputDevice(DigitalOutputDevice):
     def value(self, n):
         _min = self._min_pwm
         _max = self._max_pwm
-        if _min <= n <= _max:
-            dc = n * 100
-        else:
-            raise GPIODeviceError(
+        if not _min <= n <= _max:
+            raise OutputDeviceError(
                 "Value must be between %s and %s" % (_min, _max)
             )
-        self._pwm.ChangeDutyCycle(dc)
+        self._pwm.ChangeDutyCycle(n * 100)
         self._value = n
 
 
