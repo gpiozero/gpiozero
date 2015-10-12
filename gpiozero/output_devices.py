@@ -39,17 +39,20 @@ class OutputDevice(GPIODevice):
             self.close()
             raise
 
+    def _write(self, value):
+        GPIO.output(self.pin, bool(value))
+
     def on(self):
         """
         Turns the device on.
         """
-        GPIO.output(self.pin, True)
+        self._write(1)
 
     def off(self):
         """
         Turns the device off.
         """
-        GPIO.output(self.pin, False)
+        self._write(0)
 
 
 class DigitalOutputDevice(OutputDevice):
@@ -71,14 +74,14 @@ class DigitalOutputDevice(OutputDevice):
         Turns the device on.
         """
         self._stop_blink()
-        super(DigitalOutputDevice, self).on()
+        self._write(1)
 
     def off(self):
         """
         Turns the device off.
         """
         self._stop_blink()
-        super(DigitalOutputDevice, self).off()
+        self._write(0)
 
     def toggle(self):
         """
@@ -127,10 +130,10 @@ class DigitalOutputDevice(OutputDevice):
     def _blink_led(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
-            super(DigitalOutputDevice, self).on()
+            self._write(1)
             if self._blink_thread.stopping.wait(on_time):
                 break
-            super(DigitalOutputDevice, self).off()
+            self._write(0)
             if self._blink_thread.stopping.wait(off_time):
                 break
 
@@ -160,55 +163,53 @@ class PWMOutputDevice(DigitalOutputDevice):
     """
     Generic Output device configured for PWM (Pulse-Width Modulation).
     """
-    def __init__(self, pin=None):
+    def __init__(self, pin=None, frequency=100):
         super(PWMOutputDevice, self).__init__(pin)
         try:
-            self._frequency = 100
-            self._pwm = GPIO.PWM(self._pin, self._frequency)
-            self._pwm.start(0)
-            self._min_pwm = 0
-            self._max_pwm = 1
-            self.value = 0
+            self._pwm = GPIO.PWM(self._pin, frequency)
+            self._pwm.start(0.0)
+            self._frequency = frequency
+            self._value = 0.0
         except:
             self.close()
             raise
 
-    def on(self):
-        """
-        Turn the device on
-        """
-        self.value = self._max_pwm
-
-    def off(self):
-        """
-        Turn the device off
-        """
-        self.value = self._min_pwm
-
-    def toggle(self):
-        """
-        Reverse the state of the device.
-        If it's on (a value greater than 0), turn it off; if it's off, turn it
-        on.
-        """
-        _min = self._min_pwm
-        _max = self._max_pwm
-        self.value = _max if self.value == _min else _min
-
-    @property
-    def value(self):
+    def _read(self):
         return self._value
 
-    @value.setter
-    def value(self, n):
-        _min = self._min_pwm
-        _max = self._max_pwm
-        if not _min <= n <= _max:
-            raise OutputDeviceError(
-                "Value must be between %s and %s" % (_min, _max)
-            )
-        self._pwm.ChangeDutyCycle(n * 100)
-        self._value = n
+    def _write(self, value):
+        if not 0 <= value <= 1:
+            raise OutputDeviceError("PWM value must be between 0 and 1")
+        self._pwm.ChangeDutyCycle(value * 100)
+        self._value = value
+
+    def _get_value(self):
+        return self._read()
+
+    def _set_value(self, value):
+        self._stop_blink()
+        self._write(value)
+
+    value = property(_get_value, _set_value, doc="""\
+        The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
+        in between may be specified for varying levels of power in the device.
+        """)
+
+    @property
+    def is_active(self):
+        return self.value > 0.0
+
+    def _get_frequency(self):
+        return self._frequency
+
+    def _set_frequency(self, value):
+        self._pwm.ChangeFrequency(value)
+        self._frequency = value
+
+    frequency = property(_get_frequency, _set_frequency, doc="""\
+        The frequency of the pulses used with the PWM device, in Hz. The
+        default is 100.
+        """)
 
 
 class RGBLED(object):
@@ -298,15 +299,12 @@ class Motor(object):
         self._forward = PWMOutputDevice(forward)
         self._backward = PWMOutputDevice(back)
 
-        self._min_pwm = self._forward._min_pwm
-        self._max_pwm = self._forward._max_pwm
-
     def forward(self, speed=1):
         """
         Drive the motor forwards
         """
-        self._backward.value = self._min_pwm
-        self._forward.value = self._max_pwm
+        self._backward.off()
+        self._forward.on()
         if speed < 1:
             sleep(0.1)  # warm up the motor
             self._forward.value = speed
@@ -315,8 +313,8 @@ class Motor(object):
         """
         Drive the motor backwards
         """
-        self._forward.value = self._min_pwm
-        self._backward.value = self._max_pwm
+        self._forward.off()
+        self._backward.on()
         if speed < 1:
             sleep(0.1)  # warm up the motor
             self._backward.value = speed
