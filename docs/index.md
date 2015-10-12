@@ -15,13 +15,15 @@ The latest release is **v0.7.0 beta 2** released on 9th October 2015.
 With very little code, you can quickly get going connecting your physical
 components together:
 
-    from gpiozero import LED, Button
+```python
+from gpiozero import LED, Button
 
-    led = LED(2)
-    button = Button(3)
+led = LED(2)
+button = Button(3)
 
-    button.when_pressed = led.on
-    button.when_released = led.off
+button.when_pressed = led.on
+button.when_released = led.off
+```
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
