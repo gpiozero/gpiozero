@@ -62,19 +62,25 @@ class DigitalOutputDevice(OutputDevice):
         self._blink_thread = None
         self._lock = Lock()
 
+    def _on(self):
+        super(DigitalOutputDevice, self).on()
+
     def on(self):
         """
         Turns the device on.
         """
         self._stop_blink()
-        super(DigitalOutputDevice, self).on()
+        self._on()
+
+    def _off(self):
+        super(DigitalOutputDevice, self).off()
 
     def off(self):
         """
         Turns the device off.
         """
         self._stop_blink()
-        super(DigitalOutputDevice, self).off()
+        self._off()
 
     def toggle(self):
         """
@@ -123,10 +129,10 @@ class DigitalOutputDevice(OutputDevice):
     def _blink_led(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
-            super(DigitalOutputDevice, self).on()
+            self._on()
             if self._blink_thread.stopping.wait(on_time):
                 break
-            super(DigitalOutputDevice, self).off()
+            self._off()
             if self._blink_thread.stopping.wait(off_time):
                 break
 
@@ -165,17 +171,25 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._max_pwm = 1
         self.value = 0
 
+    def _on(self):
+        self.value = self._max_pwm
+
     def on(self):
         """
         Turn the device on
         """
-        self.value = self._max_pwm
+        self._stop_blink()
+        self._on()
+
+    def _off(self):
+        self.value = self._min_pwm
 
     def off(self):
         """
         Turn the device off
         """
-        self.value = self._min_pwm
+        self._stop_blink()
+        self._off()
 
     def toggle(self):
         """
