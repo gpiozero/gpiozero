@@ -208,7 +208,7 @@ class TrafficHat(FishDish):
     Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
-        red, amber, green = (22, 23, 24)
+        green, amber, red = (22, 23, 24)
         super(FishDish, self).__init__(red, amber, green)
         self.buzzer = Buzzer(5)
         self.button = Button(25)
