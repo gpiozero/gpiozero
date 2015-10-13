@@ -404,9 +404,14 @@ class MotionSensor(SmoothedInputDevice):
     and GND. VCC should be connected to the Pi's +5V pin, GND to one of the
     Pi's ground pins, and finally OUT to the GPIO specified as the value of the
     `pin` parameter in the constructor.
+
+    This class defaults `queue_len` to 1, effectively removing the averaging
+    of the internal queue. If your PIR sensor has a short fall time and is
+    particularly "jittery" you may wish to set this to a higher value (e.g. 5)
+    to mitigate this.
     """
     def __init__(
-            self, pin=None, queue_len=5, sample_rate=10, threshold=0.5,
+            self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
             partial=False):
         super(MotionSensor, self).__init__(
             pin, pull_up=False, threshold=threshold,
