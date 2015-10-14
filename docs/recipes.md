@@ -106,8 +106,8 @@ from gpiozero import LED
 from time import sleep
 
 red = LED(2)
-amber = LED(2)
-green = LED(2)
+amber = LED(3)
+green = LED(4)
 
 green.on()
 amber.off()
