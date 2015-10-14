@@ -19,9 +19,17 @@ class OutputDevice(GPIODevice):
     This class extends `GPIODevice` to add facilities common to GPIO output
     devices: an `on` method to switch the device on, and a corresponding `off`
     method.
+
+    active_high: `True`
+        If `True` (the default), the `on` method will set the GPIO to HIGH. If
+        `False`, the `on` method will set the GPIO to LOW (the `off` method
+        always does the opposite).
     """
-    def __init__(self, pin=None):
+    def __init__(self, pin=None, active_high=True):
+        self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
+        self._active_state = GPIO.HIGH if active_high else GPIO.LOW
+        self._inactive_state = GPIO.LOW if active_high else GPIO.HIGH
         try:
             # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
             # messing around with GPIO init within background threads...
@@ -46,13 +54,24 @@ class OutputDevice(GPIODevice):
         """
         Turns the device on.
         """
-        self._write(1)
+        self._write(self._active_state)
 
     def off(self):
         """
         Turns the device off.
         """
-        self._write(0)
+        self._write(self._inactive_state)
+
+    @property
+    def active_high(self):
+        return self._active_high
+
+    def __repr__(self):
+        try:
+            return '<gpiozero.%s object on pin=%d, active_high=%s, is_active=%s>' % (
+                self.__class__.__name__, self.pin, self.active_high, self.is_active)
+        except:
+            return super(OutputDevice, self).__repr__()
 
 
 class DigitalOutputDevice(OutputDevice):
@@ -64,8 +83,8 @@ class DigitalOutputDevice(OutputDevice):
     optional background thread to handle toggling the device state without
     further interaction.
     """
-    def __init__(self, pin=None):
-        super(DigitalOutputDevice, self).__init__(pin)
+    def __init__(self, pin=None, active_high=True):
+        super(DigitalOutputDevice, self).__init__(pin, active_high)
         self._blink_thread = None
         self._lock = Lock()
 
@@ -74,14 +93,14 @@ class DigitalOutputDevice(OutputDevice):
         Turns the device on.
         """
         self._stop_blink()
-        self._write(1)
+        self._write(self._active_state)
 
     def off(self):
         """
         Turns the device off.
         """
         self._stop_blink()
-        self._write(0)
+        self._write(self._inactive_state)
 
     def toggle(self):
         """
@@ -130,10 +149,10 @@ class DigitalOutputDevice(OutputDevice):
     def _blink_led(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
-            self._write(1)
+            self._write(self._active_state)
             if self._blink_thread.stopping.wait(on_time):
                 break
-            self._write(0)
+            self._write(self._inactive_state)
             if self._blink_thread.stopping.wait(off_time):
                 break
 
@@ -147,6 +166,20 @@ class LED(DigitalOutputDevice):
     an optional resistor to prevent the LED from burning out.
     """
     pass
+
+
+class Relay(DigitalOutputDevice):
+    """
+    A relay (electro-mechanical switching) component.
+
+    A typical configuration of such a device is to wire the circuit to the NO
+    (Normally Open) pins of the relay rather than the NC (Normally Closed) pins
+    for safety. Most relays operate with reversed logic so the `active_high`
+    parameter defaults to `False` in this class (see OutputDevice for more
+    information).
+    """
+    def __init__(self, pin=None, active_high=False):
+        super(Relay, self).__init__(pin, active_high)
 
 
 class Buzzer(DigitalOutputDevice):
