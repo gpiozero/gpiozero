@@ -168,20 +168,6 @@ class LED(DigitalOutputDevice):
     pass
 
 
-class Relay(DigitalOutputDevice):
-    """
-    A relay (electro-mechanical switching) component.
-
-    A typical configuration of such a device is to wire the circuit to the NO
-    (Normally Open) pins of the relay rather than the NC (Normally Closed) pins
-    for safety. Most relays operate with reversed logic so the `active_high`
-    parameter defaults to `False` in this class (see OutputDevice for more
-    information).
-    """
-    def __init__(self, pin=None, active_high=False):
-        super(Relay, self).__init__(pin, active_high)
-
-
 class Buzzer(DigitalOutputDevice):
     """
     A digital Buzzer component.
