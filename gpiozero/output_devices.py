@@ -164,15 +164,27 @@ class PWMOutputDevice(DigitalOutputDevice):
     Generic Output device configured for PWM (Pulse-Width Modulation).
     """
     def __init__(self, pin=None, frequency=100):
+        self._pwm = None
         super(PWMOutputDevice, self).__init__(pin)
         try:
-            self._pwm = GPIO.PWM(self._pin, frequency)
+            self._pwm = GPIO.PWM(self.pin, frequency)
             self._pwm.start(0.0)
             self._frequency = frequency
             self._value = 0.0
         except:
             self.close()
             raise
+
+    def close(self):
+        if self._pwm:
+            # Ensure we wipe out the PWM object so that re-runs don't attempt
+            # to re-stop the PWM thread (otherwise, the fact that close is
+            # called from __del__ can easily result in us stopping the PWM
+            # on *another* instance on the same pin)
+            p = self._pwm
+            self._pwm = None
+            p.stop()
+        super(PWMOutputDevice, self).close()
 
     def _read(self):
         return self._value
@@ -212,80 +224,62 @@ class PWMOutputDevice(DigitalOutputDevice):
         """)
 
 
+def _led_property(index, doc=None):
+    return property(
+        lambda self: getattr(self._leds[index], 'value'),
+        lambda self, value: setattr(self._leds[index], 'value', value),
+        doc
+    )
+
 class RGBLED(object):
     """
-    Single LED with individually controllable Red, Green and Blue components.
+    Single LED with individually controllable red, green and blue components.
+
+    red: `None`
+        The GPIO pin that controls the red component of the RGB LED.
+
+    green: `None`
+        The GPIO pin that controls the green component of the RGB LED.
+
+    blue: `None`
+        The GPIO pin that controls the blue component of the RGB LED.
     """
     def __init__(self, red=None, green=None, blue=None):
-        if not all([red, green, blue]):
-            raise GPIODeviceError('Red, Green and Blue pins must be provided')
+        self._leds = tuple(PWMOutputDevice(pin) for pin in (red, green, blue))
 
-        self._red = PWMOutputDevice(red)
-        self._green = PWMOutputDevice(green)
-        self._blue = PWMOutputDevice(blue)
-        self._leds = (self._red, self._green, self._blue)
+    red = _led_property(0)
+    green = _led_property(1)
+    blue = _led_property(2)
+
+    @property
+    def color(self):
+        return (self.red, self.green, self.blue)
+
+    @color.setter
+    def color(self, value):
+        self.red, self.green, self.blue = value
 
     def on(self):
         """
         Turn the device on
         """
-        for led in self._leds:
-            led.on()
+        self.color = (1, 1, 1)
 
     def off(self):
         """
         Turn the device off
         """
+        self.color = (0, 0, 0)
+
+    def close(self):
         for led in self._leds:
-            led.off()
+            led.close()
 
-    @property
-    def red(self):
-        return self._red.value
+    def __enter__(self):
+        return self
 
-    @red.setter
-    def red(self, value):
-        self._red.value = self._validate(value)
-
-    @property
-    def green(self):
-        return self._green.value
-
-    @green.setter
-    def green(self, value):
-        self._green.value = self._validate(value)
-
-    @property
-    def blue(self):
-        return self._blue.value
-
-    @blue.setter
-    def blue(self, value):
-        self._blue.value = self._validate(value)
-
-    @property
-    def rgb(self):
-        r = self.red
-        g = self.green
-        b = self.blue
-        return (r, g, b)
-
-    @rgb.setter
-    def rgb(self, values):
-        r, g, b = values
-        self.red = r
-        self.green = g
-        self.blue = b
-
-    def _validate(self, value):
-        _min = self._min_value
-        _max = self._max_value
-        if _min >= value >= _max:
-            return value
-        else:
-            raise GPIODeviceError(
-                "Colour value must be between %s and %s" % (_min, _max)
-            )
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.close()
 
 
 class Motor(object):
