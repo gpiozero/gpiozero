@@ -11,7 +11,9 @@ from .input_devices import (
     MotionSensor,
     LightSensor,
     TemperatureSensor,
+    AnalogInputDevice,
     MCP3008,
+    MCP3004,
 )
 from .output_devices import (
     OutputDevice,
