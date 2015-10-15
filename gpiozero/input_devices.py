@@ -496,30 +496,85 @@ class TemperatureSensor(W1ThermSensor):
         return self.get_temperature()
 
 
-class MCP3008(object):
+class AnalogInputDevice(object):
     """
-    MCP3008 ADC (Analogue-to-Digital converter).
+    Represents an analog input device connected to SPI (serial interface).
     """
-    def __init__(self, bus=0, device=0, channel=0):
-        self.bus = bus
-        self.device = device
-        self.channel = channel
-        self.spi = SpiDev()
-
-    def __enter__(self):
-        self.open()
-        return self
-
-    def open(self):
-        self.spi.open(self.bus, self.device)
-
-    def read(self):
-        adc = self.spi.xfer2([1, (8 + self.channel) << 4, 0])
-        data = ((adc[1] & 3) << 8) + adc[2]
-        return data
-
-    def __exit__(self, type, value, traceback):
-        self.close()
+    def __init__(self, device=0, bits=None):
+        if bits is None:
+            raise InputDeviceError('you must specify the bit resolution of the device')
+        if device not in (0, 1):
+            raise InputDeviceError('device must be 0 or 1')
+        self._device = device
+        self._bits = bits
+        self._spi = SpiDev()
+        self._spi.open(0, self.device)
 
     def close(self):
-        self.spi.close()
+        if self._spi:
+            s = self._spi
+            self._spi = None
+            s.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.close()
+
+    @property
+    def bus(self):
+        return 0
+
+    @property
+    def device(self):
+        return self._device
+
+    def _read(self):
+        raise NotImplementedError
+
+    @property
+    def value(self):
+        return self._read() / (2**self._bits - 1)
+
+
+class MCP3008(AnalogInputDevice):
+    def __init__(self, device=0, channel=0):
+        if not 0 <= channel < 8:
+            raise InputDeviceError('channel must be between 0 and 7')
+        super(MCP3008, self).__init__(device=device, bits=10)
+        self._channel = channel
+
+    @property
+    def channel(self):
+        return self._channel
+
+    def _read(self):
+        # MCP3008 protocol looks like the following:
+        #
+        #     Byte        0        1        2
+        #     ==== ======== ======== ========
+        #     Tx   00000001 MCCCxxxx xxxxxxxx
+        #     Rx   xxxxxxxx xxxxx0RR RRRRRRRR
+        #
+        # The first byte sent is a start byte (1). The top bit of the second
+        # holds the mode (M) which is 1 for single-ended read, and 0 for
+        # differential read (we only support single here), followed by 3-bits
+        # for the channel (C). The remainder of the transmission are "don't
+        # care" bits (x).
+        #
+        # The first byte and the top 5 bits of the second byte received are
+        # don't care bits (x). These are followed by a null bit (0), and then
+        # the 10 bits of the result (R).
+        data = self._spi.xfer2([1, (8 + self.channel) << 4, 0])
+        return ((data[1] & 3) << 8) | data[2]
+
+
+class MCP3004(MCP3008):
+    def __init__(self, device=0, channel=0):
+        # MCP3004 protocol is identical to MCP3008 but the top bit of the
+        # channel number must be 0 (effectively restricting it to 4 channels)
+        if not 0 <= channel < 4:
+            raise InputDeviceError('channel must be between 0 and 3')
+
+
