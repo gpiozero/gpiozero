@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '0.7.0'
+__version__      = '0.8.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
