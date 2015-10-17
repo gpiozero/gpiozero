@@ -576,5 +576,3 @@ class MCP3004(MCP3008):
         # channel number must be 0 (effectively restricting it to 4 channels)
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-
-

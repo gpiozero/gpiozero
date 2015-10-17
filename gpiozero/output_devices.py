@@ -224,7 +224,8 @@ class PWMOutputDevice(DigitalOutputDevice):
     value = property(_get_value, _set_value, doc="""\
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
-        """)
+        """
+    )
 
     @property
     def is_active(self):
@@ -240,7 +241,8 @@ class PWMOutputDevice(DigitalOutputDevice):
     frequency = property(_get_frequency, _set_frequency, doc="""\
         The frequency of the pulses used with the PWM device, in Hz. The
         default is 100.
-        """)
+        """
+    )
 
 
 def _led_property(index, doc=None):

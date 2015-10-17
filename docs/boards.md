@@ -85,7 +85,7 @@ traffic = TrafficLights(2, 3, 4)
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`    | Direct access to the red light as a single `LED` object. | LED |
+| `red`    | Direct access to the red light as a single `LED` object.   | LED |
 | `amber`  | Direct access to the amber light as a single `LED` object. | LED |
 | `green`  | Direct access to the green light as a single `LED` object. | LED |
 | `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
@@ -264,10 +264,10 @@ Create a `RyanteckRobot` object:
 robot = RyanteckRobot()
 ```
 
+The interface is identical to the generic `Robot` interface.
+
 There's no need to configure the pins if you're using the default pins
 `(17, 18)` for the left motor and `(22, 23)` for the right motor.
-
-The interface is identical to the generic `Robot` interface.
 
 To use the Ryanteck MCB on another set of pins, just use the generic `Robot`
 interface.

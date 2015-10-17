@@ -78,7 +78,163 @@ devices, the program needs to be running for the events to be detected:
 from gpiozero import Button
 from signal import pause
 
+def hello():
+    print("Hello")
+
 button = Button(2)
-button.when_pressed = lambda: print("Button was pressed!")
+button.when_pressed = hello
 pause()
+```
+
+## Importing from GPIO Zero
+
+In Python, libraries and functions used in a script must be imported by name at
+the top of the file, with the exception of the functions built in to Python by
+default.
+
+For example, to use the `Button` interface from the GPIO Zero library, it
+should be explicitly imported:
+
+```python
+from gpiozero import Button
+```
+
+Now `Button` is available directly in the script:
+
+```python
+button = Button(2)
+```
+
+Alternatively, the whole GPIO Zero library can be imported:
+
+```python
+import gpiozero
+```
+
+In this case, all references to interfaces within GPIO Zero must be prefixed:
+
+```python
+button = gpiozero.Button(2)
+```
+
+## Programming terms
+
+The following terms are used in the documentation.
+
+### Class
+
+A class is the blueprint for a data type. A class defines the way an instance
+of its own can behave, and has specific functionality relating to the kinds of
+things a user would expect to be able to do with it.
+
+An example of a class in GPIO Zero is `Button`. Note class names are given with
+each word capitalised.
+
+### Object
+
+An object is an instance of a class. Any variable in Python is an object of a
+given type (e.g. Integer, String, Float), and comprises the functionality
+defined by its class.
+
+To create an object, you must assign a variable name to an instance of a class:
+
+```python
+my_button = Button(2)
+```
+
+Now the variable `my_button` is an instance of the class `Button`. Check its
+type with Python's `type()` function:
+
+```python
+print(type(my_button))
+```
+
+which shows:
+
+```
+gpiozero.Button
+```
+
+Most classes in GPIO Zero require some parameters to create an object, for
+example the `LED` and `Button` examples require the pin number the device is
+attached to. Some classes require no parameters, others require multiple
+parameters, usually with some being optional. When parameters are optional,
+common default values are used.
+
+### Method
+
+A method is a function defined within a class. With an object of a given type,
+you can call a method on that object. For example if `my_led` is a `LED`
+object:
+
+```python
+my_led.on()
+```
+
+will call the `LED` class's `on()` function, relating to that instance of
+`LED`. If other `LED` objects have been created, they will not be affected by
+this action.
+
+In many cases, no parameters are required to call the method (like
+`my_led.on()`). In other cases, optional parameters are available. For example:
+
+```python
+my_led.blink(2, 3)
+```
+
+Here, the parameters `2` and `3` have been passed in as parameters. The `blink`
+method allows configuration of `on_time` and `off_time`. This example means the
+LED will flash on for 2 seconds and stay off for 3.
+
+Parameters can also be passed in by name, which means order is irrelevant. For
+example:
+
+```python
+my_led.blink(off_time=3)
+```
+
+Here, only the `off_time` parameter has been provided, and all other parameters
+will use their default values. Methods in GPIO Zero use sensible common default
+values, but are configurable.
+
+### Property
+
+A property is an attribute relating to the state of an object. For example:
+
+```python
+my_led.is_active
+```
+
+This will return `True` or `False` depending on whether or not the LED is
+currently on.
+
+Some properties allow you to change their value. For example an `RGBLED` object:
+
+```python
+rgb_led.green = 0.5
+```
+
+or:
+
+```python
+rgb_led.color = (0.2, 0.3, 0.7)
+```
+
+### Context manager
+
+A context manager is an alternative interface provided by classes which require
+"closing" the object when it's finished with. The following example (using a
+context manager):
+
+```python
+with MCP3008() as pot:
+    print(pot.value)
+```
+
+is identical to:
+
+```python
+pot = MCP3008()
+print(pot.value)
+pot.close()
 ```

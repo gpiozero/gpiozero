@@ -40,20 +40,20 @@ led = LED(17)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn the LED on. | None |
-| `off()` | Turn the LED off. | None |
+| `on()`     | Turn the LED on.  | None |
+| `off()`    | Turn the LED off. | None |
 | `toggle()` | Toggle the LED. If it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
-|           |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
-|           |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
-|           |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
+| `blink()`  | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
 | `pin`    | The GPIO pin number the LED is connected to. | Integer |
-| `is_active` | The current state of the pin (`True` if on; `False` if off). | Boolean |
+| `is_active` | The current state of the LED (`True` if on; `False` if off). | Boolean |
 
 ## Buzzer
 
@@ -85,20 +85,20 @@ buzzer = Buzzer(3)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn the buzzer on. | None |
-| `off()` | Turn the buzzer off. | None |
+| `on()`     | Turn the buzzer on.  | None |
+| `off()`    | Turn the buzzer off. | None |
 | `toggle()` | Toggle the buzzer. If it's on, turn it off; if it's off, turn it on. | None |
-| `blink()` | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
-|           |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
-|           |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
-|           |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
+| `blink()`  | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `pin`    | The GPIO pin number the buzzer is connected to. | Integer |
-| `is_active` | The current state of the pin (`True` if on; `False` if off). | Boolean |
+| `pin`       | The GPIO pin number the buzzer is connected to.                 | Integer |
+| `is_active` | The current state of the buzzer (`True` if on; `False` if off). | Boolean |
 
 ## RGB LED
 
@@ -136,18 +136,22 @@ led = RGBLED(2, 3, 4)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()` | Turn all the LEDs on (makes white light). | None |
-| `off()` | Turn all the LEDs off. | None |
+| `on()`     | Turn all the LEDs on (makes white light). | None |
+| `off()`    | Turn all the LEDs off.                    | None |
 | `toggle()` | Toggle the LED. If it's on (at all), turn it off; if it's off, turn it on. | None |
+| `blink()`  | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
+|            |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
+|            |                                          | `n` - The number of iterations. `None` means infinite. Default: `None` |
+|            |                                          | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 ### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`    | The brightness value of the red LED (0 to 255).     | Integer |
-| `green`  | The brightness value of the green LED (0 to 255).   | Integer |
-| `blue`   | The brightness value of the blue LED (0 to 255).    | Integer |
-| `rgb`    | The brightness values of the three LEDs (0 to 255). | Tuple   |
+| `red`    | The brightness value of the red LED (0 to 1).     | Integer |
+| `green`  | The brightness value of the green LED (0 to 1).   | Integer |
+| `blue`   | The brightness value of the blue LED (0 to 1).    | Integer |
+| `color`  | The brightness values of the three LEDs (0 to 1). | Tuple   |
 
 ## Motor
 
@@ -178,6 +182,6 @@ motor = Motor(forward=17, back=18)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `forward()` | Drive the motor forwards. | `speed` - Speed at which to drive the motor, `0` to `1`. Default: `1` |
+| `forward()`  | Drive the motor forwards.  | `speed` - Speed at which to drive the motor, `0` to `1`. Default: `1` |
 | `backward()` | Drive the motor backwards. | `speed` - Speed at which to drive the motor, `0` to `1`. Default: `1` |
-| `stop()` | Stop the motor. | None |
+| `stop()`     | Stop the motor.            | None |
