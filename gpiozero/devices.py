@@ -47,7 +47,11 @@ class GPIODevice(object):
         The GPIO pin (in BCM numbering) that the device is connected to. If
         this is `None` a `GPIODeviceError` will be raised.
     """
+
+    __slots__ = ('_pin', '_active_state', '_inactive_state')
+
     def __init__(self, pin=None):
+        super(GPIODevice, self).__init__()
         # self._pin must be set before any possible exceptions can be raised
         # because it's accessed in __del__. However, it mustn't be given the
         # value of pin until we've verified that it isn't already allocated
