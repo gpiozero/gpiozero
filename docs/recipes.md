@@ -271,21 +271,21 @@ from time import sleep
 
 led = RGBLED(red=9, green=10, blue=11)
 
-led.red = 255  # full red
-led.red = 128  # half red
+led.red = 1  # full red
+led.red = 0.5  # half red
 
-led.rgb = (0, 255, 0)  # full green
+led.rgb = (0, 1, 0)  # full green
 
-led.rgb = (255, 0, 255)  # magenta
-led.rgb = (255, 255, 0)  # yellow
-led.rgb = (0, 255, 100)  # cyan
-led.rgb = (255, 255, 255)  # white
+led.rgb = (1, 0, 1)  # magenta
+led.rgb = (1, 1, 0)  # yellow
+led.rgb = (0, 1, 1)  # cyan
+led.rgb = (1, 1, 1)  # white
 
 led.rgb = (0, 0, 0)  # off
 
 # slowly increase intensity of blue
-for n in range(256):
-    led.blue += 1
+for n in range(100):
+    led.blue += 0.01
     sleep(0.1)
 ```
 
@@ -439,7 +439,7 @@ pir.when_no_motion = robot.stop
 
 ## Potentiometer
 
-Continually print the value of a potentiometer (values between 0 and 1023):
+Continually print the value of a potentiometer (values between 0 and 1):
 
 ```python
 from gpiozero import MCP3008
@@ -457,16 +457,13 @@ values to make up the colour of the LED:
 ```python
 from gpiozero import RGBLED, MCP3008
 
-def read_pot(channel):
-    with MCP3008(channel=channel) as pot:
-        return 255 * pot.read() / 1023
-
 led = RGBLED(red=2, green=3, blue=4)
+red_pot = MCP3008(channel=0)
+green_pot = MCP3008(channel=1)
+blue_pot = MCP3008(channel=2)
 
 while True:
-    red = read_pot(0)
-    green = read_pot(1)
-    blue = read_pot(2)
-    led.rgb = (red, green, blue)
-    print(red, green, blue)
+    led.red = red_pot.value
+    led.green = green_pot.value
+    led.blue = blue_pot.value
 ```
