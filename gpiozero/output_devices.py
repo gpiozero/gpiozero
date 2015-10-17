@@ -25,6 +25,9 @@ class OutputDevice(GPIODevice):
         `False`, the `on` method will set the GPIO to LOW (the `off` method
         always does the opposite).
     """
+
+    __slots__ = ('_active_high')
+
     def __init__(self, pin=None, active_high=True):
         self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
@@ -83,6 +86,9 @@ class DigitalOutputDevice(OutputDevice):
     optional background thread to handle toggling the device state without
     further interaction.
     """
+
+    __slots__ = ('_blink_thread', '_lock')
+
     def __init__(self, pin=None, active_high=True):
         super(DigitalOutputDevice, self).__init__(pin, active_high)
         self._blink_thread = None
@@ -165,7 +171,9 @@ class LED(DigitalOutputDevice):
     anode (long leg) of the LED, and the cathode (short leg) to ground, with
     an optional resistor to prevent the LED from burning out.
     """
-    pass
+    __slots__ = ()
+
+LED.is_lit = LED.is_active
 
 
 class Buzzer(DigitalOutputDevice):
@@ -175,13 +183,16 @@ class Buzzer(DigitalOutputDevice):
     A typical configuration of such a device is to connect a GPIO pin to the
     anode (long leg) of the buzzer, and the cathode (short leg) to ground.
     """
-    pass
+    __slots__ = ()
 
 
 class PWMOutputDevice(DigitalOutputDevice):
     """
     Generic Output device configured for PWM (Pulse-Width Modulation).
     """
+
+    __slots__ = ('_pwm', '_frequency', '_value')
+
     def __init__(self, pin=None, frequency=100):
         self._pwm = None
         super(PWMOutputDevice, self).__init__(pin)
@@ -214,35 +225,35 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._pwm.ChangeDutyCycle(value * 100)
         self._value = value
 
-    def _get_value(self):
-        return self._read()
-
-    def _set_value(self, value):
-        self._stop_blink()
-        self._write(value)
-
-    value = property(_get_value, _set_value, doc="""\
+    @property
+    def value(self):
+        """
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
         """
-    )
+        return self._read()
+
+    @value.setter
+    def value(self, value):
+        self._stop_blink()
+        self._write(value)
 
     @property
     def is_active(self):
         return self.value > 0.0
 
-    def _get_frequency(self):
-        return self._frequency
-
-    def _set_frequency(self, value):
-        self._pwm.ChangeFrequency(value)
-        self._frequency = value
-
-    frequency = property(_get_frequency, _set_frequency, doc="""\
+    @property
+    def frequency(self):
+        """
         The frequency of the pulses used with the PWM device, in Hz. The
         default is 100.
         """
-    )
+        return self._frequency
+
+    @frequency.setter
+    def frequency(self, value):
+        self._pwm.ChangeFrequency(value)
+        self._frequency = value
 
 
 def _led_property(index, doc=None):
@@ -265,6 +276,9 @@ class RGBLED(object):
     blue: `None`
         The GPIO pin that controls the blue component of the RGB LED.
     """
+
+    __slots__ = ('_leds')
+
     def __init__(self, red=None, green=None, blue=None):
         self._leds = tuple(PWMOutputDevice(pin) for pin in (red, green, blue))
 
@@ -274,6 +288,13 @@ class RGBLED(object):
 
     @property
     def color(self):
+        """
+        Set the color of the LED from an RGB 3-tuple of `(red, green, blue)`
+        where each value between 0 and 1.
+
+        For example, purple would be `(1, 0, 1)` and yellow would be `(1, 1,
+        0)`, while orange would be `(1, 0.5, 0)`.
+        """
         return (self.red, self.green, self.blue)
 
     @color.setter
@@ -282,13 +303,15 @@ class RGBLED(object):
 
     def on(self):
         """
-        Turn the device on
+        Turn the device on. This equivalent to setting the device color to
+        white `(1, 1, 1)`.
         """
         self.color = (1, 1, 1)
 
     def off(self):
         """
-        Turn the device off
+        Turn the device off. This is equivalent to setting the device color
+        to black `(0, 0, 0)`.
         """
         self.color = (0, 0, 0)
 
@@ -307,6 +330,9 @@ class Motor(object):
     """
     Generic bi-directional motor.
     """
+
+    __slots__ = ('_forward', '_backward')
+
     def __init__(self, forward=None, back=None):
         if not all([forward, back]):
             raise GPIODeviceError('forward and back pins must be provided')
