@@ -256,12 +256,17 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._frequency = value
 
 
+class PWMLED(PWMOutputDevice):
+    pass
+
+
 def _led_property(index, doc=None):
     return property(
         lambda self: getattr(self._leds[index], 'value'),
         lambda self, value: setattr(self._leds[index], 'value', value),
         doc
     )
+
 
 class RGBLED(object):
     """

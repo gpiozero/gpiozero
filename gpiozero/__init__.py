@@ -18,6 +18,7 @@ from .input_devices import (
 from .output_devices import (
     OutputDevice,
     PWMOutputDevice,
+    PWMLED,
     LED,
     Buzzer,
     Motor,
