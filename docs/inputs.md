@@ -48,8 +48,8 @@ button = Button(pin=2, pull_up=False)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `wait_for_press()`   | Halt the program until the button is pressed.  | `timeout` - The number of seconds to wait before proceeding if no event is detected. Default: `None`  |
-| `wait_for_release()` | Halt the program until the button is released. | `timeout` - The number of seconds to wait before proceeding if no event is detected. Default: `None`  |
+| `wait_for_press()`   | Halt the program until the button is pressed.  | `timeout` - The number of seconds to wait before proceeding if no event is detected. **Default: `None`** |
+| `wait_for_release()` | Halt the program until the button is released. | `timeout` - The number of seconds to wait before proceeding if no event is detected. **Default: `None`** |
 
 ### Properties
 
@@ -91,8 +91,8 @@ pir = MotionSensor(4)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `wait_for_motion()`    | Halt the program until motion is detected.    | `timeout` - The number of seconds to wait before proceeding if no motion is detected. Default: `None`    |
-| `wait_for_no_motion()` | Halt the program until no motion is detected. | `timeout` - The number of seconds to wait before proceeding if motion is still detected. Default: `None` |
+| `wait_for_motion()`    | Halt the program until motion is detected.    | `timeout` - The number of seconds to wait before proceeding if no motion is detected. **Default: `None`**    |
+| `wait_for_no_motion()` | Halt the program until no motion is detected. | `timeout` - The number of seconds to wait before proceeding if motion is still detected. **Default: `None`** |
 
 ### Properties
 
@@ -130,8 +130,8 @@ light = LightSensor(4)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `wait_for_light()` | Halt the program until light is detected.    | `timeout` - The number of seconds to wait before proceeding if light is not detected. Default: `None` |
-| `wait_for_dark()`  | Halt the program until darkness is detected. | `timeout` - The number of seconds to wait before proceeding if darkness is not detected. Default: `None` |
+| `wait_for_light()` | Halt the program until light is detected.    | `timeout` - The number of seconds to wait before proceeding if light is not detected. **Default: `None`** |
+| `wait_for_dark()`  | Halt the program until darkness is detected. | `timeout` - The number of seconds to wait before proceeding if darkness is not detected. **Default: `None`** |
 
 ### Properties
 
