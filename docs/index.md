@@ -8,7 +8,7 @@ Jones](https://github.com/waveform80), and other contributors.
 
 ## Latest release
 
-The latest release is **v0.7.0 beta 2** released on 9th October 2015.
+The latest release is **v0.8.0 beta 3** released on 16th October 2015.
 
 ## About
 
