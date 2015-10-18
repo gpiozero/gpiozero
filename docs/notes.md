@@ -155,11 +155,47 @@ which shows:
 gpiozero.Button
 ```
 
-Most classes in GPIO Zero require some parameters to create an object, for
+### Initialisation options
+
+Most classes in GPIO Zero require some arguments to create an object, for
 example the `LED` and `Button` examples require the pin number the device is
-attached to. Some classes require no parameters, others require multiple
-parameters, usually with some being optional. When parameters are optional,
-common default values are used.
+attached to:
+
+```python
+my_button = Button(2)
+```
+
+Some classes require no arguments due to the nature of the device:
+
+```python
+temp = TemperatureSensor()
+```
+
+Others have multiple arguments, usually with some being optional:
+
+```python
+temp = TemperatureSensor()
+```
+
+When arguments are optional, common default values are used.
+
+Arguments can be given unnamed, as long as they are in order:
+
+```python
+my_button = Button(2, False)
+```
+
+though this may be confusing, so named is better in this case:
+
+```python
+my_button = Button(pin=2, pull_up=False)
+```
+
+Alternatively, they can be given in any order, as long as they are named:
+
+```python
+my_button = Button(pin=2, bounce_time=0.5, pull_up=False)
+```
 
 ### Method
 
@@ -175,27 +211,32 @@ will call the `LED` class's `on()` function, relating to that instance of
 `LED`. If other `LED` objects have been created, they will not be affected by
 this action.
 
-In many cases, no parameters are required to call the method (like
-`my_led.on()`). In other cases, optional parameters are available. For example:
+In many cases, no arguments are required to call the method (like
+`my_led.on()`). In other cases, optional arguments are available. For example:
 
 ```python
 my_led.blink(2, 3)
 ```
 
-Here, the parameters `2` and `3` have been passed in as parameters. The `blink`
+Here, the arguments `2` and `3` have been passed in as arguments. The `blink`
 method allows configuration of `on_time` and `off_time`. This example means the
-LED will flash on for 2 seconds and stay off for 3.
+LED will flash on for 2 seconds and stay off for 3. This example may benefit
+from use of named arguments:
 
-Parameters can also be passed in by name, which means order is irrelevant. For
+```python
+my_led.blink(on_time=2, off_time=3)
+```
+
+arguments can also be passed in by name, which means order is irrelevant. For
 example:
 
 ```python
 my_led.blink(off_time=3)
 ```
 
-Here, only the `off_time` parameter has been provided, and all other parameters
+Here, only the `off_time` argument has been provided, and all other arguments
 will use their default values. Methods in GPIO Zero use sensible common default
-values, but are configurable.
+values, but are configurable when necessary.
 
 ### Property
 

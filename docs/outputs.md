@@ -36,7 +36,18 @@ Create an `LED` object by passing in the pin number the LED is connected to:
 led = LED(17)
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+LED(pin=None, active_high=True)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `pin` | The GPIO pin number the LED is connected to. | Integer: `0` to `25` | *Required* |
+| `active_high` | Whether high or low voltage turns the LED on. | Boolean | `True` |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -48,7 +59,7 @@ led = LED(17)
 |            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
 |            |                                          | `background` - If `True`, start a background thread to continue blinking and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -81,7 +92,18 @@ to:
 buzzer = Buzzer(3)
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+Buzzer(pin=None, active_high=True)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `pin`         | The GPIO pin number the buzzer is connected to.  | Integer: `0` to `25` | *Required* |
+| `active_high` | Whether high or low voltage turns the buzzer on. | Boolean              | `True` |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -93,7 +115,7 @@ buzzer = Buzzer(3)
 |            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
 |            |                                          | `background` - If `True`, start a background thread to continue blinking and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -132,7 +154,19 @@ or just in order (red, green, blue):
 led = RGBLED(2, 3, 4)
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+RGBLED(red=None, green=None, blue=None)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `red`   | The GPIO pin number the red LED is connected to.   | Integer: `0` to `25` | *Required* |
+| `green` | The GPIO pin number the green LED is connected to. | Integer: `0` to `25` | *Required* |
+| `blue`  | The GPIO pin number the blue LED is connected to.  | Integer: `0` to `25` | *Required* |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -144,13 +178,13 @@ led = RGBLED(2, 3, 4)
 |            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
 |            |                                          | `background` - If `True`, start a background thread to continue blinking and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`   | The brightness value of the red LED (`0` to `1`).   | Integer or Float |
-| `green` | The brightness value of the green LED (`0` to `1`). | Integer or Float |
-| `blue`  | The brightness value of the blue LED (`0` to `1`).  | Integer or Float |
+| `red`   | The brightness value of the red LED (`0` to `1`).                   | Integer or Float |
+| `green` | The brightness value of the green LED (`0` to `1`).                 | Integer or Float |
+| `blue`  | The brightness value of the blue LED (`0` to `1`).                  | Integer or Float |
 | `color` | The brightness values of the three LEDs `(0, 0, 0)` to `(1, 1, 1)`. | Tuple |
 
 ## Motor
@@ -178,7 +212,18 @@ Create a `Motor` object by passing in the pin numbers the motor is connected to:
 motor = Motor(forward=17, back=18)
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+Motor(forward=None, back=None)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `forward` | The GPIO pin number the forward gear of the motor is connected to. | Integer: `0` to `25` | *Required* |
+| `back`    | The GPIO pin number the reverse gear of the motor is connected to. | Integer: `0` to `25` | *Required* |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |

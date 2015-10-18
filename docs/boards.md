@@ -27,11 +27,21 @@ Create an `LEDBoard` object by passing in a list of the LED pin numbers:
 leds = LEDBoard([2, 3, 4, 5, 6])
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+LEDBoard(leds=None)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `leds` | List of GPIO pins each LED is connected to, order preserved. | List | *Required* |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()`     | Turn all the LEDs on. | None |
+| `on()`     | Turn all the LEDs on.  | None |
 | `off()`    | Turn all the LEDs off. | None |
 | `toggle()` | Toggle all the LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
 | `blink()`  | Make the LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
@@ -39,7 +49,7 @@ leds = LEDBoard([2, 3, 4, 5, 6])
 |            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
 |            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -69,7 +79,19 @@ or just in order (red, amber, green):
 traffic = TrafficLights(2, 3, 4)
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+TrafficLights(red=None, amber=None, green=None)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `red`   | The GPIO pin number the red LED is connected to.   | Integer: `0` to `25` | *Required* |
+| `green` | The GPIO pin number the green LED is connected to. | Integer: `0` to `25` | *Required* |
+| `blue`  | The GPIO pin number the blue LED is connected to.  | Integer: `0` to `25` | *Required* |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -81,7 +103,7 @@ traffic = TrafficLights(2, 3, 4)
 |            |                                           | `n` - The number of iterations. `None` means infinite. Default: `None` |
 |            |                                           | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -108,7 +130,11 @@ Create a `PiLiter` object:
 lite = PiLiter()
 ```
 
-### Methods
+#### Initialisation options
+
+None
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -120,7 +146,7 @@ lite = PiLiter()
 |            |                                               | `n` - The number of iterations. `None` means infinite. Default: `None` |
 |            |                                               | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -168,7 +194,11 @@ Create a `FishDish` object:
 fish = FishDish()
 ```
 
-### Methods
+#### Initialisation options
+
+None
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
@@ -187,7 +217,7 @@ fish = FishDish()
 |                   |                                                   | `n` - The number of iterations. `None` means infinite. Default: `None` |
 |                   |                                                   | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
-### Properties
+#### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
@@ -238,7 +268,18 @@ pairs for each motor:
 robot = Robot(left=(4, 14), right=(17, 18))
 ```
 
-### Methods
+#### Initialisation options
+
+```python
+Robot(left=None, right=None))
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `left`  | The GPIO pins (forward and reverse) used by the left motor.  | Tuple | *Required* |
+| `right` | The GPIO pins (forward and reverse) used by the right motor. | Tuple | *Required* |
+
+#### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
