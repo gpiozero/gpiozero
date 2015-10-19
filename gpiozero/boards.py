@@ -92,6 +92,10 @@ class TrafficLights(LEDBoard):
         self.green = LED(green)
         self._leds = (self.red, self.amber, self.green)
 
+    @property
+    def lights(self):
+        return self._leds
+
 
 class PiTraffic(TrafficLights):
     """
@@ -103,16 +107,16 @@ class PiTraffic(TrafficLights):
         super(PiTraffic, self).__init__(red, amber, green)
 
 
-class FishDish(TrafficLights):
+class FishDish(object):
     """
     Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
         red, amber, green = (9, 22, 4)
-        super(FishDish, self).__init__(red, amber, green)
+        self.lights = TrafficLights(red, amber, green)
         self.buzzer = Buzzer(8)
         self.button = Button(pin=7, pull_up=False)
-        self._all = self._leds + (self.buzzer,)
+        self._all = self.lights.lights + (self.buzzer,)
 
     @property
     def all(self):
@@ -122,14 +126,14 @@ class FishDish(TrafficLights):
         """
         Turn all the board's components on.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.on()
 
     def off(self):
         """
         Turn all the board's components off.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.off()
 
     def toggle(self):
@@ -137,7 +141,7 @@ class FishDish(TrafficLights):
         Toggle all the board's components. For each component, if it's on, turn
         it off; if it's off, turn it on.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.toggle()
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
@@ -160,47 +164,7 @@ class FishDish(TrafficLights):
             method never returning).
         """
         for thing in self._all:
-            led.blink(on_time, off_time, n, background)
-
-    def lights_on(self):
-        """
-        Turn all the board's LEDs on.
-        """
-        super(FishDish, self).on()
-
-    def lights_off(self):
-        """
-        Turn all the board's LEDs off.
-        """
-        super(FishDish, self).off()
-
-    def toggle_lights(self):
-        """
-        Toggle all the board's LEDs. For each LED, if it's on, turn
-        it off; if it's off, turn it on.
-        """
-        super(FishDish, self).toggle()
-
-    def blink_lights(self, on_time=1, off_time=1, n=None, background=True):
-        """
-        Make all the board's LEDs turn on and off repeatedly.
-
-        on_time: `1`
-            Number of seconds to be on
-
-        off_time: `1`
-            Number of seconds to be off
-
-        n: `None`
-            Number of times to blink; None means forever
-
-        background: `True`
-            If `True`, start a background thread to continue blinking and
-            return immediately. If `False`, only return when the blink is
-            finished (warning: the default value of `n` will result in this
-            method never returning).
-        """
-        super(FishDish, self).blink(on_time, off_time, n, background)
+            thing.blink(on_time, off_time, n, background)
 
 
 class TrafficHat(FishDish):
@@ -208,11 +172,11 @@ class TrafficHat(FishDish):
     Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
-        green, amber, red = (22, 23, 24)
-        super(FishDish, self).__init__(red, amber, green)
+        red, amber, green = (24, 23, 22)
+        self.lights = TrafficLights(red, amber, green)
         self.buzzer = Buzzer(5)
         self.button = Button(25)
-        self._all = self._leds + (self.buzzer,)
+        self._all = self.lights._leds + (self.buzzer,)
 
 
 class Robot(object):
