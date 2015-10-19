@@ -1,3 +1,10 @@
+from __future__ import (
+    unicode_literals,
+    print_function,
+    absolute_import,
+    division,
+    )
+
 import warnings
 from time import sleep
 from threading import Lock
@@ -5,14 +12,21 @@ from itertools import repeat
 
 from RPi import GPIO
 
-from .devices import GPIODeviceError, GPIODevice, GPIOThread
+from .devices import (
+    GPIODeviceError,
+    GPIODeviceClosed,
+    GPIODevice,
+    GPIOThread,
+    CompositeDevice,
+    SourceMixin,
+    )
 
 
 class OutputDeviceError(GPIODeviceError):
     pass
 
 
-class OutputDevice(GPIODevice):
+class OutputDevice(SourceMixin, GPIODevice):
     """
     Represents a generic GPIO output device.
 
@@ -25,13 +39,8 @@ class OutputDevice(GPIODevice):
         `False`, the `on` method will set the GPIO to LOW (the `off` method
         always does the opposite).
     """
-
-    __slots__ = ('_active_high', '_source', '_source_thread')
-
     def __init__(self, pin=None, active_high=True):
         self._active_high = active_high
-        self._source = None
-        self._source_thread = None
         super(OutputDevice, self).__init__(pin)
         self._active_state = GPIO.HIGH if active_high else GPIO.LOW
         self._inactive_state = GPIO.LOW if active_high else GPIO.HIGH
@@ -51,10 +60,6 @@ class OutputDevice(GPIODevice):
         except:
             self.close()
             raise
-
-    def close(self):
-        self.source = None
-        super(OutputDevice, self).close()
 
     def _write(self, value):
         GPIO.output(self.pin, bool(value))
@@ -79,26 +84,6 @@ class OutputDevice(GPIODevice):
     def value(self, value):
         self._write(value)
 
-    def _copy_values(self, source):
-        for v in source:
-            self.value = v
-            if self._source_thread.stopping.wait(0):
-                break
-
-    @property
-    def source(self):
-        return self._source
-
-    @source.setter
-    def source(self, value):
-        if self._source_thread is not None:
-            self._source_thread.stop()
-            self._source_thread = None
-        self._source = value
-        if value is not None:
-            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
-            self._source_thread.start()
-
     @property
     def active_high(self):
         return self._active_high
@@ -120,12 +105,9 @@ class DigitalOutputDevice(OutputDevice):
     optional background thread to handle toggling the device state without
     further interaction.
     """
-
-    __slots__ = ('_blink_thread', '_lock')
-
     def __init__(self, pin=None, active_high=True):
-        super(DigitalOutputDevice, self).__init__(pin, active_high)
         self._blink_thread = None
+        super(DigitalOutputDevice, self).__init__(pin, active_high)
         self._lock = Lock()
 
     def close(self):
@@ -148,8 +130,8 @@ class DigitalOutputDevice(OutputDevice):
 
     def toggle(self):
         """
-        Reverse the state of the device.
-        If it's on, turn it off; if it's off, turn it on.
+        Reverse the state of the device. If it's on, turn it off; if it's off,
+        turn it on.
         """
         with self._lock:
             if self.is_active:
@@ -161,20 +143,20 @@ class DigitalOutputDevice(OutputDevice):
         """
         Make the device turn on and off repeatedly.
 
-        on_time: 1
+        on_time: `1`
             Number of seconds on
 
-        off_time: 1
+        off_time: `1`
             Number of seconds off
 
-        n: None
-            Number of times to blink; None means forever
+        n: `None`
+            Number of times to blink; `None` means forever
 
-        background: True
-            If True, start a background thread to continue blinking and return
-            immediately. If False, only return when the blink is finished
-            (warning: the default value of n will result in this method never
-            returning).
+        background: `True`
+            If `True`, start a background thread to continue blinking and
+            return immediately. If `False`, only return when the blink is
+            finished (warning: the default value of n will result in this
+            method never returning).
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
@@ -209,7 +191,7 @@ class LED(DigitalOutputDevice):
     anode (long leg) of the LED, and the cathode (short leg) to ground, with
     an optional resistor to prevent the LED from burning out.
     """
-    __slots__ = ()
+    pass
 
 LED.is_lit = LED.is_active
 
@@ -221,16 +203,13 @@ class Buzzer(DigitalOutputDevice):
     A typical configuration of such a device is to connect a GPIO pin to the
     anode (long leg) of the buzzer, and the cathode (short leg) to ground.
     """
-    __slots__ = ()
+    pass
 
 
 class PWMOutputDevice(DigitalOutputDevice):
     """
     Generic Output device configured for PWM (Pulse-Width Modulation).
     """
-
-    __slots__ = ('_pwm', '_frequency', '_value')
-
     def __init__(self, pin=None, frequency=100):
         self._pwm = None
         super(PWMOutputDevice, self).__init__(pin)
@@ -278,6 +257,9 @@ class PWMOutputDevice(DigitalOutputDevice):
 
     @property
     def is_active(self):
+        """
+        Returns `True` if the device is currently active and `False` otherwise.
+        """
         return self.value > 0.0
 
     @property
@@ -295,7 +277,16 @@ class PWMOutputDevice(DigitalOutputDevice):
 
 
 class PWMLED(PWMOutputDevice):
+    """
+    An LED (Light Emmitting Diode) component with variable brightness.
+
+    A typical configuration of such a device is to connect a GPIO pin to the
+    anode (long leg) of the LED, and the cathode (short leg) to ground, with
+    an optional resistor to prevent the LED from burning out.
+    """
     pass
+
+PWMLED.is_lit = PWMLED.is_active
 
 
 def _led_property(index, doc=None):
@@ -306,7 +297,7 @@ def _led_property(index, doc=None):
     )
 
 
-class RGBLED(object):
+class RGBLED(SourceMixin, CompositeDevice):
     """
     Single LED with individually controllable red, green and blue components.
 
@@ -319,10 +310,10 @@ class RGBLED(object):
     blue: `None`
         The GPIO pin that controls the blue component of the RGB LED.
     """
-
-    __slots__ = ('_leds')
-
     def __init__(self, red=None, green=None, blue=None):
+        if not all([red, green, blue]):
+            raise OutputDeviceError('red, green, and blue pins must be provided')
+        super(RGBLED, self).__init__()
         self._leds = tuple(PWMOutputDevice(pin) for pin in (red, green, blue))
 
     red = _led_property(0)
@@ -330,78 +321,98 @@ class RGBLED(object):
     blue = _led_property(2)
 
     @property
-    def color(self):
+    def value(self):
         """
-        Set the color of the LED from an RGB 3-tuple of `(red, green, blue)`
-        where each value between 0 and 1.
+        Represents the color of the LED as an RGB 3-tuple of `(red, green,
+        blue)` where each value is between 0 and 1.
 
         For example, purple would be `(1, 0, 1)` and yellow would be `(1, 1,
         0)`, while orange would be `(1, 0.5, 0)`.
         """
         return (self.red, self.green, self.blue)
 
-    @color.setter
-    def color(self, value):
+    @value.setter
+    def value(self, value):
         self.red, self.green, self.blue = value
+
+    @property
+    def is_active(self):
+        """
+        Returns `True` if the LED is currently active and `False` otherwise.
+        """
+        return self.value != (0, 0, 0)
+
+    color = value
 
     def on(self):
         """
         Turn the device on. This equivalent to setting the device color to
         white `(1, 1, 1)`.
         """
-        self.color = (1, 1, 1)
+        self.value = (1, 1, 1)
 
     def off(self):
         """
         Turn the device off. This is equivalent to setting the device color
         to black `(0, 0, 0)`.
         """
-        self.color = (0, 0, 0)
+        self.value = (0, 0, 0)
 
     def close(self):
         for led in self._leds:
             led.close()
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        self.close()
-
-
-class Motor(object):
+class Motor(SourceMixin, CompositeDevice):
     """
     Generic bi-directional motor.
     """
-
-    __slots__ = ('_forward', '_backward')
-
-    def __init__(self, forward=None, back=None):
+    def __init__(self, forward=None, backward=None):
         if not all([forward, back]):
-            raise GPIODeviceError('forward and back pins must be provided')
-
+            raise OutputDeviceError('forward and back pins must be provided')
+        super(Motor, self).__init__()
         self._forward = PWMOutputDevice(forward)
-        self._backward = PWMOutputDevice(back)
+        self._backward = PWMOutputDevice(backward)
+
+    @property
+    def value(self):
+        """
+        Represents the speed of the motor as a floating point value between -1
+        (full speed backward) and 1 (full speed forward).
+        """
+        return self._forward.value - self._backward.value
+
+    @value.setter
+    def value(self, value):
+        if not -1 <= value <= 1:
+            raise OutputDeviceError("Motor value must be between -1 and 1")
+        if value > 0:
+            self.forward(value)
+        elif value < 0:
+            self.backward(-value)
+        else:
+            self.stop()
+
+    @property
+    def is_active(self):
+        """
+        Returns `True` if the motor is currently active and `False` otherwise.
+        """
+        return self.value != 0
 
     def forward(self, speed=1):
         """
         Drive the motor forwards
         """
         self._backward.off()
-        self._forward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motor
-            self._forward.value = speed
+        self._forward.value = speed
 
     def backward(self, speed=1):
         """
         Drive the motor backwards
         """
         self._forward.off()
-        self._backward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motor
-            self._backward.value = speed
+        self._backward.value = speed
 
     def stop(self):
         """
@@ -409,3 +420,4 @@ class Motor(object):
         """
         self._forward.off()
         self._backward.off()
+

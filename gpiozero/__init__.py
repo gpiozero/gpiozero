@@ -1,6 +1,12 @@
-from __future__ import absolute_import
+from __future__ import (
+    unicode_literals,
+    print_function,
+    absolute_import,
+    division,
+    )
 
 from .devices import (
+    GPIODeviceClosed,
     GPIODeviceError,
     GPIODevice,
 )
@@ -16,6 +22,7 @@ from .input_devices import (
     MCP3004,
 )
 from .output_devices import (
+    OutputDeviceError,
     OutputDevice,
     PWMOutputDevice,
     PWMLED,
