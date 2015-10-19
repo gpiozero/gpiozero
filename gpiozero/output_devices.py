@@ -26,10 +26,12 @@ class OutputDevice(GPIODevice):
         always does the opposite).
     """
 
-    __slots__ = ('_active_high')
+    __slots__ = ('_active_high', '_source', '_source_thread')
 
     def __init__(self, pin=None, active_high=True):
         self._active_high = active_high
+        self._source = None
+        self._source_thread = None
         super(OutputDevice, self).__init__(pin)
         self._active_state = GPIO.HIGH if active_high else GPIO.LOW
         self._inactive_state = GPIO.LOW if active_high else GPIO.HIGH
@@ -50,6 +52,10 @@ class OutputDevice(GPIODevice):
             self.close()
             raise
 
+    def close(self):
+        self.source = None
+        super(OutputDevice, self).close()
+
     def _write(self, value):
         GPIO.output(self.pin, bool(value))
 
@@ -64,6 +70,34 @@ class OutputDevice(GPIODevice):
         Turns the device off.
         """
         self._write(self._inactive_state)
+
+    @property
+    def value(self):
+        return super(OutputDevice, self).value
+
+    @value.setter
+    def value(self, value):
+        self._write(value)
+
+    def _copy_values(self, source):
+        for v in source:
+            self.value = v
+            if self._source_thread.stopping.wait(0):
+                break
+
+    @property
+    def source(self):
+        return self._source
+
+    @source.setter
+    def source(self, value):
+        if self._source_thread is not None:
+            self._source_thread.stop()
+            self._source_thread = None
+        self._source = value
+        if value is not None:
+            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
+            self._source_thread.start()
 
     @property
     def active_high(self):
@@ -93,6 +127,10 @@ class DigitalOutputDevice(OutputDevice):
         super(DigitalOutputDevice, self).__init__(pin, active_high)
         self._blink_thread = None
         self._lock = Lock()
+
+    def close(self):
+        self._stop_blink()
+        super(DigitalOutputDevice, self).close()
 
     def on(self):
         """
