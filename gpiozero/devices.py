@@ -155,11 +155,24 @@ class GPIODevice(object):
         return self._pin
 
     @property
-    def is_active(self):
+    def value(self):
         """
         Returns `True` if the device is currently active and `False` otherwise.
         """
         return self._read()
+
+    is_active = value
+
+    @property
+    def values(self):
+        """
+        An infinite iterator of values read from `value`.
+        """
+        while True:
+            try:
+                yield self.value
+            except GPIODeviceClosed:
+                break
 
     def __repr__(self):
         try:
