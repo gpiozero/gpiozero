@@ -1,3 +1,10 @@
+from __future__ import (
+    unicode_literals,
+    print_function,
+    absolute_import,
+    division,
+    )
+
 import atexit
 import weakref
 from threading import Thread, Event, RLock
@@ -30,11 +37,123 @@ GPIO.setwarnings(False)
 class GPIODeviceError(Exception):
     pass
 
+
 class GPIODeviceClosed(GPIODeviceError):
     pass
 
 
-class GPIODevice(object):
+class GPIOFixedAttrs(type):
+    # NOTE Yes, this is a metaclass. Don't be scared - it's a simple one.
+
+    def __call__(cls, *args, **kwargs):
+        # Construct the class as normal and ensure it's a subclass of GPIOBase
+        # (defined below with a custom __setattrs__)
+        result = super(GPIOFixedAttrs, cls).__call__(*args, **kwargs)
+        assert isinstance(result, GPIOBase)
+        # At this point __new__ and __init__ have all been run. We now fix the
+        # set of attributes on the class by dir'ing the instance and creating a
+        # frozenset of the result called __attrs__ (which is queried by
+        # GPIOBase.__setattr__)
+        result.__attrs__ = frozenset(dir(result))
+        return result
+
+
+class GPIOBase(object):
+    __metaclass__ = GPIOFixedAttrs
+
+    def __setattr__(self, name, value):
+        # This overridden __setattr__ simply ensures that additional attributes
+        # cannot be set on the class after construction (it manages this in
+        # conjunction with the meta-class above). Traditionally, this is
+        # managed with __slots__; however, this doesn't work with Python's
+        # multiple inheritance system which we need to use in order to avoid
+        # repeating the "source" and "values" property code in myriad places
+        if hasattr(self, '__attrs__') and name not in self.__attrs__:
+            raise AttributeError(
+                "'%s' object has no attribute '%s'" % (
+                self.__class__.__name__, name))
+        return super(GPIOBase, self).__setattr__(name, value)
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        # This is a placeholder which is simply here to ensure close() can be
+        # safely called from subclasses without worrying whether super-class'
+        # have it (which in turn is useful in conjunction with the SourceMixin
+        # class).
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.close()
+
+
+class ValuesMixin(object):
+    # NOTE Use this mixin *first* in the parent list
+
+    @property
+    def values(self):
+        """
+        An infinite iterator of values read from `value`.
+        """
+        while True:
+            try:
+                yield self.value
+            except GPIODeviceClosed:
+                break
+
+
+class SourceMixin(object):
+    # NOTE Use this mixin *first* in the parent list
+
+    def __init__(self, *args, **kwargs):
+        self._source = None
+        self._source_thread = None
+        super(SourceMixin, self).__init__(*args, **kwargs)
+
+    def close(self):
+        try:
+            super(SourceMixin, self).close()
+        except AttributeError:
+            pass
+        self.source = None
+
+    def _copy_values(self, source):
+        for v in source:
+            self.value = v
+            if self._source_thread.stopping.wait(0):
+                break
+
+    @property
+    def source(self):
+        """
+        The iterable to use as a source of values for `value`.
+        """
+        return self._source
+
+    @source.setter
+    def source(self, value):
+        if self._source_thread is not None:
+            self._source_thread.stop()
+            self._source_thread = None
+        self._source = value
+        if value is not None:
+            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
+            self._source_thread.start()
+
+
+class CompositeDevice(ValuesMixin, GPIOBase):
+    """
+    Represents a device composed of multiple GPIO devices like simple HATs,
+    H-bridge motor controllers, robots composed of multiple motors, etc.
+    """
+    pass
+
+
+class GPIODevice(ValuesMixin, GPIOBase):
     """
     Represents a generic GPIO device.
 
@@ -47,9 +166,6 @@ class GPIODevice(object):
         The GPIO pin (in BCM numbering) that the device is connected to. If
         this is `None` a `GPIODeviceError` will be raised.
     """
-
-    __slots__ = ('_pin', '_active_state', '_inactive_state')
-
     def __init__(self, pin=None):
         super(GPIODevice, self).__init__()
         # self._pin must be set before any possible exceptions can be raised
@@ -67,9 +183,6 @@ class GPIODevice(object):
         self._pin = pin
         self._active_state = GPIO.HIGH
         self._inactive_state = GPIO.LOW
-
-    def __del__(self):
-        self.close()
 
     def _read(self):
         try:
@@ -132,6 +245,7 @@ class GPIODevice(object):
             ...     led.on()
             ...
         """
+        super(GPIODevice, self).close()
         with _GPIO_PINS_LOCK:
             pin = self._pin
             self._pin = None
@@ -139,12 +253,6 @@ class GPIODevice(object):
                 _GPIO_PINS.remove(pin)
                 GPIO.remove_event_detect(pin)
                 GPIO.cleanup(pin)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        self.close()
 
     @property
     def pin(self):
@@ -162,17 +270,6 @@ class GPIODevice(object):
         return self._read()
 
     is_active = value
-
-    @property
-    def values(self):
-        """
-        An infinite iterator of values read from `value`.
-        """
-        while True:
-            try:
-                yield self.value
-            except GPIODeviceClosed:
-                break
 
     def __repr__(self):
         try:
@@ -238,3 +335,4 @@ class GPIOQueue(GPIOThread):
         except ReferenceError:
             # Parent is dead; time to die!
             pass
+

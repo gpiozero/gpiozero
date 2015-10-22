@@ -1,19 +1,48 @@
-from .input_devices import Button
-from .output_devices import LED, Buzzer, Motor
-from .devices import GPIODeviceError
+from __future__ import (
+    unicode_literals,
+    print_function,
+    absolute_import,
+    division,
+    )
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass
 
 from time import sleep
+from collections import namedtuple
+
+from .input_devices import InputDeviceError, Button
+from .output_devices import OutputDeviceError, LED, Buzzer, Motor
+from .devices import CompositeDevice, SourceMixin
 
 
-class LEDBoard(object):
+class LEDBoard(SourceMixin, CompositeDevice):
     """
     A Generic LED Board or collection of LEDs.
     """
-    def __init__(self, leds):
-        self._leds = tuple(LED(led) for led in leds)
+    def __init__(self, *pins):
+        super(LEDBoard, self).__init__()
+        self._leds = tuple(LED(pin) for pin in pins)
+
+    @property
+    def value(self):
+        """
+        A tuple containing a boolean value for each LED on the board. This
+        property can also be set to update the state of all LEDs on the board.
+        """
+        return tuple(led.value for led in self._leds)
+
+    @value.setter
+    def value(self, value):
+        for l, v in zip(self._leds, value):
+            l.value = v
 
     @property
     def leds(self):
+        """
+        A tuple of all the `LED` objects contained by the instance.
+        """
         return self._leds
 
     def on(self):
@@ -66,9 +95,10 @@ class PiLiter(LEDBoard):
     Ciseco Pi-LITEr: strip of 8 very bright LEDs.
     """
     def __init__(self):
-        leds = (4, 17, 27, 18, 22, 23, 24, 25)
-        super(PiLiter, self).__init__(leds)
+        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25)
 
+
+TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
 
 class TrafficLights(LEDBoard):
     """
@@ -85,12 +115,37 @@ class TrafficLights(LEDBoard):
     """
     def __init__(self, red=None, amber=None, green=None):
         if not all([red, amber, green]):
-            raise GPIODeviceError('Red, Amber and Green pins must be provided')
+            raise OutputDeviceError('red, amber and green pins must be provided')
+        super(TrafficLights, self).__init__(red, amber, green)
 
-        self.red = LED(red)
-        self.amber = LED(amber)
-        self.green = LED(green)
-        self._leds = (self.red, self.amber, self.green)
+    @property
+    def value(self):
+        return TrafficLightTuple(*super(TrafficLights, self).value)
+
+    @value.setter
+    def value(self, value):
+        super(TrafficLights, self).value = value
+
+    @property
+    def red(self):
+        """
+        The `LED` object representing the red LED.
+        """
+        return self.leds[0]
+
+    @property
+    def amber(self):
+        """
+        The `LED` object representing the red LED.
+        """
+        return self.leds[1]
+
+    @property
+    def green(self):
+        """
+        The `LED` object representing the green LED.
+        """
+        return self.leds[2]
 
 
 class PiTraffic(TrafficLights):
@@ -99,24 +154,46 @@ class PiTraffic(TrafficLights):
     and 11.
     """
     def __init__(self):
-        red, amber, green = (9, 10, 11)
-        super(PiTraffic, self).__init__(red, amber, green)
+        super(PiTraffic, self).__init__(9, 10, 11)
 
+
+FishDishTuple = namedtuple('FishDishTuple', ('red', 'amber', 'green', 'buzzer'))
 
 class FishDish(TrafficLights):
     """
     Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
-        red, amber, green = (9, 22, 4)
-        super(FishDish, self).__init__(red, amber, green)
+        super(FishDish, self).__init__(9, 22, 4)
         self.buzzer = Buzzer(8)
-        self.button = Button(pin=7, pull_up=False)
-        self._all = self._leds + (self.buzzer,)
+        self.button = Button(7, pull_up=False)
+        self._all = self.leds + (self.buzzer,)
 
     @property
     def all(self):
+        """
+        A tuple containing objects for all the items on the board (several
+        `LED` objects, a `Buzzer`, and a `Button`).
+        """
         return self._all
+
+    @property
+    def value(self):
+        """
+        Returns a named-tuple containing values representing the states of
+        the LEDs, and the buzzer. This property can also be set to a 4-tuple
+        to update the state of all the board's components.
+        """
+        return FishDishTuple(
+                self.red.value,
+                self.amber.value,
+                self.green.value,
+                self.buzzer.value)
+
+    @value.setter
+    def value(self, value):
+        for i, v in zip(self._all, value):
+            i.value = v
 
     def on(self):
         """
@@ -208,97 +285,79 @@ class TrafficHat(FishDish):
     Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
-        green, amber, red = (22, 23, 24)
-        super(FishDish, self).__init__(red, amber, green)
+        super(FishDish, self).__init__(22, 23, 24)
         self.buzzer = Buzzer(5)
         self.button = Button(25)
         self._all = self._leds + (self.buzzer,)
 
 
-class Robot(object):
+RobotTuple = namedtuple('RobotTuple', ('left', 'right'))
+
+class Robot(SourceMixin, CompositeDevice):
     """
     Generic dual-motor Robot.
     """
     def __init__(self, left=None, right=None):
         if not all([left, right]):
-            raise GPIODeviceError('left and right motor pins must be provided')
+            raise OutputDeviceError('left and right motor pins must be provided')
+        super(Robot, self).__init__()
+        self._left = Motor(*left)
+        self._right = Motor(*right)
 
-        left_forward, left_back = left
-        right_forward, right_back = right
+    @property
+    def value(self):
+        """
+        Returns a tuple of two floating point values (-1 to 1) representing the
+        speeds of the robot's two motors (left and right). This property can
+        also be set to alter the speed of both motors.
+        """
+        return RobotTuple(self._left.value, self._right.value)
 
-        self._left = Motor(forward=left_forward, back=left_back)
-        self._right = Motor(forward=right_forward, back=right_back)
-
-        self._min_pwm = self._left._min_pwm
-        self._max_pwm = self._left._max_pwm
+    @value.setter
+    def value(self, value):
+        self._left.value, self._right.value = value
 
     def forward(self, speed=1):
         """
-        Drive the robot forward.
+        Drive the robot forward by running both motors forward.
 
         speed: `1`
             Speed at which to drive the motors, 0 to 1.
         """
-        self._left._backward.off()
-        self._right._backward.off()
-
-        self._left._forward.on()
-        self._right._forward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motors
-            self._left._forward.value = speed
-            self._right._forward.value = speed
+        self._left.forward(speed)
+        self._right.forward(speed)
 
     def backward(self, speed=1):
         """
-        Drive the robot backward.
+        Drive the robot backward by running both motors backward.
 
         speed: `1`
             Speed at which to drive the motors, 0 to 1.
         """
-        self._left._forward.off()
-        self._right._forward.off()
-
-        self._left._backward.on()
-        self._right._backward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motors
-            self._left._backward.value = speed
-            self._right._backward.value = speed
+        self._left.backward(speed)
+        self._right.backward(speed)
 
     def left(self, speed=1):
         """
-        Make the robot turn left.
+        Make the robot turn left by running the right motor forward and left
+        motor backward.
 
         speed: `1`
             Speed at which to drive the motors, 0 to 1.
         """
-        self._right._backward.off()
-        self._left._forward.off()
-
-        self._right._forward.on()
-        self._left._backward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motors
-            self._right._forward.value = speed
-            self._left._backward.value = speed
+        self._right.forward(speed)
+        self._left.backward(speed)
 
     def right(self, speed=1):
         """
-        Make the robot turn right.
+        Make the robot turn right by running the left motor forward and right
+        motor backward.
 
         speed: `1`
             Speed at which to drive the motors, 0 to 1.
         """
-        self._left._backward.off()
-        self._right._forward.off()
-
-        self._left._forward.on()
-        self._right._backward.on()
-        if speed < 1:
-            sleep(0.1)  # warm up the motors
-            self._left._forward.value = speed
-            self._right._backward.value = speed
+        self._left.forward(speed)
+        self._right.backward(speed)
 
     def stop(self):
         """
@@ -313,6 +372,4 @@ class RyanteckRobot(Robot):
     RTK MCB Robot. Generic robot controller with pre-configured pin numbers.
     """
     def __init__(self):
-        left = (17, 18)
-        right = (22, 23)
-        super(RyanteckRobot, self).__init__(left=left, right=right)
+        super(RyanteckRobot, self).__init__((17, 18), (22, 23))

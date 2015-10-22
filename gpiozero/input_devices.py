@@ -1,4 +1,9 @@
-from __future__ import division
+from __future__ import (
+    unicode_literals,
+    print_function,
+    absolute_import,
+    division,
+    )
 
 import inspect
 import warnings
@@ -10,7 +15,13 @@ from RPi import GPIO
 from w1thermsensor import W1ThermSensor
 from spidev import SpiDev
 
-from .devices import GPIODeviceError, GPIODeviceClosed, GPIODevice, GPIOQueue
+from .devices import (
+    GPIODeviceError,
+    GPIODeviceClosed,
+    GPIODevice,
+    CompositeDevice,
+    GPIOQueue,
+    )
 
 
 class InputDeviceError(GPIODeviceError):
@@ -35,13 +46,6 @@ class InputDevice(GPIODevice):
         If `True`, the pin will be pulled high with an internal resistor. If
         `False` (the default), the pin will be pulled low.
     """
-
-    __slots__ = (
-        '_pull_up',
-        '_active_edge',
-        '_inactive_edge',
-    )
-
     def __init__(self, pin=None, pull_up=False):
         if pin in (2, 3) and not pull_up:
             raise InputDeviceError(
@@ -79,6 +83,10 @@ class InputDevice(GPIODevice):
 
     @property
     def pull_up(self):
+        """
+        If `True`, the device uses a pull-up resistor to set the GPIO pin
+        "high" by default. Defaults to `False`.
+        """
         return self._pull_up
 
     def __repr__(self):
@@ -102,15 +110,6 @@ class WaitableInputDevice(InputDevice):
     Note that this class provides no means of actually firing its events; it's
     effectively an abstract base class.
     """
-
-    __slots__ = (
-        '_active_event',
-        '_inactive_event',
-        '_when_activated',
-        '_when_deactivated',
-        '_last_state',
-    )
-
     def __init__(self, pin=None, pull_up=False):
         super(WaitableInputDevice, self).__init__(pin, pull_up)
         self._active_event = Event()
@@ -121,7 +120,7 @@ class WaitableInputDevice(InputDevice):
 
     def wait_for_active(self, timeout=None):
         """
-        Halt the program until the device is activated, or the timeout is
+        Pause the script until the device is activated, or the timeout is
         reached.
 
         timeout: `None`
@@ -132,7 +131,7 @@ class WaitableInputDevice(InputDevice):
 
     def wait_for_inactive(self, timeout=None):
         """
-        Halt the program until the device is deactivated, or the timeout is
+        Pause the script until the device is deactivated, or the timeout is
         reached.
 
         timeout: `None`
@@ -248,9 +247,6 @@ class DigitalInputDevice(WaitableInputDevice):
         ignore changes in state after an initial change. This defaults to
         `None` which indicates that no bounce compensation will be performed.
     """
-
-    __slots__ = ()
-
     def __init__(self, pin=None, pull_up=False, bounce_time=None):
         super(DigitalInputDevice, self).__init__(pin, pull_up)
         try:
@@ -301,9 +297,6 @@ class SmoothedInputDevice(WaitableInputDevice):
         If `True`, a value will be returned immediately, but be aware that this
         value is likely to fluctuate excessively.
     """
-
-    __slots__ = ('_queue', '_threshold', '__weakref__')
-
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5,
             queue_len=5, sample_wait=0.0, partial=False):
@@ -388,6 +381,9 @@ class SmoothedInputDevice(WaitableInputDevice):
 
     @property
     def is_active(self):
+        """
+        Returns `True` if the device is currently active and `False` otherwise.
+        """
         return self.value > self.threshold
 
 
@@ -399,9 +395,6 @@ class Button(DigitalInputDevice):
     side of the switch, and ground to the other (the default `pull_up` value
     is `True`).
     """
-
-    __slots__ = ()
-
     def __init__(self, pin=None, pull_up=True, bouncetime=None):
         super(Button, self).__init__(pin, pull_up, bouncetime)
 
@@ -426,9 +419,6 @@ class MotionSensor(SmoothedInputDevice):
     particularly "jittery" you may wish to set this to a higher value (e.g. 5)
     to mitigate this.
     """
-
-    __slots__ = ()
-
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
             partial=False):
@@ -458,12 +448,6 @@ class LightSensor(SmoothedInputDevice):
     class repeatedly discharges the capacitor, then times the duration it takes
     to charge (which will vary according to the light falling on the LDR).
     """
-
-    __slots__ = (
-        '_charge_time_limit',
-        '_charged',
-    )
-
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False):
@@ -517,16 +501,10 @@ class TemperatureSensor(W1ThermSensor):
         return self.get_temperature()
 
 
-class AnalogInputDevice(object):
+class AnalogInputDevice(CompositeDevice):
     """
     Represents an analog input device connected to SPI (serial interface).
     """
-
-    __slots__ = (
-        '_device',
-        '_bits',
-        '_spi',
-    )
 
     def __init__(self, device=0, bits=None):
         if bits is None:
@@ -537,25 +515,32 @@ class AnalogInputDevice(object):
         self._bits = bits
         self._spi = SpiDev()
         self._spi.open(0, self.device)
+        super(AnalogInputDevice, self).__init__()
 
     def close(self):
+        """
+        Shut down the device and release all associated resources.
+        """
         if self._spi:
             s = self._spi
             self._spi = None
             s.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        self.close()
+        super(AnalogInputDevice, self).close()
 
     @property
     def bus(self):
+        """
+        The SPI bus that the device is connected to. As the Pi only has a
+        single (user accessible) SPI bus, this always returns 0.
+        """
         return 0
 
     @property
     def device(self):
+        """
+        The select pin that the device is connected to. The Pi has two select
+        pins so this will be 0 or 1.
+        """
         return self._device
 
     def _read(self):
@@ -563,13 +548,15 @@ class AnalogInputDevice(object):
 
     @property
     def value(self):
+        """
+        A value read from the device. This will be a floating point value
+        between 0 and 1 (scaled according to the number of bits supported by
+        the device).
+        """
         return self._read() / (2**self._bits - 1)
 
 
 class MCP3008(AnalogInputDevice):
-
-    __slots__ = ('_channel')
-
     def __init__(self, device=0, channel=0):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
@@ -578,6 +565,10 @@ class MCP3008(AnalogInputDevice):
 
     @property
     def channel(self):
+        """
+        The channel to read data from. The MCP3008 has 8 channels (so this will
+        be between 0 and 7) while the MCP3004 has 4 channels (range 0 to 3).
+        """
         return self._channel
 
     def _read(self):
@@ -602,11 +593,10 @@ class MCP3008(AnalogInputDevice):
 
 
 class MCP3004(MCP3008):
-
-    __slots__ = ()
-
     def __init__(self, device=0, channel=0):
         # MCP3004 protocol is identical to MCP3008 but the top bit of the
         # channel number must be 0 (effectively restricting it to 4 channels)
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
+        super(MCP3004, self).__init__(device, channel)
+
