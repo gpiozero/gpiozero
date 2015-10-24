@@ -368,7 +368,7 @@ class Motor(SourceMixin, CompositeDevice):
     Generic bi-directional motor.
     """
     def __init__(self, forward=None, backward=None):
-        if not all([forward, back]):
+        if not all([forward, backward]):
             raise OutputDeviceError('forward and back pins must be provided')
         super(Motor, self).__init__()
         self._forward = PWMOutputDevice(forward)
