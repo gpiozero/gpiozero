@@ -36,6 +36,7 @@ from .boards import (
     PiLiter,
     TrafficLights,
     PiTraffic,
+    TrafficLightsBuzzer,
     FishDish,
     TrafficHat,
     Robot,

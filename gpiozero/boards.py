@@ -25,6 +25,17 @@ class LEDBoard(SourceMixin, CompositeDevice):
         super(LEDBoard, self).__init__()
         self._leds = tuple(LED(pin) for pin in pins)
 
+    def close(self):
+        for led in self.leds:
+            led.close()
+
+    @property
+    def leds(self):
+        """
+        A tuple of all the `LED` objects contained by the instance.
+        """
+        return self._leds
+
     @property
     def value(self):
         """
@@ -35,28 +46,21 @@ class LEDBoard(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
-        for l, v in zip(self._leds, value):
+        for l, v in zip(self.leds, value):
             l.value = v
-
-    @property
-    def leds(self):
-        """
-        A tuple of all the `LED` objects contained by the instance.
-        """
-        return self._leds
 
     def on(self):
         """
         Turn all the LEDs on.
         """
-        for led in self._leds:
+        for led in self.leds:
             led.on()
 
     def off(self):
         """
         Turn all the LEDs off.
         """
-        for led in self._leds:
+        for led in self.leds:
             led.off()
 
     def toggle(self):
@@ -64,7 +68,7 @@ class LEDBoard(SourceMixin, CompositeDevice):
         Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
         off, turn it on.
         """
-        for led in self._leds:
+        for led in self.leds:
             led.toggle()
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
@@ -86,7 +90,8 @@ class LEDBoard(SourceMixin, CompositeDevice):
             finished (warning: the default value of `n` will result in this
             method never returning).
         """
-        for led in self._leds:
+        # XXX This isn't going to work for background=False
+        for led in self.leds:
             led.blink(on_time, off_time, n, background)
 
 
@@ -157,17 +162,24 @@ class PiTraffic(TrafficLights):
         super(PiTraffic, self).__init__(9, 10, 11)
 
 
-FishDishTuple = namedtuple('FishDishTuple', ('red', 'amber', 'green', 'buzzer'))
+TrafficLightsBuzzerTuple = namedtuple('TrafficLightsBuzzerTuple', (
+    'red', 'amber', 'green', 'buzzer'))
 
-class FishDish(TrafficLights):
+class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
     """
-    Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
+    A generic class for HATs with traffic lights, a button and a buzzer.
     """
-    def __init__(self):
-        super(FishDish, self).__init__(9, 22, 4)
-        self.buzzer = Buzzer(8)
-        self.button = Button(7, pull_up=False)
-        self._all = self.leds + (self.buzzer,)
+    def __init__(self, lights, buzzer, button):
+        super(TrafficLightsBuzzer, self).__init__()
+        self.lights = lights
+        self.buzzer = buzzer
+        self.button = button
+        self._all = self.lights.leds + (self.buzzer,)
+
+    def close(self):
+        self.lights.close()
+        self.buzzer.close()
+        self.button.close()
 
     @property
     def all(self):
@@ -185,28 +197,28 @@ class FishDish(TrafficLights):
         to update the state of all the board's components.
         """
         return FishDishTuple(
-                self.red.value,
-                self.amber.value,
-                self.green.value,
+                self.lights.red.value,
+                self.lights.amber.value,
+                self.lights.green.value,
                 self.buzzer.value)
 
     @value.setter
     def value(self, value):
-        for i, v in zip(self._all, value):
+        for i, v in zip(self.all, value):
             i.value = v
 
     def on(self):
         """
         Turn all the board's components on.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.on()
 
     def off(self):
         """
         Turn all the board's components off.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.off()
 
     def toggle(self):
@@ -214,7 +226,7 @@ class FishDish(TrafficLights):
         Toggle all the board's components. For each component, if it's on, turn
         it off; if it's off, turn it on.
         """
-        for thing in self._all:
+        for thing in self.all:
             thing.toggle()
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
@@ -236,59 +248,31 @@ class FishDish(TrafficLights):
             finished (warning: the default value of `n` will result in this
             method never returning).
         """
+        # XXX This isn't going to work for background=False
         for thing in self._all:
-            led.blink(on_time, off_time, n, background)
-
-    def lights_on(self):
-        """
-        Turn all the board's LEDs on.
-        """
-        super(FishDish, self).on()
-
-    def lights_off(self):
-        """
-        Turn all the board's LEDs off.
-        """
-        super(FishDish, self).off()
-
-    def toggle_lights(self):
-        """
-        Toggle all the board's LEDs. For each LED, if it's on, turn
-        it off; if it's off, turn it on.
-        """
-        super(FishDish, self).toggle()
-
-    def blink_lights(self, on_time=1, off_time=1, n=None, background=True):
-        """
-        Make all the board's LEDs turn on and off repeatedly.
-
-        on_time: `1`
-            Number of seconds to be on
-
-        off_time: `1`
-            Number of seconds to be off
-
-        n: `None`
-            Number of times to blink; None means forever
-
-        background: `True`
-            If `True`, start a background thread to continue blinking and
-            return immediately. If `False`, only return when the blink is
-            finished (warning: the default value of `n` will result in this
-            method never returning).
-        """
-        super(FishDish, self).blink(on_time, off_time, n, background)
+            thing.blink(on_time, off_time, n, background)
 
 
-class TrafficHat(FishDish):
+class FishDish(TrafficLightsBuzzer):
+    """
+    Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
+    """
+    def __init__(self):
+        super(FishDish, self).__init__(
+                TrafficLights(9, 22, 4),
+                Buzzer(8),
+                Button(7, pull_up=False))
+
+
+class TrafficHat(TrafficLightsBuzzer):
     """
     Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
     def __init__(self):
-        super(FishDish, self).__init__(22, 23, 24)
-        self.buzzer = Buzzer(5)
-        self.button = Button(25)
-        self._all = self._leds + (self.buzzer,)
+        super(TrafficHat, self).__init__(
+                TrafficLights(22, 23, 24),
+                Buzzer(5),
+                Button(25))
 
 
 RobotTuple = namedtuple('RobotTuple', ('left', 'right'))
@@ -303,6 +287,10 @@ class Robot(SourceMixin, CompositeDevice):
         super(Robot, self).__init__()
         self._left = Motor(*left)
         self._right = Motor(*right)
+
+    def close(self):
+        self._left.close()
+        self._right.close()
 
     @property
     def value(self):
