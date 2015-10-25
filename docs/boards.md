@@ -21,21 +21,11 @@ Ensure the `LEDBoard` class is imported at the top of the file:
 from gpiozero import LEDBoard
 ```
 
-Create an `LEDBoard` object by passing in a list of the LED pin numbers:
+Create an `LEDBoard` object by passing in the LED pin numbers:
 
 ```python
-leds = LEDBoard([2, 3, 4, 5, 6])
+leds = LEDBoard(2, 3, 4, 5, 6)
 ```
-
-#### Initialisation options
-
-```python
-LEDBoard(leds=None)
-```
-
-| Argument | Description | Values | Default |
-| -------- | ----------- | ------ | ------- |
-| `leds` | List of GPIO pins each LED is connected to, order preserved. | List | *Required* |
 
 #### Methods
 
