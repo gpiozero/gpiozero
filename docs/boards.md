@@ -209,24 +209,14 @@ None
 |                   |                                             | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
 |                   |                                             | `n` - The number of iterations. `None` means infinite. Default: `None` |
 |                   |                                             | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
-| `lights_on()`     | Turn all three LEDs on.  | None |
-| `lights_off()`    | Turn all three LEDs off. | None |
-| `toggle_lights()` | Toggle all the board's LEDs. For each LED, if it's on, turn it off; if it's off, turn it on. | None |
-| `blink_lights()`  | Make the board's LEDs turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. Default: `1` |
-|                   |                                                   | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. Default: `1` |
-|                   |                                                   | `n` - The number of iterations. `None` means infinite. Default: `None` |
-|                   |                                                   | `background` - If True, start a background thread to continue blinking and return immediately. If False, only return when the blink is finished (warning: the default value of n will result in this method never returning). Default: `True` |
 
 #### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`    | Direct access to the red light as a single `LED` object. | LED |
-| `amber`  | Direct access to the amber light as a single `LED` object. | LED |
-| `green`  | Direct access to the green light as a single `LED` object. | LED |
+| `lights` | Access to the three LEDs as a `TrafficLights` object. | TrafficLights |
 | `buzzer` | Direct access to the buzzer as a single `Buzzer` object. | LED |
 | `button` | Direct access to the button as a single `Button` object. | LED |
-| `leds`   | A collection of LEDs to access each one individually, or to iterate over them in sequence. | Tuple |
 | `all`    | A collection of the board's output components to access each one individually, or to iterate over them in sequence. | Tuple |
 
 ## Traffic HAT

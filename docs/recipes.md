@@ -25,10 +25,12 @@ Alternatively:
 
 ```python
 from gpiozero import LED
+from signal import pause
 
 red = LED(2)
 
 red.blink()
+pause()
 ```
 
 ## Button
@@ -40,10 +42,11 @@ from gpiozero import Button
 
 button = Button(4)
 
-if button.is_active:
-    print("Button is pressed")
-else:
-    print("Button is not pressed")
+while True:
+    if button.is_pressed:
+        print("Button is pressed")
+    else:
+        print("Button is not pressed")
 ```
 
 Wait for a button to be pressed before continuing:
@@ -61,6 +64,7 @@ Run a function every time the button is pressed:
 
 ```python
 from gpiozero import Button
+from signal import pause
 
 def say_hello():
     print("Hello!")
@@ -68,6 +72,24 @@ def say_hello():
 button = Button(4)
 
 button.when_pressed = say_hello
+pause()
+```
+
+## Button controlled LED
+
+Turn on an LED when a button is pressed:
+
+```python
+from gpiozero import LED, Button
+from signal import pause
+
+led = LED(2)
+button = Button(3)
+
+button.when_pressed = led.on
+button.when_released = led.off
+
+pause()
 ```
 
 ## Traffic Lights
@@ -146,6 +168,11 @@ with PiCamera() as camera:
         camera.capture('/home/pi/frame%03d.jpg' % frame)
         frame += 1
 ```
+
+See
+[Push Button Stop
+Motion](https://www.raspberrypi.org/learning/quick-reaction-game/) for a full
+resource.
 
 ## Reaction Game
 
@@ -359,7 +386,7 @@ from time import sleep
 robot = Robot(left=(4, 14), right=(17, 18))
 
 for i in range(4):
-    robot.forwards()
+    robot.forward()
     sleep(10)
     robot.right()
     sleep(1)
