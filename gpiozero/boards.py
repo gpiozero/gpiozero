@@ -21,8 +21,9 @@ class LEDBoard(SourceMixin, CompositeDevice):
     """
     A Generic LED Board or collection of LEDs.
     """
-    def __init__(self, *pins, pwm=False):
+    def __init__(self, *pins, **kwargs):
         super(LEDBoard, self).__init__()
+        pwm = kwargs.get('pwm', False)
         LEDClass = PWMLED if pwm else LED
         self._leds = tuple(LEDClass(pin) for pin in pins)
 
@@ -133,7 +134,8 @@ class TrafficLights(LEDBoard):
 
     @value.setter
     def value(self, value):
-        super(TrafficLights, self).value = value
+        # Eurgh, this is horrid but necessary (see #90)
+        super(TrafficLights, self.__class__).value.fset(self, value)
 
     @property
     def red(self):
