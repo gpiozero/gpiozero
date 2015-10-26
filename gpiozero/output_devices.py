@@ -255,6 +255,15 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._stop_blink()
         self._write(value)
 
+    def toggle(self):
+        """
+        Toggle the state of the device. If the device is currently off
+        (`value` is 0.0), this changes it to "fully" on (`value` is 1.0).  If
+        the device has a duty cycle (`value`) of 0.1, this will toggle it to
+        0.9, and so on.
+        """
+        self.value = 1.0 - self.value
+
     @property
     def is_active(self):
         """
@@ -413,6 +422,14 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self._forward.off()
         self._backward.value = speed
+
+    def reverse(self):
+        """
+        Reverse the current direction of the motor. If the motor is currently
+        idle this does nothing. Otherwise, the motor's direction will be
+        reversed at the current speed.
+        """
+        self.value = -self.value
 
     def stop(self):
         """
