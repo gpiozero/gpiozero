@@ -1,0 +1,32 @@
+/* vim: set et sw=4 sts=4: */
+
+digraph classes {
+    graph [rankdir=BT];
+    node [shape=rect, style=filled, color="#2980b9", fontname=Sans, fontcolor="#ffffff", fontsize=10];
+    edge [];
+
+    AnalogInputDevice->CompositeDevice;
+    MCP3xxx->AnalogInputDevice;
+    MCP33xx->MCP3xxx;
+    MCP3004->MCP3xxx;
+    MCP3008->MCP3xxx;
+    MCP3204->MCP3xxx;
+    MCP3208->MCP3xxx;
+    MCP3301->MCP33xx;
+    MCP3302->MCP33xx;
+    MCP3304->MCP33xx;
+
+    RGBLED->CompositeDevice;
+    Motor->CompositeDevice;
+    LEDBoard->CompositeDevice;
+    PiLiter->LEDBoard;
+    TrafficLights->LEDBoard;
+    PiTraffic->TrafficLights;
+
+    TrafficLightsBuzzer->CompositeDevice;
+    FishDish->TrafficLightsBuzzer;
+    TrafficHat->TrafficLightsBuzzer;
+
+    Robot->CompositeDevice;
+    RyanteckRobot->Robot;
+}

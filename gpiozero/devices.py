@@ -100,9 +100,9 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
     @property
     def closed(self):
         """
-        Returns `True` if the device is closed (see the `close` method). Once a
-        device is closed you can no longer use any other methods or properties
-        to control or query the device.
+        Returns ``True`` if the device is closed (see the :meth:`close`
+        method). Once a device is closed you can no longer use any other
+        methods or properties to control or query the device.
         """
         return False
 
@@ -182,12 +182,12 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     This is the class at the root of the gpiozero class hierarchy. It handles
     ensuring that two GPIO devices do not share the same pin, and provides
-    basic services applicable to all devices (specifically the `pin` property,
-    `is_active` property, and the `close` method).
+    basic services applicable to all devices (specifically the :attr:`pin`
+    property, :attr:`is_active` property, and the :attr:`close` method).
 
-    pin: `None`
+    :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is `None` a `GPIODeviceError` will be raised.
+        this is ``None`` a :exc:`GPIODeviceError` will be raised.
     """
     def __init__(self, pin=None):
         super(GPIODevice, self).__init__()
@@ -248,8 +248,8 @@ class GPIODevice(ValuesMixin, GPIOBase):
             >>> led = LED(16)
             >>> led.blink()
 
-        GPIODevice descendents can also be used as context managers using the
-        `with` statement. For example:
+        :class:`GPIODevice` descendents can also be used as context managers
+        using the :keyword:`with` statement. For example:
 
             >>> from gpiozero import *
             >>> with Buzzer(16) as bz:
@@ -276,14 +276,16 @@ class GPIODevice(ValuesMixin, GPIOBase):
     def pin(self):
         """
         The pin (in BCM numbering) that the device is connected to. This will
-        be `None` if the device has been closed (see the `close` method).
+        be ``None`` if the device has been closed (see the :meth:`close`
+        method).
         """
         return self._pin
 
     @property
     def value(self):
         """
-        Returns `True` if the device is currently active and `False` otherwise.
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise.
         """
         return self._read()
 

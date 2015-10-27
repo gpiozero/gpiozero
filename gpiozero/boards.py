@@ -20,7 +20,25 @@ from .devices import CompositeDevice, SourceMixin
 
 class LEDBoard(SourceMixin, CompositeDevice):
     """
-    A Generic LED Board or collection of LEDs.
+    Extends :class:`CompositeDevice` and represents a generic LED board or
+    collection of LEDs.
+
+    The following example turns on all the LEDs on a board containing 5 LEDs
+    attached to GPIO pins 2 through 6::
+
+        from gpiozero import LEDBoard
+
+        leds = LEDBoard(2, 3, 4, 5, 6)
+        leds.on()
+
+    :param int \*pins:
+        Specify the GPIO pins that the LEDs of the board are attached to. You
+        can designate as many pins as necessary.
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances. This
+        parameter can only be specified as a keyword parameter.
     """
     def __init__(self, *pins, **kwargs):
         super(LEDBoard, self).__init__()
@@ -39,15 +57,16 @@ class LEDBoard(SourceMixin, CompositeDevice):
     @property
     def leds(self):
         """
-        A tuple of all the `LED` objects contained by the instance.
+        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
+        the instance.
         """
         return self._leds
 
     @property
     def value(self):
         """
-        A tuple containing a boolean value for each LED on the board. This
-        property can also be set to update the state of all LEDs on the board.
+        A tuple containing a value for each LED on the board. This property can
+        also be set to update the state of all LEDs on the board.
         """
         return tuple(led.value for led in self._leds)
 
@@ -82,19 +101,19 @@ class LEDBoard(SourceMixin, CompositeDevice):
         """
         Make all the LEDs turn on and off repeatedly.
 
-        on_time: `1`
-            Number of seconds to be on
+        :param float on_time:
+            Number of seconds on
 
-        off_time: `1`
-            Number of seconds to be off
+        :param float off_time:
+            Number of seconds off
 
-        n: `None`
-            Number of times to blink; None means forever
+        :param int n:
+            Number of times to blink; ``None`` means forever
 
-        background: `True`
-            If `True`, start a background thread to continue blinking and
-            return immediately. If `False`, only return when the blink is
-            finished (warning: the default value of `n` will result in this
+        :param bool background:
+            If ``True``, start a background thread to continue blinking and
+            return immediately. If ``False``, only return when the blink is
+            finished (warning: the default value of *n* will result in this
             method never returning).
         """
         # XXX This isn't going to work for background=False
@@ -104,7 +123,22 @@ class LEDBoard(SourceMixin, CompositeDevice):
 
 class PiLiter(LEDBoard):
     """
-    Ciseco Pi-LITEr: strip of 8 very bright LEDs.
+    Extends :class:`LEDBoard` for the Ciseco Pi-LITEr: a strip of 8 very bright
+    LEDs.
+
+    The Pi-LITEr pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example turns on all the LEDs
+    of the Pi-LITEr::
+
+        from gpiozero import PiLiter
+
+        lite = PiLiter()
+        lite.on()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances. This
+        parameter can only be specified as a keyword parameter.
     """
     def __init__(self, pwm=False):
         super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
@@ -115,16 +149,30 @@ TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
 
 class TrafficLights(LEDBoard):
     """
-    Generic Traffic Lights set.
+    Extends :class:`LEDBoard` for devices containing red, amber, and green
+    LEDs.
 
-    red: `None`
-        Red LED pin
+    The following example initializes a device connected to GPIO pins 2, 3,
+    and 4, then lights the amber LED attached to GPIO 3::
 
-    amber: `None`
-        Amber LED pin
+        from gpiozero import TrafficLights
 
-    green: `None`
-        Green LED pin
+        traffic = TrafficLights(2, 3, 4)
+        traffic.amber.on()
+
+    :param int red:
+        The GPIO pin that the red LED is attached to.
+
+    :param int amber:
+        The GPIO pin that the amber LED is attached to.
+
+    :param int green:
+        The GPIO pin that the green LED is attached to.
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
     """
     def __init__(self, red=None, amber=None, green=None, pwm=False):
         if not all([red, amber, green]):
@@ -135,6 +183,10 @@ class TrafficLights(LEDBoard):
 
     @property
     def value(self):
+        """
+        A 3-tuple containing values for the red, amber, and green LEDs. This
+        property can also be set to alter the state of the LEDs.
+        """
         return TrafficLightTuple(*super(TrafficLights, self).value)
 
     @value.setter
@@ -145,29 +197,41 @@ class TrafficLights(LEDBoard):
     @property
     def red(self):
         """
-        The `LED` object representing the red LED.
+        The :class:`LED` or :class:`PWMLED` object representing the red LED.
         """
         return self.leds[0]
 
     @property
     def amber(self):
         """
-        The `LED` object representing the red LED.
+        The :class:`LED` or :class:`PWMLED` object representing the red LED.
         """
         return self.leds[1]
 
     @property
     def green(self):
         """
-        The `LED` object representing the green LED.
+        The :class:`LED` or :class:`PWMLED` object representing the green LED.
         """
         return self.leds[2]
 
 
 class PiTraffic(TrafficLights):
     """
-    Low Voltage Labs PI-TRAFFIC: vertical traffic lights board on pins 9, 10
-    and 11.
+    Extends :class:`TrafficLights` for the Low Voltage Labs PI-TRAFFIC:
+    vertical traffic lights board when attached to GPIO pins 9, 10, and 11.
+
+    There's no need to specify the pins if the PI-TRAFFIC is connected to the
+    default pins (9, 10, 11). The following example turns on the amber LED on
+    the PI-TRAFFIC::
+
+        from gpiozero import PiTraffic
+
+        traffic = PiTraffic()
+        traffic.amber.on()
+
+    To use the PI-TRAFFIC board when attached to a non-standard set of pins,
+    simply use the parent class, :class:`TrafficLights`.
     """
     def __init__(self):
         super(PiTraffic, self).__init__(9, 10, 11)
@@ -179,7 +243,18 @@ TrafficLightsBuzzerTuple = namedtuple('TrafficLightsBuzzerTuple', (
 
 class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
     """
-    A generic class for HATs with traffic lights, a button and a buzzer.
+    Extends :class:`CompositeDevice` and is a generic class for HATs with
+    traffic lights, a button and a buzzer.
+
+    :param TrafficLights lights:
+        An instance of :class:`TrafficLights` representing the traffic lights
+        of the HAT.
+
+    :param Buzzer buzzer:
+        An instance of :class:`Buzzer` representing the buzzer on the HAT.
+
+    :param Button button:
+        An instance of :class:`Button` representing the button on the HAT.
     """
     def __init__(self, lights, buzzer, button):
         super(TrafficLightsBuzzer, self).__init__()
@@ -201,7 +276,7 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
     def all(self):
         """
         A tuple containing objects for all the items on the board (several
-        `LED` objects, a `Buzzer`, and a `Button`).
+        :class:`LED` objects, a :class:`Buzzer`, and a :class:`Button`).
         """
         return self._all
 
@@ -250,19 +325,19 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         """
         Make all the board's components turn on and off repeatedly.
 
-        on_time: `1`
-            Number of seconds to be on
+        :param float on_time:
+            Number of seconds on
 
-        off_time: `1`
-            Number of seconds to be off
+        :param float off_time:
+            Number of seconds off
 
-        n: `None`
-            Number of times to blink; None means forever
+        :param int n:
+            Number of times to blink; ``None`` means forever
 
-        background: `True`
-            If `True`, start a background thread to continue blinking and
-            return immediately. If `False`, only return when the blink is
-            finished (warning: the default value of `n` will result in this
+        :param bool background:
+            If ``True``, start a background thread to continue blinking and
+            return immediately. If ``False``, only return when the blink is
+            finished (warning: the default value of *n* will result in this
             method never returning).
         """
         # XXX This isn't going to work for background=False
@@ -272,7 +347,23 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
 
 class FishDish(TrafficLightsBuzzer):
     """
-    Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
+    Extends :class:`TrafficLightsBuzzer` for the Pi Supply FishDish: traffic
+    light LEDs, a button and a buzzer.
+
+    The FishDish pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example waits for the button
+    to be pressed on the FishDish, then turns on all the LEDs::
+
+        from gpiozero import FishDish
+
+        fish = FishDish()
+        fish.button.wait_for_press()
+        fish.lights.on()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
     """
     def __init__(self, pwm=False):
         super(FishDish, self).__init__(
@@ -284,7 +375,23 @@ class FishDish(TrafficLightsBuzzer):
 
 class TrafficHat(TrafficLightsBuzzer):
     """
-    Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
+    Extends :class:`TrafficLightsBuzzer` for the Ryanteck Traffic HAT: traffic
+    light LEDs, a button and a buzzer.
+
+    The Traffic HAT pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example waits for the
+    button to be pressed on the Traffic HAT, then turns on all the LEDs::
+
+        from gpiozero import TrafficHat
+
+        hat = TrafficHat()
+        hat.button.wait_for_press()
+        hat.lights.on()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
     """
     def __init__(self, pwm=False):
         super(TrafficHat, self).__init__(
@@ -299,7 +406,26 @@ RobotTuple = namedtuple('RobotTuple', ('left', 'right'))
 
 class Robot(SourceMixin, CompositeDevice):
     """
-    Generic dual-motor Robot.
+    Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
+
+    This class is constructed with two tuples representing the forward and
+    backward pins of the left and right controllers respectively. For example,
+    if the left motor's controller is connected to GPIOs 4 and 14, while the
+    right motor's controller is connected to GPIOs 17 and 18 then the following
+    example will turn the robot left::
+
+        from gpiozero import Robot
+
+        robot = Robot(left=(4, 14), right=(17, 18))
+        robot.left()
+
+    :param tuple left:
+        A tuple of two GPIO pins representing the forward and backward inputs
+        of the left motor's controller.
+
+    :param tuple right:
+        A tuple of two GPIO pins representing the forward and backward inputs
+        of the right motor's controller.
     """
     def __init__(self, left=None, right=None):
         if not all([left, right]):
@@ -349,8 +475,9 @@ class Robot(SourceMixin, CompositeDevice):
         """
         Drive the robot forward by running both motors forward.
 
-        speed: `1`
-            Speed at which to drive the motors, 0 to 1.
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
         """
         self._left.forward(speed)
         self._right.forward(speed)
@@ -359,8 +486,9 @@ class Robot(SourceMixin, CompositeDevice):
         """
         Drive the robot backward by running both motors backward.
 
-        speed: `1`
-            Speed at which to drive the motors, 0 to 1.
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
         """
         self._left.backward(speed)
         self._right.backward(speed)
@@ -370,8 +498,9 @@ class Robot(SourceMixin, CompositeDevice):
         Make the robot turn left by running the right motor forward and left
         motor backward.
 
-        speed: `1`
-            Speed at which to drive the motors, 0 to 1.
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
         """
         self._right.forward(speed)
         self._left.backward(speed)
@@ -381,8 +510,9 @@ class Robot(SourceMixin, CompositeDevice):
         Make the robot turn right by running the left motor forward and right
         motor backward.
 
-        speed: `1`
-            Speed at which to drive the motors, 0 to 1.
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
         """
         self._left.forward(speed)
         self._right.backward(speed)
@@ -407,7 +537,16 @@ class Robot(SourceMixin, CompositeDevice):
 
 class RyanteckRobot(Robot):
     """
-    RTK MCB Robot. Generic robot controller with pre-configured pin numbers.
+    Extends :class:`Robot` for the Ryanteck MCB robot.
+
+    The Ryanteck MCB pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example turns the robot
+    left::
+
+        from gpiozero import RyanteckRobot
+
+        robot = RyanteckRobot()
+        robot.left()
     """
     def __init__(self):
         super(RyanteckRobot, self).__init__(left=(17, 18), right=(22, 23))
