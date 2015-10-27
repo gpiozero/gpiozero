@@ -13,7 +13,7 @@ from time import sleep
 from collections import namedtuple
 
 from .input_devices import InputDeviceError, Button
-from .output_devices import OutputDeviceError, LED, Buzzer, Motor
+from .output_devices import OutputDeviceError, LED, PWMLED, Buzzer, Motor
 from .devices import CompositeDevice, SourceMixin
 
 
@@ -21,9 +21,11 @@ class LEDBoard(SourceMixin, CompositeDevice):
     """
     A Generic LED Board or collection of LEDs.
     """
-    def __init__(self, *pins):
+    def __init__(self, *pins, **kwargs):
         super(LEDBoard, self).__init__()
-        self._leds = tuple(LED(pin) for pin in pins)
+        pwm = kwargs.get('pwm', False)
+        LEDClass = PWMLED if pwm else LED
+        self._leds = tuple(LEDClass(pin) for pin in pins)
 
     def close(self):
         for led in self.leds:
@@ -99,11 +101,12 @@ class PiLiter(LEDBoard):
     """
     Ciseco Pi-LITEr: strip of 8 very bright LEDs.
     """
-    def __init__(self):
-        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25)
+    def __init__(self, pwm=False):
+        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
 
 
 TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
+
 
 class TrafficLights(LEDBoard):
     """
@@ -118,10 +121,12 @@ class TrafficLights(LEDBoard):
     green: `None`
         Green LED pin
     """
-    def __init__(self, red=None, amber=None, green=None):
+    def __init__(self, red=None, amber=None, green=None, pwm=False):
         if not all([red, amber, green]):
-            raise OutputDeviceError('red, amber and green pins must be provided')
-        super(TrafficLights, self).__init__(red, amber, green)
+            raise OutputDeviceError(
+                'red, amber and green pins must be provided'
+            )
+        super(TrafficLights, self).__init__(red, amber, green, pwm=pwm)
 
     @property
     def value(self):
@@ -129,7 +134,8 @@ class TrafficLights(LEDBoard):
 
     @value.setter
     def value(self, value):
-        super(TrafficLights, self).value = value
+        # Eurgh, this is horrid but necessary (see #90)
+        super(TrafficLights, self.__class__).value.fset(self, value)
 
     @property
     def red(self):
@@ -165,6 +171,7 @@ class PiTraffic(TrafficLights):
 TrafficLightsBuzzerTuple = namedtuple('TrafficLightsBuzzerTuple', (
     'red', 'amber', 'green', 'buzzer'))
 
+
 class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
     """
     A generic class for HATs with traffic lights, a button and a buzzer.
@@ -197,10 +204,11 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         to update the state of all the board's components.
         """
         return FishDishTuple(
-                self.lights.red.value,
-                self.lights.amber.value,
-                self.lights.green.value,
-                self.buzzer.value)
+            self.lights.red.value,
+            self.lights.amber.value,
+            self.lights.green.value,
+            self.buzzer.value,
+        )
 
     @value.setter
     def value(self, value):
@@ -257,25 +265,28 @@ class FishDish(TrafficLightsBuzzer):
     """
     Pi Supply FishDish: traffic light LEDs, a button and a buzzer.
     """
-    def __init__(self):
+    def __init__(self, pwm=False):
         super(FishDish, self).__init__(
-                TrafficLights(9, 22, 4),
-                Buzzer(8),
-                Button(7, pull_up=False))
+            TrafficLights(9, 22, 4, pwm=pwm),
+            Buzzer(8),
+            Button(7, pull_up=False),
+        )
 
 
 class TrafficHat(TrafficLightsBuzzer):
     """
     Ryanteck Traffic HAT: traffic light LEDs, a button and a buzzer.
     """
-    def __init__(self):
+    def __init__(self, pwm=False):
         super(TrafficHat, self).__init__(
-                TrafficLights(22, 23, 24),
-                Buzzer(5),
-                Button(25))
+            TrafficLights(22, 23, 24, pwm=pwm),
+            Buzzer(5),
+            Button(25),
+        )
 
 
 RobotTuple = namedtuple('RobotTuple', ('left', 'right'))
+
 
 class Robot(SourceMixin, CompositeDevice):
     """
@@ -283,7 +294,9 @@ class Robot(SourceMixin, CompositeDevice):
     """
     def __init__(self, left=None, right=None):
         if not all([left, right]):
-            raise OutputDeviceError('left and right motor pins must be provided')
+            raise OutputDeviceError(
+                'left and right motor pins must be provided'
+            )
         super(Robot, self).__init__()
         self._left = Motor(*left)
         self._right = Motor(*right)
