@@ -147,10 +147,10 @@ class WaitableInputDevice(InputDevice):
         active.
 
         This can be set to a function which accepts no (mandatory) parameters,
-        or a function which accepts a single mandatory parameter (with as many
-        optional parameters as you like). If the function accepts a single
-        mandatory parameter, the device that activates will be passed as that
-        parameter.
+        or a Python function which accepts a single mandatory parameter (with
+        as many optional parameters as you like). If the function accepts a
+        single mandatory parameter, the device that activates will be passed as
+        that parameter.
 
         Set this property to `None` (the default) to disable the event.
 
@@ -169,10 +169,10 @@ class WaitableInputDevice(InputDevice):
         inactive.
 
         This can be set to a function which accepts no (mandatory) parameters,
-        or a function which accepts a single mandatory parameter (which as
-        many optional parameters as you like). If the function accepts a single
-        mandatory parameter, the device the deactives will be passed as that
-        parameter.
+        or a Python function which accepts a single mandatory parameter (which
+        as many optional parameters as you like). If the function accepts a
+        single mandatory parameter, the device the deactives will be passed as
+        that parameter.
 
         Set this property to `None` (the default) to disable the event.
 
@@ -189,6 +189,13 @@ class WaitableInputDevice(InputDevice):
             return None
         elif not callable(fn):
             raise InputDeviceError('value must be None or a callable')
+        elif inspect.isbuiltin(fn):
+            # We can't introspect the prototype of builtins. In this case we
+            # assume that the builtin has no (mandatory) parameters; this is
+            # the most reasonable assumption on the basis that pre-existing
+            # builtins have no knowledge of gpiozero, and the sole parameter
+            # we would pass is a gpiozero object
+            return fn
         else:
             # Try binding ourselves to the argspec of the provided callable.
             # If this works, assume the function is capable of accepting no
