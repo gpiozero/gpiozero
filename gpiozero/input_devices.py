@@ -149,8 +149,8 @@ class WaitableInputDevice(InputDevice):
         This can be set to a function which accepts no (mandatory) parameters,
         or a Python function which accepts a single mandatory parameter (with
         as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device that activates will be passed as
-        that parameter.
+        single mandatory parameter, the device that activated will be passed
+        as that parameter.
 
         Set this property to `None` (the default) to disable the event.
 
@@ -169,10 +169,10 @@ class WaitableInputDevice(InputDevice):
         inactive.
 
         This can be set to a function which accepts no (mandatory) parameters,
-        or a Python function which accepts a single mandatory parameter (which
+        or a Python function which accepts a single mandatory parameter (with
         as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device the deactives will be passed as
-        that parameter.
+        single mandatory parameter, the device that deactivated will be
+        passed as that parameter.
 
         Set this property to `None` (the default) to disable the event.
 
