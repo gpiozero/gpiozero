@@ -402,8 +402,8 @@ class Button(DigitalInputDevice):
     side of the switch, and ground to the other (the default `pull_up` value
     is `True`).
     """
-    def __init__(self, pin=None, pull_up=True, bouncetime=None):
-        super(Button, self).__init__(pin, pull_up, bouncetime)
+    def __init__(self, pin=None, pull_up=True, bounce_time=None):
+        super(Button, self).__init__(pin, pull_up, bounce_time)
 
 Button.is_pressed = Button.is_active
 Button.when_pressed = Button.when_activated
