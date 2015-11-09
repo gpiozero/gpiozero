@@ -78,8 +78,8 @@ TrafficLights(red=None, amber=None, green=None)
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
 | `red`   | The GPIO pin number the red LED is connected to.   | Integer: `0` to `25` | *Required* |
+| `amber` | The GPIO pin number the amber LED is connected to. | Integer: `0` to `25` | *Required* |
 | `green` | The GPIO pin number the green LED is connected to. | Integer: `0` to `25` | *Required* |
-| `blue`  | The GPIO pin number the blue LED is connected to.  | Integer: `0` to `25` | *Required* |
 
 #### Methods
 
