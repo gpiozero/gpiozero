@@ -1,4 +1,4 @@
-gpiozero (0.9.0-1) stable; urgency=medium
+gpiozero (0.9.0) stable; urgency=medium
 
   * Added source and values properties to all relevant classes (#76)
   * Fix names of parameters in Motor constructor (#79)
@@ -6,7 +6,7 @@ gpiozero (0.9.0-1) stable; urgency=medium
 
  -- Dave Jones <dave@waveform.org.uk>  Sun, 25 Oct 2015 18:56:58 +0100
 
-gpiozero (0.8.0-1) stable; urgency=medium
+gpiozero (0.8.0) stable; urgency=medium
 
   * Added generic AnalogInputDevice class along with specific classes for the
     MCP3008 and MCP3004 (#41)
@@ -14,13 +14,13 @@ gpiozero (0.8.0-1) stable; urgency=medium
 
  -- Dave Jones <dave@waveform.org.uk>  Fri, 16 Oct 2015 11:40:42 +0100
 
-gpiozero (0.7.0-1) stable; urgency=medium
+gpiozero (0.7.0) stable; urgency=medium
 
   * Second public beta
 
  -- Dave Jones <dave@waveform.org.uk>  Fri, 09 Oct 2015 12:30:13 +0100
 
-gpiozero (0.6.0-1) stable; urgency=medium
+gpiozero (0.6.0) stable; urgency=medium
 
   * Raspbian packaging (#44)
   * PWM functionality including variable level RGB LEDs (#40)
