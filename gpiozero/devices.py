@@ -82,7 +82,19 @@ class GPIOBase(object):
         # safely called from subclasses without worrying whether super-class'
         # have it (which in turn is useful in conjunction with the SourceMixin
         # class).
+        """
+        Shut down the device and release all associated resources.
+        """
         pass
+
+    @property
+    def closed(self):
+        """
+        Returns `True` if the device is closed (see the `close` method). Once a
+        device is closed you can no longer use any other methods or properties
+        to control or query the device.
+        """
+        return False
 
     def __enter__(self):
         return self
@@ -150,7 +162,8 @@ class CompositeDevice(ValuesMixin, GPIOBase):
     Represents a device composed of multiple GPIO devices like simple HATs,
     H-bridge motor controllers, robots composed of multiple motors, etc.
     """
-    pass
+    def __repr__(self):
+        return "<gpiozero.%s object>" % (self.__class__.__name__)
 
 
 class GPIODevice(ValuesMixin, GPIOBase):
@@ -199,15 +212,6 @@ class GPIODevice(ValuesMixin, GPIOBase):
             raise GPIODeviceClosed(
                 '%s is closed or uninitialized' % self.__class__.__name__)
 
-    @property
-    def closed(self):
-        """
-        Returns `True` if the device is closed (see the `close` method). Once a
-        device is closed you can no longer use any other methods or properties
-        to control or query the device.
-        """
-        return self._pin is None
-
     def close(self):
         """
         Shut down the device and release all associated resources.
@@ -253,6 +257,10 @@ class GPIODevice(ValuesMixin, GPIOBase):
                 _GPIO_PINS.remove(pin)
                 GPIO.remove_event_detect(pin)
                 GPIO.cleanup(pin)
+
+    @property
+    def closed(self):
+        return self._pin is None
 
     @property
     def pin(self):
