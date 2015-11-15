@@ -46,7 +46,6 @@ __keywords__ = [
 
 __requires__ = [
     'RPi.GPIO',
-    'w1thermsensor',
     'spidev',
 ]
 

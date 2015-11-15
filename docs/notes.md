@@ -165,19 +165,20 @@ attached to:
 my_button = Button(2)
 ```
 
-Some classes require no arguments due to the nature of the device:
+Some classes have multiple arguments, usually with some being optional. When
+arguments are optional, common default values are used. The following example:
 
 ```python
-temp = TemperatureSensor()
+my_button = Button(2)
 ```
 
-Others have multiple arguments, usually with some being optional:
+is equivalent to:
 
 ```python
-temp = TemperatureSensor()
+my_button = Button(2, True)
 ```
 
-When arguments are optional, common default values are used.
+because the second argument defaults to `True`.
 
 Arguments can be given unnamed, as long as they are in order:
 

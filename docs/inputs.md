@@ -175,42 +175,6 @@ LightSensor(pin=None, queue_len=5, charge_time_limit=10,
 | `when_light`     | A reference to the function to be called when light is detected.      | `None` or Function |
 | `when_dark`      | A reference to the function to be called when darkness is detected.   | `None` or Function |
 
-## Temperature Sensor
-
-One-wire Digital Temperature Sensor.
-
-### Wiring
-
-...
-
-### Code
-
-Ensure the `TemperatureSensor` class is imported at the top of the file:
-
-```python
-from gpiozero import TemperatureSensor
-```
-
-Create a `TemperatureSensor` object:
-
-```python
-temp = TemperatureSensor()
-```
-
-#### Initialisation options
-
-...
-
-#### Methods
-
-...
-
-#### Properties
-
-| Property | Description | Type |
-| -------- | ----------- | ---- |
-| `value`  | The current temperature reading in degrees Celsius. | Float |
-
 ## MCP3008 Analogue-to-Digital Converter
 
 MCP3008 ADC (Analogue-to-Digital converter).

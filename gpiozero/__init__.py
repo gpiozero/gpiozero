@@ -3,7 +3,7 @@ from __future__ import (
     print_function,
     absolute_import,
     division,
-    )
+)
 
 from .devices import (
     GPIODeviceClosed,
@@ -16,7 +16,6 @@ from .input_devices import (
     Button,
     MotionSensor,
     LightSensor,
-    TemperatureSensor,
     AnalogInputDevice,
     MCP3008,
     MCP3004,

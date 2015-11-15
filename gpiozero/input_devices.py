@@ -12,7 +12,6 @@ from time import sleep, time
 from threading import Event
 
 from RPi import GPIO
-from w1thermsensor import W1ThermSensor
 from spidev import SpiDev
 
 from .devices import (
@@ -499,15 +498,6 @@ LightSensor.wait_for_light = LightSensor.wait_for_active
 LightSensor.wait_for_dark = LightSensor.wait_for_inactive
 
 
-class TemperatureSensor(W1ThermSensor):
-    """
-    A Digital Temperature Sensor.
-    """
-    @property
-    def value(self):
-        return self.get_temperature()
-
-
 class AnalogInputDevice(CompositeDevice):
     """
     Represents an analog input device connected to SPI (serial interface).
@@ -606,4 +596,3 @@ class MCP3004(MCP3008):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
         super(MCP3004, self).__init__(device, channel)
-

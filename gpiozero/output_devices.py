@@ -3,7 +3,7 @@ from __future__ import (
     print_function,
     absolute_import,
     division,
-    )
+)
 
 import warnings
 from time import sleep
@@ -19,7 +19,7 @@ from .devices import (
     GPIOThread,
     CompositeDevice,
     SourceMixin,
-    )
+)
 
 
 class OutputDeviceError(GPIODeviceError):
@@ -439,4 +439,3 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self._forward.off()
         self._backward.off()
-
