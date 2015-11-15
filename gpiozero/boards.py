@@ -279,7 +279,7 @@ class TrafficHat(TrafficLightsBuzzer):
     """
     def __init__(self, pwm=False):
         super(TrafficHat, self).__init__(
-            TrafficLights(22, 23, 24, pwm=pwm),
+            TrafficLights(24, 23, 22, pwm=pwm),
             Buzzer(5),
             Button(25),
         )
