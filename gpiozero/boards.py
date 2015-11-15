@@ -32,6 +32,10 @@ class LEDBoard(SourceMixin, CompositeDevice):
             led.close()
 
     @property
+    def closed(self):
+        return all(led.closed for led in self.leds)
+
+    @property
     def leds(self):
         """
         A tuple of all the `LED` objects contained by the instance.
@@ -189,6 +193,10 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         self.button.close()
 
     @property
+    def closed(self):
+        return all(o.closed for o in self.all)
+
+    @property
     def all(self):
         """
         A tuple containing objects for all the items on the board (several
@@ -304,6 +312,24 @@ class Robot(SourceMixin, CompositeDevice):
     def close(self):
         self._left.close()
         self._right.close()
+
+    @property
+    def closed(self):
+        return self._left.closed and self._right.closed
+
+    @property
+    def left_motor(self):
+        """
+        Returns the `Motor` device representing the robot's left motor.
+        """
+        return self._left
+
+    @property
+    def right_motor(self):
+        """
+        Returns the `Motor` device representing the robot's right motor.
+        """
+        return self._right
 
     @property
     def value(self):

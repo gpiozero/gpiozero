@@ -62,7 +62,11 @@ class OutputDevice(SourceMixin, GPIODevice):
             raise
 
     def _write(self, value):
-        GPIO.output(self.pin, bool(value))
+        try:
+            GPIO.output(self.pin, bool(value))
+        except ValueError:
+            self._check_open()
+            raise
 
     def on(self):
         """
@@ -236,12 +240,17 @@ class PWMOutputDevice(DigitalOutputDevice):
         super(PWMOutputDevice, self).close()
 
     def _read(self):
+        self._check_open()
         return self._value
 
     def _write(self, value):
         if not 0 <= value <= 1:
             raise OutputDeviceError("PWM value must be between 0 and 1")
-        self._pwm.ChangeDutyCycle(value * 100)
+        try:
+            self._pwm.ChangeDutyCycle(value * 100)
+        except AttributeError:
+            self._check_open()
+            raise
         self._value = value
 
     @property
@@ -384,6 +393,30 @@ class Motor(SourceMixin, CompositeDevice):
         super(Motor, self).__init__()
         self._forward = PWMOutputDevice(forward)
         self._backward = PWMOutputDevice(backward)
+
+    def close(self):
+        self._forward.close()
+        self._backward.close()
+
+    @property
+    def closed(self):
+        return self._forward.closed and self._backward.closed
+
+    @property
+    def forward_device(self):
+        """
+        Returns the `PWMOutputDevice` representing the forward pin of the motor
+        controller.
+        """
+        return self._forward
+
+    @property
+    def backward_device(self):
+        """
+        Returns the `PWMOutputDevice` representing the backward pin of the
+        motor controller.
+        """
+        return self._backward
 
     @property
     def value(self):
