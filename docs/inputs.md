@@ -210,29 +210,22 @@ with MCP3008() as pot:
 #### Initialisation options
 
 ```python
-MCP3008(device=0, channel=0)
+MCP3008(channel=0, device=0)
 ```
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `device`  | Which of the two Chip Select SPI pins to access. | Integer: `0` or `1` | `0` |
 | `channel` | Which of the 8 ADC channels to access.           | Integer: `0` to `7` | `0` |
-
-#### Methods
-
-| Method | Description | Arguments |
-| ------ | ----------- | --------- |
-| `wait_for_light()` | Halt the program until light is detected.    | `timeout` - The number of seconds to wait before proceeding if light is not detected. **Default: `None`** |
-| `wait_for_dark()`  | Halt the program until darkness is detected. | `timeout` - The number of seconds to wait before proceeding if darkness is not detected. **Default: `None`** |
+| `device`  | Which of the two Chip Select SPI pins to access. | Integer: `0` or `1` | `0` |
 
 #### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `pin`            | The GPIO pin number the sensor is connected to.                       | Integer            |
-| `light_detected` | The current state of the sensor (`True` if light; otherwise `False`). | Boolean            |
-| `when_light`     | A reference to the function to be called when light is detected.      | `None` or Function |
-| `when_dark`      | A reference to the function to be called when darkness is detected.   | `None` or Function |
+| `channel` | The ADC channel the device is connected to.                   | Integer   |
+| `device`  | The chip select pin the device is connected to.               | Integer   |
+| `value`   | The current value of the device.                              | Float     |
+| `values`  | A generator continuously yielding the device's current value. | Generator |
 
 ## MCP3004 Analogue-to-Digital Converter
 

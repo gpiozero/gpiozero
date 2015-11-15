@@ -3,7 +3,7 @@ from __future__ import (
     print_function,
     absolute_import,
     division,
-    )
+)
 
 import inspect
 import warnings
@@ -20,7 +20,7 @@ from .devices import (
     GPIODevice,
     CompositeDevice,
     GPIOQueue,
-    )
+)
 
 
 class InputDeviceError(GPIODeviceError):
@@ -554,7 +554,7 @@ class AnalogInputDevice(CompositeDevice):
 
 
 class MCP3008(AnalogInputDevice):
-    def __init__(self, device=0, channel=0):
+    def __init__(self, channel=0, device=0):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
         super(MCP3008, self).__init__(device=device, bits=10)
@@ -590,9 +590,9 @@ class MCP3008(AnalogInputDevice):
 
 
 class MCP3004(MCP3008):
-    def __init__(self, device=0, channel=0):
+    def __init__(self, channel=0, device=0):
         # MCP3004 protocol is identical to MCP3008 but the top bit of the
         # channel number must be 0 (effectively restricting it to 4 channels)
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-        super(MCP3004, self).__init__(device, channel)
+        super(MCP3004, self).__init__(channel, device)
