@@ -10,6 +10,7 @@ X-Python3-Version: >= 3.2
 
 Package: python-gpiozero
 Architecture: all
+Section: python
 Depends: ${misc:Depends}, ${python:Depends}, python-rpi.gpio, python-spidev
 Description: Simple API for controlling devices attached to the GPIO pins.
  gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
@@ -21,6 +22,7 @@ Description: Simple API for controlling devices attached to the GPIO pins.
 
 Package: python3-gpiozero
 Architecture: all
+Section: python
 Depends: ${misc:Depends}, ${python3:Depends}, python3-rpi.gpio, python3-spidev
 Description: Simple API for controlling devices attached to the GPIO pins.
  gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
