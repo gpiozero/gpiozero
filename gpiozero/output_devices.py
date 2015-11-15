@@ -380,7 +380,9 @@ class Motor(SourceMixin, CompositeDevice):
     """
     def __init__(self, forward=None, backward=None):
         if not all([forward, backward]):
-            raise OutputDeviceError('forward and back pins must be provided')
+            raise OutputDeviceError(
+                'forward and backward pins must be provided'
+            )
         super(Motor, self).__init__()
         self._forward = PWMOutputDevice(forward)
         self._backward = PWMOutputDevice(backward)

@@ -44,8 +44,8 @@ LED(pin=None, active_high=True)
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `pin` | The GPIO pin number the LED is connected to. | Integer: `0` to `25` | *Required* |
-| `active_high` | Whether high or low voltage turns the LED on. | Boolean | `True` |
+| `pin`         | The GPIO pin number the LED is connected to.  | Integer | *Required* |
+| `active_high` | Whether high or low voltage turns the LED on. | Boolean | `True`     |
 
 #### Methods
 
@@ -63,8 +63,69 @@ LED(pin=None, active_high=True)
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `pin`    | The GPIO pin number the LED is connected to. | Integer |
-| `is_active` | The current state of the LED (`True` if on; `False` if off). | Boolean |
+| `pin`    | The GPIO pin number the LED is connected to.                       | Integer             |
+| `is_lit` | The current state of the LED (`True` if on; `False` if off).       | Boolean             |
+| `value`  | The current state of the LED (`True` if on; `False` if off).       | Boolean             |
+| `values` | A generator continuously yielding the LED's current value.         | Generator           |
+| `source` | A generator which can be used to continuously set the LED's value. | `None` or Generator |
+
+## PWMLED
+
+An LED (Light emitting diode) component with the ability to set brightness.
+
+*Note this interface does not require a special LED component. Any regular LED
+can be used in this way.*
+
+### Wiring
+
+A PWMLED is wired the same as a regular LED.
+
+### Code
+
+Ensure the `PWMLED` class is imported at the top of the file:
+
+```python
+from gpiozero import PWMLED
+```
+
+Create an `LED` object by passing in the pin number the LED is connected to:
+
+```python
+led = PWMLED(17)
+```
+
+#### Initialisation options
+
+```python
+PWMLED(pin=None, active_high=True)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `pin`         | The GPIO pin number the LED is connected to.  | Integer | *Required* |
+| `active_high` | Whether high or low voltage turns the LED on. | Boolean | `True`     |
+
+#### Methods
+
+| Method | Description | Arguments |
+| ------ | ----------- | --------- |
+| `on()`     | Turn the LED on.  | None |
+| `off()`    | Turn the LED off. | None |
+| `toggle()` | Toggle the LED. If it's on, turn it off; if it's off, turn it on. | None |
+| `blink()`  | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. **Default: `1`** |
+|            |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. **Default: `1`** |
+|            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
+|            |                                          | `background` - If `True`, start a background thread to continue blinking and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
+
+#### Properties
+
+| Property | Description | Type |
+| -------- | ----------- | ---- |
+| `pin`    | The GPIO pin number the LED is connected to.                       | Integer             |
+| `is_lit` | The current state of the LED (`True` if on; `False` if off).       | Boolean             |
+| `value`  | The current brightness of the LED `0` to `1`.                      | Float               |
+| `values` | A generator continuously yielding the LED's current value.         | Generator           |
+| `source` | A generator which can be used to continuously set the LED's value. | `None` or Generator |
 
 ## Buzzer
 
@@ -100,8 +161,8 @@ Buzzer(pin=None, active_high=True)
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `pin`         | The GPIO pin number the buzzer is connected to.  | Integer: `0` to `25` | *Required* |
-| `active_high` | Whether high or low voltage turns the buzzer on. | Boolean              | `True` |
+| `pin`         | The GPIO pin number the buzzer is connected to.  | Integer | *Required* |
+| `active_high` | Whether high or low voltage turns the buzzer on. | Boolean | `True`     |
 
 #### Methods
 
@@ -111,16 +172,19 @@ Buzzer(pin=None, active_high=True)
 | `off()`    | Turn the buzzer off. | None |
 | `toggle()` | Toggle the buzzer. If it's on, turn it off; if it's off, turn it on. | None |
 | `beep()`   | Make the buzzer turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the buzzer to be on each iteration. **Default: `1`** |
-|            |                                          | `off_time` - The amount of time (in seconds) for the buzzer to be off each iteration. **Default: `1`** |
-|            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
-|            |                                          | `background` - If `True`, start a background thread to continue beeping and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
+|            |                                             | `off_time` - The amount of time (in seconds) for the buzzer to be off each iteration. **Default: `1`** |
+|            |                                             | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
+|            |                                             | `background` - If `True`, start a background thread to continue beeping and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
 
 #### Properties
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `pin`       | The GPIO pin number the buzzer is connected to.                 | Integer |
-| `is_active` | The current state of the buzzer (`True` if on; `False` if off). | Boolean |
+| `pin`       | The GPIO pin number the buzzer is connected to.                       | Integer             |
+| `is_active` | The current state of the buzzer (`True` if on; `False` if off).       | Boolean             |
+| `value`     | The current state of the buzzer (`True` if on; `False` if off).       | Boolean             |
+| `values`    | A generator continuously yielding the buzzer's current value.         | Generator           |
+| `source`    | A generator which can be used to continuously set the buzzer's value. | `None` or Generator |
 
 ## RGB LED
 
@@ -162,9 +226,9 @@ RGBLED(red=None, green=None, blue=None)
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `red`   | The GPIO pin number the red LED is connected to.   | Integer: `0` to `25` | *Required* |
-| `green` | The GPIO pin number the green LED is connected to. | Integer: `0` to `25` | *Required* |
-| `blue`  | The GPIO pin number the blue LED is connected to.  | Integer: `0` to `25` | *Required* |
+| `red`   | The GPIO pin number the red LED is connected to.   | Integer | *Required* |
+| `green` | The GPIO pin number the green LED is connected to. | Integer | *Required* |
+| `blue`  | The GPIO pin number the blue LED is connected to.  | Integer | *Required* |
 
 #### Methods
 
@@ -182,10 +246,13 @@ RGBLED(red=None, green=None, blue=None)
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `red`   | The brightness value of the red LED (`0` to `1`).                   | Integer or Float |
-| `green` | The brightness value of the green LED (`0` to `1`).                 | Integer or Float |
-| `blue`  | The brightness value of the blue LED (`0` to `1`).                  | Integer or Float |
-| `color` | The brightness values of the three LEDs `(0, 0, 0)` to `(1, 1, 1)`. | Tuple |
+| `red`    | The brightness value of the red LED (`0` to `1`).                     | Float               |
+| `green`  | The brightness value of the green LED (`0` to `1`).                   | Float               |
+| `blue`   | The brightness value of the blue LED (`0` to `1`).                    | Float               |
+| `color`  | The brightness values of the three LEDs `(0, 0, 0)` to `(1, 1, 1)`.   | Tuple               |
+| `value`  | The brightness values of the three LEDs `(0, 0, 0)` to `(1, 1, 1)`.   | Tuple               |
+| `values` | A generator continuously yielding the LED's current values.           | Generator           |
+| `source` | A generator which can be used to continuously set the LED's values.   | `None` or Generator |
 
 ## Motor
 
@@ -209,24 +276,34 @@ from gpiozero import Motor
 Create a `Motor` object by passing in the pin numbers the motor is connected to:
 
 ```python
-motor = Motor(forward=17, back=18)
+motor = Motor(forward=17, backward=18)
 ```
 
 #### Initialisation options
 
 ```python
-Motor(forward=None, back=None)
+Motor(forward=None, backward=None)
 ```
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `forward` | The GPIO pin number the forward gear of the motor is connected to. | Integer: `0` to `25` | *Required* |
-| `back`    | The GPIO pin number the reverse gear of the motor is connected to. | Integer: `0` to `25` | *Required* |
+| `forward`     | The GPIO pin number the forward gear of the motor is connected to. | Integer | *Required* |
+| `backward`    | The GPIO pin number the reverse gear of the motor is connected to. | Integer | *Required* |
 
 #### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `forward()`  | Drive the motor forwards.  | `speed` - Speed at which to drive the motor, `0` to `1`. **Default: `1`** |
-| `backward()` | Drive the motor backwards. | `speed` - Speed at which to drive the motor, `0` to `1`. **Default: `1`** |
-| `stop()`     | Stop the motor.            | None |
+| `forward()`  | Drive the motor forwards.       | `speed` - Speed at which to drive the motor, `0` to `1`. **Default: `1`** |
+| `backward()` | Drive the motor backwards.      | `speed` - Speed at which to drive the motor, `0` to `1`. **Default: `1`** |
+| `stop()`     | Stop the motor.                 | None |
+| `reverse()`  | Reverse direction of the motor. | None |
+
+#### Properties
+
+| Property | Description | Type |
+| -------- | ----------- | ---- |
+| `is_active` | The current state of the motor. `True` if moving, otherwise `False`.                                                      | Boolean             |
+| `value`     | The current speed and direction of the motor. `-1.0` if full speed backward, `0.0` if still, `1.0` if full speed forward. | Float               |
+| `values`    | A generator continuously yielding the motor's current value.                                                              | Generator           |
+| `source`    | A generator which can be used to continuously set the motor's value.                                                      | `None` or Generator |

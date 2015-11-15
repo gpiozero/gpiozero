@@ -44,9 +44,9 @@ Button(pin=None, pull_up=True, bounce_time=None)
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `pin`         | The GPIO pin number the button is connected to. | Integer: `0` to `25` | *Required* |
-| `pull_up`     | The pull state of the pin. `True` means pull up, `False` means pull down. | Boolean | `True` |
-| `bounce_time` | Specifies the length of time (in seconds) that the component will ignore changes in state after an initial change. | Integer or Float | `None` |
+| `pin`         | The GPIO pin number the button is connected to.                                                                    | Integer          | *Required* |
+| `pull_up`     | The pull state of the pin. `True` means pull up, `False` means pull down.                                          | Boolean          | `True`     |
+| `bounce_time` | Specifies the length of time (in seconds) that the component will ignore changes in state after an initial change. | Integer or Float | `None`     |
 
 #### Methods
 
@@ -64,6 +64,8 @@ Button(pin=None, pull_up=True, bounce_time=None)
 | `pull_up`       | The pull state of the pin (`True` if pulled up; `False` if pulled down). | Boolean            |
 | `when_pressed`  | A reference to the function to be called when the button is pressed.     | `None` or Function |
 | `when_released` | A reference to the function to be called when the button is released.    | `None` or Function |
+| `value`         | The current value of the button. 0 if off; 1 if on.                      | Float              |
+| `values`        | A generator continuously yielding the button's current value.            | Generator          |
 
 ## Motion Sensor
 
@@ -99,11 +101,11 @@ MotionSensor(pin=None, queue_len=1, sample_rate=10, threshold=0.5, partial=False
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `pin`         | The GPIO pin number the sensor is connected to. | Integer: `0` to `25` | *Required* |
-| `queue_len`   | ??? | Integer | `1` |
-| `sample_rate` | ??? | Integer | `10` |
+| `pin`         | The GPIO pin number the sensor is connected to.                 | Integer           | *Required* |
+| `queue_len`   | ???                                                             | Integer           | `1`        |
+| `sample_rate` | ???                                                             | Integer           | `10`       |
 | `threshold`   | Proportion of sensor values required to determine motion state. | Float: `0` to `1` | `0.5` |
-| `partial`     | ??? | Boolean | `False` |
+| `partial`     | ???                                                             | Boolean           | `False`     |
 
 #### Methods
 
@@ -116,10 +118,12 @@ MotionSensor(pin=None, queue_len=1, sample_rate=10, threshold=0.5, partial=False
 
 | Property | Description | Type |
 | -------- | ----------- | ---- |
-| `pin`    | The GPIO pin number the sensor is connected to. | Integer |
-| `motion_detected` | The current state of the sensor (`True` if motion is detected; otherwise `False`). | Boolean |
-| `when_motion` | A reference to the function to be called when motion is detected. | `None` or Function |
-| `when_no_motion` | A reference to the function to be called when no motion is detected. | `None` or Function |
+| `pin`             | The GPIO pin number the sensor is connected to.                                    | Integer            |
+| `motion_detected` | The current state of the sensor (`True` if motion is detected; otherwise `False`). | Boolean            |
+| `when_motion`     | A reference to the function to be called when motion is detected.                  | `None` or Function |
+| `when_no_motion`  | A reference to the function to be called when no motion is detected.               | `None` or Function |
+| `value`           | The current value of the sensor. 0 if still; 1 if motion.                          | Float              |
+| `values`          | A generator continuously yielding the sensor's current value.                      | Generator          |
 
 ## Light Sensor
 
@@ -153,17 +157,17 @@ LightSensor(pin=None, queue_len=5, charge_time_limit=10,
 
 | Argument | Description | Values | Default |
 | -------- | ----------- | ------ | ------- |
-| `pin`         | The GPIO pin number the sensor is connected to. | Integer: `0` to `25` | *Required* |
-| `queue_len`   | ??? | Integer | `5` |
-| `charge_time_limit` | Maximum amount of time allowed to determine darkness. | Integer | `10` |
-| `threshold`   | Proportion of sensor values required to determine light level. | Float: `0` to `1` | `0.1` |
-| `partial`     | ??? | Boolean | `False` |
+| `pin`               | The GPIO pin number the sensor is connected to.                | Integer           | *Required* |
+| `queue_len`         | ???                                                            | Integer           | `5`        |
+| `charge_time_limit` | Maximum amount of time allowed to determine darkness.          | Integer           | `10`       |
+| `threshold`         | Proportion of sensor values required to determine light level. | Float: `0` to `1` | `0.1`      |
+| `partial`           | ???                                                            | Boolean           | `False`    |
 
 #### Methods
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `wait_for_light()` | Halt the program until light is detected.    | `timeout` - The number of seconds to wait before proceeding if light is not detected. **Default: `None`** |
+| `wait_for_light()` | Halt the program until light is detected.    | `timeout` - The number of seconds to wait before proceeding if light is not detected. **Default: `None`**    |
 | `wait_for_dark()`  | Halt the program until darkness is detected. | `timeout` - The number of seconds to wait before proceeding if darkness is not detected. **Default: `None`** |
 
 #### Properties
@@ -174,6 +178,8 @@ LightSensor(pin=None, queue_len=5, charge_time_limit=10,
 | `light_detected` | The current state of the sensor (`True` if light; otherwise `False`). | Boolean            |
 | `when_light`     | A reference to the function to be called when light is detected.      | `None` or Function |
 | `when_dark`      | A reference to the function to be called when darkness is detected.   | `None` or Function |
+| `value`          | The current value of the sensor. 0 if dark; 1 if light.               | Float              |
+| `values`         | A generator continuously yielding the sensor's current value.         | Generator          |
 
 ## MCP3008 Analogue-to-Digital Converter
 

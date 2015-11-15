@@ -12,17 +12,36 @@ The latest release is **v0.9.0 beta 4** released on 25th October 2015.
 
 ## About
 
-With very little code, you can quickly get going connecting your physical
-components together:
+Component interfaces are provided to allow a frictionless way to get started
+with physical computing:
+
+```python
+from gpiozero import LED
+from time import sleep
+
+led = LED(2)
+
+while True:
+    led.on()
+    sleep(1)
+    led.off()
+    sleep(1)
+```
+
+With very little code, you can quickly get going connecting your components
+together:
 
 ```python
 from gpiozero import LED, Button
+from signal import pause
 
 led = LED(2)
 button = Button(3)
 
 button.when_pressed = led.on
 button.when_released = led.off
+
+pause()
 ```
 
 The library includes interfaces to many simple everyday components, as well as

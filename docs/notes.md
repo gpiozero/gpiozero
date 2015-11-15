@@ -244,11 +244,11 @@ values, but are configurable when necessary.
 A property is an attribute relating to the state of an object. For example:
 
 ```python
-my_led.is_active
+my_led.is_lit
 ```
 
 This will return `True` or `False` depending on whether or not the LED is
-currently on.
+currently lit.
 
 Some properties allow you to change their value. For example an `RGBLED` object:
 
