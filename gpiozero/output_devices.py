@@ -205,6 +205,8 @@ class Buzzer(DigitalOutputDevice):
     """
     pass
 
+Buzzer.beep = Buzzer.blink
+
 
 class PWMOutputDevice(DigitalOutputDevice):
     """
