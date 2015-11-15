@@ -110,10 +110,10 @@ Buzzer(pin=None, active_high=True)
 | `on()`     | Turn the buzzer on.  | None |
 | `off()`    | Turn the buzzer off. | None |
 | `toggle()` | Toggle the buzzer. If it's on, turn it off; if it's off, turn it on. | None |
-| `blink()`  | Make the LED turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the LED to be on each iteration. **Default: `1`** |
-|            |                                          | `off_time` - The amount of time (in seconds) for the LED to be off each iteration. **Default: `1`** |
+| `beep()`   | Make the buzzer turn on and off repeatedly. | `on_time` - The amount of time (in seconds) for the buzzer to be on each iteration. **Default: `1`** |
+|            |                                          | `off_time` - The amount of time (in seconds) for the buzzer to be off each iteration. **Default: `1`** |
 |            |                                          | `n` - The number of iterations. `None` means infinite. **Default: `None`** |
-|            |                                          | `background` - If `True`, start a background thread to continue blinking and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
+|            |                                          | `background` - If `True`, start a background thread to continue beeping and return immediately. If `False`, only return when the blink is finished (warning: the default value of n will result in this method never returning). **Default: `True`** |
 
 #### Properties
 
