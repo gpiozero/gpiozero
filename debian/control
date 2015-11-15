@@ -4,7 +4,7 @@ Homepage: http://github.com/RPi-Distro/python-gpiozero
 Section: python
 Priority: extra
 Build-Depends: debhelper (>= 8), python-all (>= 2.7), python-setuptools, python3-all, python3-setuptools
-Standards-Version: 3.9.3
+Standards-Version: 3.9.6
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.2
 
