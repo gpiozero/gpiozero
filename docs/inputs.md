@@ -186,7 +186,7 @@ LightSensor(pin=None, queue_len=5, charge_time_limit=10,
 MCP3008 ADC (Analogue-to-Digital converter).
 
 The MCP3008 chip provides access to up to 8 analogue inputs, such as
-potentiometers, and read their values in digital form.
+potentiometers, and reads their values in digital form.
 
 ### Wiring
 
@@ -238,7 +238,7 @@ MCP3008(channel=0, device=0)
 MCP3004 ADC (Analogue-to-Digital converter).
 
 The MCP3004 chip provides access to up to 4 analogue inputs, such as
-potentiometers, and read their values in digital form.
+potentiometers, and reads their values in digital form.
 
 The interface is identical to `MCP3008`, except that only channels `0` to `3`
 are accessible.
