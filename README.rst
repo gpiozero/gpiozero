@@ -10,7 +10,7 @@ other contributors.
 Latest release
 ==============
 
-The latest release is **v0.9.0 beta 4** released on 25th October 2015.
+The latest release is 1.0 released on 16th November 2015.
 
 About
 =====
