@@ -1,3 +1,13 @@
+gpiozero (1.0.0) stable; urgency=low
+
+  * Debian packaging added (#44)
+  * PWMLED class added (#58)
+  * TemperatureSensor remove pending further work (#93)
+  * Buzzer.beep alias method added (#75)
+  * Motor PWM devices exposed, and Robot motor devices exposed (#107)
+
+ -- Dave Jones <dave@waveform.org.uk>  Mon, 16 Nov 2015 12:16:29 +0000
+
 gpiozero (0.9.0) stable; urgency=medium
 
   * Added source and values properties to all relevant classes (#76)
