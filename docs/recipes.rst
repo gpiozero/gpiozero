@@ -281,7 +281,7 @@ Each button plays a different sound!
 
     buttons = [Button(pin) for pin in sound_pins]
     for button in buttons:
-        sound = sound_pins[button.pin]
+        sound = sound_pins[button.pin.number]
         button.when_pressed = sound.play
 
     pause()
