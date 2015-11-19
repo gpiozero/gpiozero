@@ -46,7 +46,7 @@ All components must be wired up correctly before using with this library.
 The following program looks like it should turn an LED on:
 
 ```python
-from gpiozero import led
+from gpiozero import LED
 
 led = LED(2)
 led.on()
