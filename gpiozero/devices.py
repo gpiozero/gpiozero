@@ -13,29 +13,45 @@ from threading import Thread, Event, RLock
 from collections import deque
 from types import FunctionType
 
-from RPi import GPIO
-
 from .exc import GPIODeviceError, GPIODeviceClosed, InputDeviceError
 
-_GPIO_THREADS = set()
-_GPIO_PINS = set()
+# Get a pin implementation to use as the default; we prefer RPi.GPIO's here
+# as it supports PWM, and all Pi revisions. If no third-party libraries are
+# available, however, we fall back to a pure Python implementation which
+# supports platforms like PyPy
+from .pins import PINS_CLEANUP
+try:
+    from .pins.rpigpio import RPiGPIOPin
+    DefaultPin = RPiGPIOPin
+except ImportError:
+    try:
+        from .pins.rpio import RPIOPin
+        DefaultPin = RPIOPin
+    except ImportError:
+        from .pins.native import NativePin
+        DefaultPin = NativePin
+
+
+_THREADS = set()
+_PINS = set()
 # Due to interactions between RPi.GPIO cleanup and the GPIODevice.close()
 # method the same thread may attempt to acquire this lock, leading to deadlock
 # unless the lock is re-entrant
-_GPIO_PINS_LOCK = RLock()
+_PINS_LOCK = RLock()
 
-def _gpio_threads_shutdown():
-    while _GPIO_THREADS:
-        for t in _GPIO_THREADS.copy():
+def _shutdown():
+    while _THREADS:
+        for t in _THREADS.copy():
             t.stop()
-    with _GPIO_PINS_LOCK:
-        while _GPIO_PINS:
-            GPIO.remove_event_detect(_GPIO_PINS.pop())
-        GPIO.cleanup()
+    with _PINS_LOCK:
+        while _PINS:
+            _PINS.pop().close()
+    # Any cleanup routines registered by pins libraries must be called *after*
+    # cleanup of pin objects used by devices
+    for routine in PINS_CLEANUP:
+        routine()
 
-atexit.register(_gpio_threads_shutdown)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+atexit.register(_shutdown)
 
 
 class GPIOMeta(type):
@@ -196,20 +212,22 @@ class GPIODevice(ValuesMixin, GPIOBase):
         # value of pin until we've verified that it isn't already allocated
         self._pin = None
         if pin is None:
-            raise GPIODeviceError('No GPIO pin number given')
-        with _GPIO_PINS_LOCK:
-            if pin in _GPIO_PINS:
+            raise GPIODeviceError('No pin given')
+        if isinstance(pin, int):
+            pin = DefaultPin(pin)
+        with _PINS_LOCK:
+            if pin in _PINS:
                 raise GPIODeviceError(
-                    'pin %d is already in use by another gpiozero object' % pin
+                    'pin %r is already in use by another gpiozero object' % pin
                 )
-            _GPIO_PINS.add(pin)
+            _PINS.add(pin)
         self._pin = pin
-        self._active_state = GPIO.HIGH
-        self._inactive_state = GPIO.LOW
+        self._active_state = True
+        self._inactive_state = False
 
     def _read(self):
         try:
-            return GPIO.input(self.pin) == self._active_state
+            return self.pin.state == self._active_state
         except TypeError:
             self._check_open()
             raise
@@ -260,13 +278,12 @@ class GPIODevice(ValuesMixin, GPIOBase):
             ...
         """
         super(GPIODevice, self).close()
-        with _GPIO_PINS_LOCK:
+        with _PINS_LOCK:
             pin = self._pin
             self._pin = None
-            if pin in _GPIO_PINS:
-                _GPIO_PINS.remove(pin)
-                GPIO.remove_event_detect(pin)
-                GPIO.cleanup(pin)
+            if pin in _PINS:
+                _PINS.remove(pin)
+                pin.close()
 
     @property
     def closed(self):
@@ -275,9 +292,10 @@ class GPIODevice(ValuesMixin, GPIOBase):
     @property
     def pin(self):
         """
-        The pin (in BCM numbering) that the device is connected to. This will
-        be ``None`` if the device has been closed (see the :meth:`close`
-        method).
+        The :class:`Pin` that the device is connected to. This will be ``None``
+        if the device has been closed (see the :meth:`close` method). When
+        dealing with GPIO pins, query ``pin.number`` to discover the GPIO
+        pin (in BCM numbering) that the device is connected to.
         """
         return self._pin
 
@@ -293,7 +311,7 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     def __repr__(self):
         try:
-            return "<gpiozero.%s object on pin=%d, is_active=%s>" % (
+            return "<gpiozero.%s object on pin %r, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.is_active)
         except GPIODeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
@@ -307,7 +325,7 @@ class GPIOThread(Thread):
 
     def start(self):
         self.stopping.clear()
-        _GPIO_THREADS.add(self)
+        _THREADS.add(self)
         super(GPIOThread, self).start()
 
     def stop(self):
@@ -316,7 +334,7 @@ class GPIOThread(Thread):
 
     def join(self):
         super(GPIOThread, self).join()
-        _GPIO_THREADS.discard(self)
+        _THREADS.discard(self)
 
 
 class GPIOQueue(GPIOThread):

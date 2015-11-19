@@ -10,8 +10,6 @@ from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
-from RPi import GPIO
-
 from .exc import OutputDeviceError, GPIODeviceError, GPIODeviceClosed
 from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
 
@@ -42,36 +40,20 @@ class OutputDevice(SourceMixin, GPIODevice):
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
-        self._active_state = GPIO.HIGH if active_high else GPIO.LOW
-        self._inactive_state = GPIO.LOW if active_high else GPIO.HIGH
-        try:
-            # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
-            # messing around with GPIO init within background threads...
-            with warnings.catch_warnings(record=True) as w:
-                # This is horrid, but we can't specify initial=None with setup
-                if initial_value is None:
-                    GPIO.setup(pin, GPIO.OUT)
-                else:
-                    GPIO.setup(pin, GPIO.OUT, initial=
-                        [self._inactive_state, self._active_state][bool(initial_value)])
-                GPIO.setup(pin, GPIO.OUT)
-            # The only warning we want to squash is a RuntimeWarning that is
-            # thrown when setting pins 2 or 3. Anything else should be replayed
-            for warning in w:
-                if warning.category != RuntimeWarning or pin not in (2, 3):
-                    warnings.showwarning(
-                        warning.message, warning.category, warning.filename,
-                        warning.lineno, warning.file, warning.line
-                    )
-        except:
-            self.close()
-            raise
+        self._active_state = True if active_high else False
+        self._inactive_state = False if active_high else True
+        if initial_value is None:
+            self.pin.function = 'output'
+        elif initial_value:
+            self.pin.output_with_state(self._active_state)
+        else:
+            self.pin.output_with_state(self._inactive_state)
 
     def _write(self, value):
         if not self.active_high:
             value = not value
         try:
-            GPIO.output(self.pin, bool(value))
+            self.pin.state = bool(value)
         except ValueError:
             self._check_open()
             raise
@@ -102,7 +84,7 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     def __repr__(self):
         try:
-            return '<gpiozero.%s object on pin=%d, active_high=%s, is_active=%s>' % (
+            return '<gpiozero.%s object on pin %r, active_high=%s, is_active=%s>' % (
                 self.__class__.__name__, self.pin, self.active_high, self.is_active)
         except:
             return super(OutputDevice, self).__repr__()
@@ -285,40 +267,33 @@ class PWMOutputDevice(OutputDevice):
         to 100Hz.
     """
     def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
-        self._pwm = None
         self._blink_thread = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceError("initial_value must be between 0 and 1")
         super(PWMOutputDevice, self).__init__(pin, active_high)
         try:
-            self._pwm = GPIO.PWM(self.pin, frequency)
-            self._value = initial_value
-            if not active_high:
-                initial_value = 1 - initial_value
-            self._pwm.start(100 * initial_value)
-            self._frequency = frequency
+            # XXX need a way of setting these together
+            self.pin.frequency = frequency
+            self.value = initial_value
         except:
             self.close()
             raise
 
     def close(self):
         self._stop_blink()
-        if self._pwm:
-            # Ensure we wipe out the PWM object so that re-runs don't attempt
-            # to re-stop the PWM thread (otherwise, the fact that close is
-            # called from __del__ can easily result in us stopping the PWM
-            # on *another* instance on the same pin)
-            p = self._pwm
-            self._pwm = None
-            p.stop()
+        try:
+            self.pin.frequency = None
+        except AttributeError:
+            # If the pin's already None, ignore the exception
+            pass
         super(PWMOutputDevice, self).close()
 
     def _read(self):
         self._check_open()
         if self.active_high:
-            return self._value
+            return self.pin.state
         else:
-            return 1 - self._value
+            return 1 - self.pin.state
 
     def _write(self, value):
         if not self.active_high:
@@ -326,11 +301,10 @@ class PWMOutputDevice(OutputDevice):
         if not 0 <= value <= 1:
             raise OutputDeviceError("PWM value must be between 0 and 1")
         try:
-            self._pwm.ChangeDutyCycle(value * 100)
+            self.pin.state = value
         except AttributeError:
             self._check_open()
             raise
-        self._value = value
 
     @property
     def value(self):
@@ -361,7 +335,7 @@ class PWMOutputDevice(OutputDevice):
         toggle it to 0.9, and so on.
         """
         self._stop_blink()
-        self.value = 1.0 - self.value
+        self.value = 1 - self.value
 
     @property
     def is_active(self):
@@ -377,12 +351,11 @@ class PWMOutputDevice(OutputDevice):
         The frequency of the pulses used with the PWM device, in Hz. The
         default is 100Hz.
         """
-        return self._frequency
+        return self.pin.frequency
 
     @frequency.setter
     def frequency(self, value):
-        self._pwm.ChangeFrequency(value)
-        self._frequency = value
+        self.pin.frequency = value
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
