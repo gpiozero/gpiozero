@@ -30,6 +30,7 @@ from signal import pause
 red = LED(2)
 
 red.blink()
+
 pause()
 ```
 
@@ -72,6 +73,7 @@ def say_hello():
 button = Button(4)
 
 button.when_pressed = say_hello
+
 pause()
 ```
 
@@ -215,13 +217,9 @@ Each button plays a different sound!
 from gpiozero import Button
 import pygame.mixer
 from pygame.mixer import Sound
+from signal import pause
 
 pygame.mixer.init()
-
-def play(pin):
-    sound = sound_pins[pin]
-    print("playing note from pin %s" % pin)
-    sound.play()
 
 sound_pins = {
     2: Sound("samples/drum_tom_mid_hard.wav"),
@@ -232,6 +230,8 @@ buttons = [Button(pin) for pin in sound_pins]
 for button in buttons:
     sound = sound_pins[button.pin]
     button.when_pressed = sound.play
+
+pause()
 ```
 
 See [GPIO Music Box](https://www.raspberrypi.org/learning/gpio-music-box/)
@@ -245,28 +245,35 @@ FishDish:
 
 ```python
 from gpiozero import FishDish
+from signal import pause
 
 fish = FishDish()
 
 fish.button.when_pressed = fish.on
 fish.button.when_released = fish.off
+
+pause()
 ```
 
 Ryanteck Traffic HAT:
 
 ```python
 from gpiozero import TrafficHat
+from signal import pause
 
 th = TrafficHat()
 
 th.button.when_pressed = th.on
 th.button.when_released = th.off
+
+pause()
 ```
 
 Using components:
 
 ```python
 from gpiozero import LED, Buzzer, Button
+from signal import pause
 
 button = Button(2)
 buzzer = Buzzer(3)
@@ -286,6 +293,8 @@ def things_off():
 
 button.when_pressed = things_on
 button.when_released = things_off
+
+pause()
 ```
 
 ## RGB LED
@@ -322,12 +331,15 @@ Light an LED when motion is detected:
 
 ```python
 from gpiozero import MotionSensor, LED
+from signal import pause
 
 pir = MotionSensor(5)
 led = LED(16)
 
 pir.when_motion = led.on
 pir.when_no_motion = led.off
+
+pause()
 ```
 
 ## Light Sensor
@@ -350,12 +362,15 @@ Run a function when the light changes:
 
 ```python
 from gpiozero import LightSensor, LED
+from signal import pause
 
 sensor = LightSensor(18)
 led = LED(16)
 
 sensor.when_dark = led.on
 sensor.when_light = led.off
+
+pause()
 ```
 
 ## Motors
@@ -456,12 +471,15 @@ Make a robot drive forward when it detects motion:
 
 ```python
 from gpiozero import Robot, MotionSensor
+from signal import pause
 
 robot = Robot(left=(4, 14), right=(17, 18))
 pir = MotionSensor(5)
 
 pir.when_motion = robot.forward
 pir.when_no_motion = robot.stop
+
+pause()
 ```
 
 ## Potentiometer
@@ -510,4 +528,6 @@ blue_pot = MCP3008(channel=2)
 led.red.source = red_pot.values
 led.green.source = green_pot.values
 led.blue.source = blue_pot.values
+
+pause()
 ```
