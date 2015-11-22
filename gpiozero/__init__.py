@@ -40,4 +40,5 @@ from .boards import (
     TrafficHat,
     Robot,
     RyanteckRobot,
+    CamJamKitRobot,
 )

@@ -409,4 +409,13 @@ class RyanteckRobot(Robot):
     RTK MCB Robot. Generic robot controller with pre-configured pin numbers.
     """
     def __init__(self):
-        super(RyanteckRobot, self).__init__((17, 18), (22, 23))
+        super(RyanteckRobot, self).__init__(left=(17, 18), right=(22, 23))
+
+
+class CamJamKitRobot(Robot):
+    """
+    CamJam EduKit 3 Robot. Generic robot controller with pre-configured pin
+    numbers.
+    """
+    def __init__(self):
+        super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
