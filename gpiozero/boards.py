@@ -390,7 +390,7 @@ class Robot(SourceMixin, CompositeDevice):
         """
         Reverse the robot's current motor directions. If the robot is currently
         running full speed forward, it will run full speed backward. If the
-        roboto is turning left at half-speed, it will turn right at half-speed.
+        robot is turning left at half-speed, it will turn right at half-speed.
         If the robot is currently stopped it will remain stopped.
         """
         self._left.value = -self._left.value
