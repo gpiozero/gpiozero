@@ -411,6 +411,20 @@ Button.wait_for_press = Button.wait_for_active
 Button.wait_for_release = Button.wait_for_inactive
 
 
+class LineSensor(DigitalInputDevice):
+    """
+    A single sensor line detector.
+    """
+    def __init__(self, pin=None, pull_up=True, bounce_time=None):
+        super(LineSensor, self).__init__(pin, pull_up, bounce_time)
+
+LineSensor.line_detected = LineSensor.is_active
+LineSensor.when_line = LineSensor.when_activated
+LineSensor.when_no_line = LineSensor.when_deactivated
+LineSensor.wait_for_line = LineSensor.wait_for_active
+LineSensor.wait_for_no_line = LineSensor.wait_for_inactive
+
+
 class MotionSensor(SmoothedInputDevice):
     """
     A PIR (Passive Infra-Red) motion sensor.

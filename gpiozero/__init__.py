@@ -14,6 +14,7 @@ from .input_devices import (
     InputDeviceError,
     InputDevice,
     Button,
+    LineSensor,
     MotionSensor,
     LightSensor,
     AnalogInputDevice,
