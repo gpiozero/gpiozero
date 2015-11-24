@@ -474,3 +474,79 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self._forward.off()
         self._backward.off()
+
+class LEDBargraph(SourceMixin, CompositeDevice):
+    """
+    A line of LEDs individually controllable each with a seperate GPIO pin
+
+    led_pins: 
+        A tuple of GPIO pins which make up the LED Bargraph
+    """
+    def __init__(self, led_pins):
+        """
+        Pass a list of the gpio pins which make up the bargraph
+        """
+        super(LEDBargraph, self).__init__()
+        
+        self.led_pins = led_pins
+
+        #setup leds
+        self._leds = []
+        for led_pin in led_pins:
+            self._leds.append(LED(led_pin))
+
+    def on(self, *args):
+        """
+        Turn on all the LEDs or a single LED
+        """
+        if len(args) == 0:
+            #turn on all the leds
+            for led in self._leds:
+                led.on()
+        else:
+            #turn on individual leds
+            for led_no in args:
+                self._leds[led_no].on()
+
+    def off(self, *args):
+        """
+        Turn off a single LED
+        """
+        if len(args) == 0:
+            #turn off all the leds
+            for led in self._leds:
+                led.off()
+        else:
+            #turn off individual leds
+            for led_no in args:
+                self._leds[led_no].off()
+
+    def led(self, led_no):
+        """
+        Get a single LED
+        """
+        return self.leds[led_no]
+
+    def on_up_to(self, up_to):
+        """
+        Turn on all the LEDs up to a position, all the others are off
+        """
+        for led in range(0, len(self._leds)):
+            if led <= up_to:
+                self.on(led)
+            else:
+                self.off(led)
+
+    def on_down_to(self, down_to):
+        """
+        Turn on all the LEDs down to a position, all the others are off
+        """
+        for led in range(0, len(self._leds)):
+            if led >= down_to:
+                self.on(led)
+            else:
+                self.off(led)
+
+    def close(self):
+        for led in self._leds:
+            led.close()

@@ -307,3 +307,52 @@ Motor(forward=None, backward=None)
 | `value`     | The current speed and direction of the motor. `-1.0` if full speed backward, `0.0` if still, `1.0` if full speed forward. | Float               |
 | `values`    | A generator continuously yielding the motor's current value.                                                              | Generator           |
 | `source`    | A generator which can be used to continuously set the motor's value.                                                      | `None` or Generator |
+
+## LEDBargraph
+
+A strip of seperate LEDs in a single component.
+
+### Wiring
+
+The LED bargraph component has 2 rows of pins, a row of cathodes and a row of
+anodes, one pair for each LED in the bargraph.
+
+Connect the cathode of each LED to a ground pin, and connect the
+anode (the longer leg) to any GPIO pin, with a current limiting resistor in
+between:
+
+### Code
+
+Ensure the `LEDBargraph` class is imported at the top of the file:
+
+```python
+from gpiozero import LEDBargraph
+```
+
+Create an `LEDBargraph` object by passing in a tuple of the GPIO pins
+each LED is connected too. 
+
+```python
+bar = LEDBargraph((24, 25, 10, 9, 11, 8, 7, 5, 6, 12))
+```
+
+#### Initialisation options
+
+```python
+LED(led_pins)
+```
+
+| Argument | Description | Values | Default |
+| -------- | ----------- | ------ | ------- |
+| `led_pins` | A tuple of gpio pins  | Tuple | Required |
+
+#### Methods
+
+| Method | Description | Arguments |
+| ------ | ----------- | --------- |
+| `on()`     | Turn the LED bargraph on.  | `*args` - position of led(s) to turn on *optional*  |
+| `off()`     | Turn the LED bargraph off.  | `*args` - position of led(s) to turn off *optional*  |
+| `on_up_to()`     | Turn all the LEDs on up to a position.  | `led_no` - position of led to turn on the leds up to |
+| `on_down_to()`     | Turn all the LEDs on down to a position.  | `led_no` - position of led to turn on the leds down to |
+| `led()`     | The LED object reference of the led at a position  | `led_no` - position of led |
+| `close()`     | Close the LED bargraph  | None |
