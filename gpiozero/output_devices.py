@@ -489,6 +489,7 @@ class LEDBargraph(SourceMixin, CompositeDevice):
         super(LEDBargraph, self).__init__()
         
         self.led_pins = led_pins
+        self._value = 0
 
         #setup leds
         self._leds = []
@@ -542,11 +543,32 @@ class LEDBargraph(SourceMixin, CompositeDevice):
         Turn on all the LEDs down to a position, all the others are off
         """
         for led in range(0, len(self._leds)):
-            if led >= down_to:
-                self.on(led)
-            else:
+            if led < down_to:
                 self.off(led)
+            else:
+                self.on(led)
 
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        """
+        The value of the LED Bargraph, -1.0 all leds are on down the board,
+        0.0 all the leds are off, 1.0 all leds are on up the board.
+        """
+        self._value = value
+        scaled = round(len(self._leds) * value, 0)
+        
+        if scaled > 0:
+            self.on_up_to(scaled - 1)
+        elif scaled < 0:
+            scaled = scaled * -1
+            self.on_down_to(scaled - 1)
+        else:
+            self.off()
+            
     def close(self):
         for led in self._leds:
             led.close()

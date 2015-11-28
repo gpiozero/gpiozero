@@ -356,3 +356,9 @@ LED(led_pins)
 | `on_down_to()`     | Turn all the LEDs on down to a position.  | `led_no` - position of led to turn on the leds down to |
 | `led()`     | The LED object reference of the led at a position  | `led_no` - position of led |
 | `close()`     | Close the LED bargraph  | None |
+
+#### Properties
+
+| Property | Description | Type |
+| -------- | ----------- | ---- |
+| `value`     | The current value of the LED Bargraph. `-1.0` if on down the board, `0.0` if off, `1.0` if on up the board. | Float |
