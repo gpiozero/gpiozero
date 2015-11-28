@@ -491,7 +491,7 @@ from gpiozero import MCP3008
 
 while True:
     with MCP3008(channel=0) as pot:
-        print(pot.read())
+        print(pot.value)
 ```
 
 ## Full Colour LED controlled by 3 Potentiometers
