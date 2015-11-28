@@ -50,28 +50,37 @@ colour LEDs, robotics kits and more.
 
 ## Install
 
-First, install the dependencies:
+First, update your repositories list:
 
 ```python
-sudo apt-get install python-pip python3-pip python-spidev python3-spidev
+sudo apt-get update
 ```
 
-Install with pip:
+Then install the package of your choice. Both Python 3 and Python 2 are
+supported. Python 3 is recommended!
 
-```bash
-sudo pip install gpiozero
-sudo pip-3.2 install gpiozero
+```python
+sudo apt-get install python3-gpiozero
 ```
 
-Both Python 3 and Python 2 are supported. Python 3 is recommended!
+or:
+
+```python
+sudo apt-get install python-gpiozero
+```
 
 ### Upgrade
 
 Upgrade to the latest version with:
 
 ```bash
-sudo pip install gpiozero --upgrade
-sudo pip-3.2 install gpiozero --upgrade
+sudo apt-get upgrade python3-gpiozero
+```
+
+or:
+
+```bash
+sudo apt-get upgrade python-gpiozero
 ```
 
 ## Getting started
