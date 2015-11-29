@@ -477,7 +477,8 @@ class Motor(SourceMixin, CompositeDevice):
 
 class LEDBargraph(SourceMixin, CompositeDevice):
     """
-    A line of LEDs individually controllable each with a seperate GPIO pin
+    A line of LEDs which shows a value either positive (up the bargraph)
+    or negative (down the bargraph)
 
     led_pins: 
         A tuple of GPIO pins which make up the LED Bargraph
@@ -492,39 +493,27 @@ class LEDBargraph(SourceMixin, CompositeDevice):
         self._value = 0
 
         #setup leds
-        self._leds = []
+        self.leds = []
         for led_pin in led_pins:
-            self._leds.append(LED(led_pin))
+            self.leds.append(LED(led_pin))
 
-    def on(self, *args):
+    def on(self):
         """
-        Turn on all the LEDs or a single LED
+        Turn on all the LEDs
         """
-        if len(args) == 0:
-            #turn on all the leds
-            for led in self._leds:
-                led.on()
-        else:
-            #turn on individual leds
-            for led_no in args:
-                self._leds[led_no].on()
+        for led in self.leds:
+            led.on()
 
     def off(self, *args):
         """
-        Turn off a single LED
+        Turn off all the LEDs
         """
-        if len(args) == 0:
-            #turn off all the leds
-            for led in self._leds:
-                led.off()
-        else:
-            #turn off individual leds
-            for led_no in args:
-                self._leds[led_no].off()
+        for led in self.leds:
+            led.off()
 
     def led(self, led_no):
         """
-        Get a single LED
+        Get a single LED from its position in the bargraph
         """
         return self.leds[led_no]
 
@@ -532,21 +521,29 @@ class LEDBargraph(SourceMixin, CompositeDevice):
         """
         Turn on all the LEDs up to a position, all the others are off
         """
-        for led in range(0, len(self._leds)):
+        self._value = (up_to + 1) / len(self.leds)
+        self._on_up_to(up_to)
+
+    def _on_up_to(self, up_to):
+        for led in range(0, len(self.leds)):
             if led <= up_to:
-                self.on(led)
+                self.led(led).on()
             else:
-                self.off(led)
+                self.led(led).off()
 
     def on_down_to(self, down_to):
         """
         Turn on all the LEDs down to a position, all the others are off
         """
-        for led in range(0, len(self._leds)):
+        self._value = ((down_to + 1) / len(self.leds)) * -1
+        self._on_down_to(down_to)
+    
+    def _on_down_to(self, down_to):
+        for led in range(0, len(self.leds)):
             if led < down_to:
-                self.off(led)
+                self.led(led).off()
             else:
-                self.on(led)
+                self.led(led).on()
 
     @property
     def value(self):
@@ -559,16 +556,15 @@ class LEDBargraph(SourceMixin, CompositeDevice):
         0.0 all the leds are off, 1.0 all leds are on up the board.
         """
         self._value = value
-        scaled = round(len(self._leds) * value, 0)
-        
+        scaled = round(len(self.leds) * value, 0)
         if scaled > 0:
-            self.on_up_to(scaled - 1)
+            self._on_up_to(scaled - 1)
         elif scaled < 0:
             scaled = scaled * -1
-            self.on_down_to(scaled - 1)
+            self._on_down_to(scaled - 1)
         else:
             self.off()
             
     def close(self):
-        for led in self._leds:
+        for led in self.leds:
             led.close()

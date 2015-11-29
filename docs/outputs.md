@@ -339,7 +339,7 @@ bar = LEDBargraph((24, 25, 10, 9, 11, 8, 7, 5, 6, 12))
 #### Initialisation options
 
 ```python
-LED(led_pins)
+LEDBargraph(led_pins)
 ```
 
 | Argument | Description | Values | Default |
@@ -350,8 +350,8 @@ LED(led_pins)
 
 | Method | Description | Arguments |
 | ------ | ----------- | --------- |
-| `on()`     | Turn the LED bargraph on.  | `*args` - position of led(s) to turn on *optional*  |
-| `off()`     | Turn the LED bargraph off.  | `*args` - position of led(s) to turn off *optional*  |
+| `on()`     | Turn the LED bargraph on.  | None  |
+| `off()`     | Turn the LED bargraph off.  | None  |
 | `on_up_to()`     | Turn all the LEDs on up to a position.  | `led_no` - position of led to turn on the leds up to |
 | `on_down_to()`     | Turn all the LEDs on down to a position.  | `led_no` - position of led to turn on the leds down to |
 | `led()`     | The LED object reference of the led at a position  | `led_no` - position of led |
