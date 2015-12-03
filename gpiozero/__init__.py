@@ -42,4 +42,5 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    SnowPi,
 )

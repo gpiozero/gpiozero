@@ -419,3 +419,131 @@ class CamJamKitRobot(Robot):
     """
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+
+
+class SnowPiEyes(LEDBoard):
+    """
+    Collection of LEDs making up left and right eyes of the Ryanteck SnowPi
+    accessory.
+    """
+    def __init__(self, pwm=False):
+        super(SnowPiEyes, self).__init__(23, 24, pwm=pwm)
+
+    @property
+    def left(self):
+        return self.leds[0]
+
+    @property
+    def right(self):
+        return self.leds[1]
+
+
+class SnowPiArm(LEDBoard):
+    """
+    Collection of LEDs making up a single arm of the Ryanteck SnowPi accessory.
+    """
+    def __init__(self, top, middle, bottom, pwm=False):
+        super(SnowPiArms, self).__init__(top, middle, bottom, pwm=pwm)
+
+
+class SnowPiArms(SourceMixin, CompositeDevice):
+    """
+    Collection of LEDs making up left and right arms of the Ryanteck SnowPi
+    accessory.
+    """
+    def __init__(self):
+        self._left = SnowPiArm(17, 18, 22)
+        self._right = SnowPiArm(7, 8, 9)
+
+    @property
+    def left(self):
+        return self._left
+
+    @property
+    def right(self):
+        return self._right
+
+
+class SnowPi(SourceMixin, CompositeDevice):
+    """
+    Ryanteck SnowPi accessory.
+    """
+    def __init__(self, pwm=False):
+        LEDClass = PWMLED if pwm else LED
+        self._nose = LEDClass(25)
+        self._eyes = SnowPiEyes(pwm=pwm)
+        self._arms = SnowPiArms(pwm=pwm)
+        self._lights = (self.nose, self.eyes, self.arms)
+
+    @property
+    def nose(self):
+        """
+        The `LED` object representing the nose LED.
+        """
+        return self._nose
+
+    @property
+    def eyes(self):
+        """
+        The `LEDBoard` object representing the eye LEDs.
+        """
+        return self._eyes
+
+    @property
+    def arms(self):
+        """
+        The `LEDBoard` object representing the arm LEDs.
+        """
+        return self._arms
+
+    @property
+    def lights(self):
+        """
+        The `LEDBoard` object representing all the LEDs.
+        """
+        return self._lights
+
+    def on(self):
+        """
+        Turn all the LEDs on.
+        """
+        for light in self.lights:
+            light.on()
+
+    def off(self):
+        """
+        Turn all the LEDs off.
+        """
+        for light in self.lights:
+            light.off()
+
+    def toggle(self):
+        """
+        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
+        off, turn it on.
+        """
+        for light in self.lights:
+            light.toggle()
+
+    def blink(self, on_time=1, off_time=1, n=None, background=True):
+        """
+        Make all the LEDs turn on and off repeatedly.
+
+        on_time: `1`
+            Number of seconds to be on
+
+        off_time: `1`
+            Number of seconds to be off
+
+        n: `None`
+            Number of times to blink; None means forever
+
+        background: `True`
+            If `True`, start a background thread to continue blinking and
+            return immediately. If `False`, only return when the blink is
+            finished (warning: the default value of `n` will result in this
+            method never returning).
+        """
+        # XXX This isn't going to work for background=False
+        for light in self.lights:
+            light.blink(on_time, off_time, n, background)
