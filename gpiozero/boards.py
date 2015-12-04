@@ -445,6 +445,18 @@ class SnowPiArm(LEDBoard):
     def __init__(self, top, middle, bottom, pwm=False):
         super(SnowPiArm, self).__init__(top, middle, bottom, pwm=pwm)
 
+    @property
+    def top(self):
+        return self.leds[0]
+
+    @property
+    def middle(self):
+        return self.leds[1]
+
+    @property
+    def bottom(self):
+        return self.leds[2]
+
 
 class SnowPiArms(SourceMixin, CompositeDevice):
     """
