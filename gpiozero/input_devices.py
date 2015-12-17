@@ -610,3 +610,17 @@ class MCP3004(MCP3008):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
         super(MCP3004, self).__init__(channel, device)
+
+
+class Dot(object):
+    def __init__(self, pin=None):
+        if pin is None:
+            raise GPIODeviceError('No GPIO pin number given')
+        self.pin = pin
+
+    @property
+    def is_active(self):
+        dot = InputDevice(self.pin, pull_up=True)
+        status = dot.is_active
+        dot.close()
+        return status

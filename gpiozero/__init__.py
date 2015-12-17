@@ -20,6 +20,7 @@ from .input_devices import (
     AnalogInputDevice,
     MCP3008,
     MCP3004,
+    Dot,
 )
 from .output_devices import (
     OutputDeviceError,
@@ -42,4 +43,5 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    DotsBoard,
 )

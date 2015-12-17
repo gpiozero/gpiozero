@@ -12,7 +12,7 @@ except ImportError:
 from time import sleep
 from collections import namedtuple
 
-from .input_devices import InputDeviceError, Button
+from .input_devices import InputDeviceError, Button, Dot
 from .output_devices import OutputDeviceError, LED, PWMLED, Buzzer, Motor
 from .devices import CompositeDevice, SourceMixin
 
@@ -419,3 +419,89 @@ class CamJamKitRobot(Robot):
     """
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+
+class DotsBoard(CompositeDevice):
+    """
+    DOTs Board - conductive paint dot-to-dot activity board by Rachel Rayns
+    """
+    def __init__(self, dots_required=5):
+        self._color_pins = {
+            27: 'red',
+            10: 'green',
+            0: 'blue',
+            19: 'orange',
+        }
+
+        self._dot_pins = {
+            1: 7,
+            4: 2,
+            5: 9,
+            6: 14,
+            7: 6,
+            8: 18,
+            9: 17,
+            11: 8,
+            12: 10,
+            14: 1,
+            15: 3,
+            16: 13,
+            17: 4,
+            18: 20,
+            21: 12,
+            22: 15,
+            23: 16,
+            24: 19,
+            25: 5,
+            26: 11,
+        }
+
+        self._extra_pins = {
+            20: 'bear',
+            13: 'cloud',
+        }
+
+        pins = (
+            list(self._color_pins.keys()) +
+            list(self._dot_pins.keys()) +
+            list(self._extra_pins.keys())
+        )
+
+        self.dots = {pin: Dot(pin) for pin in pins}
+
+        self.dots_required = dots_required
+
+    def _selected_dots(self, pins, selected=True):
+        dots = [self.dots[pin] for pin in pins.keys()]
+        return sorted(pins[dot.pin] for dot in dots if dot.is_active)
+
+    def _unselected_dots(self, pins, selected=True):
+        dots = [self.dots[pin] for pin in pins.keys()]
+        return sorted(pins[dot.pin] for dot in dots if not dot.is_active)
+
+    @property
+    def selected_dots(self):
+        return self._selected_dots(self._dot_pins)
+
+    @property
+    def selected_colors(self):
+        return self._selected_dots(self._color_pins)
+
+    @property
+    def selected_extras(self):
+        return self._selected_dots(self._extra_pins)
+
+    @property
+    def unselected_dots(self):
+        return self._unselected_dots(self._dot_pins)
+
+    @property
+    def unselected_colors(self):
+        return self._unselected_dots(self._color_pins)
+
+    @property
+    def unselected_extras(self):
+        return self._unselected_dots(self._extra_pins)
+
+    @property
+    def enough_dots_selected(self):
+        return len(self.selected_dots) >= self.dots_required
