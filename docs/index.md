@@ -74,13 +74,13 @@ sudo apt-get install python-gpiozero
 Upgrade to the latest version with:
 
 ```bash
-sudo apt-get upgrade python3-gpiozero
+sudo apt-get install python3-gpiozero
 ```
 
 or:
 
 ```bash
-sudo apt-get upgrade python-gpiozero
+sudo apt-get install python-gpiozero
 ```
 
 ## Getting started
