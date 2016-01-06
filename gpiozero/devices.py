@@ -12,6 +12,7 @@ from collections import deque
 
 from RPi import GPIO
 
+from .input_devices import InputDeviceError
 
 _GPIO_THREADS = set()
 _GPIO_PINS = set()
