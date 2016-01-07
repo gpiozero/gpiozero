@@ -12,8 +12,9 @@ except ImportError:
 from time import sleep
 from collections import namedtuple
 
-from .input_devices import InputDeviceError, Button
-from .output_devices import OutputDeviceError, LED, PWMLED, Buzzer, Motor
+from .exc import InputDeviceError, OutputDeviceError
+from .input_devices import Button
+from .output_devices import LED, PWMLED, Buzzer, Motor
 from .devices import CompositeDevice, SourceMixin
 
 

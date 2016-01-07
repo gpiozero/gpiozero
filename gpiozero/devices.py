@@ -4,15 +4,18 @@ from __future__ import (
     absolute_import,
     division,
     )
+nstr = str
+str = type('')
 
 import atexit
 import weakref
 from threading import Thread, Event, RLock
 from collections import deque
+from types import FunctionType
 
 from RPi import GPIO
 
-from .input_devices import InputDeviceError
+from .exc import GPIODeviceError, GPIODeviceClosed, InputDeviceError
 
 _GPIO_THREADS = set()
 _GPIO_PINS = set()
@@ -35,21 +38,28 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 
-class GPIODeviceError(Exception):
-    pass
-
-
-class GPIODeviceClosed(GPIODeviceError):
-    pass
-
-
-class GPIOFixedAttrs(type):
+class GPIOMeta(type):
     # NOTE Yes, this is a metaclass. Don't be scared - it's a simple one.
 
-    def __call__(cls, *args, **kwargs):
-        # Construct the class as normal and ensure it's a subclass of GPIOBase
-        # (defined below with a custom __setattrs__)
-        result = super(GPIOFixedAttrs, cls).__call__(*args, **kwargs)
+    def __new__(mcls, name, bases, cls_dict):
+        # Construct the class as normal
+        cls = super(GPIOMeta, mcls).__new__(mcls, name, bases, cls_dict)
+        for attr_name, attr in cls_dict.items():
+            # If there's a method in the class which has no docstring, search
+            # the base classes recursively for a docstring to copy
+            if isinstance(attr, FunctionType) and not attr.__doc__:
+                for base_cls in cls.__mro__:
+                    if hasattr(base_cls, attr_name):
+                        base_fn = getattr(base_cls, attr_name)
+                        if base_fn.__doc__:
+                            attr.__doc__ = base_fn.__doc__
+                            break
+        return cls
+
+    def __call__(mcls, *args, **kwargs):
+        # Construct the instance as normal and ensure it's an instance of
+        # GPIOBase (defined below with a custom __setattrs__)
+        result = super(GPIOMeta, mcls).__call__(*args, **kwargs)
         assert isinstance(result, GPIOBase)
         # At this point __new__ and __init__ have all been run. We now fix the
         # set of attributes on the class by dir'ing the instance and creating a
@@ -59,9 +69,8 @@ class GPIOFixedAttrs(type):
         return result
 
 
-class GPIOBase(object):
-    __metaclass__ = GPIOFixedAttrs
-
+# Cross-version compatible method of using a metaclass
+class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
     def __setattr__(self, name, value):
         # This overridden __setattr__ simply ensures that additional attributes
         # cannot be set on the class after construction (it manages this in

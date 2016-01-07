@@ -14,17 +14,8 @@ from threading import Event
 from RPi import GPIO
 from spidev import SpiDev
 
-from .devices import (
-    GPIODeviceError,
-    GPIODeviceClosed,
-    GPIODevice,
-    CompositeDevice,
-    GPIOQueue,
-)
-
-
-class InputDeviceError(GPIODeviceError):
-    pass
+from .exc import InputDeviceError, GPIODeviceError, GPIODeviceClosed
+from .devices import GPIODevice, CompositeDevice, GPIOQueue
 
 
 class InputDevice(GPIODevice):
