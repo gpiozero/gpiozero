@@ -5,13 +5,16 @@ from __future__ import (
     division,
 )
 
-from .devices import (
+from .exc import (
     GPIODeviceClosed,
     GPIODeviceError,
+    InputDeviceError,
+    OutputDeviceError,
+)
+from .devices import (
     GPIODevice,
 )
 from .input_devices import (
-    InputDeviceError,
     InputDevice,
     Button,
     LineSensor,
@@ -22,7 +25,6 @@ from .input_devices import (
     MCP3004,
 )
 from .output_devices import (
-    OutputDeviceError,
     OutputDevice,
     PWMOutputDevice,
     PWMLED,

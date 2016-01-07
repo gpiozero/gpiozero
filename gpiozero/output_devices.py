@@ -12,18 +12,8 @@ from itertools import repeat
 
 from RPi import GPIO
 
-from .devices import (
-    GPIODeviceError,
-    GPIODeviceClosed,
-    GPIODevice,
-    GPIOThread,
-    CompositeDevice,
-    SourceMixin,
-)
-
-
-class OutputDeviceError(GPIODeviceError):
-    pass
+from .exc import OutputDeviceError, GPIODeviceError, GPIODeviceClosed
+from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
 
 
 class OutputDevice(SourceMixin, GPIODevice):
