@@ -211,7 +211,7 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         the LEDs, and the buzzer. This property can also be set to a 4-tuple
         to update the state of all the board's components.
         """
-        return FishDishTuple(
+        return TrafficLightsBuzzerTuple(
             self.lights.red.value,
             self.lights.amber.value,
             self.lights.green.value,
