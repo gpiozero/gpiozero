@@ -32,6 +32,7 @@ from .output_devices import (
     Buzzer,
     Motor,
     RGBLED,
+    LEDBargraph,
 )
 from .boards import (
     LEDBoard,

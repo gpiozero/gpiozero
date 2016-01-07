@@ -464,3 +464,97 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self._forward.off()
         self._backward.off()
+
+class LEDBargraph(SourceMixin, CompositeDevice):
+    """
+    A line of LEDs which shows a value either positive (up the bargraph)
+    or negative (down the bargraph)
+
+    led_pins: 
+        A tuple of GPIO pins which make up the LED Bargraph
+    """
+    def __init__(self, led_pins):
+        """
+        Pass a list of the gpio pins which make up the bargraph
+        """
+        super(LEDBargraph, self).__init__()
+        
+        self.led_pins = led_pins
+        self._value = 0
+
+        #setup leds
+        self.leds = []
+        for led_pin in led_pins:
+            self.leds.append(LED(led_pin))
+
+    def on(self):
+        """
+        Turn on all the LEDs
+        """
+        for led in self.leds:
+            led.on()
+
+    def off(self, *args):
+        """
+        Turn off all the LEDs
+        """
+        for led in self.leds:
+            led.off()
+
+    def led(self, led_no):
+        """
+        Get a single LED from its position in the bargraph
+        """
+        return self.leds[led_no]
+
+    def on_up_to(self, up_to):
+        """
+        Turn on all the LEDs up to a position, all the others are off
+        """
+        self._value = (up_to + 1) / len(self.leds)
+        self._on_up_to(up_to)
+
+    def _on_up_to(self, up_to):
+        for led in range(0, len(self.leds)):
+            if led <= up_to:
+                self.led(led).on()
+            else:
+                self.led(led).off()
+
+    def on_down_to(self, down_to):
+        """
+        Turn on all the LEDs down to a position, all the others are off
+        """
+        self._value = ((down_to + 1) / len(self.leds)) * -1
+        self._on_down_to(down_to)
+    
+    def _on_down_to(self, down_to):
+        for led in range(0, len(self.leds)):
+            if led < down_to:
+                self.led(led).off()
+            else:
+                self.led(led).on()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        """
+        The value of the LED Bargraph, -1.0 all leds are on down the board,
+        0.0 all the leds are off, 1.0 all leds are on up the board.
+        """
+        self._value = value
+        scaled = round(len(self.leds) * value, 0)
+        if scaled > 0:
+            self._on_up_to(scaled - 1)
+        elif scaled < 0:
+            scaled = scaled * -1
+            self._on_down_to(scaled - 1)
+        else:
+            self.off()
+            
+    def close(self):
+        for led in self.leds:
+            led.close()
