@@ -23,6 +23,11 @@ from .input_devices import (
     AnalogInputDevice,
     MCP3008,
     MCP3004,
+    MCP3208,
+    MCP3204,
+    MCP3301,
+    MCP3302,
+    MCP3304,
 )
 from .output_devices import (
     OutputDevice,
