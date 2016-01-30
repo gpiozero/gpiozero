@@ -508,14 +508,13 @@ class AnalogInputDevice(CompositeDevice):
     Represents an analog input device connected to SPI (serial interface).
     """
 
-    def __init__(self, device=0, bits=None, mode=1):
+    def __init__(self, device=0, bits=None):
         if bits is None:
             raise InputDeviceError('you must specify the bit resolution of the device')
         if device not in (0, 1):
             raise InputDeviceError('device must be 0 or 1')
         self._device = device
         self._bits = bits
-        self._mode = mode
         self._spi = SpiDev()
         self._spi.open(0, self.device)
         super(AnalogInputDevice, self).__init__()
@@ -529,6 +528,13 @@ class AnalogInputDevice(CompositeDevice):
             self._spi = None
             s.close()
         super(AnalogInputDevice, self).close()
+
+    @property
+    def bits(self):
+        """
+        The bit-resolution of the device/channel.
+        """
+        return self._bits
 
     @property
     def bus(self):
@@ -552,67 +558,47 @@ class AnalogInputDevice(CompositeDevice):
     @property
     def value(self):
         """
-        The relative floating point value between 0 and 1
-        (scaled according to the number of bits supported bythe device).
+        The current value read from the device, scaled to a value between 0 and
+        1.
         """
-        return self._read() / (2**self._bits - 1)
+        return self._read() / (2**self.bits - 1)
 
     @property
-    def relVal(self):
+    def raw_value(self):
         """
-        The relative floating point value between 0 and 1
-        (scaled according to the number of bits supported bythe device).
-        """
-        return self._read() / ((2**self._bits) - 1)
-
-    @property
-    def absVal(self):
-        """
-        The absolute value as read from the device
+        The raw value as read from the device.
         """
         return self._read()
 
-    @property
-    def mode(self):
-        """
-        The device mode: single ended (1) or diferential (0) 
-        """
-        return self._mode()
-
-
 
 class MCP3xxx(AnalogInputDevice):
-    def __init__(self, channel=0, device=0, bits=10, mode=1):  #default values
-        if mode not in (0, 1):
-            raise InputDeviceError('Mode must be 1 or 0')
+    def __init__(self, channel=0, device=0, bits=10, differential=False):
         self._channel = channel
         self._bits = bits
-        self._mode = mode
-        super(MCP3xxx, self).__init__(device=device, bits=bits, mode=mode)
-       
+        self._differential = bool(differential)
+        super(MCP3xxx, self).__init__(device, bits)
+
     @property
     def channel(self):
         """
-        The channel to read data from. The MCP3008/3208/3304 have 8 channels (so this will
-        be between 0 and 7) while the MCP3004/3204/3302 have 4 channels (range 0 to 3)and
-        the MCP3301 only has 2 channels.
+        The channel to read data from. The MCP3008/3208/3304 have 8 channels
+        (0-7), while the MCP3004/3204/3302 have 4 channels (0-3), and the
+        MCP3301 only has 2 channels.
         """
         return self._channel
 
     @property
-    def bits(self):
+    def differential(self):
         """
-        The bit-resolution of the device/channel. 
-        """
-        return self._bits
+        If True, the device is operated in pseudo-differential mode. In this
+        mode one channel (specified by the channel attribute) is read relative
+        to the value of a second channel (implied by the chip's design).
 
-    @property
-    def mode(self):
+        Please refer to the device data-sheet to determine which channel is
+        used as the relative base value (for example, when using an MCP3008
+        in differential mode, channel 0 is read relative to channel 1).
         """
-        The device mode: single ended (1) or diferential (0) 
-        """
-        return self._mode
-
+        return self._differential
 
     def _read(self):
         # MCP3008/04 or MCP3208/04 protocol looks like the following:
@@ -622,119 +608,142 @@ class MCP3xxx(AnalogInputDevice):
         #     Tx   0001MCCC xxxxxxxx xxxxxxxx
         #     Rx   xxxxxxxx x0RRRRRR RRRRxxxx for the 3004/08
         #     Rx   xxxxxxxx x0RRRRRR RRRRRRxx for the 3204/08
-        #     Rx   xxxxxxxx xx0RRRRR RRRRRRRR for the 3301/02/04
         #
-        # The transmit bits start with 3 preamble bits "000" (to warm up), 
-        # a start bit "1" followed by the mode bit(M) which is 1 for
-        # single-ended read, and 0 for differential read,
-        # followed by 3-bits for the channel (C). 
-        # The remainder of the transmission are "don't care" bits (x).
+        # The transmit bits start with 3 preamble bits "000" (to warm up), a
+        # start bit "1" followed by the mode bit(M) which is 1 for single-ended
+        # read, and 0 for differential read, followed by 3-bits for the channel
+        # (C).  The remainder of the transmission are "don't care" bits (x).
         #
         # The first byte received and the top 1 bit of the second byte are
         # don't care bits (x). These are followed by a null bit (0), and then
-        # the result bits (R). 10 bits for the MCP300x, 12 bits for the MCP320x
-        # and 13 bits for the MCP330x
-        # Warning: The mode bit is a new implimentation and needs to be tested.
-        
-        if self.mode:
-            tx = 24     # '00011000' S bit 1 and M bit 1
-        else:
-            tx = 16     # '00010000' S bit 1 and M bit 0
-        data = self._spi.xfer2([(tx + self.channel), 0, 0])
-        if self.bits == 13:
-            val = ((data[1] & 31) << (self.bits-5)) | (data[2] )
-        else:
-            val = ((data[1] & 63) << (self.bits-6)) | (data[2] >> (14 - self.bits))
-        return (val)
+        # the result bits (R). 10 bits for the MCP300x, 12 bits for the
+        # MCP320x.
+        #
+        # XXX Differential mode still requires testing
+        data = self._spi.xfer2([16 + [8, 0][self.differential] + self.channel, 0, 0])
+        return ((data[1] & 63) << (self.bits - 6)) | (data[2] >> (14 - self.bits))
+
+
+class MCP33xx(MCP3xxx):
+    def __init__(self, channel=0, device=0, differential=False):
+        super(MCP33xx, self).__init__(channel, device, 12, differential)
+
+    def _read(self):
+        # MCP3308/04 protocol looks like the following:
+        #
+        #     Byte        0        1        2
+        #     ==== ======== ======== ========
+        #     Tx   0001MCCC xxxxxxxx xxxxxxxx
+        #     Rx   xxxxxxxx x0SRRRRR RRRRRRRx
+        #
+        # The transmit bits start with 3 preamble bits "000" (to warm up), a
+        # start bit "1" followed by the mode bit(M) which is 1 for single-ended
+        # read, and 0 for differential read, followed by 3-bits for the channel
+        # (C).  The remainder of the transmission are "don't care" bits (x).
+        #
+        # The first byte received and the top 1 bit of the second byte are
+        # don't care bits (x). These are followed by a null bit (0), then the
+        # sign bit (S), and then the 12 result bits (R).
+        #
+        # In single read mode (the default) the sign bit is always zero and the
+        # result is effectively 12-bits. In differential mode, the sign bit is
+        # significant and the result is a two's-complement 13-bit value.
+        #
+        # The MCP3301 variant of the chip always operates in differential
+        # mode and effectively only has one channel (composed of an IN+ and
+        # IN-). As such it requires no input, just output. This is the reason
+        # we split out _send() below; so that MCP3301 can override it.
+        data = self._spi.xfer2(self._send())
+        # Extract the last two bytes (again, for MCP3301)
+        data = data[-2:]
+        result = ((data[0] & 63) << 7) | (data[1] >> 1)
+        # Account for the sign bit
+        if self.differential and value > 4095:
+            result = -(8192 - result)
+        assert -4096 <= result < 4096
+        return result
+
+    def _send(self):
+        return [16 + [8, 0][self.differential] + self.channel, 0, 0]
+
 
 class MCP3004(MCP3xxx):
     """
-    The MCP3004 is a 10 bit Analog to Digital Converter with
-    4 channels single ended or 2 channels diferential.
-    The channel number must be 0, 1, 2 or 3
+    The MCP3004 is a 10-bit analog to digital converter with 4 channels (0-3).
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-        super(MCP3004, self).__init__(channel, device, bits=10, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3004, self).__init__(channel, device, 10, differential)
+
 
 class MCP3008(MCP3xxx):
     """
-    The MCP3208 is a 10 bit Analog to Digital Converter with
-    8 channels single ended or 4 channels diferential.
-    The channel number must be 0, 1, 2, 3, 4, 5, 6, 7 or 8
+    The MCP3008 is a 10-bit analog to digital converter with 8 channels (0-7).
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
-        super(MCP3008, self).__init__(device=device, bits=10, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3008, self).__init__(channel, device, 10, differential)
+
 
 class MCP3204(MCP3xxx):
     """
-    The MCP3204 is a 10 bit Analog to Digital Converter with
-    4 channels single ended or 2 channels diferential.
-    The channel number must be 0, 1, 2 or 3
+    The MCP3204 is a 12-bit analog to digital converter with 4 channels (0-3).
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-        super(MCP3204, self).__init__(channel, device, bits=12, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3204, self).__init__(channel, device, 12, differential)
+
 
 class MCP3208(MCP3xxx):
     """
-    The MCP3208 is a 13 bit Analog to Digital Converter with
-    8 channels single ended or 4 channels diferential.
-    The channel number must be 0, 1, 2, 3, 4, 5, 6, 7 or 8
+    The MCP3208 is a 12-bit analog to digital converter with 8 channels (0-7).
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
-        super(MCP3208, self).__init__(device=device, bits=12, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3208, self).__init__(channel, device, 12, differential)
 
-class MCP3301(MCP3xxx):
-    """
-    The MCP3301 is a 13 bit Analog to Digital Converter with
-    2 channels single ended or 1 channel diferential.
-    The channel number must be 0, or 1
-    """
-    def __init__(self, channel=0, device=0, mode=1):
-        if not 0 <= channel < 2:
-            raise InputDeviceError('channel must be between 0 and 1')
-        super(MCP3301, self).__init__(device=device, bits=13, mode=mode)
-        self._channel = channel
-        self._mode = mode
 
-class MCP3302(MCP3xxx):
+class MCP3301(MCP33xx):
     """
-    The MCP3302 is a 13 bit Analog to Digital Converter with
-    4 channels single ended or 2 channels diferential.
-    The channel number must be 0, 1, 2 or 3
+    The MCP3301 is a signed 13-bit analog to digital converter.  Please note
+    that the MCP3301 always operates in differential mode between its two
+    channels and the output value is scaled from -1 to +1.
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, device=0):
+        super(MCP3301, self).__init__(0, device, differential=True)
+
+    def _send(self):
+        return [0, 0]
+
+
+class MCP3302(MCP33xx):
+    """
+    The MCP3302 is a 12/13-bit analog to digital converter with 4 channels
+    (0-3). When operated in differential mode, the device outputs a signed
+    13-bit value which is scaled from -1 to +1. When operated in single-ended
+    mode (the default), the device outputs an unsigned 12-bit value scaled from
+    0 to 1.
+    """
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 4')
-        super(MCP3302, self).__init__(device=device, bits=13, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3302, self).__init__(channel, device, differential)
 
-class MCP3304(MCP3xxx):
+
+class MCP3304(MCP33xx):
     """
-    The MCP3304 is a 13 bit Analog to Digital Converter with
-    4 channels single ended or 2 channels diferential.
-    The channel number must be 0, 1, 2, 3, 4, 5, 6, 7 or 8
+    The MCP3304 is a 12/13-bit analog to digital converter with 8 channels
+    (0-7). When operated in differential mode, the device outputs a signed
+    13-bit value which is scaled from -1 to +1. When operated in single-ended
+    mode (the default), the device outputs an unsigned 12-bit value scaled from
+    0 to 1.
     """
-    def __init__(self, channel=0, device=0, mode=1):
+    def __init__(self, channel=0, device=0, differential=False):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
-        super(MCP3304, self).__init__(device=device, bits=13, mode=mode)
-        self._channel = channel
-        self._mode = mode
+        super(MCP3304, self).__init__(channel, device, differential)
 
