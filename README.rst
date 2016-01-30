@@ -2,15 +2,14 @@
 gpiozero
 ========
 
+.. image:: https://badge.fury.io/py/gpiozero.svg
+    :target: https://badge.fury.io/py/gpiozero
+    :alt: Latest Version
+
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
 other contributors.
-
-Latest release
-==============
-
-The latest release is 1.0 released on 16th November 2015.
 
 About
 =====
@@ -66,19 +65,19 @@ or::
 Documentation
 =============
 
-Comprehensive documentation is available at `pythonhosted.org/gpiozero`_.
+Comprehensive documentation is available at https://gpiozero.readthedocs.org/.
 
 Development
 ===========
 
 This project is being developed on `GitHub`_. Join in:
 
-* Provide suggestions, report bugs and ask questions as `Issues`_
+* Provide suggestions, report bugs and ask questions as `issues`_
 * Provide examples we can use as `recipes`_
 * Contribute to the code
 
-Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to
-the `Google Doc`_.
+Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org or
+add to the `Google Doc`_.
 
 Contributors
 ============
@@ -91,10 +90,9 @@ Contributors
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _Dave Jones: https://github.com/waveform80
-.. _pythonhosted.org/gpiozero: http://pythonhosted.org/gpiozero
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
-.. _Issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: http://pythonhosted.org/gpiozero/recipes/
+.. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
 .. _Google Doc: https://goo.gl/8zJLif
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80

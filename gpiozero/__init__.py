@@ -13,9 +13,16 @@ from .exc import (
 )
 from .devices import (
     GPIODevice,
+    CompositeDevice,
+    SourceMixin,
+    ValuesMixin,
 )
 from .input_devices import (
     InputDevice,
+    WaitableInputDevice,
+    DigitalInputDevice,
+    SmoothedInputDevice,
+    AnalogInputDevice,
     Button,
     LineSensor,
     MotionSensor,
@@ -31,6 +38,7 @@ from .input_devices import (
 )
 from .output_devices import (
     OutputDevice,
+    DigitalOutputDevice,
     PWMOutputDevice,
     PWMLED,
     LED,

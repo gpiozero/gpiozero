@@ -1,0 +1,10 @@
+Document: python-gpiozero
+Title: GPIO Zero Reference
+Author: Ben Nuttall <ben@raspberrypi.org>
+Abstract: Documentation for the gpiozero API
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/python-gpiozero-doc/html/index.html
+Files: /usr/share/doc/python-gpiozero-doc/html/*
+

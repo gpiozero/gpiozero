@@ -20,14 +20,18 @@ class OutputDevice(SourceMixin, GPIODevice):
     """
     Represents a generic GPIO output device.
 
-    This class extends `GPIODevice` to add facilities common to GPIO output
-    devices: an `on` method to switch the device on, and a corresponding `off`
-    method.
+    This class extends :class:`GPIODevice` to add facilities common to GPIO
+    output devices: an :meth:`on` method to switch the device on, and a
+    corresponding :meth:`off` method.
 
-    active_high: `True`
-        If `True` (the default), the `on` method will set the GPIO to HIGH. If
-        `False`, the `on` method will set the GPIO to LOW (the `off` method
-        always does the opposite).
+    :param int pin:
+        The GPIO pin (in BCM numbering) that the device is connected to. If
+        this is ``None`` a :exc:`GPIODeviceError` will be raised.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set the GPIO to
+        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
+        :meth:`off` method always does the opposite).
     """
     def __init__(self, pin=None, active_high=True):
         self._active_high = active_high
@@ -94,10 +98,10 @@ class DigitalOutputDevice(OutputDevice):
     """
     Represents a generic output device with typical on/off behaviour.
 
-    This class extends `OutputDevice` with a `toggle` method to switch the
-    device between its on and off states, and a `blink` method which uses an
-    optional background thread to handle toggling the device state without
-    further interaction.
+    This class extends :class:`OutputDevice` with a :meth:`toggle` method to
+    switch the device between its on and off states, and a :meth:`blink` method
+    which uses an optional background thread to handle toggling the device
+    state without further interaction.
     """
     def __init__(self, pin=None, active_high=True):
         self._blink_thread = None
@@ -109,16 +113,10 @@ class DigitalOutputDevice(OutputDevice):
         super(DigitalOutputDevice, self).close()
 
     def on(self):
-        """
-        Turns the device on.
-        """
         self._stop_blink()
         self._write(self._active_state)
 
     def off(self):
-        """
-        Turns the device off.
-        """
         self._stop_blink()
         self._write(self._inactive_state)
 
@@ -137,19 +135,19 @@ class DigitalOutputDevice(OutputDevice):
         """
         Make the device turn on and off repeatedly.
 
-        on_time: `1`
+        :param float on_time:
             Number of seconds on
 
-        off_time: `1`
+        :param float off_time:
             Number of seconds off
 
-        n: `None`
-            Number of times to blink; `None` means forever
+        :param int n:
+            Number of times to blink; ``None`` means forever
 
-        background: `True`
-            If `True`, start a background thread to continue blinking and
-            return immediately. If `False`, only return when the blink is
-            finished (warning: the default value of n will result in this
+        :param bool background:
+            If ``True``, start a background thread to continue blinking and
+            return immediately. If ``False``, only return when the blink is
+            finished (warning: the default value of *n* will result in this
             method never returning).
         """
         self._stop_blink()
@@ -179,11 +177,28 @@ class DigitalOutputDevice(OutputDevice):
 
 class LED(DigitalOutputDevice):
     """
-    An LED (Light Emmitting Diode) component.
+    Extends :class:`DigitalOutputDevice` and represents a light emitting diode
+    (LED).
 
-    A typical configuration of such a device is to connect a GPIO pin to the
-    anode (long leg) of the LED, and the cathode (short leg) to ground, with
-    an optional resistor to prevent the LED from burning out.
+    Connect the cathode (short leg, flat side) of the LED to a ground pin;
+    connect the anode (longer leg) to a limiting resistor; connect the other
+    side of the limiting resistor to a GPIO pin (the limiting resistor can be
+    placed either side of the LED).
+
+    The following example will light the LED::
+
+        from gpiozero import LED
+
+        led = LED(17)
+        led.on()
+
+    :param int pin:
+        The GPIO pin which the button is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param bool active_high:
+        If ``True`` (the default), then the LED will be lit when the GPIO port
+        is high.
     """
     pass
 
@@ -192,10 +207,26 @@ LED.is_lit = LED.is_active
 
 class Buzzer(DigitalOutputDevice):
     """
-    A digital Buzzer component.
+    Extends :class:`DigitalOutputDevice` and represents a digital buzzer
+    component.
 
-    A typical configuration of such a device is to connect a GPIO pin to the
-    anode (long leg) of the buzzer, and the cathode (short leg) to ground.
+    Connect the cathode (negative pin) of the buzzer to a ground pin; connect
+    the other side to any GPIO pin.
+
+    The following example will sound the buzzer::
+
+        from gpiozero import Buzzer
+
+        bz = Buzzer(3)
+        bz.on()
+
+    :param int pin:
+        The GPIO pin which the buzzer is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param bool active_high:
+        If ``True`` (the default), then the buzzer will sound when the GPIO
+        port is high.
     """
     pass
 
@@ -204,7 +235,15 @@ Buzzer.beep = Buzzer.blink
 
 class PWMOutputDevice(DigitalOutputDevice):
     """
-    Generic Output device configured for PWM (Pulse-Width Modulation).
+    Generic output device configured for pulse-width modulation (PWM).
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param int frequency:
+        The frequency (in Hz) of pulses emitted to drive the device. Defaults
+        to 100Hz.
     """
     def __init__(self, pin=None, frequency=100):
         self._pwm = None
@@ -259,16 +298,17 @@ class PWMOutputDevice(DigitalOutputDevice):
     def toggle(self):
         """
         Toggle the state of the device. If the device is currently off
-        (`value` is 0.0), this changes it to "fully" on (`value` is 1.0).  If
-        the device has a duty cycle (`value`) of 0.1, this will toggle it to
-        0.9, and so on.
+        (:attr:`value` is 0.0), this changes it to "fully" on (:attr:`value` is
+        1.0).  If the device has a duty cycle (:attr:`value`) of 0.1, this will
+        toggle it to 0.9, and so on.
         """
         self.value = 1.0 - self.value
 
     @property
     def is_active(self):
         """
-        Returns `True` if the device is currently active and `False` otherwise.
+        Returns ``True`` if the device is currently active (:attr:`value` is
+        non-zero) and ``False`` otherwise.
         """
         return self.value > 0.0
 
@@ -276,7 +316,7 @@ class PWMOutputDevice(DigitalOutputDevice):
     def frequency(self):
         """
         The frequency of the pulses used with the PWM device, in Hz. The
-        default is 100.
+        default is 100Hz.
         """
         return self._frequency
 
@@ -288,11 +328,20 @@ class PWMOutputDevice(DigitalOutputDevice):
 
 class PWMLED(PWMOutputDevice):
     """
-    An LED (Light Emmitting Diode) component with variable brightness.
+    Extends :class:`PWMOutputDevice` and represents a light emitting diode
+    (LED) with variable brightness.
 
     A typical configuration of such a device is to connect a GPIO pin to the
     anode (long leg) of the LED, and the cathode (short leg) to ground, with
     an optional resistor to prevent the LED from burning out.
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param int frequency:
+        The frequency (in Hz) of pulses emitted to drive the device. Defaults
+        to 100Hz.
     """
     pass
 
@@ -309,22 +358,35 @@ def _led_property(index, doc=None):
 
 class RGBLED(SourceMixin, CompositeDevice):
     """
-    Single LED with individually controllable red, green and blue components.
+    Extends :class:`CompositeDevice` and represents a full color LED component
+    (composed of red, green, and blue LEDs).
 
-    red: `None`
+    Connect the common cathode (longest leg) to a ground pin; connect each of
+    the other legs (representing the red, green, and blue anodes) to any GPIO
+    pins.  You can either use three limiting resistors (one per anode) or a
+    single limiting resistor on the cathode.
+
+    The following code will make the LED purple::
+
+        from gpiozero import RGBLED
+
+        led = RGBLED(2, 3, 4)
+        led.color = (1, 0, 1)
+
+    :param int red:
         The GPIO pin that controls the red component of the RGB LED.
 
-    green: `None`
+    :param int green:
         The GPIO pin that controls the green component of the RGB LED.
 
-    blue: `None`
+    :param int blue:
         The GPIO pin that controls the blue component of the RGB LED.
     """
     def __init__(self, red=None, green=None, blue=None):
         if not all([red, green, blue]):
             raise OutputDeviceError('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
-        self._leds = tuple(PWMOutputDevice(pin) for pin in (red, green, blue))
+        self._leds = tuple(PWMLED(pin) for pin in (red, green, blue))
 
     red = _led_property(0)
     green = _led_property(1)
@@ -333,11 +395,11 @@ class RGBLED(SourceMixin, CompositeDevice):
     @property
     def value(self):
         """
-        Represents the color of the LED as an RGB 3-tuple of `(red, green,
-        blue)` where each value is between 0 and 1.
+        Represents the color of the LED as an RGB 3-tuple of ``(red, green,
+        blue)`` where each value is between 0 and 1.
 
-        For example, purple would be `(1, 0, 1)` and yellow would be `(1, 1,
-        0)`, while orange would be `(1, 0.5, 0)`.
+        For example, purple would be ``(1, 0, 1)`` and yellow would be ``(1, 1,
+        0)``, while orange would be ``(1, 0.5, 0)``.
         """
         return (self.red, self.green, self.blue)
 
@@ -348,7 +410,8 @@ class RGBLED(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns `True` if the LED is currently active and `False` otherwise.
+        Returns ``True`` if the LED is currently active (not black) and
+        ``False`` otherwise.
         """
         return self.value != (0, 0, 0)
 
@@ -357,14 +420,14 @@ class RGBLED(SourceMixin, CompositeDevice):
     def on(self):
         """
         Turn the device on. This equivalent to setting the device color to
-        white `(1, 1, 1)`.
+        white ``(1, 1, 1)``.
         """
         self.value = (1, 1, 1)
 
     def off(self):
         """
         Turn the device off. This is equivalent to setting the device color
-        to black `(0, 0, 0)`.
+        to black ``(0, 0, 0)``.
         """
         self.value = (0, 0, 0)
 
@@ -375,7 +438,30 @@ class RGBLED(SourceMixin, CompositeDevice):
 
 class Motor(SourceMixin, CompositeDevice):
     """
-    Generic bi-directional motor.
+    Extends :class:`CompositeDevice` and represents a generic motor connected
+    to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
+
+    Attach an `H-bridge`_ motor controller to your Pi; connect a power source
+    (e.g. a battery pack or the 5V pin) to the controller; connect the outputs
+    of the controller board to the two terminals of the motor; connect the
+    inputs of the controller board to two GPIO pins.
+
+    .. _H-bridge: https://en.wikipedia.org/wiki/H_bridge
+
+    The following code will make the motor turn "forwards"::
+
+        from gpiozero import Motor
+
+        motor = Motor(17, 18)
+        motor.forward()
+
+    :param int forward:
+        The GPIO pin that the forward input of the motor driver chip is
+        connected to.
+
+    :param int backward:
+        The GPIO pin that the backward input of the motor driver chip is
+        connected to.
     """
     def __init__(self, forward=None, backward=None):
         if not all([forward, backward]):
@@ -432,20 +518,29 @@ class Motor(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns `True` if the motor is currently active and `False` otherwise.
+        Returns ``True`` if the motor is currently running and ``False``
+        otherwise.
         """
         return self.value != 0
 
     def forward(self, speed=1):
         """
-        Drive the motor forwards
+        Drive the motor forwards.
+
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
         """
         self._backward.off()
         self._forward.value = speed
 
     def backward(self, speed=1):
         """
-        Drive the motor backwards
+        Drive the motor backwards.
+
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
         """
         self._forward.off()
         self._backward.value = speed
@@ -460,7 +555,7 @@ class Motor(SourceMixin, CompositeDevice):
 
     def stop(self):
         """
-        Stop the motor
+        Stop the motor.
         """
         self._forward.off()
         self._backward.off()
