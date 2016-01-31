@@ -32,8 +32,14 @@ class OutputDevice(SourceMixin, GPIODevice):
         If ``True`` (the default), the :meth:`on` method will set the GPIO to
         HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
         :meth:`off` method always does the opposite).
+
+    :param bool initial_value:
+        If ``False`` (the default), the device will be off initially.  If
+        ``None``, the device will be left in whatever state the pin is found in
+        when configured for output (warning: this can be on).  If ``True``, the
+        device will be switched on initially.
     """
-    def __init__(self, pin=None, active_high=True):
+    def __init__(self, pin=None, active_high=True, initial_value=False):
         self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
         self._active_state = GPIO.HIGH if active_high else GPIO.LOW
@@ -42,6 +48,12 @@ class OutputDevice(SourceMixin, GPIODevice):
             # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
             # messing around with GPIO init within background threads...
             with warnings.catch_warnings(record=True) as w:
+                # This is horrid, but we can't specify initial=None with setup
+                if initial_value is None:
+                    GPIO.setup(pin, GPIO.OUT)
+                else:
+                    GPIO.setup(pin, GPIO.OUT, initial=
+                        [self._inactive_state, self._active_state][bool(initial_value)])
                 GPIO.setup(pin, GPIO.OUT)
             # The only warning we want to squash is a RuntimeWarning that is
             # thrown when setting pins 2 or 3. Anything else should be replayed
@@ -56,6 +68,8 @@ class OutputDevice(SourceMixin, GPIODevice):
             raise
 
     def _write(self, value):
+        if not self.active_high:
+            value = not value
         try:
             GPIO.output(self.pin, bool(value))
         except ValueError:
@@ -66,13 +80,13 @@ class OutputDevice(SourceMixin, GPIODevice):
         """
         Turns the device on.
         """
-        self._write(self._active_state)
+        self._write(True)
 
     def off(self):
         """
         Turns the device off.
         """
-        self._write(self._inactive_state)
+        self._write(False)
 
     @property
     def value(self):
@@ -103,9 +117,9 @@ class DigitalOutputDevice(OutputDevice):
     which uses an optional background thread to handle toggling the device
     state without further interaction.
     """
-    def __init__(self, pin=None, active_high=True):
+    def __init__(self, pin=None, active_high=True, initial_value=False):
         self._blink_thread = None
-        super(DigitalOutputDevice, self).__init__(pin, active_high)
+        super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
         self._lock = Lock()
 
     def close(self):
@@ -114,11 +128,11 @@ class DigitalOutputDevice(OutputDevice):
 
     def on(self):
         self._stop_blink()
-        self._write(self._active_state)
+        self._write(True)
 
     def off(self):
         self._stop_blink()
-        self._write(self._inactive_state)
+        self._write(False)
 
     def toggle(self):
         """
@@ -167,10 +181,10 @@ class DigitalOutputDevice(OutputDevice):
     def _blink_led(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
-            self._write(self._active_state)
+            self._write(True)
             if self._blink_thread.stopping.wait(on_time):
                 break
-            self._write(self._inactive_state)
+            self._write(False)
             if self._blink_thread.stopping.wait(off_time):
                 break
 
@@ -241,19 +255,34 @@ class PWMOutputDevice(OutputDevice):
         The GPIO pin which the device is attached to. See :doc:`notes` for
         valid pin numbers.
 
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set the GPIO to
+        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
+        :meth:`off` method always does the opposite).
+
+    :param bool initial_value:
+        If ``0`` (the default), the device's duty cycle will be 0 initially.
+        Other values between 0 and 1 can be specified as an initial duty cycle.
+        Note that ``None`` cannot be specified (unlike the parent class) as
+        there is no way to tell PWM not to alter the state of the pin.
+
     :param int frequency:
         The frequency (in Hz) of pulses emitted to drive the device. Defaults
         to 100Hz.
     """
-    def __init__(self, pin=None, active_high=True, frequency=100):
+    def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
         self._pwm = None
         self._blink_thread = None
+        if not 0 <= initial_value <= 1:
+            raise OutputDeviceError("initial_value must be between 0 and 1")
         super(PWMOutputDevice, self).__init__(pin, active_high)
         try:
             self._pwm = GPIO.PWM(self.pin, frequency)
-            self._pwm.start(0.0)
+            self._value = initial_value
+            if not active_high:
+                initial_value = 1 - initial_value
+            self._pwm.start(100 * initial_value)
             self._frequency = frequency
-            self._value = 0.0
         except:
             self.close()
             raise
@@ -271,9 +300,14 @@ class PWMOutputDevice(OutputDevice):
 
     def _read(self):
         self._check_open()
-        return self._value
+        if self.active_high:
+            return self._value
+        else:
+            return 1 - self._value
 
     def _write(self, value):
+        if not self.active_high:
+            value = 1 - value
         if not 0 <= value <= 1:
             raise OutputDeviceError("PWM value must be between 0 and 1")
         try:
@@ -289,26 +323,20 @@ class PWMOutputDevice(OutputDevice):
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
         """
-        if self.active_high:
-            return self._read()
-        else:
-            return 1 - self._read()
+        return self._read()
 
     @value.setter
     def value(self, value):
         self._stop_blink()
-        if self._active_high:
-            self._write(value)
-        else:
-            self._write(1 - value)
+        self._write(value)
 
     def on(self):
         self._stop_blink()
-        self._write(self._active_state)
+        self._write(1)
 
     def off(self):
         self._stop_blink()
-        self._write(self._inactive_state)
+        self._write(0)
 
     def toggle(self):
         """
@@ -386,20 +414,18 @@ class PWMOutputDevice(OutputDevice):
     def _blink_led(
             self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
         sequence = []
-        if fade_in_time > 0.0:
+        if fade_in_time > 0:
             sequence += [
                 (i * (1 / fps) / fade_in_time, 1 / fps)
                 for i in range(int(fps * fade_in_time))
                 ]
-        sequence.append((1.0, on_time))
-        if fade_out_time > 0.0:
+        sequence.append((1, on_time))
+        if fade_out_time > 0:
             sequence += [
                 (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
                 for i in range(int(fps * fade_out_time))
                 ]
-        sequence.append((0.0, off_time))
-        if not self.active_high:
-            sequence = [(1 - value, delay) for (value, delay) in sequence]
+        sequence.append((0, off_time))
         sequence = (
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
