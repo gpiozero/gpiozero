@@ -8,7 +8,7 @@ from __future__ import (
 import warnings
 from time import sleep
 from threading import Lock
-from itertools import repeat
+from itertools import repeat, cycle, chain
 
 from RPi import GPIO
 
@@ -136,19 +136,19 @@ class DigitalOutputDevice(OutputDevice):
         Make the device turn on and off repeatedly.
 
         :param float on_time:
-            Number of seconds on
+            Number of seconds on. Defaults to 1 second.
 
         :param float off_time:
-            Number of seconds off
+            Number of seconds off. Defaults to 1 second.
 
         :param int n:
-            Number of times to blink; ``None`` means forever
+            Number of times to blink; ``None`` (the default) means forever.
 
         :param bool background:
-            If ``True``, start a background thread to continue blinking and
-            return immediately. If ``False``, only return when the blink is
-            finished (warning: the default value of *n* will result in this
-            method never returning).
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
@@ -233,7 +233,7 @@ class Buzzer(DigitalOutputDevice):
 Buzzer.beep = Buzzer.blink
 
 
-class PWMOutputDevice(DigitalOutputDevice):
+class PWMOutputDevice(OutputDevice):
     """
     Generic output device configured for pulse-width modulation (PWM).
 
@@ -247,6 +247,7 @@ class PWMOutputDevice(DigitalOutputDevice):
     """
     def __init__(self, pin=None, frequency=100):
         self._pwm = None
+        self._blink_thread = None
         super(PWMOutputDevice, self).__init__(pin)
         try:
             self._pwm = GPIO.PWM(self.pin, frequency)
@@ -295,6 +296,14 @@ class PWMOutputDevice(DigitalOutputDevice):
         self._stop_blink()
         self._write(value)
 
+    def on(self):
+        self._stop_blink()
+        self._write(self._active_state)
+
+    def off(self):
+        self._stop_blink()
+        self._write(self._inactive_state)
+
     def toggle(self):
         """
         Toggle the state of the device. If the device is currently off
@@ -302,6 +311,7 @@ class PWMOutputDevice(DigitalOutputDevice):
         1.0).  If the device has a duty cycle (:attr:`value`) of 0.1, this will
         toggle it to 0.9, and so on.
         """
+        self._stop_blink()
         self.value = 1.0 - self.value
 
     @property
@@ -324,6 +334,72 @@ class PWMOutputDevice(DigitalOutputDevice):
     def frequency(self, value):
         self._pwm.ChangeFrequency(value)
         self._frequency = value
+
+    def blink(
+            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            n=None, background=True):
+        """
+        Make the device turn on and off repeatedly.
+
+        :param float on_time:
+            Number of seconds on. Defaults to 1 second.
+
+        :param float off_time:
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0.
+
+        :param int n:
+            Number of times to blink; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_led,
+            args=(on_time, off_time, fade_in_time, fade_out_time, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_led(
+            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+        sequence = []
+        if fade_in_time > 0.0:
+            sequence += [
+                (i * (1 / fps) / fade_in_time, 1 / fps)
+                for i in range(int(50 * fade_in_time))
+                ]
+        sequence.append((1.0, on_time))
+        if fade_out_time > 0.0:
+            sequence += [
+                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
+                for i in range(int(50 * fade_out_time))
+                ]
+        sequence.append((0.0, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for value, delay in sequence:
+            self._write(value)
+            if self._blink_thread.stopping.wait(delay):
+                break
 
 
 class PWMLED(PWMOutputDevice):

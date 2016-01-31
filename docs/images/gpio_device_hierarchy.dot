@@ -17,7 +17,7 @@ digraph classes {
     DigitalOutputDevice->OutputDevice;
     LED->DigitalOutputDevice;
     Buzzer->DigitalOutputDevice;
-    PWMOutputDevice->DigitalOutputDevice;
+    PWMOutputDevice->OutputDevice;
     PWMLED->PWMOutputDevice;
 }
 
