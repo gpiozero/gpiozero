@@ -245,10 +245,10 @@ class PWMOutputDevice(OutputDevice):
         The frequency (in Hz) of pulses emitted to drive the device. Defaults
         to 100Hz.
     """
-    def __init__(self, pin=None, frequency=100):
+    def __init__(self, pin=None, active_high=True, frequency=100):
         self._pwm = None
         self._blink_thread = None
-        super(PWMOutputDevice, self).__init__(pin)
+        super(PWMOutputDevice, self).__init__(pin, active_high)
         try:
             self._pwm = GPIO.PWM(self.pin, frequency)
             self._pwm.start(0.0)
@@ -289,12 +289,18 @@ class PWMOutputDevice(OutputDevice):
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
         """
-        return self._read()
+        if self.active_high:
+            return self._read()
+        else:
+            return 1 - self._read()
 
     @value.setter
     def value(self, value):
         self._stop_blink()
-        self._write(value)
+        if self._active_high:
+            self._write(value)
+        else:
+            self._write(1 - value)
 
     def on(self):
         self._stop_blink()
@@ -392,6 +398,8 @@ class PWMOutputDevice(OutputDevice):
                 for i in range(int(50 * fade_out_time))
                 ]
         sequence.append((0.0, off_time))
+        if not self.active_high:
+            sequence = [(1 - value, delay) for (value, delay) in sequence]
         sequence = (
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
@@ -458,11 +466,11 @@ class RGBLED(SourceMixin, CompositeDevice):
     :param int blue:
         The GPIO pin that controls the blue component of the RGB LED.
     """
-    def __init__(self, red=None, green=None, blue=None):
+    def __init__(self, red=None, green=None, blue=None, active_high=True):
         if not all([red, green, blue]):
             raise OutputDeviceError('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
-        self._leds = tuple(PWMLED(pin) for pin in (red, green, blue))
+        self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
 
     red = _led_property(0)
     green = _led_property(1)
