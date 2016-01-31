@@ -764,7 +764,7 @@ class MCP33xx(MCP3xxx):
         super(MCP33xx, self).__init__(channel, device, 12, differential)
 
     def _read(self):
-        # MCP3308/04 protocol looks like the following:
+        # MCP3304/02 protocol looks like the following:
         #
         #     Byte        0        1        2
         #     ==== ======== ======== ========
