@@ -207,12 +207,19 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the LED is attached to. See :doc:`notes` for valid
+        pin numbers.
 
     :param bool active_high:
-        If ``True`` (the default), then the LED will be lit when the GPIO port
-        is high.
+        If ``True`` (the default), the LED will operate normally with the
+        circuit described above. If ``False`` you should wire the cathode to
+        the GPIO pin, and the anode to a 3V3 pin (via a limiting resistor).
+
+    :param bool initial_value:
+        If ``False`` (the default), the LED will be off initially.  If
+        ``None``, the LED will be left in whatever state the pin is found in
+        when configured for output (warning: this can be on).  If ``True``, the
+        LED will be switched on initially.
     """
     pass
 
@@ -239,8 +246,15 @@ class Buzzer(DigitalOutputDevice):
         valid pin numbers.
 
     :param bool active_high:
-        If ``True`` (the default), then the buzzer will sound when the GPIO
-        port is high.
+        If ``True`` (the default), the buzzer will operate normally with the
+        circuit described above. If ``False`` you should wire the cathode to
+        the GPIO pin, and the anode to a 3V3 pin.
+
+    :param bool initial_value:
+        If ``False`` (the default), the buzzer will be silent initially.  If
+        ``None``, the buzzer will be left in whatever state the pin is found in
+        when configured for output (warning: this can be on).  If ``True``, the
+        buzzer will be switched on initially.
     """
     pass
 
@@ -446,11 +460,22 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :doc:`notes` for
+        The GPIO pin which the LED is attached to. See :doc:`notes` for
         valid pin numbers.
 
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set the GPIO to
+        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
+        :meth:`off` method always does the opposite).
+
+    :param bool initial_value:
+        If ``0`` (the default), the LED will be off initially. Other values
+        between 0 and 1 can be specified as an initial brightness for the LED.
+        Note that ``None`` cannot be specified (unlike the parent class) as
+        there is no way to tell PWM not to alter the state of the pin.
+
     :param int frequency:
-        The frequency (in Hz) of pulses emitted to drive the device. Defaults
+        The frequency (in Hz) of pulses emitted to drive the LED. Defaults
         to 100Hz.
     """
     pass
@@ -491,6 +516,11 @@ class RGBLED(SourceMixin, CompositeDevice):
 
     :param int blue:
         The GPIO pin that controls the blue component of the RGB LED.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set the GPIOs to
+        HIGH. If ``False``, the :meth:`on` method will set the GPIOs to LOW
+        (the :meth:`off` method always does the opposite).
     """
     def __init__(self, red=None, green=None, blue=None, active_high=True):
         if not all([red, green, blue]):
