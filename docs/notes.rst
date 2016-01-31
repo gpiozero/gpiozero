@@ -11,7 +11,7 @@ Keep your script running
 
 The following script looks like it should turn an LED on::
 
-    from gpiozero import led
+    from gpiozero import LED
 
     led = LED(17)
     led.on()
@@ -23,7 +23,7 @@ briefly, then the script would end and it would turn off.
 The following file includes an intentional :func:`~signal.pause` to keep the
 script alive::
 
-    from gpiozero import led
+    from gpiozero import LED
     from signal import pause
 
     led = LED(17)

@@ -44,6 +44,7 @@ Alternatively::
     red = LED(17)
 
     red.blink()
+
     pause()
 
 .. note::
@@ -89,6 +90,7 @@ Run a function every time the button is pressed::
     button = Button(2)
 
     button.when_pressed = say_hello
+
     pause()
 
 Button controlled LED
@@ -224,13 +226,9 @@ Each button plays a different sound!
     from gpiozero import Button
     import pygame.mixer
     from pygame.mixer import Sound
+    from signal import pause
 
     pygame.mixer.init()
-
-    def play(pin):
-        sound = sound_pins[pin]
-        print("playing note from pin %s" % pin)
-        sound.play()
 
     sound_pins = {
         2: Sound("samples/drum_tom_mid_hard.wav"),
@@ -242,6 +240,8 @@ Each button plays a different sound!
         sound = sound_pins[button.pin]
         button.when_pressed = sound.play
 
+    pause()
+
 See `GPIO Music Box`_ for a full resource.
 
 All on when pressed
@@ -252,24 +252,31 @@ While the button is pressed down, the buzzer and all the lights come on.
 :class:`FishDish`::
 
     from gpiozero import FishDish
+    from signal import pause
 
     fish = FishDish()
 
     fish.button.when_pressed = fish.on
     fish.button.when_released = fish.off
 
+    pause()
+
 Ryanteck :class:`TrafficHat`::
 
     from gpiozero import TrafficHat
+    from signal import pause
 
     th = TrafficHat()
 
     th.button.when_pressed = th.on
     th.button.when_released = th.off
 
+    pause()
+
 Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
 
     from gpiozero import LED, Buzzer, Button
+    from signal import pause
 
     button = Button(2)
     buzzer = Buzzer(3)
@@ -289,6 +296,8 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
 
     button.when_pressed = things_on
     button.when_released = things_off
+
+    pause()
 
 RGB LED
 =======
@@ -325,12 +334,15 @@ Motion sensor
 Light an :class:`LED` when a :class:`MotionSensor` detects motion::
 
     from gpiozero import MotionSensor, LED
+    from signal import pause
 
     pir = MotionSensor(4)
     led = LED(16)
 
     pir.when_motion = led.on
     pir.when_no_motion = led.off
+
+    pause()
 
 Light sensor
 ============
@@ -352,12 +364,15 @@ Have a :class:`LightSensor` detect light and dark::
 Run a function when the light changes::
 
     from gpiozero import LightSensor, LED
+    from signal import pause
 
     sensor = LightSensor(18)
     led = LED(16)
 
     sensor.when_dark = led.on
     sensor.when_light = led.off
+
+    pause()
 
 Motors
 ======
@@ -457,12 +472,15 @@ Motion sensor robot
 Make a robot drive forward when it detects motion::
 
     from gpiozero import Robot, MotionSensor
+    from signal import pause
 
     robot = Robot(left=(4, 14), right=(17, 18))
     pir = MotionSensor(5)
 
     pir.when_motion = robot.forward
     pir.when_no_motion = robot.stop
+
+    pause()
 
 Potentiometer
 =============
@@ -476,7 +494,7 @@ connected to a :class:`MCP3008` analog to digital converter::
 
     while True:
         with MCP3008(channel=0) as pot:
-            print(pot.read())
+            print(pot.value)
 
 Full color LED controlled by 3 potentiometers
 =============================================
@@ -495,6 +513,24 @@ values to make up the colour of the LED::
         led.red = red_pot.value
         led.green = green_pot.value
         led.blue = blue_pot.value
+
+Alternatively, the following example is identical, but uses the
+:attr:`~SourceMixin.source` property rather than a :keyword:`while` loop::
+
+    from gpiozero import RGBLED, MCP3008
+    from signal import pause
+
+    led = RGBLED(2, 3, 4)
+    red_pot = MCP3008(0)
+    green_pot = MCP3008(1)
+    blue_pot = MCP3008(2)
+
+    led.source = zip(red_pot.values, green_pot.values, blue_pot.values)
+
+    pause()
+
+Please note the example above requires Python 3. In Python 2, :func:`zip`
+doesn't support lazy evaluation so the script will simply hang.
 
 
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
