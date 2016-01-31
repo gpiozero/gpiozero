@@ -67,13 +67,13 @@ Input Devices
 Output Devices
 ==============
 
-.. autoclass:: OutputDevice(pin, active_high=True)
+.. autoclass:: OutputDevice(pin, active_high=True, initial_value=False)
     :members:
 
-.. autoclass:: PWMOutputDevice(pin, frequency=100)
+.. autoclass:: PWMOutputDevice(pin, active_high=True, initial_value=0, frequency=100)
     :members:
 
-.. autoclass:: DigitalOutputDevice(pin, active_high=True)
+.. autoclass:: DigitalOutputDevice(pin, active_high=True, initial_value=False)
     :members:
 
 Mixin Classes

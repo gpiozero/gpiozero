@@ -16,25 +16,25 @@ everyday components. Components must be wired up correctly before use in code.
 LED
 ===
 
-.. autoclass:: LED(pin, active_high=True)
+.. autoclass:: LED(pin, active_high=True, initial_value=False)
     :members: on, off, toggle, blink, pin, is_lit
 
 PWMLED
 ======
 
-.. autoclass:: PWMLED(pin, frequency=100)
+.. autoclass:: PWMLED(pin, active_high=True, initial_value=0, frequency=100)
     :members: on, off, toggle, blink, pin, is_lit, value
 
 Buzzer
 ======
 
-.. autoclass:: Buzzer(pin, active_high=True)
+.. autoclass:: Buzzer(pin, active_high=True, initial_value=False)
     :members: on, off, toggle, beep, pin, is_active
 
 RGBLED
 ======
 
-.. autoclass:: RGBLED(red, green, blue)
+.. autoclass:: RGBLED(red, green, blue, active_high=True)
     :members: on, off, red, green, blue, value
 
 Motor
