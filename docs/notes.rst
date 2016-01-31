@@ -13,7 +13,7 @@ The following script looks like it should turn an LED on::
 
     from gpiozero import led
 
-    led = LED(2)
+    led = LED(17)
     led.on()
 
 And it does, if you're using the Python (or IPython or IDLE) shell. However,
@@ -26,7 +26,7 @@ script alive::
     from gpiozero import led
     from signal import pause
 
-    led = LED(2)
+    led = LED(17)
     led.on()
     pause()
 
