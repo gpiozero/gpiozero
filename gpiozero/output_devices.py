@@ -389,13 +389,13 @@ class PWMOutputDevice(OutputDevice):
         if fade_in_time > 0.0:
             sequence += [
                 (i * (1 / fps) / fade_in_time, 1 / fps)
-                for i in range(int(50 * fade_in_time))
+                for i in range(int(fps * fade_in_time))
                 ]
         sequence.append((1.0, on_time))
         if fade_out_time > 0.0:
             sequence += [
                 (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
-                for i in range(int(50 * fade_out_time))
+                for i in range(int(fps * fade_out_time))
                 ]
         sequence.append((0.0, off_time))
         if not self.active_high:

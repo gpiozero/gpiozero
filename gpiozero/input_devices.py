@@ -738,9 +738,10 @@ class MCP3xxx(AnalogInputDevice):
         #     Rx   xxxxxxxx x0RRRRRR RRRRRRxx for the 3204/08
         #
         # The transmit bits start with 3 preamble bits "000" (to warm up), a
-        # start bit "1" followed by the mode bit(M) which is 1 for single-ended
-        # read, and 0 for differential read, followed by 3-bits for the channel
-        # (C).  The remainder of the transmission are "don't care" bits (x).
+        # start bit "1" followed by the single/differential bit (M) which is 1
+        # for single-ended read, and 0 for differential read, followed by
+        # 3-bits for the channel (C). The remainder of the transmission are
+        # "don't care" bits (x).
         #
         # The first byte received and the top 1 bit of the second byte are
         # don't care bits (x). These are followed by a null bit (0), and then
@@ -771,9 +772,10 @@ class MCP33xx(MCP3xxx):
         #     Rx   xxxxxxxx x0SRRRRR RRRRRRRx
         #
         # The transmit bits start with 3 preamble bits "000" (to warm up), a
-        # start bit "1" followed by the mode bit(M) which is 1 for single-ended
-        # read, and 0 for differential read, followed by 3-bits for the channel
-        # (C).  The remainder of the transmission are "don't care" bits (x).
+        # start bit "1" followed by the single/differential bit (M) which is 1
+        # for single-ended read, and 0 for differential read, followed by
+        # 3-bits for the channel (C). The remainder of the transmission are
+        # "don't care" bits (x).
         #
         # The first byte received and the top 1 bit of the second byte are
         # don't care bits (x). These are followed by a null bit (0), then the
