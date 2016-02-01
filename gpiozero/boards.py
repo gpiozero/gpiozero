@@ -112,17 +112,29 @@ class LEDBoard(LEDCollection):
         for l, v in zip(self.leds, value):
             l.value = v
 
-    def on(self):
+    def on(self, *args):
         self._stop_blink()
-        super(LEDBoard, self).on()
+        if args:
+            for index in args:
+                self.leds[index].on()
+        else:
+            super(LEDBoard, self).on()
 
-    def off(self):
+    def off(self, *args):
         self._stop_blink()
-        super(LEDBoard, self).off()
+        if args:
+            for index in args:
+                self.leds[index].off()
+        else:
+            super(LEDBoard, self).off()
 
-    def toggle(self):
+    def toggle(self, *args):
         self._stop_blink()
-        super(LEDBoard, self).toggle()
+        if args:
+            for index in args:
+                self.leds[index].toggle()
+        else:
+            super(LEDBoard, self).toggle()
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
