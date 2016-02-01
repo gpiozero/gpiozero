@@ -11,11 +11,12 @@ except ImportError:
 
 from time import sleep
 from collections import namedtuple
+from itertools import repeat
 
 from .exc import InputDeviceError, OutputDeviceError
 from .input_devices import Button
 from .output_devices import LED, PWMLED, Buzzer, Motor
-from .devices import CompositeDevice, SourceMixin
+from .devices import GPIOThread, CompositeDevice, SourceMixin
 
 
 class LEDBoard(SourceMixin, CompositeDevice):
@@ -41,12 +42,14 @@ class LEDBoard(SourceMixin, CompositeDevice):
         parameter can only be specified as a keyword parameter.
     """
     def __init__(self, *pins, **kwargs):
+        self._blink_thread = None
         super(LEDBoard, self).__init__()
         pwm = kwargs.get('pwm', False)
         LEDClass = PWMLED if pwm else LED
         self._leds = tuple(LEDClass(pin) for pin in pins)
 
     def close(self):
+        self._stop_blink()
         for led in self.leds:
             led.close()
 
@@ -79,6 +82,7 @@ class LEDBoard(SourceMixin, CompositeDevice):
         """
         Turn all the LEDs on.
         """
+        self._stop_blink()
         for led in self.leds:
             led.on()
 
@@ -86,6 +90,7 @@ class LEDBoard(SourceMixin, CompositeDevice):
         """
         Turn all the LEDs off.
         """
+        self._stop_blink()
         for led in self.leds:
             led.off()
 
@@ -116,9 +121,31 @@ class LEDBoard(SourceMixin, CompositeDevice):
             finished (warning: the default value of *n* will result in this
             method never returning).
         """
-        # XXX This isn't going to work for background=False
-        for led in self.leds:
-            led.blink(on_time, off_time, n, background)
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_leds, args=(on_time, off_time, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_leds(self, on_time, off_time, n):
+        iterable = repeat(0) if n is None else repeat(0, n)
+        for i in iterable:
+            for led in self.leds:
+                led.on()
+            if self._blink_thread.stopping.wait(on_time):
+                break            
+            for led in self.leds:
+                led.off()
+            if self._blink_thread.stopping.wait(off_time):
+                break            
 
 
 class PiLiter(LEDBoard):
