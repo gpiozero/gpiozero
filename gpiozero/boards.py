@@ -75,19 +75,43 @@ class LEDBoard(SourceMixin, CompositeDevice):
         for l, v in zip(self.leds, value):
             l.value = v
 
-    def on(self):
+    def on(self, *args, **kwargs):
         """
         Turn all the LEDs on.
         """
-        for led in self.leds:
-            led.on()
+        if args:
+            others_off = kwargs.get('others_off', False)
+            if others_off:
+                for index, led in enumerate(self.leds):
+                    if index in args:
+                        led.on()
+                    else:
+                        led.off()
+            else:
+                for index in args:
+                    self.leds[index].on()
+        else:
+            for led in self.leds:
+                led.on()
 
-    def off(self):
+    def off(self, *args, **kwargs):
         """
         Turn all the LEDs off.
         """
-        for led in self.leds:
-            led.off()
+        if args:
+            others_on = kwargs.get('others_on', False)
+            if others_on:
+                for index, led in enumerate(self.leds):
+                    if index in args:
+                        led.off()
+                    else:
+                        led.on()
+            else:
+                for index in args:
+                    self.leds[index].off()
+        else:
+            for led in self.leds:
+                led.off()
 
     def toggle(self):
         """
