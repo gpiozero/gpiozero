@@ -368,7 +368,7 @@ class PWMOutputDevice(OutputDevice):
         Returns ``True`` if the device is currently active (:attr:`value` is
         non-zero) and ``False`` otherwise.
         """
-        return self.value > 0.0
+        return self.value != 0
 
     @property
     def frequency(self):
