@@ -554,8 +554,19 @@ class RyanteckRobot(Robot):
 
 class CamJamKitRobot(Robot):
     """
-    CamJam EduKit 3 Robot. Generic robot controller with pre-configured pin
-    numbers.
+    Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
+
+    The CamJam robot controller pins are fixed and therefore there's no need
+    to specify them when constructing this class. The following example turns
+    the robot left::
+
+        from gpiozero import CamJamKitRobot
+
+        robot = CamJamKitRobot()
+        robot.left()
+
+    .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+
