@@ -4,6 +4,11 @@ Recipes
 
 .. currentmodule:: gpiozero
 
+The following recipes demonstrate some of the capabilities of the gpiozero
+library. Please note that all recipes are written assuming Python 3. Recipes
+*may* work under Python 2, but no guarantees!
+
+
 Pin Numbering
 =============
 
@@ -53,6 +58,7 @@ Alternatively::
     may be reset. Keep your script alive with :func:`signal.pause`. See
     :ref:`keep-your-script-running` for more information.
 
+
 Button
 ======
 
@@ -93,6 +99,7 @@ Run a function every time the button is pressed::
 
     pause()
 
+
 Button controlled LED
 =====================
 
@@ -108,6 +115,19 @@ Turn on an :class:`LED` when a :class:`Button` is pressed::
     button.when_released = led.off
 
     pause()
+
+Alternatively::
+
+    from gpiozero import LED, Button
+    from signal import pause
+
+    led = LED(17)
+    button = Button(2)
+
+    led.source = button.values
+
+    pause()
+
 
 Traffic Lights
 ==============
@@ -137,6 +157,27 @@ Using a :class:`TrafficLights` kit like Pi-Stop::
         lights.amber.off()
         lights.red.off()
 
+Alternatively::
+
+    from gpiozero import TrafficLights
+    from time import sleep
+    from signal import pause
+
+    def traffic_light_sequence():
+        while True:
+            yield (0, 0, 1) # green
+            sleep(10)
+            yield (0, 1, 0) # amber
+            sleep(1)
+            yield (1, 0, 0) # red
+            sleep(10)
+            yield (1, 1, 0) # red+amber
+            sleep(1)
+
+    lights.source = traffic_light_sequence()
+
+    pause()
+
 Using :class:`LED` components::
 
     from gpiozero import LED
@@ -164,6 +205,7 @@ Using :class:`LED` components::
         amber.off()
         red.off()
 
+
 Push button stop motion
 =======================
 
@@ -183,6 +225,7 @@ Capture a picture with the camera module every time a button is pressed::
             frame += 1
 
 See `Push Button Stop Motion`_ for a full resource.
+
 
 Reaction Game
 =============
@@ -216,6 +259,7 @@ When you see the light come on, the first person to press their button wins!
 
 See `Quick Reaction Game`_ for a full resource.
 
+
 GPIO Music Box
 ==============
 
@@ -243,6 +287,7 @@ Each button plays a different sound!
     pause()
 
 See `GPIO Music Box`_ for a full resource.
+
 
 All on when pressed
 ===================
@@ -299,6 +344,7 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
 
     pause()
 
+
 RGB LED
 =======
 
@@ -310,21 +356,29 @@ Making colours with an :class:`RGBLED`::
     led = RGBLED(red=9, green=10, blue=11)
 
     led.red = 1  # full red
+    sleep(1)
     led.red = 0.5  # half red
+    sleep(1)
 
     led.color = (0, 1, 0)  # full green
-
+    sleep(1)
     led.color = (1, 0, 1)  # magenta
+    sleep(1)
     led.color = (1, 1, 0)  # yellow
+    sleep(1)
     led.color = (0, 1, 1)  # cyan
+    sleep(1)
     led.color = (1, 1, 1)  # white
+    sleep(1)
 
     led.color = (0, 0, 0)  # off
+    sleep(1)
 
     # slowly increase intensity of blue
     for n in range(100):
         led.blue = n/100
         sleep(0.1)
+
 
 Motion sensor
 =============
@@ -343,6 +397,7 @@ Light an :class:`LED` when a :class:`MotionSensor` detects motion::
     pir.when_no_motion = led.off
 
     pause()
+
 
 Light sensor
 ============
@@ -374,6 +429,20 @@ Run a function when the light changes::
 
     pause()
 
+Or make a :class:`PWMLED` change brightness according to the detected light
+level::
+
+    from gpiozero import LightSensor, LED
+    from signal import pause
+
+    sensor = LightSensor(18)
+    led = PWMLED(16)
+
+    led.source = sensor.values
+
+    pause()
+
+
 Motors
 ======
 
@@ -392,6 +461,7 @@ Spin a :class:`Motor` around forwards and backwards::
         motor.backward()
         sleep(5)
 
+
 Robot
 =====
 
@@ -409,6 +479,7 @@ Make a :class:`Robot` drive around in (roughly) a square::
         sleep(10)
         robot.right()
         sleep(1)
+
 
 Button controlled robot
 =======================
@@ -439,8 +510,12 @@ Use four GPIO buttons as forward/back/left/right controls for a robot::
 
     pause()
 
+
 Keyboard controlled robot
 =========================
+
+.. XXX Rewrite this using curses (to avoid evdev dep, which isn't packaged
+   on Rapsbian)
 
 Use up/down/left/right keys to control a robot::
 
@@ -466,6 +541,7 @@ Use up/down/left/right keys to control a robot::
             if event.value == 0:  # key up
                 robot.stop()
 
+
 Motion sensor robot
 ===================
 
@@ -482,6 +558,19 @@ Make a robot drive forward when it detects motion::
 
     pause()
 
+Alternatively::
+
+    from gpiozero import Robot, MotionSensor
+    from signal import pause
+
+    robot = Robot(left=(4, 14), right=(17, 18))
+    pir = MotionSensor(5)
+
+    robot.source = zip(pir.values, pir.values)
+
+    pause()
+
+
 Potentiometer
 =============
 
@@ -495,6 +584,29 @@ connected to a :class:`MCP3008` analog to digital converter::
     while True:
         with MCP3008(channel=0) as pot:
             print(pot.value)
+
+
+Measure temperature with an ADC
+===============================
+
+.. IMAGE TBD
+
+Wire a TMP36 temperature sensor to the first channel of an :class:`MCP3008`
+analog to digital converter::
+
+    from gpiozero import MCP3008
+    from time import sleep
+
+    def convert_temp(gen):
+        for value in gen:
+            yield (value * 3.3 - 0.5) * 100
+
+    adc = MCP3008(channel=0)
+
+    for temp in convert_temp(adc.values):
+        print('The temperature is', temp, 'C')
+        sleep(1)
+
 
 Full color LED controlled by 3 potentiometers
 =============================================
