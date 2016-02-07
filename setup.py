@@ -29,7 +29,7 @@ __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Education",
     "Intended Audience :: Developers",
     "Topic :: Education",
