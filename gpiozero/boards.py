@@ -140,7 +140,7 @@ class LEDBoard(SourceMixin, CompositeDevice):
                 raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_leds,
+            target=self._blink_device,
             args=(on_time, off_time, fade_in_time, fade_out_time, n)
         )
         self._blink_thread.start()
@@ -153,7 +153,7 @@ class LEDBoard(SourceMixin, CompositeDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_leds(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
         sequence = []
         if fade_in_time > 0:
             sequence += [
