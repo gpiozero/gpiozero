@@ -78,3 +78,10 @@ Ryanteck MCB Robot
     :inherited-members:
     :members:
 
+CamJam #3 Kit Robot
+===================
+
+.. autoclass:: CamJamKitRobot
+    :inherited-members:
+    :members:
+

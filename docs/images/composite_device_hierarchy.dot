@@ -29,4 +29,5 @@ digraph classes {
 
     Robot->CompositeDevice;
     RyanteckRobot->Robot;
+    CamJamKitRobot->Robot;
 }
