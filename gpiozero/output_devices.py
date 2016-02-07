@@ -166,7 +166,7 @@ class DigitalOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_led, args=(on_time, off_time, n)
+            target=self._blink_device, args=(on_time, off_time, n)
         )
         self._blink_thread.start()
         if not background:
@@ -178,7 +178,7 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_led(self, on_time, off_time, n):
+    def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
             self._write(True)
@@ -412,7 +412,7 @@ class PWMOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_led,
+            target=self._blink_device,
             args=(on_time, off_time, fade_in_time, fade_out_time, n)
         )
         self._blink_thread.start()
@@ -425,7 +425,7 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_led(
+    def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
         sequence = []
         if fade_in_time > 0:
