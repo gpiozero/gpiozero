@@ -35,7 +35,7 @@ RGBLED
 ======
 
 .. autoclass:: RGBLED(red, green, blue, active_high=True)
-    :members: on, off, red, green, blue, value
+    :members: on, off, blink, red, green, blue, value
 
 Motor
 =====
