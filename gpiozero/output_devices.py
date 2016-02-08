@@ -537,6 +537,7 @@ class RGBLED(SourceMixin, CompositeDevice):
         """
         return self.value != (0, 0, 0)
 
+    is_lit = is_active
     color = value
 
     def on(self):
