@@ -25,17 +25,17 @@ PWMLED
 .. autoclass:: PWMLED(pin, active_high=True, initial_value=0, frequency=100)
     :members: on, off, toggle, blink, pin, is_lit, value
 
+RGBLED
+======
+
+.. autoclass:: RGBLED(red, green, blue, active_high=True, initial_value=(0, 0, 0))
+    :members: on, off, toggle, blink, red, green, blue, is_lit, color
+
 Buzzer
 ======
 
 .. autoclass:: Buzzer(pin, active_high=True, initial_value=False)
     :members: on, off, toggle, beep, pin, is_active
-
-RGBLED
-======
-
-.. autoclass:: RGBLED(red, green, blue, active_high=True)
-    :members: on, off, toggle, blink, red, green, blue, color
 
 Motor
 =====

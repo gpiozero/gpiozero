@@ -204,7 +204,7 @@ class Pin(object):
         """)
 
     def _get_edges(self):
-        return 'both'
+        return 'none'
 
     def _set_edges(self, value):
         raise PinEdgeDetectUnsupported("Edge detection is not supported on pin %r" % self)
@@ -215,7 +215,7 @@ class Pin(object):
         doc="""\
         The edge that will trigger execution of the function or bound method
         assigned to :attr:`when_changed`. This can be one of the strings
-        "both" (the default), "rising", or "falling".
+        "both" (the default), "rising", "falling", or "none".
 
         If the pin does not support edge detection, attempts to set this
         property will raise :exc:`PinEdgeDetectUnsupported`.
