@@ -302,6 +302,7 @@ class PWMOutputDevice(OutputDevice):
             raise
 
     def close(self):
+        self._stop_blink()
         if self._pwm:
             # Ensure we wipe out the PWM object so that re-runs don't attempt
             # to re-stop the PWM thread (otherwise, the fact that close is
@@ -484,11 +485,12 @@ PWMLED.is_lit = PWMLED.is_active
 
 
 def _led_property(index, doc=None):
-    return property(
-        lambda self: getattr(self._leds[index], 'value'),
-        lambda self, value: setattr(self._leds[index], 'value', value),
-        doc
-    )
+    def getter(self):
+        return self._leds[index].value
+    def setter(self, value):
+        self._stop_blink()
+        self._leds[index].value = value
+    return property(getter, setter, doc=doc)
 
 
 class RGBLED(SourceMixin, CompositeDevice):
@@ -523,6 +525,8 @@ class RGBLED(SourceMixin, CompositeDevice):
         (the :meth:`off` method always does the opposite).
     """
     def __init__(self, red=None, green=None, blue=None, active_high=True):
+        self._leds = ()
+        self._blink_thread = None
         if not all([red, green, blue]):
             raise OutputDeviceError('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
@@ -572,8 +576,90 @@ class RGBLED(SourceMixin, CompositeDevice):
         self.value = (0, 0, 0)
 
     def close(self):
+        self._stop_blink()
         for led in self._leds:
             led.close()
+
+    def blink(
+            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+        """
+        Make the device turn on and off repeatedly.
+
+        :param float on_time:
+            Number of seconds on. Defaults to 1 second.
+
+        :param float off_time:
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0.
+
+        :param tuple on_color:
+            The color to use when the LED is "on". Defaults to white.
+
+        :param tuple off_color:
+            The color to use when the LED is "off". Defaults to black.
+
+        :param int n:
+            Number of times to blink; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_device,
+            args=(on_time, off_time, fade_in_time, fade_out_time, on_color, off_color, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_device(
+            self, on_time, off_time, fade_in_time, fade_out_time, on_color,
+            off_color, n, fps=50):
+        # Define some simple lambdas to perform linear interpolation between
+        # off_color and on_color
+        lerp = lambda t, fade_in: tuple(
+            (1 - t) * off + t * on
+            if fade_in else
+            (1 - t) * on + t * off
+            for off, on in zip(off_color, on_color)
+            )
+        sequence = []
+        if fade_in_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_in_time, True), 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
+        sequence.append((on_color, on_time))
+        if fade_out_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_out_time, False), 1 / fps)
+                for i in range(int(fps * fade_out_time))
+                ]
+        sequence.append((off_color, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for value, delay in sequence:
+            self._leds[0].value, self._leds[1].value, self._leds[2].value = value
+            if self._blink_thread.stopping.wait(delay):
+                break
 
 
 class Motor(SourceMixin, CompositeDevice):
