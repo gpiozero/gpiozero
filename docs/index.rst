@@ -12,5 +12,6 @@ Table of Contents
     api_output
     api_boards
     api_generic
+    api_pins
     changelog
     license

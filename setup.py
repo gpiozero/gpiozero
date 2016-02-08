@@ -45,7 +45,6 @@ __keywords__ = [
 ]
 
 __requires__ = [
-    'RPi.GPIO',
     'spidev',
 ]
 

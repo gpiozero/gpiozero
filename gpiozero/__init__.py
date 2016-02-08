@@ -5,6 +5,23 @@ from __future__ import (
     division,
 )
 
+from .pins.exc import (
+    PinError,
+    PinFixedFunction,
+    PinInvalidFunction,
+    PinInvalidState,
+    PinInvalidPull,
+    PinInvalidEdges,
+    PinSetInput,
+    PinFixedPull,
+    PinEdgeDetectUnsupported,
+    PinPWMError,
+    PinPWMUnsupported,
+    PinPWMFixedValue,
+)
+from .pins import (
+    Pin,
+)
 from .exc import (
     GPIODeviceClosed,
     GPIODeviceError,
