@@ -159,7 +159,7 @@ release: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	dch --newversion $(VER)$(DEB_SUFFIX) --controlmaint
 	# commit the changes and add a new tag
 	git commit debian/changelog -m "Updated changelog for release $(VER)"
-	git tag -s release-$(VER) -m "Release $(VER)"
+	git tag -s v$(VER) -m "Release v$(VER)"
 	# update the package's registration on PyPI (in case any metadata's changed)
 	$(PYTHON) $(PYFLAGS) setup.py register
 
