@@ -33,8 +33,12 @@ except ImportError:
         from .pins.rpio import RPIOPin
         DefaultPin = RPIOPin
     except ImportError:
-        from .pins.native import NativePin
-        DefaultPin = NativePin
+        try:
+            from .pins.pigipod import PiGPIOPin
+            DefaultPin = PiGPIOPin
+        except ImportError:
+            from .pins.native import NativePin
+            DefaultPin = NativePin
 
 
 _THREADS = set()

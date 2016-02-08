@@ -39,6 +39,7 @@ sys.modules['RPi'] = Mock()
 sys.modules['RPi.GPIO'] = sys.modules['RPi'].GPIO
 sys.modules['RPIO'] = Mock()
 sys.modules['RPIO.PWM'] = sys.modules['RPIO'].PWM
+sys.modules['pigpio'] = Mock()
 sys.modules['w1thermsensor'] = Mock()
 sys.modules['spidev'] = Mock()
 
