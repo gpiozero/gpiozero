@@ -520,17 +520,22 @@ class RGBLED(SourceMixin, CompositeDevice):
         The GPIO pin that controls the blue component of the RGB LED.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set the GPIOs to
-        HIGH. If ``False``, the :meth:`on` method will set the GPIOs to LOW
-        (the :meth:`off` method always does the opposite).
+        Set to ``True`` (the default) for common cathode RGB LEDs. If you are
+        using a common anode RGB LED, set this to ``False``.
+
+    :param bool initial_value:
+        The initial color for the LED. Defaults to black ``(0, 0, 0)``.
     """
-    def __init__(self, red=None, green=None, blue=None, active_high=True):
+    def __init__(
+            self, red=None, green=None, blue=None, active_high=True,
+            initial_value=(0, 0, 0)):
         self._leds = ()
         self._blink_thread = None
         if not all([red, green, blue]):
             raise OutputDeviceError('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
         self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
+        self.value = initial_value
 
     red = _led_property(0)
     green = _led_property(1)
@@ -563,17 +568,27 @@ class RGBLED(SourceMixin, CompositeDevice):
 
     def on(self):
         """
-        Turn the device on. This equivalent to setting the device color to
-        white ``(1, 1, 1)``.
+        Turn the LED on. This equivalent to setting the LED color to white
+        ``(1, 1, 1)``.
         """
         self.value = (1, 1, 1)
 
     def off(self):
         """
-        Turn the device off. This is equivalent to setting the device color
-        to black ``(0, 0, 0)``.
+        Turn the LED off. This is equivalent to setting the LED color to black
+        ``(0, 0, 0)``.
         """
         self.value = (0, 0, 0)
+
+    def toggle(self):
+        """
+        Toggle the state of the device. If the device is currently off
+        (:attr:`value` is ``(0, 0, 0)``), this changes it to "fully" on
+        (:attr:`value` is ``(1, 1, 1)``).  If the device has a specific color,
+        this method inverts the color.
+        """
+        r, g, b = self.value
+        self.value = (1 - r, 1 - g, 1 - b)
 
     def close(self):
         self._stop_blink()
