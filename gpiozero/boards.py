@@ -19,7 +19,59 @@ from .output_devices import LED, PWMLED, Buzzer, Motor
 from .devices import GPIOThread, CompositeDevice, SourceMixin
 
 
-class LEDBoard(SourceMixin, CompositeDevice):
+class LEDCollection(SourceMixin, CompositeDevice):
+    """
+    Abstract base class for :class:`LEDBoard` and :class:`LEDBarGraph`.
+    """
+
+    def __init__(self, *pins, **kwargs):
+        self._blink_thread = None
+        super(LEDCollection, self).__init__()
+        pwm = kwargs.get('pwm', False)
+        LEDClass = PWMLED if pwm else LED
+        self._leds = tuple(LEDClass(pin) for pin in pins)
+
+    def close(self):
+        for led in self.leds:
+            led.close()
+
+    @property
+    def closed(self):
+        return all(led.closed for led in self.leds)
+
+    @property
+    def leds(self):
+        """
+        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
+        the instance.
+        """
+        return self._leds
+
+    def on(self):
+        """
+        Turn all the LEDs on.
+        """
+        for led in self.leds:
+            led.on()
+
+    def off(self):
+        """
+        Turn all the LEDs off.
+        """
+        for led in self.leds:
+            led.off()
+
+    def toggle(self):
+        """
+        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
+        off, turn it on.
+        """
+        for led in self.leds:
+            led.toggle()
+
+
+
+class LEDBoard(LEDCollection):
     """
     Extends :class:`CompositeDevice` and represents a generic LED board or
     collection of LEDs.
@@ -41,29 +93,10 @@ class LEDBoard(SourceMixin, CompositeDevice):
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
     """
-    def __init__(self, *pins, **kwargs):
-        self._blink_thread = None
-        super(LEDBoard, self).__init__()
-        pwm = kwargs.get('pwm', False)
-        LEDClass = PWMLED if pwm else LED
-        self._leds = tuple(LEDClass(pin) for pin in pins)
 
     def close(self):
         self._stop_blink()
-        for led in self.leds:
-            led.close()
-
-    @property
-    def closed(self):
-        return all(led.closed for led in self.leds)
-
-    @property
-    def leds(self):
-        """
-        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
-        the instance.
-        """
-        return self._leds
+        super(LEDBoard, self).close()
 
     @property
     def value(self):
@@ -75,32 +108,21 @@ class LEDBoard(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
+        self._stop_blink()
         for l, v in zip(self.leds, value):
             l.value = v
 
     def on(self):
-        """
-        Turn all the LEDs on.
-        """
         self._stop_blink()
-        for led in self.leds:
-            led.on()
+        super(LEDBoard, self).on()
 
     def off(self):
-        """
-        Turn all the LEDs off.
-        """
         self._stop_blink()
-        for led in self.leds:
-            led.off()
+        super(LEDBoard, self).off()
 
     def toggle(self):
-        """
-        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
-        off, turn it on.
-        """
-        for led in self.leds:
-            led.toggle()
+        self._stop_blink()
+        super(LEDBoard, self).toggle()
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
@@ -178,9 +200,96 @@ class LEDBoard(SourceMixin, CompositeDevice):
                 break
 
 
+class LEDBarGraph(LEDCollection):
+    """
+    Extends :class:`CompositeDevice` to control a line of LEDs representing a
+    bar graph. Positive values (0 to 1) light the LEDs from first to last.
+    Negative values (-1 to 0) light the LEDs from last to first.
+
+    The following example turns on all the LEDs on a board containing 5 LEDs
+    attached to GPIO pins 2 through 6::
+
+        from gpiozero import LEDBarGraph
+
+        graph = LEDBarGraph(2, 3, 4, 5, 6)
+        graph.value = 2/5  # Light the first two LEDs only
+        graph.value = -2/5 # Light the last two LEDs only
+        graph.off()
+
+    As with other output devices, :attr:`source` and :attr:`values` are
+    supported::
+
+        from gpiozero import LEDBarGraph, MCP3008
+        from signal import pause
+
+        graph = LEDBarGraph(2, 3, 4, 5, 6)
+        pot = MCP3008(channel=0)
+        graph.source = pot.values
+        pause()
+
+    :param int \*pins:
+        Specify the GPIO pins that the LEDs of the bar graph are attached to.
+        You can designate as many pins as necessary.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1.  Defaults to 0.0.
+    """
+
+    def __init__(self, *pins, **kwargs):
+        super(LEDBarGraph, self).__init__(*pins, pwm=False)
+        initial_value = kwargs.get('initial_value', 0)
+        self.value = initial_value
+
+    @property
+    def value(self):
+        """
+        The value of the LED bar graph. When no LEDs are lit, the value is 0.
+        When all LEDs are lit, the value is 1. Values between 0 and 1
+        light LEDs linearly from first to last. Values between 0 and -1
+        light LEDs linearly from last to first.
+
+        To light a particular number of LEDs, simply divide that number by
+        the number of LEDs. For example, if your graph contains 3 LEDs, the
+        following will light the first::
+
+            from gpiozero import LEDBarGraph
+
+            graph = LEDBarGraph(12, 16, 19)
+            graph.value = 1/3
+
+        .. note::
+
+            Setting value to -1 will light all LEDs. However, querying it
+            subsequently will return 1 as both representations are the same in
+            hardware.
+        """
+        for index, led in enumerate(self.leds):
+            if not led.is_lit:
+                break
+        else:
+            index = len(self.leds)
+        if not index:
+            for index, led in enumerate(reversed(self.leds)):
+                if not led.is_lit:
+                    break
+            index = -index
+        return index / len(self.leds)
+
+    @value.setter
+    def value(self, value):
+        count = len(self.leds)
+        if value >= 0:
+            for index, led in enumerate(self.leds, start=1):
+                led.value = value >= (index / count)
+        else:
+            for index, led in enumerate(reversed(self.leds), start=1):
+                led.value = value <= -(index / count)
+
+
 class PiLiter(LEDBoard):
     """
-    Extends :class:`LEDBoard` for the Ciseco Pi-LITEr: a strip of 8 very bright
+    Extends :class:`LEDBoard` for the `Ciseco Pi-LITEr`_: a strip of 8 very bright
     LEDs.
 
     The Pi-LITEr pins are fixed and therefore there's no need to specify them
@@ -196,9 +305,36 @@ class PiLiter(LEDBoard):
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
+
+    .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
     def __init__(self, pwm=False):
         super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
+
+
+class PiLiterBarGraph(LEDBarGraph):
+    """
+    Extends :class:`LEDBarGraph` to treat the `Ciseco Pi-LITEr`_ as an
+    8-segment bar graph.
+
+    The Pi-LITEr pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example sets the graph value
+    to 0.5::
+
+        from gpiozero import PiLiterBarGraph
+
+        graph = PiLiterBarGraph()
+        graph.value = 0.5
+
+    :param bool initial_value:
+        The initial value of the graph given as a float between -1 and +1.
+        Defaults to 0.0.
+
+    .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
+    """
+    def __init__(self, initial_value=0):
+        super(PiLiterBarGraph, self).__init__(
+                4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
 
 
 TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
