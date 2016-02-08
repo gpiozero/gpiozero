@@ -48,7 +48,9 @@ from .output_devices import (
 )
 from .boards import (
     LEDBoard,
+    LEDBarGraph,
     PiLiter,
+    PiLiterBarGraph,
     TrafficLights,
     PiTraffic,
     TrafficLightsBuzzer,
