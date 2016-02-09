@@ -48,6 +48,8 @@ so you can still do::
 
 .. autoexception:: GPIOBadQueueLen
 
+.. autoexception:: GPIOBadSampleWait
+
 .. autoexception:: InputDeviceError
 
 .. autoexception:: OutputDeviceError

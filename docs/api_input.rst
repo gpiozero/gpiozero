@@ -20,8 +20,8 @@ Button
     :members: wait_for_press, wait_for_release, pin, is_pressed, pull_up, when_pressed, when_released
 
 
-Motion Sensor (PIR)
-===================
+Motion Sensor (D-SUN PIR)
+=========================
 
 .. autoclass:: MotionSensor(pin, queue_len=1, sample_rate=10, threshold=0.5, partial=False)
     :members: wait_for_motion, wait_for_no_motion, pin, motion_detected, when_motion, when_no_motion
@@ -32,6 +32,14 @@ Light Sensor (LDR)
 
 .. autoclass:: LightSensor(pin, queue_len=5, charge_time_limit=0.01, threshold=0.1, partial=False)
     :members: wait_for_light, wait_for_dark, pin, light_detected, when_light, when_dark
+
+
+Distance Sensor (HC-SR04)
+=========================
+
+.. autoclass:: DistanceSensor(echo, trigger, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False)
+    :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance
+
 
 Analog to Digital Converters (ADC)
 ==================================

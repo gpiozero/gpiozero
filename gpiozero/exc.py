@@ -28,6 +28,9 @@ class GPIOPinMissing(GPIODeviceError, ValueError):
 class GPIOBadQueueLen(GPIODeviceError, ValueError):
     "Error raised when non-positive queue length is specified"
 
+class GPIOBadSampleWait(GPIODeviceError, ValueError):
+    "Error raised when a negative sampling wait period is specified"
+
 class InputDeviceError(GPIODeviceError):
     "Base class for errors specific to the InputDevice hierarchy"
 
