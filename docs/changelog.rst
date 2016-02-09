@@ -10,6 +10,8 @@ Release 1.1.0 (2016-02-08)
 
 * Documentation converted to reST and expanded to include generic classes
   and several more recipes (`#80`_, `#82`_, `#101`_, `#119`_, `#135`_, `#168`_)
+* New :class:`CamJamKitRobot` class with the pre-defined motor pins for the new
+  CamJam EduKit
 * New :class:`LEDBarGraph` class (many thanks to Martin O'Hanlon!) (`#126`_,
   `#176`_)
 * New :class:`Pin` implementation abstracts out the concept of a GPIO pin
