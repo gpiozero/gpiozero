@@ -112,13 +112,21 @@ class LEDBoard(LEDCollection):
         for l, v in zip(self.leds, value):
             l.value = v
 
-    def on(self):
+    def on(self, *args):
         self._stop_blink()
-        super(LEDBoard, self).on()
+        if args:
+            for led in args:
+                led.on()
+        else:
+            super(LEDBoard, self).on()
 
-    def off(self):
+    def off(self, *args):
         self._stop_blink()
-        super(LEDBoard, self).off()
+        if args:
+            for led in args:
+                led.off()
+        else:
+            super(LEDBoard, self).off()
 
     def toggle(self):
         self._stop_blink()
