@@ -10,8 +10,6 @@ from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
-from RPi import GPIO
-
 from .exc import OutputDeviceError, GPIODeviceError, GPIODeviceClosed
 from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
 
@@ -42,36 +40,20 @@ class OutputDevice(SourceMixin, GPIODevice):
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
-        self._active_state = GPIO.HIGH if active_high else GPIO.LOW
-        self._inactive_state = GPIO.LOW if active_high else GPIO.HIGH
-        try:
-            # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
-            # messing around with GPIO init within background threads...
-            with warnings.catch_warnings(record=True) as w:
-                # This is horrid, but we can't specify initial=None with setup
-                if initial_value is None:
-                    GPIO.setup(pin, GPIO.OUT)
-                else:
-                    GPIO.setup(pin, GPIO.OUT, initial=
-                        [self._inactive_state, self._active_state][bool(initial_value)])
-                GPIO.setup(pin, GPIO.OUT)
-            # The only warning we want to squash is a RuntimeWarning that is
-            # thrown when setting pins 2 or 3. Anything else should be replayed
-            for warning in w:
-                if warning.category != RuntimeWarning or pin not in (2, 3):
-                    warnings.showwarning(
-                        warning.message, warning.category, warning.filename,
-                        warning.lineno, warning.file, warning.line
-                    )
-        except:
-            self.close()
-            raise
+        self._active_state = True if active_high else False
+        self._inactive_state = False if active_high else True
+        if initial_value is None:
+            self.pin.function = 'output'
+        elif initial_value:
+            self.pin.output_with_state(self._active_state)
+        else:
+            self.pin.output_with_state(self._inactive_state)
 
     def _write(self, value):
         if not self.active_high:
             value = not value
         try:
-            GPIO.output(self.pin, bool(value))
+            self.pin.state = bool(value)
         except ValueError:
             self._check_open()
             raise
@@ -102,7 +84,7 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     def __repr__(self):
         try:
-            return '<gpiozero.%s object on pin=%d, active_high=%s, is_active=%s>' % (
+            return '<gpiozero.%s object on pin %r, active_high=%s, is_active=%s>' % (
                 self.__class__.__name__, self.pin, self.active_high, self.is_active)
         except:
             return super(OutputDevice, self).__repr__()
@@ -166,7 +148,7 @@ class DigitalOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_led, args=(on_time, off_time, n)
+            target=self._blink_device, args=(on_time, off_time, n)
         )
         self._blink_thread.start()
         if not background:
@@ -178,7 +160,7 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_led(self, on_time, off_time, n):
+    def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
         for i in iterable:
             self._write(True)
@@ -285,39 +267,33 @@ class PWMOutputDevice(OutputDevice):
         to 100Hz.
     """
     def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
-        self._pwm = None
         self._blink_thread = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceError("initial_value must be between 0 and 1")
         super(PWMOutputDevice, self).__init__(pin, active_high)
         try:
-            self._pwm = GPIO.PWM(self.pin, frequency)
-            self._value = initial_value
-            if not active_high:
-                initial_value = 1 - initial_value
-            self._pwm.start(100 * initial_value)
-            self._frequency = frequency
+            # XXX need a way of setting these together
+            self.pin.frequency = frequency
+            self.value = initial_value
         except:
             self.close()
             raise
 
     def close(self):
-        if self._pwm:
-            # Ensure we wipe out the PWM object so that re-runs don't attempt
-            # to re-stop the PWM thread (otherwise, the fact that close is
-            # called from __del__ can easily result in us stopping the PWM
-            # on *another* instance on the same pin)
-            p = self._pwm
-            self._pwm = None
-            p.stop()
+        self._stop_blink()
+        try:
+            self.pin.frequency = None
+        except AttributeError:
+            # If the pin's already None, ignore the exception
+            pass
         super(PWMOutputDevice, self).close()
 
     def _read(self):
         self._check_open()
         if self.active_high:
-            return self._value
+            return self.pin.state
         else:
-            return 1 - self._value
+            return 1 - self.pin.state
 
     def _write(self, value):
         if not self.active_high:
@@ -325,11 +301,10 @@ class PWMOutputDevice(OutputDevice):
         if not 0 <= value <= 1:
             raise OutputDeviceError("PWM value must be between 0 and 1")
         try:
-            self._pwm.ChangeDutyCycle(value * 100)
+            self.pin.state = value
         except AttributeError:
             self._check_open()
             raise
-        self._value = value
 
     @property
     def value(self):
@@ -360,7 +335,7 @@ class PWMOutputDevice(OutputDevice):
         toggle it to 0.9, and so on.
         """
         self._stop_blink()
-        self.value = 1.0 - self.value
+        self.value = 1 - self.value
 
     @property
     def is_active(self):
@@ -368,7 +343,7 @@ class PWMOutputDevice(OutputDevice):
         Returns ``True`` if the device is currently active (:attr:`value` is
         non-zero) and ``False`` otherwise.
         """
-        return self.value > 0.0
+        return self.value != 0
 
     @property
     def frequency(self):
@@ -376,12 +351,11 @@ class PWMOutputDevice(OutputDevice):
         The frequency of the pulses used with the PWM device, in Hz. The
         default is 100Hz.
         """
-        return self._frequency
+        return self.pin.frequency
 
     @frequency.setter
     def frequency(self, value):
-        self._pwm.ChangeFrequency(value)
-        self._frequency = value
+        self.pin.frequency = value
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
@@ -412,7 +386,7 @@ class PWMOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_led,
+            target=self._blink_device,
             args=(on_time, off_time, fade_in_time, fade_out_time, n)
         )
         self._blink_thread.start()
@@ -425,7 +399,7 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_led(
+    def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
         sequence = []
         if fade_in_time > 0:
@@ -484,11 +458,12 @@ PWMLED.is_lit = PWMLED.is_active
 
 
 def _led_property(index, doc=None):
-    return property(
-        lambda self: getattr(self._leds[index], 'value'),
-        lambda self, value: setattr(self._leds[index], 'value', value),
-        doc
-    )
+    def getter(self):
+        return self._leds[index].value
+    def setter(self, value):
+        self._stop_blink()
+        self._leds[index].value = value
+    return property(getter, setter, doc=doc)
 
 
 class RGBLED(SourceMixin, CompositeDevice):
@@ -518,15 +493,22 @@ class RGBLED(SourceMixin, CompositeDevice):
         The GPIO pin that controls the blue component of the RGB LED.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set the GPIOs to
-        HIGH. If ``False``, the :meth:`on` method will set the GPIOs to LOW
-        (the :meth:`off` method always does the opposite).
+        Set to ``True`` (the default) for common cathode RGB LEDs. If you are
+        using a common anode RGB LED, set this to ``False``.
+
+    :param bool initial_value:
+        The initial color for the LED. Defaults to black ``(0, 0, 0)``.
     """
-    def __init__(self, red=None, green=None, blue=None, active_high=True):
+    def __init__(
+            self, red=None, green=None, blue=None, active_high=True,
+            initial_value=(0, 0, 0)):
+        self._leds = ()
+        self._blink_thread = None
         if not all([red, green, blue]):
             raise OutputDeviceError('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
         self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
+        self.value = initial_value
 
     red = _led_property(0)
     green = _led_property(1)
@@ -555,25 +537,118 @@ class RGBLED(SourceMixin, CompositeDevice):
         """
         return self.value != (0, 0, 0)
 
+    is_lit = is_active
     color = value
 
     def on(self):
         """
-        Turn the device on. This equivalent to setting the device color to
-        white ``(1, 1, 1)``.
+        Turn the LED on. This equivalent to setting the LED color to white
+        ``(1, 1, 1)``.
         """
         self.value = (1, 1, 1)
 
     def off(self):
         """
-        Turn the device off. This is equivalent to setting the device color
-        to black ``(0, 0, 0)``.
+        Turn the LED off. This is equivalent to setting the LED color to black
+        ``(0, 0, 0)``.
         """
         self.value = (0, 0, 0)
 
+    def toggle(self):
+        """
+        Toggle the state of the device. If the device is currently off
+        (:attr:`value` is ``(0, 0, 0)``), this changes it to "fully" on
+        (:attr:`value` is ``(1, 1, 1)``).  If the device has a specific color,
+        this method inverts the color.
+        """
+        r, g, b = self.value
+        self.value = (1 - r, 1 - g, 1 - b)
+
     def close(self):
+        self._stop_blink()
         for led in self._leds:
             led.close()
+
+    def blink(
+            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+        """
+        Make the device turn on and off repeatedly.
+
+        :param float on_time:
+            Number of seconds on. Defaults to 1 second.
+
+        :param float off_time:
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0.
+
+        :param tuple on_color:
+            The color to use when the LED is "on". Defaults to white.
+
+        :param tuple off_color:
+            The color to use when the LED is "off". Defaults to black.
+
+        :param int n:
+            Number of times to blink; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_device,
+            args=(on_time, off_time, fade_in_time, fade_out_time, on_color, off_color, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_device(
+            self, on_time, off_time, fade_in_time, fade_out_time, on_color,
+            off_color, n, fps=50):
+        # Define some simple lambdas to perform linear interpolation between
+        # off_color and on_color
+        lerp = lambda t, fade_in: tuple(
+            (1 - t) * off + t * on
+            if fade_in else
+            (1 - t) * on + t * off
+            for off, on in zip(off_color, on_color)
+            )
+        sequence = []
+        if fade_in_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_in_time, True), 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
+        sequence.append((on_color, on_time))
+        if fade_out_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_out_time, False), 1 / fps)
+                for i in range(int(fps * fade_out_time))
+                ]
+        sequence.append((off_color, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for value, delay in sequence:
+            self._leds[0].value, self._leds[1].value, self._leds[2].value = value
+            if self._blink_thread.stopping.wait(delay):
+                break
 
 
 class Motor(SourceMixin, CompositeDevice):

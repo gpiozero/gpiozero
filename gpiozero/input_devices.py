@@ -13,7 +13,6 @@ from functools import wraps
 from time import sleep, time
 from threading import Event
 
-from RPi import GPIO
 from spidev import SpiDev
 
 from .exc import InputDeviceError, GPIODeviceError, GPIODeviceClosed
@@ -39,39 +38,18 @@ class InputDevice(GPIODevice):
         ``False`` (the default), the pin will be pulled low.
     """
     def __init__(self, pin=None, pull_up=False):
-        if pin in (2, 3) and not pull_up:
-            raise InputDeviceError(
-                'GPIO pins 2 and 3 are fitted with physical pull up '
-                'resistors; you cannot initialize them with pull_up=False'
-            )
-        # _pull_up should be assigned first as __repr__ relies upon it to
-        # support the case where __repr__ is called during debugging of an
-        # instance that has failed to initialize (due to an exception in the
-        # super-class __init__)
-        self._pull_up = pull_up
         super(InputDevice, self).__init__(pin)
-        self._active_edge = GPIO.FALLING if pull_up else GPIO.RISING
-        self._inactive_edge = GPIO.RISING if pull_up else GPIO.FALLING
-        self._active_state = GPIO.LOW if pull_up else GPIO.HIGH
-        self._inactive_state = GPIO.HIGH if pull_up else GPIO.LOW
-        pull = GPIO.PUD_UP if pull_up else GPIO.PUD_DOWN
-
         try:
-            # NOTE: catch_warnings isn't thread-safe but hopefully no-one's
-            # messing around with GPIO init within background threads...
-            with warnings.catch_warnings(record=True) as w:
-                GPIO.setup(pin, GPIO.IN, pull)
-            # The only warning we want to squash is a RuntimeWarning that is
-            # thrown when setting pins 2 or 3. Anything else should be replayed
-            for warning in w:
-                if warning.category != RuntimeWarning or pin not in (2, 3):
-                    warnings.showwarning(
-                        warning.message, warning.category, warning.filename,
-                        warning.lineno, warning.file, warning.line
-                    )
+            if self.pin.function != 'input':
+                self.pin.function = 'input'
+            pull = 'up' if pull_up else 'down'
+            if self.pin.pull != pull:
+                self.pin.pull = pull
         except:
             self.close()
             raise
+        self._active_state = False if pull_up else True
+        self._inactive_state = True if pull_up else False
 
     @property
     def pull_up(self):
@@ -79,11 +57,11 @@ class InputDevice(GPIODevice):
         If ``True``, the device uses a pull-up resistor to set the GPIO pin
         "high" by default. Defaults to ``False``.
         """
-        return self._pull_up
+        return self.pin.pull == 'up'
 
     def __repr__(self):
         try:
-            return "<gpiozero.%s object on pin=%d, pull_up=%s, is_active=%s>" % (
+            return "<gpiozero.%s object on pin %r, pull_up=%s, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.pull_up, self.is_active)
         except:
             return super(InputDevice, self).__repr__()
@@ -245,19 +223,14 @@ class DigitalInputDevice(WaitableInputDevice):
     def __init__(self, pin=None, pull_up=False, bounce_time=None):
         super(DigitalInputDevice, self).__init__(pin, pull_up)
         try:
-            # Yes, that's really the default bouncetime in RPi.GPIO...
-            GPIO.add_event_detect(
-                self.pin, GPIO.BOTH, callback=self._fire_events,
-                bouncetime=-666 if bounce_time is None else int(bounce_time * 1000)
-            )
+            self.pin.bounce = bounce_time
+            self.pin.edges = 'both'
+            self.pin.when_changed = self._fire_events
             # Call _fire_events once to set initial state of events
-            super(DigitalInputDevice, self)._fire_events()
+            self._fire_events()
         except:
             self.close()
             raise
-
-    def _fire_events(self, channel):
-        super(DigitalInputDevice, self)._fire_events()
 
 
 class SmoothedInputDevice(WaitableInputDevice):
@@ -565,9 +538,9 @@ class LightSensor(SmoothedInputDevice):
         try:
             self._charge_time_limit = charge_time_limit
             self._charged = Event()
-            GPIO.add_event_detect(
-                self.pin, GPIO.RISING, lambda channel: self._charged.set()
-            )
+            self.pin.edges = 'rising'
+            self.pin.bounce = None
+            self.pin.when_changed = self._charged.set
             self._queue.start()
         except:
             self.close()
@@ -579,13 +552,13 @@ class LightSensor(SmoothedInputDevice):
 
     def _read(self):
         # Drain charge from the capacitor
-        GPIO.setup(self.pin, GPIO.OUT)
-        GPIO.output(self.pin, GPIO.LOW)
+        self.pin.function = 'output'
+        self.pin.state = False
         sleep(0.1)
         # Time the charging of the capacitor
         start = time()
         self._charged.clear()
-        GPIO.setup(self.pin, GPIO.IN)
+        self.pin.function = 'input'
         self._charged.wait(self.charge_time_limit)
         return (
             1.0 - min(self.charge_time_limit, time() - start) /

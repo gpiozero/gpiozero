@@ -22,6 +22,13 @@ LED Board
     :inherited-members:
     :members:
 
+LED Bar Graph
+=============
+
+.. autoclass:: LEDBarGraph(\*pins, initial_value=0)
+    :inherited-members:
+    :members:
+
 Traffic Lights
 ==============
 
@@ -33,6 +40,13 @@ PiLITEr
 =======
 
 .. autoclass:: PiLiter
+    :inherited-members:
+    :members:
+
+PiLITEr Bar Graph
+=================
+
+.. autoclass:: PiLiterBarGraph
     :inherited-members:
     :members:
 
@@ -75,6 +89,13 @@ Ryanteck MCB Robot
 ==================
 
 .. autoclass:: RyanteckRobot
+    :inherited-members:
+    :members:
+
+CamJam #3 Kit Robot
+===================
+
+.. autoclass:: CamJamKitRobot
     :inherited-members:
     :members:
 

@@ -20,7 +20,7 @@ with physical computing::
     from gpiozero import LED
     from time import sleep
 
-    led = LED(2)
+    led = LED(17)
 
     while True:
         led.on()
@@ -34,7 +34,7 @@ together::
     from gpiozero import LED, Button
     from signal import pause
 
-    led = LED(2)
+    led = LED(17)
     button = Button(3)
 
     button.when_pressed = led.on

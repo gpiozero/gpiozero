@@ -11,14 +11,67 @@ except ImportError:
 
 from time import sleep
 from collections import namedtuple
+from itertools import repeat, cycle, chain
 
 from .exc import InputDeviceError, OutputDeviceError
 from .input_devices import Button
 from .output_devices import LED, PWMLED, Buzzer, Motor
-from .devices import CompositeDevice, SourceMixin
+from .devices import GPIOThread, CompositeDevice, SourceMixin
 
 
-class LEDBoard(SourceMixin, CompositeDevice):
+class LEDCollection(SourceMixin, CompositeDevice):
+    """
+    Abstract base class for :class:`LEDBoard` and :class:`LEDBarGraph`.
+    """
+
+    def __init__(self, *pins, **kwargs):
+        self._blink_thread = None
+        super(LEDCollection, self).__init__()
+        pwm = kwargs.get('pwm', False)
+        LEDClass = PWMLED if pwm else LED
+        self._leds = tuple(LEDClass(pin) for pin in pins)
+
+    def close(self):
+        for led in self.leds:
+            led.close()
+
+    @property
+    def closed(self):
+        return all(led.closed for led in self.leds)
+
+    @property
+    def leds(self):
+        """
+        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
+        the instance.
+        """
+        return self._leds
+
+    def on(self):
+        """
+        Turn all the LEDs on.
+        """
+        for led in self.leds:
+            led.on()
+
+    def off(self):
+        """
+        Turn all the LEDs off.
+        """
+        for led in self.leds:
+            led.off()
+
+    def toggle(self):
+        """
+        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
+        off, turn it on.
+        """
+        for led in self.leds:
+            led.toggle()
+
+
+
+class LEDBoard(LEDCollection):
     """
     Extends :class:`CompositeDevice` and represents a generic LED board or
     collection of LEDs.
@@ -40,27 +93,10 @@ class LEDBoard(SourceMixin, CompositeDevice):
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
     """
-    def __init__(self, *pins, **kwargs):
-        super(LEDBoard, self).__init__()
-        pwm = kwargs.get('pwm', False)
-        LEDClass = PWMLED if pwm else LED
-        self._leds = tuple(LEDClass(pin) for pin in pins)
 
     def close(self):
-        for led in self.leds:
-            led.close()
-
-    @property
-    def closed(self):
-        return all(led.closed for led in self.leds)
-
-    @property
-    def leds(self):
-        """
-        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
-        the instance.
-        """
-        return self._leds
+        self._stop_blink()
+        super(LEDBoard, self).close()
 
     @property
     def value(self):
@@ -72,67 +108,54 @@ class LEDBoard(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
+        self._stop_blink()
         for l, v in zip(self.leds, value):
             l.value = v
 
-    def on(self, *args, **kwargs):
-        """
-        Turn all the LEDs on.
-        """
+    def on(self, *args):
+        self._stop_blink()
         if args:
-            others_off = kwargs.get('others_off', False)
-            if others_off:
-                for index, led in enumerate(self.leds):
-                    if index in args:
-                        led.on()
-                    else:
-                        led.off()
-            else:
-                for index in args:
-                    self.leds[index].on()
-        else:
-            for led in self.leds:
+            for led in args:
                 led.on()
-
-    def off(self, *args, **kwargs):
-        """
-        Turn all the LEDs off.
-        """
-        if args:
-            others_on = kwargs.get('others_on', False)
-            if others_on:
-                for index, led in enumerate(self.leds):
-                    if index in args:
-                        led.off()
-                    else:
-                        led.on()
-            else:
-                for index in args:
-                    self.leds[index].off()
         else:
-            for led in self.leds:
+            super(LEDBoard, self).on()
+
+    def off(self, *args):
+        self._stop_blink()
+        if args:
+            for led in args:
                 led.off()
+        else:
+            super(LEDBoard, self).off()
 
     def toggle(self):
-        """
-        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
-        off, turn it on.
-        """
-        for led in self.leds:
-            led.toggle()
+        self._stop_blink()
+        super(LEDBoard, self).toggle()
 
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
+    def blink(
+            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            n=None, background=True):
         """
         Make all the LEDs turn on and off repeatedly.
 
         :param float on_time:
-            Number of seconds on
+            Number of seconds on. Defaults to 1 second.
 
         :param float off_time:
-            Number of seconds off
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param int n:
-            Number of times to blink; ``None`` means forever
+            Number of times to blink; ``None`` (the default) means forever.
 
         :param bool background:
             If ``True``, start a background thread to continue blinking and
@@ -140,14 +163,141 @@ class LEDBoard(SourceMixin, CompositeDevice):
             finished (warning: the default value of *n* will result in this
             method never returning).
         """
-        # XXX This isn't going to work for background=False
-        for led in self.leds:
-            led.blink(on_time, off_time, n, background)
+        if isinstance(self.leds[0], LED):
+            if fade_in_time:
+                raise ValueError('fade_in_time must be 0 with non-PWM LEDs')
+            if fade_out_time:
+                raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_device,
+            args=(on_time, off_time, fade_in_time, fade_out_time, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+        sequence = []
+        if fade_in_time > 0:
+            sequence += [
+                (i * (1 / fps) / fade_in_time, 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
+        sequence.append((1, on_time))
+        if fade_out_time > 0:
+            sequence += [
+                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
+                for i in range(int(fps * fade_out_time))
+                ]
+        sequence.append((0, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for value, delay in sequence:
+            for led in self.leds:
+                led.value = value
+            if self._blink_thread.stopping.wait(delay):
+                break
+
+
+class LEDBarGraph(LEDCollection):
+    """
+    Extends :class:`CompositeDevice` to control a line of LEDs representing a
+    bar graph. Positive values (0 to 1) light the LEDs from first to last.
+    Negative values (-1 to 0) light the LEDs from last to first.
+
+    The following example turns on all the LEDs on a board containing 5 LEDs
+    attached to GPIO pins 2 through 6::
+
+        from gpiozero import LEDBarGraph
+
+        graph = LEDBarGraph(2, 3, 4, 5, 6)
+        graph.value = 2/5  # Light the first two LEDs only
+        graph.value = -2/5 # Light the last two LEDs only
+        graph.off()
+
+    As with other output devices, :attr:`source` and :attr:`values` are
+    supported::
+
+        from gpiozero import LEDBarGraph, MCP3008
+        from signal import pause
+
+        graph = LEDBarGraph(2, 3, 4, 5, 6)
+        pot = MCP3008(channel=0)
+        graph.source = pot.values
+        pause()
+
+    :param int \*pins:
+        Specify the GPIO pins that the LEDs of the bar graph are attached to.
+        You can designate as many pins as necessary.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1.  Defaults to 0.0.
+    """
+
+    def __init__(self, *pins, **kwargs):
+        super(LEDBarGraph, self).__init__(*pins, pwm=False)
+        initial_value = kwargs.get('initial_value', 0)
+        self.value = initial_value
+
+    @property
+    def value(self):
+        """
+        The value of the LED bar graph. When no LEDs are lit, the value is 0.
+        When all LEDs are lit, the value is 1. Values between 0 and 1
+        light LEDs linearly from first to last. Values between 0 and -1
+        light LEDs linearly from last to first.
+
+        To light a particular number of LEDs, simply divide that number by
+        the number of LEDs. For example, if your graph contains 3 LEDs, the
+        following will light the first::
+
+            from gpiozero import LEDBarGraph
+
+            graph = LEDBarGraph(12, 16, 19)
+            graph.value = 1/3
+
+        .. note::
+
+            Setting value to -1 will light all LEDs. However, querying it
+            subsequently will return 1 as both representations are the same in
+            hardware.
+        """
+        for index, led in enumerate(self.leds):
+            if not led.is_lit:
+                break
+        else:
+            index = len(self.leds)
+        if not index:
+            for index, led in enumerate(reversed(self.leds)):
+                if not led.is_lit:
+                    break
+            index = -index
+        return index / len(self.leds)
+
+    @value.setter
+    def value(self, value):
+        count = len(self.leds)
+        if value >= 0:
+            for index, led in enumerate(self.leds, start=1):
+                led.value = value >= (index / count)
+        else:
+            for index, led in enumerate(reversed(self.leds), start=1):
+                led.value = value <= -(index / count)
 
 
 class PiLiter(LEDBoard):
     """
-    Extends :class:`LEDBoard` for the Ciseco Pi-LITEr: a strip of 8 very bright
+    Extends :class:`LEDBoard` for the `Ciseco Pi-LITEr`_: a strip of 8 very bright
     LEDs.
 
     The Pi-LITEr pins are fixed and therefore there's no need to specify them
@@ -163,9 +313,36 @@ class PiLiter(LEDBoard):
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
+
+    .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
     def __init__(self, pwm=False):
         super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
+
+
+class PiLiterBarGraph(LEDBarGraph):
+    """
+    Extends :class:`LEDBarGraph` to treat the `Ciseco Pi-LITEr`_ as an
+    8-segment bar graph.
+
+    The Pi-LITEr pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example sets the graph value
+    to 0.5::
+
+        from gpiozero import PiLiterBarGraph
+
+        graph = PiLiterBarGraph()
+        graph.value = 0.5
+
+    :param bool initial_value:
+        The initial value of the graph given as a float between -1 and +1.
+        Defaults to 0.0.
+
+    .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
+    """
+    def __init__(self, initial_value=0):
+        super(PiLiterBarGraph, self).__init__(
+                4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
 
 
 TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
@@ -578,8 +755,19 @@ class RyanteckRobot(Robot):
 
 class CamJamKitRobot(Robot):
     """
-    CamJam EduKit 3 Robot. Generic robot controller with pre-configured pin
-    numbers.
+    Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
+
+    The CamJam robot controller pins are fixed and therefore there's no need
+    to specify them when constructing this class. The following example turns
+    the robot left::
+
+        from gpiozero import CamJamKitRobot
+
+        robot = CamJamKitRobot()
+        robot.left()
+
+    .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+

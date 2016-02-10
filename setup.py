@@ -22,14 +22,14 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.0.0'
+__version__      = '1.1.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Education",
     "Intended Audience :: Developers",
     "Topic :: Education",
@@ -45,7 +45,6 @@ __keywords__ = [
 ]
 
 __requires__ = [
-    'RPi.GPIO',
     'spidev',
 ]
 
