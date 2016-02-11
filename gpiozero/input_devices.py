@@ -778,13 +778,12 @@ class MCP33xx(MCP3xxx):
 
 class MCP3001(MCP3xxx):
     """
-    The `MCP3001`_ is a 10-bit analog to digital converter with 2 channels
-    (0-3).
+    The `MCP3001`_ is a 10-bit analog to digital converter with 1 channel
 
     .. _MCP3001: http://www.farnell.com/datasheets/630400.pdf
     """
-    def __init__(self, device=0, differential=False):
-        super(MCP3001, self).__init__(0, device, 10, differential)
+    def __init__(self, device=0):
+        super(MCP3001, self).__init__(0, device, 10, differential=True)
 
 
 class MCP3002(MCP3xxx):
@@ -828,13 +827,12 @@ class MCP3008(MCP3xxx):
 
 class MCP3201(MCP3xxx):
     """
-    The `MCP3201`_ is a 12-bit analog to digital converter with 2 channels
-    (0-1).
+    The `MCP3201`_ is a 12-bit analog to digital converter with 1 channel
 
     .. _MCP3201: http://www.farnell.com/datasheets/1669366.pdf
     """
-    def __init__(self, device=0, differential=False):
-        super(MCP3201, self).__init__(0, device, 12, differential)
+    def __init__(self, device=0):
+        super(MCP3201, self).__init__(0, device, 12, differential=True)
 
 
 class MCP3202(MCP3xxx):
