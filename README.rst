@@ -6,6 +6,10 @@ gpiozero
     :target: https://badge.fury.io/py/gpiozero
     :alt: Latest Version
 
+.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+    :alt: Build Tests
+
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
