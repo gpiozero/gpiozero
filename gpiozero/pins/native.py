@@ -17,7 +17,7 @@ from threading import Thread, Event, Lock
 from collections import Counter
 
 from . import Pin, PINS_CLEANUP
-from .exc import (
+from ..exc import (
     PinInvalidPull,
     PinInvalidEdges,
     PinInvalidFunction,
