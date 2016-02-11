@@ -28,8 +28,12 @@ class LEDCollection(SourceMixin, CompositeDevice):
         self._blink_thread = None
         super(LEDCollection, self).__init__()
         pwm = kwargs.get('pwm', False)
+        active_high = kwargs.get('active_high', True)
+        initial_value = kwargs.get('initial_value', False)
         LEDClass = PWMLED if pwm else LED
-        self._leds = tuple(LEDClass(pin) for pin in pins)
+        self._leds = tuple(
+            LEDClass(pin, active_high, initial_value) for pin in pins
+        )
 
     def close(self):
         for led in self.leds:
@@ -762,4 +766,3 @@ class CamJamKitRobot(Robot):
     """
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
-
