@@ -776,6 +776,30 @@ class MCP33xx(MCP3xxx):
         return [16 + [8, 0][self.differential] + self.channel, 0, 0]
 
 
+class MCP3001(MCP3xxx):
+    """
+    The `MCP3001`_ is a 10-bit analog to digital converter with 2 channels
+    (0-3).
+
+    .. _MCP3001: http://www.farnell.com/datasheets/630400.pdf
+    """
+    def __init__(self, device=0, differential=False):
+        super(MCP3001, self).__init__(0, device, 10, differential)
+
+
+class MCP3002(MCP3xxx):
+    """
+    The `MCP3002`_ is a 10-bit analog to digital converter with 2 channels
+    (0-3).
+
+    .. _MCP3002: http://www.farnell.com/datasheets/1599363.pdf
+    """
+    def __init__(self, channel=0, device=0, differential=False):
+        if not 0 <= channel < 2:
+            raise InputDeviceError('channel must be 0 or 1')
+        super(MCP3002, self).__init__(channel, device, 10, differential)
+
+
 class MCP3004(MCP3xxx):
     """
     The `MCP3004`_ is a 10-bit analog to digital converter with 4 channels
@@ -800,6 +824,30 @@ class MCP3008(MCP3xxx):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
         super(MCP3008, self).__init__(channel, device, 10, differential)
+
+
+class MCP3201(MCP3xxx):
+    """
+    The `MCP3201`_ is a 12-bit analog to digital converter with 2 channels
+    (0-1).
+
+    .. _MCP3201: http://www.farnell.com/datasheets/1669366.pdf
+    """
+    def __init__(self, device=0, differential=False):
+        super(MCP3201, self).__init__(0, device, 12, differential)
+
+
+class MCP3202(MCP3xxx):
+    """
+    The `MCP3202`_ is a 12-bit analog to digital converter with 2 channels
+    (0-1).
+
+    .. _MCP3202: http://www.farnell.com/datasheets/1669376.pdf
+    """
+    def __init__(self, channel=0, device=0, differential=False):
+        if not 0 <= channel < 2:
+            raise InputDeviceError('channel must be 0 or 1')
+        super(MCP3202, self).__init__(channel, device, 12, differential)
 
 
 class MCP3204(MCP3xxx):
@@ -873,4 +921,3 @@ class MCP3304(MCP33xx):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
         super(MCP3304, self).__init__(channel, device, differential)
-
