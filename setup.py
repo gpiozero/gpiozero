@@ -49,7 +49,17 @@ __requires__ = [
 ]
 
 __extra_requires__ = {
+    'doc':   ['sphinx'],
+    'test':  ['pytest', 'coverage', 'mock'],
 }
+
+if sys.version_info[:2] == (3, 2):
+    # Particular versions are required for Python 3.2 compatibility
+    __extra_requires__['doc'].extend([
+        'Jinja2<2.7',
+        'MarkupSafe<0.16',
+        ])
+    __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
 }

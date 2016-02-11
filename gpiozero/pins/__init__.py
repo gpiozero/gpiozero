@@ -6,7 +6,7 @@ from __future__ import (
     )
 str = type('')
 
-from .exc import (
+from ..exc import (
     PinFixedFunction,
     PinSetInput,
     PinFixedPull,

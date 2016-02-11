@@ -5,7 +5,20 @@ from __future__ import (
     division,
 )
 
-from .pins.exc import (
+from .pins import (
+    Pin,
+)
+from .exc import (
+    GPIOZeroError,
+    CompositeDeviceError,
+    GPIODeviceError,
+    GPIODeviceClosed,
+    GPIOPinInUse,
+    GPIOPinMissing,
+    GPIOBadQueueLen,
+    InputDeviceError,
+    OutputDeviceError,
+    OutputDeviceBadValue,
     PinError,
     PinFixedFunction,
     PinInvalidFunction,
@@ -18,15 +31,6 @@ from .pins.exc import (
     PinPWMError,
     PinPWMUnsupported,
     PinPWMFixedValue,
-)
-from .pins import (
-    Pin,
-)
-from .exc import (
-    GPIODeviceClosed,
-    GPIODeviceError,
-    InputDeviceError,
-    OutputDeviceError,
 )
 from .devices import (
     GPIODevice,

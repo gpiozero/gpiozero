@@ -9,7 +9,7 @@ str = type('')
 from RPi import GPIO
 
 from . import Pin
-from .exc import (
+from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
