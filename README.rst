@@ -76,8 +76,7 @@ This project is being developed on `GitHub`_. Join in:
 * Provide examples we can use as `recipes`_
 * Contribute to the code
 
-Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org or
-add to the `Google Doc`_.
+Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org
 
 Contributors
 ============
@@ -93,7 +92,6 @@ Contributors
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
-.. _Google Doc: https://goo.gl/8zJLif
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
