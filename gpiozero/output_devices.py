@@ -10,7 +10,7 @@ from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
-from .exc import OutputDeviceError, GPIODeviceError, GPIODeviceClosed
+from .exc import OutputDeviceBadValue, GPIOPinMissing, GPIODeviceClosed
 from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
 
 
@@ -24,7 +24,7 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is ``None`` a :exc:`GPIODeviceError` will be raised.
+        this is ``None`` a :exc:`GPIOPinMissing` will be raised.
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set the GPIO to
@@ -54,7 +54,7 @@ class OutputDevice(SourceMixin, GPIODevice):
             value = not value
         try:
             self.pin.state = bool(value)
-        except ValueError:
+        except AttributeError:
             self._check_open()
             raise
 
@@ -269,7 +269,7 @@ class PWMOutputDevice(OutputDevice):
     def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
         self._blink_thread = None
         if not 0 <= initial_value <= 1:
-            raise OutputDeviceError("initial_value must be between 0 and 1")
+            raise OutputDeviceBadValue("initial_value must be between 0 and 1")
         super(PWMOutputDevice, self).__init__(pin, active_high)
         try:
             # XXX need a way of setting these together
@@ -299,7 +299,7 @@ class PWMOutputDevice(OutputDevice):
         if not self.active_high:
             value = 1 - value
         if not 0 <= value <= 1:
-            raise OutputDeviceError("PWM value must be between 0 and 1")
+            raise OutputDeviceBadValue("PWM value must be between 0 and 1")
         try:
             self.pin.state = value
         except AttributeError:
@@ -505,7 +505,7 @@ class RGBLED(SourceMixin, CompositeDevice):
         self._leds = ()
         self._blink_thread = None
         if not all([red, green, blue]):
-            raise OutputDeviceError('red, green, and blue pins must be provided')
+            raise GPIOPinMissing('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
         self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
         self.value = initial_value
@@ -680,7 +680,7 @@ class Motor(SourceMixin, CompositeDevice):
     """
     def __init__(self, forward=None, backward=None):
         if not all([forward, backward]):
-            raise OutputDeviceError(
+            raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
         super(Motor, self).__init__()
@@ -722,7 +722,7 @@ class Motor(SourceMixin, CompositeDevice):
     @value.setter
     def value(self, value):
         if not -1 <= value <= 1:
-            raise OutputDeviceError("Motor value must be between -1 and 1")
+            raise OutputDeviceBadValue("Motor value must be between -1 and 1")
         if value > 0:
             self.forward(value)
         elif value < 0:

@@ -13,7 +13,7 @@ import RPIO
 import RPIO.PWM
 
 from . import Pin, PINS_CLEANUP
-from .exc import (
+from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,

@@ -13,7 +13,12 @@ from threading import Thread, Event, RLock
 from collections import deque
 from types import FunctionType
 
-from .exc import GPIODeviceError, GPIODeviceClosed, InputDeviceError
+from .exc import (
+    GPIOPinMissing,
+    GPIOPinInUse,
+    GPIODeviceClosed,
+    GPIOBadQueueLen,
+    )
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here
 # as it supports PWM, and all Pi revisions. If no third-party libraries are
@@ -203,7 +208,8 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is ``None`` a :exc:`GPIODeviceError` will be raised.
+        this is ``None``, :exc:`GPIOPinMissing` will be raised. If the pin is
+        already in use by another device, :exc:`GPIOPinInUse` will be raised.
     """
     def __init__(self, pin=None):
         super(GPIODevice, self).__init__()
@@ -212,12 +218,12 @@ class GPIODevice(ValuesMixin, GPIOBase):
         # value of pin until we've verified that it isn't already allocated
         self._pin = None
         if pin is None:
-            raise GPIODeviceError('No pin given')
+            raise GPIOPinMissing('No pin given')
         if isinstance(pin, int):
             pin = DefaultPin(pin)
         with _PINS_LOCK:
             if pin in _PINS:
-                raise GPIODeviceError(
+                raise GPIOPinInUse(
                     'pin %r is already in use by another gpiozero object' % pin
                 )
             _PINS.add(pin)
@@ -342,7 +348,7 @@ class GPIOQueue(GPIOThread):
         assert isinstance(parent, GPIODevice)
         super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:
-            raise InputDeviceError('queue_len must be at least one')
+            raise GPIOBadQueueLen('queue_len must be at least one')
         self.queue = deque(maxlen=queue_len)
         self.partial = partial
         self.sample_wait = sample_wait
