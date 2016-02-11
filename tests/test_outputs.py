@@ -7,13 +7,14 @@ from __future__ import (
 str = type('')
 
 
+import sys
+from time import sleep
 try:
     from math import isclose
 except ImportError:
     from gpiozero.compat import isclose
 
 import pytest
-from time import sleep
 
 from gpiozero.pins.mock import MockPin, MockPWMPin
 from gpiozero import *
@@ -85,6 +86,8 @@ def test_output_digital_toggle():
     assert not device.value
     assert not pin.state
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_blink_background():
     pin = MockPin(2)
     device = DigitalOutputDevice(pin)
@@ -98,6 +101,8 @@ def test_output_blink_background():
         (0.1, False)
         ])
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_blink_foreground():
     pin = MockPin(2)
     device = DigitalOutputDevice(pin)
@@ -198,6 +203,8 @@ def test_output_pwm_write_silly():
     with pytest.raises(AttributeError):
         device.off()
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_pwm_blink_background():
     pin = MockPWMPin(2)
     device = PWMOutputDevice(pin)
@@ -211,6 +218,8 @@ def test_output_pwm_blink_background():
         (0.1, 0)
         ])
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_pwm_blink_foreground():
     pin = MockPWMPin(2)
     device = PWMOutputDevice(pin)
@@ -223,6 +232,8 @@ def test_output_pwm_blink_foreground():
         (0.1, 0)
         ])
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_pwm_fade_background():
     pin = MockPWMPin(2)
     device = PWMOutputDevice(pin)
@@ -252,6 +263,8 @@ def test_output_pwm_fade_background():
         (0.02, 0),
         ])
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_output_pwm_fade_foreground():
     pin = MockPWMPin(2)
     device = PWMOutputDevice(pin)
@@ -326,6 +339,8 @@ def test_rgbled_toggle():
     assert not device.is_active
     assert device.value == (0, 0, 0)
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_rgbled_blink_background():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     device = RGBLED(r, g, b)
@@ -342,6 +357,8 @@ def test_rgbled_blink_background():
     g.assert_states_and_times(expected)
     b.assert_states_and_times(expected)
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_rgbled_blink_foreground():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     device = RGBLED(r, g, b)
@@ -357,6 +374,8 @@ def test_rgbled_blink_foreground():
     g.assert_states_and_times(expected)
     b.assert_states_and_times(expected)
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_rgbled_fade_background():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     device = RGBLED(r, g, b)
