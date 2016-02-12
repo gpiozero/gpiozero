@@ -156,6 +156,13 @@ class NativePin(Pin):
         use any class which requests PWM will raise an exception. This
         implementation is also experimental; we make no guarantees it will
         not eat your Pi for breakfast!
+
+    You can construct native pin instances manually like so::
+
+        from gpiozero.pins.native import NativePin
+        from gpiozero import LED
+
+        led = LED(NativePin(12))
     """
 
     _MEM = None

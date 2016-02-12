@@ -32,6 +32,13 @@ class RPIOPin(Pin):
         Pi 1's; the Raspberry Pi 2 Model B is *not* supported. Also note that
         root access is required so scripts must typically be run with ``sudo``.
 
+    You can construct RPIO pins manually like so::
+
+        from gpiozero.pins.rpio import RPIOPin
+        from gpiozero import LED
+
+        led = LED(RPIOPin(12))
+
     .. _RPIO: https://pythonhosted.org/RPIO/
     """
 
