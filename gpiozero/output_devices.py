@@ -414,7 +414,9 @@ class PWMOutputDevice(OutputDevice):
             this method never returning).
         """
         on_time = off_time = 0
-        self.blink(on_time, off_time, fade_in_time, fade_out_time, n, background)
+        self.blink(
+            on_time, off_time, fade_in_time, fade_out_time, n, background
+        )
 
     def _stop_blink(self):
         if self._blink_thread:
