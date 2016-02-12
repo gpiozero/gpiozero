@@ -394,9 +394,26 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.join()
             self._blink_thread = None
 
-    def pulse(
-            self, on_time=0, off_time=0, fade_in_time=1, fade_out_time=1,
-            n=None, background=True):
+    def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
+        """
+        Make the device fade in and out repeatedly.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 1.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 1.
+
+        :param int n:
+            Number of times to blink; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        on_time = off_time = 0
         self.blink(on_time, off_time, fade_in_time, fade_out_time, n, background)
 
     def _stop_blink(self):
