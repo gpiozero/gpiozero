@@ -443,6 +443,36 @@ level::
     pause()
 
 
+Distance sensor
+===============
+
+.. IMAGE TBD
+
+Have a :class:`DistanceSensor` detect the distance to the nearest object::
+
+    from gpiozero import DistanceSensor
+    from time import sleep
+
+    sensor = DistanceSensor(23, 24)
+
+    while True:
+        print('Distance to nearest object is', sensor.distance, 'm')
+        sleep(1)
+
+Run a function when something gets near the sensor::
+
+    from gpiozero import DistanceSensor, LED
+    from signal import pause
+
+    sensor = DistanceSensor(23, 24, max_distance=1, threshold_distance=0.2)
+    led = LED(16)
+
+    sensor.when_in_range = led.on
+    sensor.when_out_of_range = led.off
+
+    pause()
+
+
 Motors
 ======
 
@@ -479,6 +509,19 @@ Make a :class:`Robot` drive around in (roughly) a square::
         sleep(10)
         robot.right()
         sleep(1)
+
+Make a robot with a distance sensor that runs away when things get within
+20cm of it::
+
+    from gpiozero import Robot, DistanceSensor
+    from signal import pause
+
+    sensor = DistanceSensor(23, 24, max_distance=1, threshold_distance=0.2)
+    robot = Robot(left=(4, 14), right=(17, 18))
+
+    sensor.when_in_range = robot.backward
+    sensor.when_out_of_range = robot.stop
+    pause()
 
 
 Button controlled robot
