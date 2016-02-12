@@ -10,14 +10,32 @@ str = type('')
 class GPIOZeroError(Exception):
     "Base class for all exceptions in GPIO Zero"
 
+class DeviceClosed(GPIOZeroError):
+    "Error raised when an operation is attempted on a closed device"
+
 class CompositeDeviceError(GPIOZeroError):
     "Base class for errors specific to the CompositeDevice hierarchy"
+
+class CompositeDeviceBadName(CompositeDeviceError, ValueError):
+    "Error raised when a composite device is constructed with a reserved name"
+
+class EnergenieSocketMissing(CompositeDeviceError, ValueError):
+    "Error raised when socket number is not specified"
+
+class EnergenieBadSocket(CompositeDeviceError, ValueError):
+    "Error raised when an invalid socket number is passed to :class:`Energenie`"
+
+class SPIError(GPIOZeroError):
+    "Base class for errors related to the SPI implementation"
+
+class SPIBadArgs(SPIError, ValueError):
+    "Error raised when invalid arguments are given while constructing :class:`SPIDevice`"
 
 class GPIODeviceError(GPIOZeroError):
     "Base class for errors specific to the GPIODevice hierarchy"
 
 class GPIODeviceClosed(GPIODeviceError):
-    "Error raised when an operation is attempted on a closed device"
+    "Deprecated descendent of :exc:`DeviceClosed`"
 
 class GPIOPinInUse(GPIODeviceError):
     "Error raised when attempting to use a pin already in use by another device"
@@ -81,4 +99,13 @@ class PinPWMUnsupported(PinPWMError, AttributeError):
 
 class PinPWMFixedValue(PinPWMError, AttributeError):
     "Error raised when attempting to initialize PWM on an input pin"
+
+class GPIOZeroWarning(Warning):
+    "Base class for all warnings in GPIO Zero"
+
+class SPIWarning(GPIOZeroWarning):
+    "Base class for warnings related to the SPI implementation"
+
+class SPISoftwareFallback(SPIWarning):
+    "Warning raised when falling back to the software implementation"
 

@@ -12,36 +12,84 @@ except ImportError:
 from time import sleep
 from collections import namedtuple
 from itertools import repeat, cycle, chain
+from threading import Lock
 
-from .exc import InputDeviceError, OutputDeviceError
+from .exc import (
+    GPIOPinMissing,
+    EnergenieSocketMissing,
+    EnergenieBadSocket,
+    )
 from .input_devices import Button
-from .output_devices import LED, PWMLED, Buzzer, Motor
-from .devices import GPIOThread, CompositeDevice, SourceMixin
+from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor
+from .threads import GPIOThread
+from .devices import Device, CompositeDevice, SharedMixin, SourceMixin
 
 
-class LEDCollection(SourceMixin, CompositeDevice):
+class CompositeOutputDevice(SourceMixin, CompositeDevice):
     """
-    Abstract base class for :class:`LEDBoard` and :class:`LEDBarGraph`.
+    Extends :class:`CompositeDevice` with :meth:`on`, :meth:`off`, and
+    :meth:`toggle` methods for controlling subordinate output devices.  Also
+    extends :attr:`value` to be writeable.
     """
 
-    def __init__(self, *pins, **kwargs):
-        self._blink_thread = None
-        super(LEDCollection, self).__init__()
-        pwm = kwargs.get('pwm', False)
-        active_high = kwargs.get('active_high', True)
-        initial_value = kwargs.get('initial_value', False)
-        LEDClass = PWMLED if pwm else LED
-        self._leds = tuple(
-            LEDClass(pin, active_high, initial_value) for pin in pins
-        )
+    def on(self):
+        """
+        Turn all the output devices on.
+        """
+        for device in self.all:
+            if isinstance(device, OutputDevice):
+                device.on()
 
-    def close(self):
-        for led in self.leds:
-            led.close()
+    def off(self):
+        """
+        Turn all the output devices off.
+        """
+        for device in self.all:
+            if isinstance(device, OutputDevice):
+                device.off()
+
+    def toggle(self):
+        """
+        Toggle all the output devices. For each device, if it's on, turn it
+        off; if it's off, turn it on.
+        """
+        for device in self.all:
+            if isinstance(device, OutputDevice):
+                device.toggle()
 
     @property
-    def closed(self):
-        return all(led.closed for led in self.leds)
+    def value(self):
+        """
+        A tuple containing a value for each subordinate device. This property
+        can also be set to update the state of all output subordinate devices.
+        """
+        return super(CompositeOutputDevice, self).value
+
+    @value.setter
+    def value(self, value):
+        for device, v in zip(self.all, value):
+            if isinstance(device, OutputDevice):
+                device.value = v
+            # Simply ignore values for non-output devices
+
+
+class LEDCollection(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice`. Abstract base class for
+    :class:`LEDBoard` and :class:`LEDBarGraph`.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._blink_thread = None
+        pwm = kwargs.pop('pwm', False)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', False)
+        order = kwargs.pop('_order', None)
+        LEDClass = PWMLED if pwm else LED
+        super(LEDCollection, self).__init__(
+            *(LEDClass(pin, active_high, initial_value) for pin in args),
+            _order=order,
+            **{name: LEDClass(pin, active_high, initial_value) for name, pin in kwargs.items()})
 
     @property
     def leds(self):
@@ -49,35 +97,12 @@ class LEDCollection(SourceMixin, CompositeDevice):
         A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
         the instance.
         """
-        return self._leds
-
-    def on(self):
-        """
-        Turn all the LEDs on.
-        """
-        for led in self.leds:
-            led.on()
-
-    def off(self):
-        """
-        Turn all the LEDs off.
-        """
-        for led in self.leds:
-            led.off()
-
-    def toggle(self):
-        """
-        Toggle all the LEDs. For each LED, if it's on, turn it off; if it's
-        off, turn it on.
-        """
-        for led in self.leds:
-            led.toggle()
-
+        return self.all
 
 
 class LEDBoard(LEDCollection):
     """
-    Extends :class:`CompositeDevice` and represents a generic LED board or
+    Extends :class:`LEDCollection` and represents a generic LED board or
     collection of LEDs.
 
     The following example turns on all the LEDs on a board containing 5 LEDs
@@ -96,25 +121,22 @@ class LEDBoard(LEDCollection):
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set all the
+        associates pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite).
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). The ``True``,
+        the device will be switched on initially.
     """
 
     def close(self):
         self._stop_blink()
         super(LEDBoard, self).close()
-
-    @property
-    def value(self):
-        """
-        A tuple containing a value for each LED on the board. This property can
-        also be set to update the state of all LEDs on the board.
-        """
-        return tuple(led.value for led in self._leds)
-
-    @value.setter
-    def value(self, value):
-        self._stop_blink()
-        for l, v in zip(self.leds, value):
-            l.value = v
 
     def on(self):
         self._stop_blink()
@@ -266,8 +288,12 @@ class LEDBarGraph(LEDCollection):
 
     def __init__(self, *pins, **kwargs):
         super(LEDBarGraph, self).__init__(*pins, pwm=False)
-        initial_value = kwargs.get('initial_value', 0)
-        self.value = initial_value
+        try:
+            initial_value = kwargs.pop('initial_value', 0)
+            self.value = initial_value
+        except:
+            self.close()
+            raise
 
     @property
     def value(self):
@@ -336,6 +362,7 @@ class PiLiter(LEDBoard):
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
+
     def __init__(self, pwm=False):
         super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
 
@@ -360,12 +387,10 @@ class PiLiterBarGraph(LEDBarGraph):
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
+
     def __init__(self, initial_value=0):
         super(PiLiterBarGraph, self).__init__(
                 4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
-
-
-TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
 
 
 class TrafficLights(LEDBoard):
@@ -397,44 +422,12 @@ class TrafficLights(LEDBoard):
     """
     def __init__(self, red=None, amber=None, green=None, pwm=False):
         if not all([red, amber, green]):
-            raise OutputDeviceError(
+            raise GPIOPinMissing(
                 'red, amber and green pins must be provided'
             )
-        super(TrafficLights, self).__init__(red, amber, green, pwm=pwm)
-
-    @property
-    def value(self):
-        """
-        A 3-tuple containing values for the red, amber, and green LEDs. This
-        property can also be set to alter the state of the LEDs.
-        """
-        return TrafficLightTuple(*super(TrafficLights, self).value)
-
-    @value.setter
-    def value(self, value):
-        # Eurgh, this is horrid but necessary (see #90)
-        super(TrafficLights, self.__class__).value.fset(self, value)
-
-    @property
-    def red(self):
-        """
-        The :class:`LED` or :class:`PWMLED` object representing the red LED.
-        """
-        return self.leds[0]
-
-    @property
-    def amber(self):
-        """
-        The :class:`LED` or :class:`PWMLED` object representing the red LED.
-        """
-        return self.leds[1]
-
-    @property
-    def green(self):
-        """
-        The :class:`LED` or :class:`PWMLED` object representing the green LED.
-        """
-        return self.leds[2]
+        super(TrafficLights, self).__init__(
+            red=red, amber=amber, green=green, pwm=pwm,
+            _order=('red', 'amber', 'green'))
 
 
 class PiTraffic(TrafficLights):
@@ -454,15 +447,12 @@ class PiTraffic(TrafficLights):
     To use the PI-TRAFFIC board when attached to a non-standard set of pins,
     simply use the parent class, :class:`TrafficLights`.
     """
+
     def __init__(self):
         super(PiTraffic, self).__init__(9, 10, 11)
 
 
-TrafficLightsBuzzerTuple = namedtuple('TrafficLightsBuzzerTuple', (
-    'red', 'amber', 'green', 'buzzer'))
-
-
-class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
+class TrafficLightsBuzzer(CompositeOutputDevice):
     """
     Extends :class:`CompositeDevice` and is a generic class for HATs with
     traffic lights, a button and a buzzer.
@@ -477,146 +467,11 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
     :param Button button:
         An instance of :class:`Button` representing the button on the HAT.
     """
+
     def __init__(self, lights, buzzer, button):
-        self._blink_thread = None
-        super(TrafficLightsBuzzer, self).__init__()
-        self.lights = lights
-        self.buzzer = buzzer
-        self.button = button
-        self._all = self.lights.leds + (self.buzzer,)
-
-    def close(self):
-        self.lights.close()
-        self.buzzer.close()
-        self.button.close()
-
-    @property
-    def closed(self):
-        return all(o.closed for o in self.all)
-
-    @property
-    def all(self):
-        """
-        A tuple containing objects for all the items on the board (several
-        :class:`LED` objects, a :class:`Buzzer`, and a :class:`Button`).
-        """
-        return self._all
-
-    @property
-    def value(self):
-        """
-        Returns a named-tuple containing values representing the states of
-        the LEDs, and the buzzer. This property can also be set to a 4-tuple
-        to update the state of all the board's components.
-        """
-        return TrafficLightsBuzzerTuple(
-            self.lights.red.value,
-            self.lights.amber.value,
-            self.lights.green.value,
-            self.buzzer.value,
-        )
-
-    @value.setter
-    def value(self, value):
-        for i, v in zip(self.all, value):
-            i.value = v
-
-    def on(self):
-        """
-        Turn all the board's components on.
-        """
-        for thing in self.all:
-            thing.on()
-
-    def off(self):
-        """
-        Turn all the board's components off.
-        """
-        for thing in self.all:
-            thing.off()
-
-    def toggle(self):
-        """
-        Toggle all the board's components. For each component, if it's on, turn
-        it off; if it's off, turn it on.
-        """
-        for thing in self.all:
-            thing.toggle()
-
-    def blink(
-            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
-            n=None, background=True):
-        """
-        Make all the LEDs turn on and off repeatedly.
-
-        :param float on_time:
-            Number of seconds on. Defaults to 1 second.
-
-        :param float off_time:
-            Number of seconds off. Defaults to 1 second.
-
-        :param float fade_in_time:
-            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
-            (:exc:`ValueError` will be raised if not).
-
-        :param float fade_out_time:
-            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
-            (:exc:`ValueError` will be raised if not).
-
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
-
-        :param bool background:
-            If ``True``, start a background thread to continue blinking and
-            return immediately. If ``False``, only return when the blink is
-            finished (warning: the default value of *n* will result in this
-            method never returning).
-        """
-        if isinstance(self.lights.leds[0], LED):
-            if fade_in_time:
-                raise ValueError('fade_in_time must be 0 with non-PWM LEDs')
-            if fade_out_time:
-                raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
-        self._stop_blink()
-        self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n)
-        )
-        self._blink_thread.start()
-        if not background:
-            self._blink_thread.join()
-            self._blink_thread = None
-
-    def _stop_blink(self):
-        if self._blink_thread:
-            self._blink_thread.stop()
-            self._blink_thread = None
-
-    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
-        sequence = []
-        if fade_in_time > 0:
-            sequence += [
-                (i * (1 / fps) / fade_in_time, 1 / fps)
-                for i in range(int(fps * fade_in_time))
-                ]
-        sequence.append((1, on_time))
-        if fade_out_time > 0:
-            sequence += [
-                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
-                for i in range(int(fps * fade_out_time))
-                ]
-        sequence.append((0, off_time))
-        sequence = (
-                cycle(sequence) if n is None else
-                chain.from_iterable(repeat(sequence, n))
-                )
-        for value, delay in sequence:
-            for thing in self._all:
-                thing.value = value
-            if self._blink_thread.stopping.wait(delay):
-                break
+        super(TrafficLightsBuzzer, self).__init__(
+            lights=lights, buzzer=buzzer, button=button,
+            _order=('lights', 'buzzer', 'button'))
 
 
 class FishDish(TrafficLightsBuzzer):
@@ -639,6 +494,7 @@ class FishDish(TrafficLightsBuzzer):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
     """
+
     def __init__(self, pwm=False):
         super(FishDish, self).__init__(
             TrafficLights(9, 22, 4, pwm=pwm),
@@ -667,6 +523,7 @@ class TrafficHat(TrafficLightsBuzzer):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
     """
+
     def __init__(self, pwm=False):
         super(TrafficHat, self).__init__(
             TrafficLights(24, 23, 22, pwm=pwm),
@@ -701,9 +558,10 @@ class Robot(SourceMixin, CompositeDevice):
         A tuple of two GPIO pins representing the forward and backward inputs
         of the right motor's controller.
     """
+
     def __init__(self, left=None, right=None):
         if not all([left, right]):
-            raise OutputDeviceError(
+            raise GPIOPinMissing(
                 'left and right motor pins must be provided'
             )
         super(Robot, self).__init__()
@@ -822,6 +680,7 @@ class RyanteckRobot(Robot):
         robot = RyanteckRobot()
         robot.left()
     """
+
     def __init__(self):
         super(RyanteckRobot, self).__init__(left=(17, 18), right=(22, 23))
 
@@ -841,5 +700,111 @@ class CamJamKitRobot(Robot):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
+
     def __init__(self):
         super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+
+
+class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
+    def __init__(self):
+        self._lock = Lock()
+        super(_EnergenieMaster, self).__init__(
+                *(OutputDevice(pin) for pin in (17, 22, 23, 27)),
+                mode=OutputDevice(24), enable=OutputDevice(25))
+
+    def close(self):
+        if self._lock:
+            with self._lock:
+                super(_EnergenieMaster, self).close()
+            self._lock = None
+
+    @classmethod
+    def _shared_key(cls):
+        # There's only one Energenie master
+        return None
+
+    def transmit(self, socket, enable):
+        with self._lock:
+            try:
+                code = (8 * bool(enable)) + (7 - socket)
+                for bit in self.all[:4]:
+                    bit.value = (code & 1)
+                    code >>= 1
+                sleep(0.1)
+                self.enable.on()
+                sleep(0.25)
+            finally:
+                self.enable.off()
+
+
+class Energenie(SourceMixin, Device):
+    """
+    Extends :class:`Device` to represent an `Energenie socket`_ controller.
+
+    This class is constructed with a socket number and an optional initial
+    state (defaults to ``False``, meaning off). Instances of this class can
+    be used to switch peripherals on and off. For example::
+
+        from gpiozero import Energenie
+
+        lamp = Energenie(0)
+        lamp.on()
+
+    :param int socket:
+        Which socket this instance should control. This is an integer number
+        between 0 and 3.
+
+    :param bool initial_value:
+        The initial state of the socket. As Energenie sockets provide no
+        means of reading their state, you must provide an initial state for
+        the socket, which will be set upon construction. This defaults to
+        ``False`` which will switch the socket off.
+
+    .. _Energenie socket: https://energenie4u.co.uk/index.php/catalogue/product/ENER002-2PI
+    """
+
+    def __init__(self, socket=None, initial_value=False):
+        if socket is None:
+            raise EnergenieSocketMissing('socket number must be provided')
+        if not (0 <= socket < 4):
+            raise EnergenieBadSocket('socket number must be between 0 and 3')
+        super(Energenie, self).__init__()
+        self._socket = socket
+        self._master = _EnergenieMaster()
+        if initial_value:
+            self.on()
+        else:
+            self.off()
+
+    def close(self):
+        if self._master:
+            m = self._master
+            self._master = None
+            m.close()
+
+    @property
+    def closed(self):
+        return self._master is None
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return "<gpiozero.Energenie object on socket %d>" % self._socket
+        except DeviceClosed:
+            return "<gpiozero.Energenie object closed>"
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._master.transmit(self._socket, bool(value))
+        self._value = bool(value)
+
+    def on(self):
+        self.value = True
+
+    def off(self):
+        self.value = False
+

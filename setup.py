@@ -45,7 +45,6 @@ __keywords__ = [
 ]
 
 __requires__ = [
-    'spidev',
 ]
 
 __extra_requires__ = {
