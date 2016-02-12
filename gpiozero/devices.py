@@ -12,12 +12,17 @@ import weakref
 from threading import Thread, Event, RLock
 from collections import deque
 from types import FunctionType
+try:
+    from statistics import median, mean
+except ImportError:
+    from .compat import median, mean
 
 from .exc import (
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
     GPIOBadQueueLen,
+    GPIOBadSampleWait,
     )
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here
@@ -33,8 +38,12 @@ except ImportError:
         from .pins.rpio import RPIOPin
         DefaultPin = RPIOPin
     except ImportError:
-        from .pins.native import NativePin
-        DefaultPin = NativePin
+        try:
+            from .pins.pigipod import PiGPIOPin
+            DefaultPin = PiGPIOPin
+        except ImportError:
+            from .pins.native import NativePin
+            DefaultPin = NativePin
 
 
 _THREADS = set()
@@ -344,23 +353,29 @@ class GPIOThread(Thread):
 
 
 class GPIOQueue(GPIOThread):
-    def __init__(self, parent, queue_len=5, sample_wait=0.0, partial=False):
+    def __init__(
+            self, parent, queue_len=5, sample_wait=0.0, partial=False,
+            average=median):
         assert isinstance(parent, GPIODevice)
+        assert callable(average)
         super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:
             raise GPIOBadQueueLen('queue_len must be at least one')
+        if sample_wait < 0:
+            raise GPIOBadSampleWait('sample_wait must be 0 or greater')
         self.queue = deque(maxlen=queue_len)
         self.partial = partial
         self.sample_wait = sample_wait
         self.full = Event()
         self.parent = weakref.proxy(parent)
+        self.average = average
 
     @property
     def value(self):
         if not self.partial:
             self.full.wait()
         try:
-            return sum(self.queue) / len(self.queue)
+            return self.average(self.queue)
         except ZeroDivisionError:
             # No data == inactive value
             return 0.0

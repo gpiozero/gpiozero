@@ -572,6 +572,194 @@ LightSensor.wait_for_light = LightSensor.wait_for_active
 LightSensor.wait_for_dark = LightSensor.wait_for_inactive
 
 
+class DistanceSensor(SmoothedInputDevice):
+    """
+    Extends :class:`SmoothedInputDevice` and represents an HC-SR04 ultrasonic
+    distance sensor, as found in the `CamJam #3 EduKit`_.
+
+    The distance sensor requires two GPIO pins: one for the *trigger* (marked
+    TRIG on the sensor) and another for the *echo* (marked ECHO on the sensor).
+    However, a voltage divider is required to ensure the 5V from the ECHO pin
+    doesn't damage the Pi. Wire your sensor according to the following
+    instructions:
+
+    1. Connect the GND pin of the sensor to a ground pin on the Pi.
+
+    2. Connect the TRIG pin of the sensor a GPIO pin.
+
+    3. Connect a 330Ω resistor from the ECHO pin of the sensor to a different
+       GPIO pin.
+
+    4. Connect a 470Ω resistor from ground to the ECHO GPIO pin. This forms
+       the required voltage divider.
+
+    5. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
+
+    The following code will periodically report the distance measured by the
+    sensor in cm assuming the TRIG pin is connected to GPIO17, and the ECHO
+    pin to GPIO18::
+
+        from gpiozero import DistanceSensor
+        from time import sleep
+
+        sensor = DistanceSensor(18, 17)
+        while True:
+            print('Distance: ', sensor.distance * 100)
+            sleep(1)
+
+    :param int echo:
+        The GPIO pin which the ECHO pin is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param int trigger:
+        The GPIO pin which the TRIG pin is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param int queue_len:
+        The length of the queue used to store values read from the sensor.
+        This defaults to 30.
+
+    :param float max_distance:
+        The :attr:`value` attribute reports a normalized value between 0 (too
+        close to measure) and 1 (maximum distance). This parameter specifies
+        the maximum distance expected in meters. This defaults to 1.
+
+    :param float threshold_distance:
+        Defaults to 0.3. This is the distance (in meters) that will trigger the
+        ``in_range`` and ``out_of_range`` events when crossed.
+
+    :param bool partial:
+        When ``False`` (the default), the object will not return a value for
+        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to ``True`` if you require values
+        immediately after object construction.
+
+    .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
+    """
+    def __init__(
+            self, echo=None, trigger=None, queue_len=30, max_distance=1,
+            threshold_distance=0.3, partial=False):
+        if not (max_distance > 0):
+            raise ValueError('invalid maximum distance (must be positive)')
+        self._trigger = None
+        super(DistanceSensor, self).__init__(
+            echo, pull_up=False, threshold=threshold_distance / max_distance,
+            queue_len=queue_len, sample_wait=0.0, partial=partial
+        )
+        try:
+            self.speed_of_sound = 343.26 # m/s
+            self._max_distance = max_distance
+            self._trigger = GPIODevice(trigger)
+            self._echo = Event()
+            self._trigger.pin.function = 'output'
+            self._trigger.pin.state = False
+            self.pin.edges = 'both'
+            self.pin.bounce = None
+            self.pin.when_changed = self._echo.set
+            self._queue.start()
+        except:
+            self.close()
+            raise
+
+    def close(self):
+        try:
+            self._trigger.close()
+        except AttributeError:
+            if self._trigger is not None:
+                raise
+        else:
+            self._trigger = None
+        super(DistanceSensor, self).close()
+
+    @property
+    def max_distance(self):
+        """
+        The maximum distance that the sensor will measure in meters. This value
+        is specified in the constructor and is used to provide the scaling
+        for the :attr:`value` attribute. When :attr:`distance` is equal to
+        :attr:`max_distance`, :attr:`value` will be 1.
+        """
+        return self._max_distance
+
+    @max_distance.setter
+    def max_distance(self, value):
+        if not (value > 0):
+            raise ValueError('invalid maximum distance (must be positive)')
+        t = self.threshold_distance
+        self._max_distance = value
+        self.threshold_distance = t
+
+    @property
+    def threshold_distance(self):
+        """
+        The distance, measured in meters, that will trigger the
+        :attr:`when_in_range` and :attr:`when_out_of_range` events when
+        crossed. This is simply a meter-scaled variant of the usual
+        :attr:`threshold` attribute.
+        """
+        return self.threshold * self.max_distance
+
+    @threshold_distance.setter
+    def threshold_distance(self, value):
+        self.threshold = value / self.max_distance
+
+    @property
+    def distance(self):
+        """
+        Returns the current distance measured by the sensor in meters. Note
+        that this property will have a value between 0 and
+        :attr:`max_distance`.
+        """
+        return self.value * self._max_distance
+
+    @property
+    def trigger(self):
+        """
+        Returns the :class:`Pin` that the sensor's trigger is connected to.
+        """
+        return self._trigger.pin
+
+    @property
+    def echo(self):
+        """
+        Returns the :class:`Pin` that the sensor's echo is connected to. This
+        is simply an alias for the usual :attr:`pin` attribute.
+        """
+        return self.pin
+
+    def _read(self):
+        # Make sure the echo event is clear
+        self._echo.clear()
+        # Fire the trigger
+        self._trigger.pin.state = True
+        sleep(0.00001)
+        self._trigger.pin.state = False
+        # Wait up to 1 second for the echo pin to rise
+        if self._echo.wait(1):
+            start = time()
+            self._echo.clear()
+            # Wait up to 40ms for the echo pin to fall (35ms is maximum pulse
+            # time so any longer means something's gone wrong). Calculate
+            # distance as time for echo multiplied by speed of sound divided by
+            # two to compensate for travel to and from the reflector
+            if self._echo.wait(0.04):
+                distance = (time() - start) * self.speed_of_sound / 2.0
+                return min(1.0, distance / self._max_distance)
+            else:
+                # If we only saw one edge it means we missed the echo because
+                # it was too fast; report minimum distance
+                return 0.0
+        else:
+            # The echo pin never rose or fell; something's gone horribly
+            # wrong (XXX raise a warning?)
+            return 1.0
+
+DistanceSensor.when_out_of_range = DistanceSensor.when_activated
+DistanceSensor.when_in_range = DistanceSensor.when_deactivated
+DistanceSensor.wait_for_out_of_range = DistanceSensor.wait_for_active
+DistanceSensor.wait_for_in_range = DistanceSensor.wait_for_inactive
+
+
 class AnalogInputDevice(CompositeDevice):
     """
     Represents an analog input device connected to SPI (serial interface).

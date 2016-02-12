@@ -22,6 +22,20 @@ class RPiGPIOPin(Pin):
     the default pin implementation if the RPi.GPIO library is installed.
     Supports all features including PWM (via software).
 
+    Because this is the default pin implementation you can use it simply by
+    specifying an integer number for the pin in most operations, e.g.::
+
+        from gpiozero import LED
+
+        led = LED(12)
+
+    However, you can also construct RPi.GPIO pins manually if you wish::
+
+        from gpiozero.pins.rpigpio import RPiGPIOPin
+        from gpiozero import LED
+
+        led = LED(RPiGPIOPin(12))
+
     .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
     """
 

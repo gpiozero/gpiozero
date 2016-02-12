@@ -20,10 +20,12 @@ integer number instead, it uses one of the following classes to provide the
 
 2. :class:`gpiozero.pins.rpio.RPIOPin`
 
-3. :class:`gpiozero.pins.native.NativePin`
+3. :class:`gpiozero.pins.pigpiod.PiGPIOPin`
+
+4. :class:`gpiozero.pins.native.NativePin`
 
 You can change the default pin implementation by over-writing the
-``DefaultPin`` global in devices like so::
+``DefaultPin`` global in the ``devices`` module like so::
 
     from gpiozero.pins.native import NativePin
     import gpiozero.devices
@@ -35,8 +37,24 @@ You can change the default pin implementation by over-writing the
     # This will now use NativePin instead of RPiGPIOPin
     led = LED(16)
 
-In future, this separation should allow the library to utilize pins that are
-part of IO extender chips. For example::
+Alternatively, instead of passing an integer to the device constructor, you
+can pass a :class:`Pin` object itself::
+
+    from gpiozero.pins.native import NativePin
+    from gpiozero import LED
+
+    led = LED(NativePin(16))
+
+This is particularly useful with implementations that can take extra parameters
+such as :class:`PiGPIOPin` which can address pins on remote machines::
+
+    from gpiozero.pins.pigpiod import PiGPIOPin
+    from gpiozero import LED
+
+    led = LED(PiGPIOPin(16, host='my_other_pi'))
+
+In future, this separation of pins and devices should also permit the library
+to utilize pins that are part of IO extender chips. For example::
 
     from gpiozero import IOExtender, LED
 
@@ -50,13 +68,6 @@ part of IO extender chips. For example::
     backwards incompatible ways, the pins API is *not* yet considered stable.
     It is potentially subject to change in future versions. We welcome any
     comments from testers!
-
-
-Abstract Pin
-============
-
-.. autoclass:: Pin
-    :members:
 
 
 RPiGPIOPin
@@ -75,10 +86,25 @@ RPIOPin
 .. autoclass:: RPIOPin
 
 
+PiGPIOPin
+=========
+
+.. currentmodule:: gpiozero.pins.pigpiod
+
+.. autoclass:: PiGPIOPin
+
+
 NativePin
 =========
 
 .. currentmodule:: gpiozero.pins.native
 
 .. autoclass:: NativePin
+
+
+Abstract Pin
+============
+
+.. autoclass:: Pin
+    :members:
 
