@@ -103,6 +103,8 @@ Run a function every time the button is pressed::
 Button controlled LED
 =====================
 
+.. image:: images/led_button_bb.*
+
 Turn on an :class:`LED` when a :class:`Button` is pressed::
 
     from gpiozero import LED, Button
@@ -131,6 +133,8 @@ Alternatively::
 
 Traffic Lights
 ==============
+
+.. image:: images/traffic_lights_bb.*
 
 A full traffic lights system.
 
@@ -229,6 +233,8 @@ See `Push Button Stop Motion`_ for a full resource.
 
 Reaction Game
 =============
+
+.. image:: images/reaction_game_bb.*
 
 When you see the light come on, the first person to press their button wins!
 
@@ -348,6 +354,8 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
 RGB LED
 =======
 
+.. image:: images/rgb_led_bb.*
+
 Making colours with an :class:`RGBLED`::
 
     from gpiozero import RGBLED
@@ -383,7 +391,7 @@ Making colours with an :class:`RGBLED`::
 Motion sensor
 =============
 
-.. image:: images/motion-sensor.*
+.. image:: images/motion_sensor_bb.*
 
 Light an :class:`LED` when a :class:`MotionSensor` detects motion::
 
@@ -402,7 +410,7 @@ Light an :class:`LED` when a :class:`MotionSensor` detects motion::
 Light sensor
 ============
 
-.. IMAGE TBD
+.. image:: images/light_sensor_bb.*
 
 Have a :class:`LightSensor` detect light and dark::
 
@@ -476,7 +484,7 @@ Run a function when something gets near the sensor::
 Motors
 ======
 
-.. IMAGE TBD
+.. image:: images/motor_bb.*
 
 Spin a :class:`Motor` around forwards and backwards::
 
