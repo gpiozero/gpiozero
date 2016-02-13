@@ -625,7 +625,7 @@ Alternatively::
 Potentiometer
 =============
 
-.. IMAGE TBD
+.. image:: images/potentiometer_bb.*
 
 Continually print the value of a potentiometer (values between 0 and 1)
 connected to a :class:`MCP3008` analog to digital converter::
