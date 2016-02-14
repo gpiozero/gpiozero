@@ -88,6 +88,7 @@ Contributors
 - `Ben Nuttall`_ (project maintainer)
 - `Dave Jones`_
 - `Martin O'Hanlon`_
+- `Andrew Scheller`_
 
 
 .. _Ben Nuttall: https://github.com/bennuttall
@@ -99,3 +100,4 @@ Contributors
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
+.. _Andrew Scheller: https://github.com/lurch
