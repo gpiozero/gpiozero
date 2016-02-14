@@ -478,6 +478,7 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         An instance of :class:`Button` representing the button on the HAT.
     """
     def __init__(self, lights, buzzer, button):
+        self._blink_thread = None
         super(TrafficLightsBuzzer, self).__init__()
         self.lights = lights
         self.buzzer = buzzer
@@ -542,18 +543,30 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
         for thing in self.all:
             thing.toggle()
 
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
+    def blink(
+            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            n=None, background=True):
         """
-        Make all the board's components turn on and off repeatedly.
+        Make all the LEDs turn on and off repeatedly.
 
         :param float on_time:
-            Number of seconds on
+            Number of seconds on. Defaults to 1 second.
 
         :param float off_time:
-            Number of seconds off
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param int n:
-            Number of times to blink; ``None`` means forever
+            Number of times to blink; ``None`` (the default) means forever.
 
         :param bool background:
             If ``True``, start a background thread to continue blinking and
@@ -561,9 +574,49 @@ class TrafficLightsBuzzer(SourceMixin, CompositeDevice):
             finished (warning: the default value of *n* will result in this
             method never returning).
         """
-        # XXX This isn't going to work for background=False
-        for thing in self._all:
-            thing.blink(on_time, off_time, n, background)
+        if isinstance(self.lights.leds[0], LED):
+            if fade_in_time:
+                raise ValueError('fade_in_time must be 0 with non-PWM LEDs')
+            if fade_out_time:
+                raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_device,
+            args=(on_time, off_time, fade_in_time, fade_out_time, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self):
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None
+
+    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+        sequence = []
+        if fade_in_time > 0:
+            sequence += [
+                (i * (1 / fps) / fade_in_time, 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
+        sequence.append((1, on_time))
+        if fade_out_time > 0:
+            sequence += [
+                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
+                for i in range(int(fps * fade_out_time))
+                ]
+        sequence.append((0, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for value, delay in sequence:
+            for thing in self._all:
+                thing.value = value
+            if self._blink_thread.stopping.wait(delay):
+                break
 
 
 class FishDish(TrafficLightsBuzzer):
