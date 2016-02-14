@@ -89,6 +89,7 @@ Contributors
 - `Dave Jones`_
 - `Martin O'Hanlon`_
 - `Andrew Scheller`_
+- `Schelto vanDoorn`_
 
 
 .. _Ben Nuttall: https://github.com/bennuttall
@@ -101,3 +102,4 @@ Contributors
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
 .. _Andrew Scheller: https://github.com/lurch
+.. _Schelto vanDoorn: https://github.com/pcopa
