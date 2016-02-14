@@ -4,51 +4,92 @@ from __future__ import (
     absolute_import,
     division,
     )
+nstr = str
+str = type('')
 
 import atexit
 import weakref
 from threading import Thread, Event, RLock
 from collections import deque
+from types import FunctionType
+try:
+    from statistics import median, mean
+except ImportError:
+    from .compat import median, mean
 
-from RPi import GPIO
+from .exc import (
+    GPIOPinMissing,
+    GPIOPinInUse,
+    GPIODeviceClosed,
+    GPIOBadQueueLen,
+    GPIOBadSampleWait,
+    )
+
+# Get a pin implementation to use as the default; we prefer RPi.GPIO's here
+# as it supports PWM, and all Pi revisions. If no third-party libraries are
+# available, however, we fall back to a pure Python implementation which
+# supports platforms like PyPy
+from .pins import PINS_CLEANUP
+try:
+    from .pins.rpigpio import RPiGPIOPin
+    DefaultPin = RPiGPIOPin
+except ImportError:
+    try:
+        from .pins.rpio import RPIOPin
+        DefaultPin = RPIOPin
+    except ImportError:
+        try:
+            from .pins.pigipod import PiGPIOPin
+            DefaultPin = PiGPIOPin
+        except ImportError:
+            from .pins.native import NativePin
+            DefaultPin = NativePin
 
 
-_GPIO_THREADS = set()
-_GPIO_PINS = set()
+_THREADS = set()
+_PINS = set()
 # Due to interactions between RPi.GPIO cleanup and the GPIODevice.close()
 # method the same thread may attempt to acquire this lock, leading to deadlock
 # unless the lock is re-entrant
-_GPIO_PINS_LOCK = RLock()
+_PINS_LOCK = RLock()
 
-def _gpio_threads_shutdown():
-    while _GPIO_THREADS:
-        for t in _GPIO_THREADS.copy():
+def _shutdown():
+    while _THREADS:
+        for t in _THREADS.copy():
             t.stop()
-    with _GPIO_PINS_LOCK:
-        while _GPIO_PINS:
-            GPIO.remove_event_detect(_GPIO_PINS.pop())
-        GPIO.cleanup()
+    with _PINS_LOCK:
+        while _PINS:
+            _PINS.pop().close()
+    # Any cleanup routines registered by pins libraries must be called *after*
+    # cleanup of pin objects used by devices
+    for routine in PINS_CLEANUP:
+        routine()
 
-atexit.register(_gpio_threads_shutdown)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-
-class GPIODeviceError(Exception):
-    pass
+atexit.register(_shutdown)
 
 
-class GPIODeviceClosed(GPIODeviceError):
-    pass
-
-
-class GPIOFixedAttrs(type):
+class GPIOMeta(type):
     # NOTE Yes, this is a metaclass. Don't be scared - it's a simple one.
 
-    def __call__(cls, *args, **kwargs):
-        # Construct the class as normal and ensure it's a subclass of GPIOBase
-        # (defined below with a custom __setattrs__)
-        result = super(GPIOFixedAttrs, cls).__call__(*args, **kwargs)
+    def __new__(mcls, name, bases, cls_dict):
+        # Construct the class as normal
+        cls = super(GPIOMeta, mcls).__new__(mcls, name, bases, cls_dict)
+        for attr_name, attr in cls_dict.items():
+            # If there's a method in the class which has no docstring, search
+            # the base classes recursively for a docstring to copy
+            if isinstance(attr, FunctionType) and not attr.__doc__:
+                for base_cls in cls.__mro__:
+                    if hasattr(base_cls, attr_name):
+                        base_fn = getattr(base_cls, attr_name)
+                        if base_fn.__doc__:
+                            attr.__doc__ = base_fn.__doc__
+                            break
+        return cls
+
+    def __call__(mcls, *args, **kwargs):
+        # Construct the instance as normal and ensure it's an instance of
+        # GPIOBase (defined below with a custom __setattrs__)
+        result = super(GPIOMeta, mcls).__call__(*args, **kwargs)
         assert isinstance(result, GPIOBase)
         # At this point __new__ and __init__ have all been run. We now fix the
         # set of attributes on the class by dir'ing the instance and creating a
@@ -58,9 +99,8 @@ class GPIOFixedAttrs(type):
         return result
 
 
-class GPIOBase(object):
-    __metaclass__ = GPIOFixedAttrs
-
+# Cross-version compatible method of using a metaclass
+class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
     def __setattr__(self, name, value):
         # This overridden __setattr__ simply ensures that additional attributes
         # cannot be set on the class after construction (it manages this in
@@ -90,9 +130,9 @@ class GPIOBase(object):
     @property
     def closed(self):
         """
-        Returns `True` if the device is closed (see the `close` method). Once a
-        device is closed you can no longer use any other methods or properties
-        to control or query the device.
+        Returns ``True`` if the device is closed (see the :meth:`close`
+        method). Once a device is closed you can no longer use any other
+        methods or properties to control or query the device.
         """
         return False
 
@@ -172,12 +212,13 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     This is the class at the root of the gpiozero class hierarchy. It handles
     ensuring that two GPIO devices do not share the same pin, and provides
-    basic services applicable to all devices (specifically the `pin` property,
-    `is_active` property, and the `close` method).
+    basic services applicable to all devices (specifically the :attr:`pin`
+    property, :attr:`is_active` property, and the :attr:`close` method).
 
-    pin: `None`
+    :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is `None` a `GPIODeviceError` will be raised.
+        this is ``None``, :exc:`GPIOPinMissing` will be raised. If the pin is
+        already in use by another device, :exc:`GPIOPinInUse` will be raised.
     """
     def __init__(self, pin=None):
         super(GPIODevice, self).__init__()
@@ -186,20 +227,22 @@ class GPIODevice(ValuesMixin, GPIOBase):
         # value of pin until we've verified that it isn't already allocated
         self._pin = None
         if pin is None:
-            raise GPIODeviceError('No GPIO pin number given')
-        with _GPIO_PINS_LOCK:
-            if pin in _GPIO_PINS:
-                raise GPIODeviceError(
-                    'pin %d is already in use by another gpiozero object' % pin
+            raise GPIOPinMissing('No pin given')
+        if isinstance(pin, int):
+            pin = DefaultPin(pin)
+        with _PINS_LOCK:
+            if pin in _PINS:
+                raise GPIOPinInUse(
+                    'pin %r is already in use by another gpiozero object' % pin
                 )
-            _GPIO_PINS.add(pin)
+            _PINS.add(pin)
         self._pin = pin
-        self._active_state = GPIO.HIGH
-        self._inactive_state = GPIO.LOW
+        self._active_state = True
+        self._inactive_state = False
 
     def _read(self):
         try:
-            return GPIO.input(self.pin) == self._active_state
+            return self.pin.state == self._active_state
         except TypeError:
             self._check_open()
             raise
@@ -238,8 +281,8 @@ class GPIODevice(ValuesMixin, GPIOBase):
             >>> led = LED(16)
             >>> led.blink()
 
-        GPIODevice descendents can also be used as context managers using the
-        `with` statement. For example:
+        :class:`GPIODevice` descendents can also be used as context managers
+        using the :keyword:`with` statement. For example:
 
             >>> from gpiozero import *
             >>> with Buzzer(16) as bz:
@@ -250,13 +293,12 @@ class GPIODevice(ValuesMixin, GPIOBase):
             ...
         """
         super(GPIODevice, self).close()
-        with _GPIO_PINS_LOCK:
+        with _PINS_LOCK:
             pin = self._pin
             self._pin = None
-            if pin in _GPIO_PINS:
-                _GPIO_PINS.remove(pin)
-                GPIO.remove_event_detect(pin)
-                GPIO.cleanup(pin)
+            if pin in _PINS:
+                _PINS.remove(pin)
+                pin.close()
 
     @property
     def closed(self):
@@ -265,15 +307,18 @@ class GPIODevice(ValuesMixin, GPIOBase):
     @property
     def pin(self):
         """
-        The pin (in BCM numbering) that the device is connected to. This will
-        be `None` if the device has been closed (see the `close` method).
+        The :class:`Pin` that the device is connected to. This will be ``None``
+        if the device has been closed (see the :meth:`close` method). When
+        dealing with GPIO pins, query ``pin.number`` to discover the GPIO
+        pin (in BCM numbering) that the device is connected to.
         """
         return self._pin
 
     @property
     def value(self):
         """
-        Returns `True` if the device is currently active and `False` otherwise.
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise.
         """
         return self._read()
 
@@ -281,7 +326,7 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     def __repr__(self):
         try:
-            return "<gpiozero.%s object on pin=%d, is_active=%s>" % (
+            return "<gpiozero.%s object on pin %r, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.is_active)
         except GPIODeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
@@ -295,7 +340,7 @@ class GPIOThread(Thread):
 
     def start(self):
         self.stopping.clear()
-        _GPIO_THREADS.add(self)
+        _THREADS.add(self)
         super(GPIOThread, self).start()
 
     def stop(self):
@@ -304,27 +349,33 @@ class GPIOThread(Thread):
 
     def join(self):
         super(GPIOThread, self).join()
-        _GPIO_THREADS.discard(self)
+        _THREADS.discard(self)
 
 
 class GPIOQueue(GPIOThread):
-    def __init__(self, parent, queue_len=5, sample_wait=0.0, partial=False):
+    def __init__(
+            self, parent, queue_len=5, sample_wait=0.0, partial=False,
+            average=median):
         assert isinstance(parent, GPIODevice)
+        assert callable(average)
         super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:
-            raise InputDeviceError('queue_len must be at least one')
+            raise GPIOBadQueueLen('queue_len must be at least one')
+        if sample_wait < 0:
+            raise GPIOBadSampleWait('sample_wait must be 0 or greater')
         self.queue = deque(maxlen=queue_len)
         self.partial = partial
         self.sample_wait = sample_wait
         self.full = Event()
         self.parent = weakref.proxy(parent)
+        self.average = average
 
     @property
     def value(self):
         if not self.partial:
             self.full.wait()
         try:
-            return sum(self.queue) / len(self.queue)
+            return self.average(self.queue)
         except ZeroDivisionError:
             # No data == inactive value
             return 0.0

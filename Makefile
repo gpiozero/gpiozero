@@ -50,6 +50,7 @@ DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
 DIST_DEB=dist/python-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/python3-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
+	dist/python-$(NAME)-doc_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
 DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.gz \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
@@ -97,7 +98,7 @@ develop: tags
 	@# These have to be done separately to avoid a cockup...
 	$(PIP) install -U setuptools
 	$(PIP) install -U pip
-	$(PIP) install -e .
+	$(PIP) install -e .[doc,test]
 
 test:
 	$(COVERAGE) run -m $(PYTEST) tests -v
@@ -158,7 +159,7 @@ release: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	dch --newversion $(VER)$(DEB_SUFFIX) --controlmaint
 	# commit the changes and add a new tag
 	git commit debian/changelog -m "Updated changelog for release $(VER)"
-	git tag -s release-$(VER) -m "Release $(VER)"
+	git tag -s v$(VER) -m "Release v$(VER)"
 	# update the package's registration on PyPI (in case any metadata's changed)
 	$(PYTHON) $(PYFLAGS) setup.py register
 

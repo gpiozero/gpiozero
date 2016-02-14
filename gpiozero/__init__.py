@@ -5,25 +5,67 @@ from __future__ import (
     division,
 )
 
-from .devices import (
-    GPIODeviceClosed,
+from .pins import (
+    Pin,
+)
+from .exc import (
+    GPIOZeroError,
+    CompositeDeviceError,
     GPIODeviceError,
+    GPIODeviceClosed,
+    GPIOPinInUse,
+    GPIOPinMissing,
+    GPIOBadQueueLen,
+    GPIOBadSampleWait,
+    InputDeviceError,
+    OutputDeviceError,
+    OutputDeviceBadValue,
+    PinError,
+    PinFixedFunction,
+    PinInvalidFunction,
+    PinInvalidState,
+    PinInvalidPull,
+    PinInvalidEdges,
+    PinSetInput,
+    PinFixedPull,
+    PinEdgeDetectUnsupported,
+    PinPWMError,
+    PinPWMUnsupported,
+    PinPWMFixedValue,
+)
+from .devices import (
     GPIODevice,
+    CompositeDevice,
+    SourceMixin,
+    ValuesMixin,
 )
 from .input_devices import (
-    InputDeviceError,
     InputDevice,
+    WaitableInputDevice,
+    DigitalInputDevice,
+    SmoothedInputDevice,
+    AnalogInputDevice,
     Button,
     LineSensor,
     MotionSensor,
     LightSensor,
+    DistanceSensor,
     AnalogInputDevice,
-    MCP3008,
+    MCP3001,
+    MCP3002,
     MCP3004,
+    MCP3008,
+    MCP3201,
+    MCP3202,
+    MCP3204,
+    MCP3208,
+    MCP3301,
+    MCP3302,
+    MCP3304,
 )
 from .output_devices import (
-    OutputDeviceError,
     OutputDevice,
+    DigitalOutputDevice,
     PWMOutputDevice,
     PWMLED,
     LED,
@@ -33,7 +75,9 @@ from .output_devices import (
 )
 from .boards import (
     LEDBoard,
+    LEDBarGraph,
     PiLiter,
+    PiLiterBarGraph,
     TrafficLights,
     PiTraffic,
     TrafficLightsBuzzer,

@@ -1,3 +1,23 @@
+gpiozero (1.1.0) stable; urgency=low
+
+  * Documentation converted to reST and expanded to include generic classes
+    and several more recipes (#80, #82, #101, #119, #135, #168)
+  * New "LEDBarGraph" class (many thanks to Martin O'Hanlon!) (#126, #176)
+  * New "Pin" implementation abstracts out the concept of a GPIO pin paving
+    the way for alternate library support and IO extenders in future (#141)
+  * New "LEDBoard.blink" method which works properly even when background is
+    set to "False" (#94, #161)
+  * New "RGBLED.blink" method which implements (rudimentary) color fading
+    too! (#135, #174)
+  * New "initial_value" attribute on "OutputDevice" ensures consistent
+    behaviour on construction (#118)
+  * New "active_high" attribute on "PWMOutputDevice" and "RGBLED" allows use
+    of common anode devices (#143, #154)
+  * Loads of new ADC chips supported (many thanks to GitHub user pcopa!)
+    (#150)
+
+ -- Dave Jones <dave@waveform.org.uk>  Mon, 08 Feb 2016 23:55:00 +0000
+
 gpiozero (1.0.0) stable; urgency=low
 
   * Debian packaging added (#44)

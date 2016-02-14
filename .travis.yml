@@ -1,0 +1,13 @@
+language: python
+python:
+    - "3.5"
+    - "3.4"
+    - "3.3"
+    - "3.2"
+    - "2.7"
+    - "pypy"
+    - "pypy3"
+install: "pip install -e .[test]"
+script: make test
+notifications:
+    slack: raspberrypifoundation:YoIHtVdg8Hd6gcA09QEmCYXN

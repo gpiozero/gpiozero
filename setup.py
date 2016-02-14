@@ -22,14 +22,14 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.0.0'
+__version__      = '1.1.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Education",
     "Intended Audience :: Developers",
     "Topic :: Education",
@@ -45,12 +45,21 @@ __keywords__ = [
 ]
 
 __requires__ = [
-    'RPi.GPIO',
     'spidev',
 ]
 
 __extra_requires__ = {
+    'doc':   ['sphinx'],
+    'test':  ['pytest', 'coverage', 'mock'],
 }
+
+if sys.version_info[:2] == (3, 2):
+    # Particular versions are required for Python 3.2 compatibility
+    __extra_requires__['doc'].extend([
+        'Jinja2<2.7',
+        'MarkupSafe<0.16',
+        ])
+    __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
 }

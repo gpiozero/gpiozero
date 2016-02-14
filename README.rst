@@ -2,15 +2,18 @@
 gpiozero
 ========
 
+.. image:: https://badge.fury.io/py/gpiozero.svg
+    :target: https://badge.fury.io/py/gpiozero
+    :alt: Latest Version
+
+.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+    :alt: Build Tests
+
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
 other contributors.
-
-Latest release
-==============
-
-The latest release is 1.0 released on 16th November 2015.
 
 About
 =====
@@ -21,7 +24,7 @@ with physical computing::
     from gpiozero import LED
     from time import sleep
 
-    led = LED(2)
+    led = LED(17)
 
     while True:
         led.on()
@@ -35,7 +38,7 @@ together::
     from gpiozero import LED, Button
     from signal import pause
 
-    led = LED(2)
+    led = LED(17)
     button = Button(3)
 
     button.when_pressed = led.on
@@ -66,19 +69,18 @@ or::
 Documentation
 =============
 
-Comprehensive documentation is available at `pythonhosted.org/gpiozero`_.
+Comprehensive documentation is available at https://gpiozero.readthedocs.org/.
 
 Development
 ===========
 
 This project is being developed on `GitHub`_. Join in:
 
-* Provide suggestions, report bugs and ask questions as `Issues`_
+* Provide suggestions, report bugs and ask questions as `issues`_
 * Provide examples we can use as `recipes`_
 * Contribute to the code
 
-Alternatively, email suggestions and feedback to ben@raspberrypi.org or add to
-the `Google Doc`_.
+Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org
 
 Contributors
 ============
@@ -86,16 +88,16 @@ Contributors
 - `Ben Nuttall`_ (project maintainer)
 - `Dave Jones`_
 - `Martin O'Hanlon`_
+- `Andrew Scheller`_
 
 
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _Dave Jones: https://github.com/waveform80
-.. _pythonhosted.org/gpiozero: http://pythonhosted.org/gpiozero
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
-.. _Issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: http://pythonhosted.org/gpiozero/recipes/
-.. _Google Doc: https://goo.gl/8zJLif
+.. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
+.. _Andrew Scheller: https://github.com/lurch
