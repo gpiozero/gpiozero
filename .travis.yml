@@ -9,3 +9,5 @@ python:
     - "pypy3"
 install: "pip install -e .[test]"
 script: make test
+notifications:
+    slack: raspberrypifoundation:YoIHtVdg8Hd6gcA09QEmCYXN
