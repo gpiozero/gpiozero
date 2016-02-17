@@ -26,4 +26,4 @@ pip-log.txt
 coverage
 .coverage
 .tox
-
+.cache
