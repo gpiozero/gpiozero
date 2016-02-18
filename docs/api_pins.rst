@@ -105,6 +105,8 @@ NativePin
 Abstract Pin
 ============
 
+.. currentmodule:: gpiozero.pins
+
 .. autoclass:: Pin
     :members:
 
