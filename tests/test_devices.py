@@ -44,6 +44,16 @@ def test_device_close():
     assert device.closed
     assert device.pin is None
 
+def test_device_reopen_same_pin():
+    pin = MockPin(2)
+    device = GPIODevice(pin)
+    device.close()
+    device2 = GPIODevice(pin)
+    assert not device2.closed
+    assert device2.pin == pin
+    assert device.closed
+    assert device.pin is None
+
 def test_device_repr():
     pin = MockPin(2)
     device = GPIODevice(pin)
