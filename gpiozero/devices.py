@@ -243,7 +243,7 @@ class GPIODevice(ValuesMixin, GPIOBase):
     def _read(self):
         try:
             return self.pin.state == self._active_state
-        except TypeError:
+        except (AttributeError, TypeError):
             self._check_open()
             raise
 
