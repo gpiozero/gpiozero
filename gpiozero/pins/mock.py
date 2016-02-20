@@ -64,9 +64,10 @@ class MockPin(Pin):
 
     def _set_state(self, value):
         if self._function == 'input':
-            raise PinSetInput()
+            raise PinSetInput('cannot set state of pin %r' % self)
         assert self._function == 'output'
         assert 0 <= value <= 1
+        value = bool(value)
         if self._state != value:
             t = time()
             self._state = value
@@ -77,7 +78,8 @@ class MockPin(Pin):
         return None
 
     def _set_frequency(self, value):
-        raise PinPWMUnsupported()
+        if value is not None:
+            raise PinPWMUnsupported()
 
     def _get_pull(self):
         return self._pull
@@ -158,6 +160,18 @@ class MockPWMPin(MockPin):
     def __init__(self, number):
         super(MockPWMPin, self).__init__(number)
         self._frequency = None
+
+    def _set_state(self, value):
+        if self._function == 'input':
+            raise PinSetInput('cannot set state of pin %r' % self)
+        assert self._function == 'output'
+        assert 0 <= value <= 1
+        value = float(value)
+        if self._state != value:
+            t = time()
+            self._state = value
+            self.states.append(PinState(t - self._last_change, value))
+            self._last_change = t
 
     def _get_frequency(self):
         return self._frequency
