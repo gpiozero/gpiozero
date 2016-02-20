@@ -13,6 +13,9 @@ from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
+    PinInvalidPull,
+    PinInvalidState,
+    PinPWMFixedValue,
     )
 
 
@@ -46,7 +49,7 @@ class RPiGPIOPin(Pin):
         'output':  GPIO.OUT,
         'i2c':     GPIO.I2C,
         'spi':     GPIO.SPI,
-        'pwm':     GPIO.PWM,
+        'pwm':     GPIO.HARD_PWM,
         'serial':  GPIO.SERIAL,
         'unknown': GPIO.UNKNOWN,
         }
@@ -118,9 +121,9 @@ class RPiGPIOPin(Pin):
     def _set_function(self, value):
         if value != 'input':
             self._pull = 'floating'
-        try:
+        if value in ('input', 'output') and value in self.GPIO_FUNCTIONS:
             GPIO.setup(self._number, self.GPIO_FUNCTIONS[value], self.GPIO_PULL_UPS[self._pull])
-        except KeyError:
+        else:
             raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
 
     def _get_state(self):
@@ -134,7 +137,7 @@ class RPiGPIOPin(Pin):
             try:
                 self._pwm.ChangeDutyCycle(value * 100)
             except ValueError:
-                raise PinInvalidValue('invalid state "%s" for pin %r' % (value, self))
+                raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
             self._duty_cycle = value
         else:
             try:
