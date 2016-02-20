@@ -24,8 +24,9 @@ def test_mock_pin_init():
     assert MockPin(2).number == 2
 
 def test_mock_pin_frequency_unsupported():
+    pin = MockPin(3)
+    pin.frequency = None
     with pytest.raises(PinPWMUnsupported):
-        pin = MockPin(3)
         pin.frequency = 100
 
 def test_mock_pin_frequency_supported():
