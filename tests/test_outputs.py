@@ -20,6 +20,9 @@ from gpiozero.pins.mock import MockPin, MockPWMPin
 from gpiozero import *
 
 
+def teardown_function(function):
+    MockPin.clear_pins()
+
 def test_output_initial_values():
     pin = MockPin(2)
     device = OutputDevice(pin, initial_value=False)
