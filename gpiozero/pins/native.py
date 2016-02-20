@@ -22,6 +22,7 @@ from ..exc import (
     PinInvalidEdges,
     PinInvalidFunction,
     PinFixedPull,
+    PinSetInput,
     )
 
 
@@ -168,34 +169,34 @@ class NativePin(Pin):
     _MEM = None
     _PINS = {}
 
-    PULL_NAMES = {
-        0b00: 'floating',
-        0b01: 'down',
-        0b10: 'up',
-        0b11: 'reserved',
+    GPIO_FUNCTIONS = {
+        'input':   0b000,
+        'output':  0b001,
+        'alt0':    0b100,
+        'alt1':    0b101,
+        'alt2':    0b110,
+        'alt3':    0b111,
+        'alt4':    0b011,
+        'alt5':    0b010,
         }
 
-    FUNCTION_NAMES = {
-        0b000: 'input',
-        0b001: 'output',
-        0b100: 'alt0',
-        0b101: 'alt1',
-        0b110: 'alt2',
-        0b111: 'alt3',
-        0b011: 'alt4',
-        0b010: 'alt5',
+    GPIO_PULL_UPS = {
+        'up':       0b10,
+        'down':     0b01,
+        'floating': 0b00,
+        'reserved': 0b11,
         }
 
-    EDGE_NAMES = {
-        (True,  True):  'both',
-        (True,  False): 'rising',
-        (False, True):  'falling',
-        (False, False): 'none',
+    GPIO_EDGES = {
+        'both':    (True,  True),
+        'rising':  (True,  False),
+        'falling': (False, True),
+        'none':    (False, False),
         }
 
-    PULL_VALUES = {v: k for (k, v) in PULL_NAMES.items()}
-    FUNCTION_VALUES = {v: k for (k, v) in FUNCTION_NAMES.items()}
-    EDGE_VALUES = {v: k for (k, v) in EDGE_NAMES.items()}
+    GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
+    GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
+    GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
     def __new__(cls, number):
         if not cls._PINS:
@@ -246,11 +247,11 @@ class NativePin(Pin):
         self.function = 'input'
 
     def _get_function(self):
-        return self.FUNCTION_NAMES[(self._MEM[self._func_offset] >> self._func_shift) & 7]
+        return self.GPIO_FUNCTION_NAMES[(self._MEM[self._func_offset] >> self._func_shift) & 7]
 
     def _set_function(self, value):
         try:
-            value = self.FUNCTION_VALUES[value]
+            value = self.GPIO_FUNCTIONS[value]
         except KeyError:
             raise PinInvalidFunction('invalid function "%s" for pin %r' % self)
         self._MEM[self._func_offset] = (
@@ -263,13 +264,15 @@ class NativePin(Pin):
         return bool(self._MEM[self._level_offset] & (1 << self._level_shift))
 
     def _set_state(self, value):
+        if self.function == 'input':
+            raise PinSetInput('cannot set state of pin %r' % self)
         if value:
             self._MEM[self._set_offset] = 1 << self._set_shift
         else:
             self._MEM[self._clear_offset] = 1 << self._clear_shift
 
     def _get_pull(self):
-        return self.PULL_NAMES[self._pull]
+        return self.GPIO_PULL_UP_NAMES[self._pull]
 
     def _set_pull(self, value):
         if self.function != 'input':
@@ -277,7 +280,7 @@ class NativePin(Pin):
         if value != 'up' and self._number in (2, 3):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
-            value = self.PULL_VALUES[value]
+            value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull('invalid pull direction "%s" for pin %r' % self)
         self._MEM[self._MEM.GPPUD_OFFSET] = value
@@ -291,11 +294,11 @@ class NativePin(Pin):
     def _get_edges(self):
         rising = bool(self._MEM[self._rising_offset] & (1 << self._rising_shift))
         falling = bool(self._MEM[self._falling_offset] & (1 << self._falling_shift))
-        return self.EDGE_NAMES[(rising, falling)]
+        return self.GPIO_EDGES_NAMES[(rising, falling)]
 
     def _set_edges(self, value):
         try:
-            rising, falling = self.EDGE_VALUES[value]
+            rising, falling = self.GPIO_EDGES[value]
         except KeyError:
             raise PinInvalidEdges('invalid edge specification "%s" for pin %r' % self)
         f = self.when_changed
