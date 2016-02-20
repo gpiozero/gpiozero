@@ -161,6 +161,10 @@ class MockPWMPin(MockPin):
         super(MockPWMPin, self).__init__(number)
         self._frequency = None
 
+    def close(self):
+        self.frequency = None
+        super(MockPWMPin, self).close()
+
     def _set_state(self, value):
         if self._function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
