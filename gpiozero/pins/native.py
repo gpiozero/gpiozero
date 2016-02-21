@@ -245,6 +245,7 @@ class NativePin(Pin):
     def close(self):
         self.when_changed = None
         self.function = 'input'
+        self.pull = 'up' if self.number in (2, 3) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[(self._MEM[self._func_offset] >> self._func_shift) & 7]
@@ -253,7 +254,7 @@ class NativePin(Pin):
         try:
             value = self.GPIO_FUNCTIONS[value]
         except KeyError:
-            raise PinInvalidFunction('invalid function "%s" for pin %r' % self)
+            raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
         self._MEM[self._func_offset] = (
             self._MEM[self._func_offset]
             & ~(7 << self._func_shift)
@@ -282,7 +283,7 @@ class NativePin(Pin):
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
-            raise PinInvalidPull('invalid pull direction "%s" for pin %r' % self)
+            raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
         self._MEM[self._MEM.GPPUD_OFFSET] = value
         sleep(0.000000214)
         self._MEM[self._pull_offset] = 1 << self._pull_shift
