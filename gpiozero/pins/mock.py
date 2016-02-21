@@ -49,7 +49,7 @@ class MockPin(Pin):
             self.clear_states()
             return self
         if old_pin.__class__ != cls:
-            raise ValueError('pin %d is already in use as a %s' % (number, old_pin.__class__))
+            raise ValueError('pin %d is already in use as a %s' % (number, old_pin.__class__.__name__))
         return old_pin
 
     def __repr__(self):

@@ -22,6 +22,8 @@ def teardown_function(function):
 # enough to get reasonable coverage but it's by no means comprehensive...
 
 def test_mock_pin_init():
+    with pytest.raises(TypeError):
+        MockPin()
     with pytest.raises(ValueError):
         MockPin(60)
     assert MockPin(2).number == 2
@@ -53,6 +55,8 @@ def test_mock_pin_init_twice_different_pin():
     assert pin2.number == pin1.number+1
 
 def test_mock_pwm_pin_init():
+    with pytest.raises(TypeError):
+        MockPWMPin()
     with pytest.raises(ValueError):
         MockPWMPin(60)
     assert MockPWMPin(2).number == 2
