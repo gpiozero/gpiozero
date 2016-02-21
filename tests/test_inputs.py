@@ -13,4 +13,7 @@ from gpiozero.pins.mock import MockPin
 from gpiozero import *
 
 
+def teardown_function(function):
+    MockPin.clear_pins()
+
 # TODO input_devices tests!

@@ -15,6 +15,9 @@ from gpiozero.pins.mock import MockPin, MockPWMPin
 from gpiozero import *
 
 
+def teardown_function(function):
+    MockPin.clear_pins()
+
 # Some rough tests to make sure our MockPin is up to snuff. This is just
 # enough to get reasonable coverage but it's by no means comprehensive...
 
@@ -23,14 +26,80 @@ def test_mock_pin_init():
         MockPin(60)
     assert MockPin(2).number == 2
 
+def test_mock_pin_defaults():
+    pin = MockPin(2)
+    assert pin.bounce == None
+    assert pin.edges == 'both'
+    assert pin.frequency == None
+    assert pin.function == 'input'
+    assert pin.pull == 'floating'
+    assert pin.state == 0
+    assert pin.when_changed == None
+
+def test_mock_pin_open_close():
+    pin = MockPin(2)
+    pin.close()
+
+def test_mock_pin_init_twice_same_pin():
+    pin1 = MockPin(2)
+    pin2 = MockPin(pin1.number)
+    assert pin1 is pin2
+
+def test_mock_pin_init_twice_different_pin():
+    pin1 = MockPin(2)
+    pin2 = MockPin(pin1.number+1)
+    assert pin1 != pin2
+    assert pin1.number == 2
+    assert pin2.number == pin1.number+1
+
+def test_mock_pwm_pin_init():
+    with pytest.raises(ValueError):
+        MockPWMPin(60)
+    assert MockPWMPin(2).number == 2
+
+def test_mock_pwm_pin_defaults():
+    pin = MockPWMPin(2)
+    assert pin.bounce == None
+    assert pin.edges == 'both'
+    assert pin.frequency == None
+    assert pin.function == 'input'
+    assert pin.pull == 'floating'
+    assert pin.state == 0
+    assert pin.when_changed == None
+
+def test_mock_pwm_pin_open_close():
+    pin = MockPWMPin(2)
+    pin.close()
+
+def test_mock_pwm_pin_init_twice_same_pin():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(pin1.number)
+    assert pin1 is pin2
+
+def test_mock_pwm_pin_init_twice_different_pin():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(pin1.number+1)
+    assert pin1 != pin2
+    assert pin1.number == 2
+    assert pin2.number == pin1.number+1
+
+def test_mock_pin_init_twice_different_modes():
+    pin1 = MockPin(2)
+    pin2 = MockPWMPin(pin1.number+1)
+    assert pin1 != pin2
+    with pytest.raises(ValueError):
+        pin3 = MockPWMPin(pin1.number)
+    with pytest.raises(ValueError):
+        pin4 = MockPin(pin2.number)
+
 def test_mock_pin_frequency_unsupported():
-    pin = MockPin(3)
+    pin = MockPin(2)
     pin.frequency = None
     with pytest.raises(PinPWMUnsupported):
         pin.frequency = 100
 
 def test_mock_pin_frequency_supported():
-    pin = MockPWMPin(3)
+    pin = MockPWMPin(2)
     pin.function = 'output'
     assert pin.frequency is None
     pin.frequency = 100
@@ -39,7 +108,7 @@ def test_mock_pin_frequency_supported():
     assert not pin.state
 
 def test_mock_pin_pull():
-    pin = MockPin(4)
+    pin = MockPin(2)
     pin.function = 'input'
     assert pin.pull == 'floating'
     pin.pull = 'up'
@@ -47,8 +116,34 @@ def test_mock_pin_pull():
     pin.pull = 'down'
     assert not pin.state
 
+def test_mock_pin_state():
+    pin = MockPin(2)
+    with pytest.raises(PinSetInput):
+        pin.state = 1
+    pin.function = 'output'
+    assert pin.state == 0
+    pin.state = 1
+    assert pin.state == 1
+    pin.state = 0
+    assert pin.state == 0
+    pin.state = 0.5
+    assert pin.state == 1
+
+def test_mock_pwm_pin_state():
+    pin = MockPWMPin(2)
+    with pytest.raises(PinSetInput):
+        pin.state = 1
+    pin.function = 'output'
+    assert pin.state == 0
+    pin.state = 1
+    assert pin.state == 1
+    pin.state = 0
+    assert pin.state == 0
+    pin.state = 0.5
+    assert pin.state == 0.5
+
 def test_mock_pin_edges():
-    pin = MockPin(5)
+    pin = MockPin(2)
     assert pin.when_changed is None
     fired = Event()
     pin.function = 'input'

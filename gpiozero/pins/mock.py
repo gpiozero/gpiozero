@@ -25,18 +25,32 @@ class MockPin(Pin):
     A mock pin used primarily for testing. This class does *not* support PWM.
     """
 
-    def __init__(self, number):
+    _PINS = {}
+
+    @classmethod
+    def clear_pins(cls):
+        cls._PINS.clear()
+
+    def __new__(cls, number):
         if not (0 <= number < 54):
             raise ValueError('invalid pin %d specified (must be 0..53)' % number)
-        self._number = number
-        self._function = 'input'
-        self._state = False
-        self._pull = 'floating'
-        self._bounce = None
-        self._edges = 'both'
-        self._when_changed = None
-        self._last_change = time()
-        self.states = [PinState(0.0, False)]
+        try:
+            old_pin = cls._PINS[number]
+        except KeyError:
+            self = super(Pin, cls).__new__(cls)
+            cls._PINS[number] = self
+            self._number = number
+            self._function = 'input'
+            self._state = False
+            self._pull = 'floating'
+            self._bounce = None
+            self._edges = 'both'
+            self._when_changed = None
+            self.clear_states()
+            return self
+        if old_pin.__class__ != cls:
+            raise ValueError('pin %d is already in use as a %s' % (number, old_pin.__class__))
+        return old_pin
 
     def __repr__(self):
         return 'MOCK%d' % self._number
@@ -67,12 +81,16 @@ class MockPin(Pin):
             raise PinSetInput('cannot set state of pin %r' % self)
         assert self._function == 'output'
         assert 0 <= value <= 1
-        value = bool(value)
+        self._change_state(bool(value))
+
+    def _change_state(self, value):
         if self._state != value:
             t = time()
             self._state = value
             self.states.append(PinState(t - self._last_change, value))
             self._last_change = t
+            return True
+        return False
 
     def _get_frequency(self):
         return None
@@ -115,27 +133,19 @@ class MockPin(Pin):
 
     def drive_high(self):
         assert self._function == 'input'
-        if not self._state:
-            t = time()
-            self._state = True
-            self.states.append(PinState(t - self._last_change, True))
-            self._last_change = t
+        if self._change_state(True):
             if self._edges in ('both', 'rising') and self._when_changed is not None:
                 self._when_changed()
 
     def drive_low(self):
         assert self._function == 'input'
-        if self._state:
-            t = time()
-            self._state = False
-            self.states.append(PinState(t - self._last_change, False))
-            self._last_change = t
+        if self._change_state(False):
             if self._edges in ('both', 'falling') and self._when_changed is not None:
                 self._when_changed()
 
     def clear_states(self):
         self._last_change = time()
-        self.states = [PinState(0.0, self.state)]
+        self.states = [PinState(0.0, self._state)]
 
     def assert_states(self, expected_states):
         # Tests that the pin went through the expected states (a list of values)
@@ -158,20 +168,19 @@ class MockPWMPin(MockPin):
     """
 
     def __init__(self, number):
-        super(MockPWMPin, self).__init__(number)
+        super(MockPWMPin, self).__init__()
         self._frequency = None
+
+    def close(self):
+        self.frequency = None
+        super(MockPWMPin, self).close()
 
     def _set_state(self, value):
         if self._function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
         assert self._function == 'output'
         assert 0 <= value <= 1
-        value = float(value)
-        if self._state != value:
-            t = time()
-            self._state = value
-            self.states.append(PinState(t - self._last_change, value))
-            self._last_change = t
+        self._change_state(float(value))
 
     def _get_frequency(self):
         return self._frequency
@@ -181,5 +190,5 @@ class MockPWMPin(MockPin):
             assert self._function == 'output'
         self._frequency = value
         if value is None:
-            self.state = False
+            self._change_state(0.0)
 
