@@ -13,6 +13,7 @@ from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
+    PinInvalidPull,
     )
 
 
@@ -144,7 +145,7 @@ class PiGPIOPin(Pin):
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'floating'
+            self.pull = 'up' if self.number in (2, 3) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self._connection.get_mode(self._number)]
