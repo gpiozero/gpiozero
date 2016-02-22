@@ -11,12 +11,14 @@ from threading import Lock
 
 import RPIO
 import RPIO.PWM
+from RPIO.Exceptions import InvalidChannelException
 
 from . import Pin, PINS_CLEANUP
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
+    PinInvalidPull,
     )
 
 
@@ -81,7 +83,10 @@ class RPIOPin(Pin):
             self._bounce = None
             self._when_changed = None
             self._edges = 'both'
-            RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
+            try:
+                RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
+            except InvalidChannelException as e:
+                raise ValueError(e)
             return self
 
     def __repr__(self):
@@ -148,7 +153,10 @@ class RPIOPin(Pin):
             raise PinInvalidPull('invalid pull "%s" for pin %r' % (value, self))
 
     def _get_frequency(self):
-        return 100
+        if self._pwm:
+            return 100
+        else:
+            return None
 
     def _set_frequency(self, value):
         if value is not None and value != 100:
