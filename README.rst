@@ -78,7 +78,7 @@ This project is being developed on `GitHub`_. Join in:
 
 * Provide suggestions, report bugs and ask questions as `issues`_
 * Provide examples we can use as `recipes`_
-* Contribute to the code
+* `Contribute`_ to the code
 
 Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org
 
@@ -92,12 +92,11 @@ Contributors
 - `Schelto vanDoorn`_
 
 
-.. _Ben Nuttall: https://github.com/bennuttall
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
-.. _Dave Jones: https://github.com/waveform80
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
+.. _Contribute: CONTRIBUTING.md
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
