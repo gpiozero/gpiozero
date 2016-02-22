@@ -112,7 +112,11 @@ class PiGPIOPin(Pin):
             self._when_changed = None
             self._callback = None
             self._edges = pigpio.EITHER_EDGE
-            self._connection.set_mode(self._number, pigpio.INPUT)
+            try:
+                self._connection.set_mode(self._number, pigpio.INPUT)
+            except pigpio.error as e:
+                del cls._PINS[(host, port, number)]
+                raise ValueError(e)
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[self._pull])
             self._connection.set_glitch_filter(self._number, 0)
             self._connection.set_PWM_range(self._number, 255)
