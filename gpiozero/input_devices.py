@@ -8,7 +8,6 @@ from __future__ import (
 )
 
 import inspect
-import warnings
 from functools import wraps
 from time import sleep, time
 from threading import Event
@@ -639,7 +638,7 @@ class DistanceSensor(SmoothedInputDevice):
     def __init__(
             self, echo=None, trigger=None, queue_len=30, max_distance=1,
             threshold_distance=0.3, partial=False):
-        if not (max_distance > 0):
+        if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(
@@ -955,7 +954,7 @@ class MCP33xx(MCP3xxx):
         data = data[-2:]
         result = ((data[0] & 63) << 7) | (data[1] >> 1)
         # Account for the sign bit
-        if self.differential and value > 4095:
+        if self.differential and result > 4095:
             result = -(8192 - result)
         assert -4096 <= result < 4096
         return result

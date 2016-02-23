@@ -50,7 +50,6 @@ from .input_devices import (
     MotionSensor,
     LightSensor,
     DistanceSensor,
-    AnalogInputDevice,
     MCP3001,
     MCP3002,
     MCP3004,

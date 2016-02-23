@@ -333,7 +333,9 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
 
 class GPIOThread(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         super(GPIOThread, self).__init__(group, target, name, args, kwargs)
         self.stopping = Event()
         self.daemon = True

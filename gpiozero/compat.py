@@ -49,5 +49,5 @@ def median(data):
         return data[n // 2]
     else:
         i = n // 2
-        return (data[n - 1] + data[n]) / 2
+        return (data[i - 1] + data[i]) / 2
 
