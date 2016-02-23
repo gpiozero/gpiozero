@@ -37,7 +37,7 @@ class MockPin(Pin):
         try:
             old_pin = cls._PINS[number]
         except KeyError:
-            self = super(Pin, cls).__new__(cls)
+            self = super(MockPin, cls).__new__(cls)
             cls._PINS[number] = self
             self._number = number
             self._function = 'input'

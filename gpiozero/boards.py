@@ -9,7 +9,6 @@ try:
 except ImportError:
     pass
 
-from time import sleep
 from collections import namedtuple
 from itertools import repeat, cycle, chain
 

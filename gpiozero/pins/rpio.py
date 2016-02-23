@@ -19,6 +19,8 @@ from ..exc import (
     PinSetInput,
     PinFixedPull,
     PinInvalidPull,
+    PinInvalidState,
+    PinPWMError,
     )
 
 
@@ -120,7 +122,7 @@ class RPIOPin(Pin):
 
     def _set_state(self, value):
         if not 0 <= value <= 1:
-            raise PinInvalidValue('invalid state "%s" for pin %r' % (value, self))
+            raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         if self._pwm:
             RPIO.PWM.clear_channel_gpio(0, self._number)
             if value == 0:

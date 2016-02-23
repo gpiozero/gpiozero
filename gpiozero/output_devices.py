@@ -5,8 +5,6 @@ from __future__ import (
     division,
 )
 
-import warnings
-from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
