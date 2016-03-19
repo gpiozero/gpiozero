@@ -167,6 +167,8 @@ Alternatively::
     from time import sleep
     from signal import pause
 
+    lights = TrafficLights(2, 3, 4)
+
     def traffic_light_sequence():
         while True:
             yield (0, 0, 1) # green
