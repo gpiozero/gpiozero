@@ -31,6 +31,9 @@ class GPIOBadQueueLen(GPIODeviceError, ValueError):
 class GPIOBadSampleWait(GPIODeviceError, ValueError):
     "Error raised when a negative sampling wait period is specified"
 
+class GPIOBadSourceDelay(GPIODeviceError, ValueError):
+    "Error raised when a negative source delay is specified"
+
 class InputDeviceError(GPIODeviceError):
     "Base class for errors specific to the InputDevice hierarchy"
 
