@@ -15,6 +15,7 @@ from ..exc import (
     PinFixedPull,
     PinInvalidPull,
     PinInvalidState,
+    PinInvalidBounce,
     PinPWMFixedValue,
     )
 
@@ -186,10 +187,12 @@ class RPiGPIOPin(Pin):
         return None if self._bounce == -666 else (self._bounce / 1000)
 
     def _set_bounce(self, value):
+        if value is not None and value < 0:
+            raise PinInvalidBounce('bounce must be 0 or greater')
         f = self.when_changed
         self.when_changed = None
         try:
-            self._bounce = -666 if value is None else (value * 1000)
+            self._bounce = -666 if value is None else int(value * 1000)
         finally:
             self.when_changed = f
 

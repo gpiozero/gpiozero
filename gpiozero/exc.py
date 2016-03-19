@@ -61,6 +61,9 @@ class PinInvalidPull(PinError, ValueError):
 class PinInvalidEdges(PinError, ValueError):
     "Error raised when attempting to assign an invalid edge detection to a pin"
 
+class PinInvalidBounce(PinError, ValueError):
+    "Error raised when attempting to assign an invalid bounce time to a pin"
+
 class PinSetInput(PinError, AttributeError):
     "Error raised when attempting to set a read-only pin"
 

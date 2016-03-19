@@ -14,6 +14,7 @@ from ..exc import (
     PinSetInput,
     PinFixedPull,
     PinInvalidPull,
+    PinInvalidBounce,
     )
 
 
@@ -216,6 +217,8 @@ class PiGPIOPin(Pin):
     def _set_bounce(self, value):
         if value is None:
             value = 0
+        elif value < 0:
+            raise PinInvalidBounce('bounce must be 0 or greater')
         self._connection.set_glitch_filter(self._number, int(value * 1000000))
 
     def _get_edges(self):

@@ -19,6 +19,7 @@ from ..exc import (
     PinSetInput,
     PinFixedPull,
     PinInvalidPull,
+    PinInvalidBounce,
     )
 
 
@@ -177,10 +178,12 @@ class RPIOPin(Pin):
         return None if self._bounce is None else (self._bounce / 1000)
 
     def _set_bounce(self, value):
+        if value is not None and value < 0:
+            raise PinInvalidBounce('bounce must be 0 or greater')
         f = self.when_changed
         self.when_changed = None
         try:
-            self._bounce = None if value is None else (value * 1000)
+            self._bounce = None if value is None else int(value * 1000)
         finally:
             self.when_changed = f
 
