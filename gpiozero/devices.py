@@ -23,6 +23,7 @@ from .exc import (
     GPIODeviceClosed,
     GPIOBadQueueLen,
     GPIOBadSampleWait,
+    GPIOBadSourceDelay,
     )
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here
@@ -164,6 +165,7 @@ class SourceMixin(object):
     def __init__(self, *args, **kwargs):
         self._source = None
         self._source_thread = None
+        self._source_delay = 0.01
         super(SourceMixin, self).__init__(*args, **kwargs)
 
     def close(self):
@@ -176,13 +178,28 @@ class SourceMixin(object):
     def _copy_values(self, source):
         for v in source:
             self.value = v
-            if self._source_thread.stopping.wait(0):
+            if self._source_thread.stopping.wait(self._source_delay):
                 break
+
+    @property
+    def source_delay(self):
+        """
+        The delay (measured in seconds) in the loop used to read values from
+        :attr:`source`. Defaults to 0.01 seconds which is generally sufficient
+        to keep CPU usage to a minimum while providing adequate responsiveness.
+        """
+        return self._source_delay
+
+    @source_delay.setter
+    def source_delay(self, value):
+        if value < 0:
+            raise GPIOBadSourceDelay('source_delay must be 0 or greater')
+        self._source_delay = float(value)
 
     @property
     def source(self):
         """
-        The iterable to use as a source of values for `value`.
+        The iterable to use as a source of values for :attr:`value`.
         """
         return self._source
 
