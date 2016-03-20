@@ -568,7 +568,7 @@ Keyboard controlled robot
 =========================
 
 .. XXX Rewrite this using curses (to avoid evdev dep, which isn't packaged
-   on Rapsbian)
+   on Raspbian)
 
 Use up/down/left/right keys to control a robot::
 
