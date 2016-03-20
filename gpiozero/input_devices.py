@@ -754,6 +754,7 @@ class DistanceSensor(SmoothedInputDevice):
             # wrong (XXX raise a warning?)
             return 1.0
 
+DistanceSensor.within_range = DistanceSensor.is_active
 DistanceSensor.when_out_of_range = DistanceSensor.when_activated
 DistanceSensor.when_in_range = DistanceSensor.when_deactivated
 DistanceSensor.wait_for_out_of_range = DistanceSensor.wait_for_active
