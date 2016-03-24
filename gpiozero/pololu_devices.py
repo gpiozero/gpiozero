@@ -6,12 +6,12 @@ from __future__ import (
 )
 
 import warnings
-from time import sleep
-from threading import Lock
-from itertools import repeat, cycle, chain
+#from time import sleep
+#from threading import Lock
+#from itertools import repeat, cycle, chain
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing, GPIODeviceClosed
-from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
+from .devices import GPIODevice, CompositeDevice, SourceMixin
 
 
 class PololuMotor(SourceMixin, CompositeDevice):
@@ -136,8 +136,8 @@ class PololuRobot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
 
-    This class is constructed with two tuples representing the forward and
-    backward pins of the left and right controllers respectively. For example,
+    This class is constructed with two tuples representing the power and
+    direction pins of the left and right controllers respectively. For example,
     if the left motor's controller is connected to GPIOs 4 and 14, while the
     right motor's controller is connected to GPIOs 17 and 18 then the following
     example will turn the robot left::
