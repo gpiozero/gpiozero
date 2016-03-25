@@ -265,7 +265,7 @@ class LEDBarGraph(LEDCollection):
     """
 
     def __init__(self, *pins, **kwargs):
-        super(LEDBarGraph, self).__init__(*pins, pwm=False)
+        super(LEDBarGraph, self).__init__(*pins, **kwargs)
         initial_value = kwargs.get('initial_value', 0)
         self.value = initial_value
 
@@ -307,12 +307,19 @@ class LEDBarGraph(LEDCollection):
     @value.setter
     def value(self, value):
         count = len(self.leds)
-        if value >= 0:
-            for index, led in enumerate(self.leds, start=1):
-                led.value = value >= (index / count)
-        else:
-            for index, led in enumerate(reversed(self.leds), start=1):
-                led.value = value <= -(index / count)
+        ratio = abs(value * count)
+        full_leds = ratio // 1
+        remainder = ratio % 1
+        leds = self.leds
+        if value < 0:
+            leds = reversed(leds)
+        for index, led in enumerate(leds):
+            if index < full_leds:
+                led.value = 1
+            elif index == full_leds:
+                led.value = remainder
+            else:
+                led.value = 0
 
 
 class PiLiter(LEDBoard):
@@ -360,9 +367,10 @@ class PiLiterBarGraph(LEDBarGraph):
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
-    def __init__(self, initial_value=0):
+    def __init__(self, initial_value=0, pwm=False):
         super(PiLiterBarGraph, self).__init__(
-                4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
+                4, 17, 27, 18, 22, 23, 24, 25,
+                initial_value=initial_value, pwm=pwm)
 
 
 TrafficLightTuple = namedtuple('TrafficLightTuple', ('red', 'amber', 'green'))
