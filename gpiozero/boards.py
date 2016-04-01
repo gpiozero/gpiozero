@@ -293,18 +293,21 @@ class LEDBoard(LEDCollection):
 
 class LEDBarGraph(LEDCollection):
     """
-    Extends :class:`CompositeDevice` to control a line of LEDs representing a
+    Extends :class:`LEDCollection` to control a line of LEDs representing a
     bar graph. Positive values (0 to 1) light the LEDs from first to last.
     Negative values (-1 to 0) light the LEDs from last to first.
 
-    The following example turns on all the LEDs on a board containing 5 LEDs
-    attached to GPIO pins 2 through 6::
+    The following example demonstrates turning on the first two and last two
+    LEDs in a board containing five LEDs attached to GPIOs 2 through 6::
 
         from gpiozero import LEDBarGraph
+        from time import sleep
 
         graph = LEDBarGraph(2, 3, 4, 5, 6)
         graph.value = 2/5  # Light the first two LEDs only
+        sleep(1)
         graph.value = -2/5 # Light the last two LEDs only
+        sleep(1)
         graph.off()
 
     As with other output devices, :attr:`source` and :attr:`values` are
@@ -313,7 +316,7 @@ class LEDBarGraph(LEDCollection):
         from gpiozero import LEDBarGraph, MCP3008
         from signal import pause
 
-        graph = LEDBarGraph(2, 3, 4, 5, 6)
+        graph = LEDBarGraph(2, 3, 4, 5, 6, pwm=True)
         pot = MCP3008(channel=0)
         graph.source = pot.values
         pause()
@@ -324,13 +327,25 @@ class LEDBarGraph(LEDCollection):
 
     :param float initial_value:
         The initial :attr:`value` of the graph given as a float between -1 and
-        +1.  Defaults to 0.0.
+        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
+        parameter.
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances. This
+        parameter can only be specified as a keyword parameter.
     """
 
     def __init__(self, *pins, **kwargs):
-        super(LEDBarGraph, self).__init__(*pins, pwm=False)
+        # Don't allow graphs to contain collections
+        for pin in pins:
+            assert not isinstance(pin, LEDCollection)
+        pwm = kwargs.pop('pwm', False)
+        initial_value = kwargs.pop('initial_value', 0)
+        if kwargs:
+            raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
+        super(LEDBarGraph, self).__init__(*pins, pwm=pwm)
         try:
-            initial_value = kwargs.pop('initial_value', 0)
             self.value = initial_value
         except:
             self.close()
@@ -357,29 +372,27 @@ class LEDBarGraph(LEDCollection):
 
             Setting value to -1 will light all LEDs. However, querying it
             subsequently will return 1 as both representations are the same in
-            hardware.
+            hardware. The readable range of :attr:`value` is effectively
+            -1 < value <= 1.
         """
-        for index, led in enumerate(self.leds):
-            if not led.is_lit:
-                break
-        else:
-            index = len(self.leds)
-        if not index:
-            for index, led in enumerate(reversed(self.leds)):
-                if not led.is_lit:
-                    break
-            index = -index
-        return index / len(self.leds)
+        result = sum(led.value for led in self)
+        if self[0].value < self[-1].value:
+            result = -result
+        return result / len(self)
 
     @value.setter
     def value(self, value):
-        count = len(self.leds)
-        if value >= 0:
-            for index, led in enumerate(self.leds, start=1):
-                led.value = value >= (index / count)
+        count = len(self)
+        leds = self
+        if value < 0:
+            leds = reversed(leds)
+            value = -value
+        if isinstance(self[0], PWMLED):
+            calc_value = lambda index: min(1, max(0, count * value - index))
         else:
-            for index, led in enumerate(reversed(self.leds), start=1):
-                led.value = value <= -(index / count)
+            calc_value = lambda index: value >= ((index + 1) / count)
+        for index, led in enumerate(leds):
+            led.value = calc_value(index)
 
 
 class PiLiter(LEDBoard):

@@ -506,7 +506,6 @@ class GPIODevice(Device):
         try:
             return "<gpiozero.%s object on pin %r, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.is_active)
-        except GPIODeviceClosed:
+        except DeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
-
 
