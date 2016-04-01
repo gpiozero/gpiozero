@@ -709,6 +709,53 @@ Please note the example above requires Python 3. In Python 2, :func:`zip`
 doesn't support lazy evaluation so the script will simply hang.
 
 
+Controlling the Pi's own LEDs
+=============================
+
+On certain models of Pi (specifically the model A+, B+, and 2B) it's possible
+to control the power and activity LEDs.  This can be useful for testing GPIO
+functionality without the need to wire up your own LEDs (also useful because
+the power and activity LEDs are "known good").
+
+Firstly you need to disable the usual triggers for the built-in LEDs. This can
+be done from the terminal with the following commands::
+
+    $ echo none | sudo tee /sys/class/leds/led0/trigger
+    $ echo gpio | sudo tee /sys/class/leds/led1/trigger
+
+Now you can control the LEDs with gpiozero like so::
+
+    from gpiozero import LED
+    from signal import pause
+
+    power = LED(35)
+    activity = LED(47)
+
+    activity.blink()
+    power.blink()
+    pause()
+
+To revert the LEDs to their usual purpose you can either reboot your Pi or
+run the following commands::
+
+    $ echo mmc0 | sudo tee /sys/class/leds/led0/trigger
+    $ echo input | sudo tee /sys/class/leds/led1/trigger
+
+.. note::
+
+    On the Pi Zero you can control the activity LED with this recipe, but
+    there's no separate power LED to control (it's also worth noting the
+    activity LED is active low, so set ``active_high=False`` when constructing
+    your LED component.
+
+    On the original Pi 1 (model A or B), the activity LED can be controlled
+    with GPIO16 (after disabling its trigger as above) but the power LED is
+    hard-wired on.
+
+    On the Pi 3B the LEDs are controlled by a GPIO expander which is not
+    accessible from gpiozero (yet).
+
+
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
