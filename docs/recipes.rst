@@ -638,6 +638,17 @@ connected to a :class:`MCP3008` analog to digital converter::
         with MCP3008(channel=0) as pot:
             print(pot.value)
 
+Present the value of a potentiometer on an LED bar graph using PWM to represent
+states that won't "fill" an LED::
+
+    from gpiozero import LEDBarGraph, MCP3008
+    from signal import pause
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, pwm=True)
+    pot = MCP3008(channel=0)
+    graph.source = pot.values
+    pause()
+
 
 Measure temperature with an ADC
 ===============================
