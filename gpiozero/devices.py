@@ -356,7 +356,7 @@ class CompositeDevice(Device):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
         self._all = args + tuple(kwargs[v] for v in self._order)
         self._named = kwargs
-        self._tuple = namedtuple('CompositeDeviceValue', chain(
+        self._tuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             (str(i) for i in range(len(args))), self._order),
             rename=True)
 
@@ -375,18 +375,39 @@ class CompositeDevice(Device):
             raise AttributeError("can't set attribute %s" % name)
         return super(CompositeDevice, self).__setattr__(name, value)
 
+    def __repr__(self):
+        try:
+            self._check_open()
+            return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
+                    self.__class__.__name__,
+                    len(self), ','.join(self._named),
+                    len(self) - len(self._named)
+                    )
+        except DeviceClosed:
+            return "<gpiozero.%s object closed>"
+
+    def __len__(self):
+        return len(self._all)
+
+    def __getitem__(self, index):
+        return self._all[index]
+
+    def __iter__(self):
+        return iter(self._all)
+
     @property
     def all(self):
+        # XXX Deprecate this in favour of using the instance as a container
         return self._all
 
     def close(self):
-        for device in self._all:
-            device.close()
-        self._all = ()
+        if self._all:
+            for device in self._all:
+                device.close()
 
     @property
     def closed(self):
-        return bool(self._all)
+        return all(device.closed for device in self)
 
     @property
     def tuple(self):
@@ -394,7 +415,7 @@ class CompositeDevice(Device):
 
     @property
     def value(self):
-        return self.tuple(*(device.value for device in self._all))
+        return self.tuple(*(device.value for device in self))
 
 
 class GPIODevice(Device):

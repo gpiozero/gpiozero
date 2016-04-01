@@ -95,6 +95,7 @@ from .boards import (
     PiLiterBarGraph,
     TrafficLights,
     PiTraffic,
+    SnowPi,
     TrafficLightsBuzzer,
     FishDish,
     TrafficHat,

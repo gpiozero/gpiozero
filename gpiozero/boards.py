@@ -37,7 +37,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices on.
         """
         for device in self.all:
-            if isinstance(device, OutputDevice):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.on()
 
     def off(self):
@@ -45,7 +45,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices off.
         """
         for device in self.all:
-            if isinstance(device, OutputDevice):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.off()
 
     def toggle(self):
@@ -54,21 +54,21 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         off; if it's off, turn it on.
         """
         for device in self.all:
-            if isinstance(device, OutputDevice):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.toggle()
 
     @property
     def value(self):
         """
         A tuple containing a value for each subordinate device. This property
-        can also be set to update the state of all output subordinate devices.
+        can also be set to update the state of all subordinate output devices.
         """
         return super(CompositeOutputDevice, self).value
 
     @value.setter
     def value(self, value):
         for device, v in zip(self.all, value):
-            if isinstance(device, OutputDevice):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.value = v
             # Simply ignore values for non-output devices
 
@@ -87,17 +87,32 @@ class LEDCollection(CompositeOutputDevice):
         order = kwargs.pop('_order', None)
         LEDClass = PWMLED if pwm else LED
         super(LEDCollection, self).__init__(
-            *(LEDClass(pin, active_high, initial_value) for pin in args),
+            *(
+                pin_or_collection
+                if isinstance(pin_or_collection, LEDCollection) else
+                LEDClass(pin_or_collection, active_high, initial_value)
+                for pin_or_collection in args
+                ),
             _order=order,
-            **{name: LEDClass(pin, active_high, initial_value) for name, pin in kwargs.items()})
+            **{
+                name: pin_or_collection
+                if isinstance(pin_or_collection, LEDCollection) else
+                LEDClass(pin_or_collection, active_high, initial_value)
+                for name, pin_or_collection in kwargs.items()
+                })
 
     @property
     def leds(self):
         """
-        A tuple of all the :class:`LED` or :class:`PWMLED` objects contained by
-        the instance.
+        A flat iterator over all LEDs contained in this collection (and all
+        sub-collections).
         """
-        return self.all
+        for item in self:
+            if isinstance(item, LEDCollection):
+                for subitem in item.leds:
+                    yield subitem
+            else:
+                yield item
 
 
 class LEDBoard(LEDCollection):
@@ -115,7 +130,8 @@ class LEDBoard(LEDCollection):
 
     :param int \*pins:
         Specify the GPIO pins that the LEDs of the board are attached to. You
-        can designate as many pins as necessary.
+        can designate as many pins as necessary. You can also specify
+        :class:`LEDBoard` instances to create trees of LEDs.
 
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances for each pin. If
@@ -132,7 +148,18 @@ class LEDBoard(LEDCollection):
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). The ``True``,
         the device will be switched on initially.
+
+    :param \*\*named_pins:
+        Sepcify GPIO pins that LEDs of the board are attached to, associated
+        each LED with a property name. You can designate as many pins as
+        necessary and any name provided it's not already in use by something
+        else. You can also specify :class:`LEDBoard` instances to create
+        trees of LEDs.
     """
+    def __init__(self, *args, **kwargs):
+        self._blink_leds = []
+        self._blink_lock = Lock()
+        super(LEDBoard, self).__init__(*args, **kwargs)
 
     def close(self):
         self._stop_blink()
@@ -181,11 +208,12 @@ class LEDBoard(LEDCollection):
             finished (warning: the default value of *n* will result in this
             method never returning).
         """
-        if isinstance(self.leds[0], LED):
-            if fade_in_time:
-                raise ValueError('fade_in_time must be 0 with non-PWM LEDs')
-            if fade_out_time:
-                raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
+        for led in self.leds:
+            if isinstance(led, LED):
+                if fade_in_time:
+                    raise ValueError('fade_in_time must be 0 with non-PWM LEDs')
+                if fade_out_time:
+                    raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
@@ -196,10 +224,14 @@ class LEDBoard(LEDCollection):
             self._blink_thread.join()
             self._blink_thread = None
 
-    def _stop_blink(self):
-        if self._blink_thread:
-            self._blink_thread.stop()
-            self._blink_thread = None
+    def _stop_blink(self, led=None):
+        if led is None:
+            if self._blink_thread:
+                self._blink_thread.stop()
+                self._blink_thread = None
+        else:
+            with self._blink_lock:
+                self._blink_leds.remove(led)
 
     def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
         """
@@ -243,9 +275,18 @@ class LEDBoard(LEDCollection):
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
                 )
+        with self._blink_lock:
+            self._blink_leds = list(self.leds)
+            for led in self._blink_leds:
+                if led._controller not in (None, self):
+                    led._controller._stop_blink(led)
+                led._controller = self
         for value, delay in sequence:
-            for led in self.leds:
-                led.value = value
+            with self._blink_lock:
+                if not self._blink_leds:
+                    break
+                for led in self._blink_leds:
+                    led._write(value)
             if self._blink_thread.stopping.wait(delay):
                 break
 
@@ -432,7 +473,7 @@ class TrafficLights(LEDBoard):
 
 class PiTraffic(TrafficLights):
     """
-    Extends :class:`TrafficLights` for the Low Voltage Labs PI-TRAFFIC:
+    Extends :class:`TrafficLights` for the `Low Voltage Labs PI-TRAFFIC`_:
     vertical traffic lights board when attached to GPIO pins 9, 10, and 11.
 
     There's no need to specify the pins if the PI-TRAFFIC is connected to the
@@ -446,10 +487,52 @@ class PiTraffic(TrafficLights):
 
     To use the PI-TRAFFIC board when attached to a non-standard set of pins,
     simply use the parent class, :class:`TrafficLights`.
+
+    .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
 
     def __init__(self):
         super(PiTraffic, self).__init__(9, 10, 11)
+
+
+class SnowPi(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.
+
+    The SnowPi pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example turns on the eyes, sets
+    the nose pulsing, and the arms blinking::
+
+        from gpiozero import SnowPi
+
+        snowman = SnowPi(pwm=True)
+        snowman.eyes.on()
+        snowman.nose.pulse()
+        snowman.arms.blink()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    .. _Ryanteck SnowPi: https://ryanteck.uk/raspberry-pi/114-snowpi-the-gpio-snowman-for-raspberry-pi-0635648608303.html
+    """
+    def __init__(self, pwm=False):
+        super(SnowPi, self).__init__(
+            arms=LEDBoard(
+                left=LEDBoard(
+                    top=17, middle=18, bottom=22, pwm=pwm,
+                    _order=('top', 'middle', 'bottom')),
+                right=LEDBoard(
+                    top=7, middle=8, bottom=9, pwm=pwm,
+                    _order=('top', 'middle', 'bottom'))
+                ),
+            eyes=LEDBoard(
+                left=23, right=24, pwm=pwm,
+                _order=('left', 'right')
+                ),
+            nose=25, pwm=pwm
+            )
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):
