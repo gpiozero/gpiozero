@@ -34,7 +34,7 @@ class SPIBadArgs(SPIError, ValueError):
 class GPIODeviceError(GPIOZeroError):
     "Base class for errors specific to the GPIODevice hierarchy"
 
-class GPIODeviceClosed(GPIODeviceError):
+class GPIODeviceClosed(GPIODeviceError, DeviceClosed):
     "Deprecated descendent of :exc:`DeviceClosed`"
 
 class GPIOPinInUse(GPIODeviceError):
