@@ -10,8 +10,9 @@ from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
-from .exc import OutputDeviceBadValue, GPIOPinMissing, GPIODeviceClosed
-from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
+from .exc import OutputDeviceBadValue, GPIOPinMissing
+from .devices import GPIODevice, CompositeDevice, SourceMixin
+from .threads import GPIOThread
 
 
 class OutputDevice(SourceMixin, GPIODevice):
@@ -38,10 +39,8 @@ class OutputDevice(SourceMixin, GPIODevice):
         device will be switched on initially.
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
-        self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
-        self._active_state = True if active_high else False
-        self._inactive_state = False if active_high else True
+        self.active_high = active_high
         if initial_value is None:
             self.pin.function = 'output'
         elif initial_value:
@@ -72,6 +71,10 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     @property
     def value(self):
+        """
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise. Setting this property changes the state of the device.
+        """
         return super(OutputDevice, self).value
 
     @value.setter
@@ -80,7 +83,22 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     @property
     def active_high(self):
-        return self._active_high
+        """
+        When ``True``, the :attr:`value` property is ``True`` when the device's
+        :attr:`pin` is high. When ``False`` the :attr:`value` property is
+        ``True`` when the device's pin is low (i.e. the value is inverted).
+
+        This property can be set after construction; be warned that changing it
+        will invert :attr:`value` (i.e. changing this property doesn't change
+        the device's pin state - it just changes how that state is
+        interpreted).
+        """
+        return self._active_state
+
+    @active_high.setter
+    def active_high(self, value):
+        self._active_state = True if value else False
+        self._inactive_state = False if value else True
 
     def __repr__(self):
         try:

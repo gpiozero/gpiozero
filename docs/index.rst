@@ -10,6 +10,7 @@ Table of Contents
     notes
     api_input
     api_output
+    api_spi
     api_boards
     api_generic
     api_pins

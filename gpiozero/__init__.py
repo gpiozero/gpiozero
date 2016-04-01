@@ -10,7 +10,13 @@ from .pins import (
 )
 from .exc import (
     GPIOZeroError,
+    DeviceClosed,
     CompositeDeviceError,
+    CompositeDeviceBadName,
+    SPIError,
+    SPIBadArgs,
+    EnergenieSocketMissing,
+    EnergenieBadSocket,
     GPIODeviceError,
     GPIODeviceClosed,
     GPIOPinInUse,
@@ -32,10 +38,15 @@ from .exc import (
     PinPWMError,
     PinPWMUnsupported,
     PinPWMFixedValue,
+    GPIOZeroWarning,
+    SPIWarning,
+    SPISoftwareFallback,
 )
 from .devices import (
+    Device,
     GPIODevice,
     CompositeDevice,
+    SharedMixin,
     SourceMixin,
     ValuesMixin,
 )
@@ -44,12 +55,14 @@ from .input_devices import (
     WaitableInputDevice,
     DigitalInputDevice,
     SmoothedInputDevice,
-    AnalogInputDevice,
     Button,
     LineSensor,
     MotionSensor,
     LightSensor,
     DistanceSensor,
+)
+from .spi_devices import (
+    SPIDevice,
     AnalogInputDevice,
     MCP3001,
     MCP3002,
@@ -74,6 +87,8 @@ from .output_devices import (
     RGBLED,
 )
 from .boards import (
+    CompositeOutputDevice,
+    LEDCollection,
     LEDBoard,
     LEDBarGraph,
     PiLiter,
@@ -86,4 +101,5 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    Energenie,
 )

@@ -40,28 +40,3 @@ Distance Sensor (HC-SR04)
 .. autoclass:: DistanceSensor(echo, trigger, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False)
     :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance
 
-
-Analog to Digital Converters (ADC)
-==================================
-
-.. autoclass:: MCP3004
-    :members: bus, device, channel, value, differential
-
-.. autoclass:: MCP3008
-    :members: bus, device, channel, value, differential
-
-.. autoclass:: MCP3204
-    :members: bus, device, channel, value, differential
-
-.. autoclass:: MCP3208
-    :members: bus, device, channel, value, differential
-
-.. autoclass:: MCP3301
-    :members: bus, device, value
-
-.. autoclass:: MCP3302
-    :members: bus, device, channel, value, differential
-
-.. autoclass:: MCP3304
-    :members: bus, device, channel, value, differential
-

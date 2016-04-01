@@ -1,0 +1,27 @@
+digraph classes {
+    graph [rankdir=BT];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+    Device;
+    SPIDevice;
+    AnalogInputDevice;
+    MCP3xxx;
+    MCP33xx;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+    SPIDevice->Device;
+    AnalogInputDevice->SPIDevice;
+    MCP3xxx->AnalogInputDevice;
+    MCP33xx->MCP3xxx;
+    MCP3004->MCP3xxx;
+    MCP3008->MCP3xxx;
+    MCP3204->MCP3xxx;
+    MCP3208->MCP3xxx;
+    MCP3301->MCP33xx;
+    MCP3302->MCP33xx;
+    MCP3304->MCP33xx;
+}

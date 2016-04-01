@@ -16,6 +16,9 @@ from ..exc import (
 
 
 PINS_CLEANUP = []
+def _pins_shutdown():
+    for routine in PINS_CLEANUP:
+        routine()
 
 
 class Pin(object):

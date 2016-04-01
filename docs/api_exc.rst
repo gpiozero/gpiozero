@@ -34,9 +34,24 @@ so you can still do::
         print('Bad value specified')
 
 
+Errors
+======
+
 .. autoexception:: GPIOZeroError
 
+.. autoexception:: DeviceClosed
+
 .. autoexception:: CompositeDeviceError
+
+.. autoexception:: CompositeDeviceBadName
+
+.. autoexception:: EnergenieSocketMissing
+
+.. autoexception:: EnergenieBadSocket
+
+.. autoexception:: SPIError
+
+.. autoexception:: SPIBadArgs
 
 .. autoexception:: GPIODeviceError
 
@@ -79,4 +94,13 @@ so you can still do::
 .. autoexception:: PinPWMUnsupported
 
 .. autoexception:: PinPWMFixedValue
+
+Warnings
+========
+
+.. autoexception:: GPIOZeroWarning
+
+.. autoexception:: SPIWarning
+
+.. autoexception:: SPISoftwareFallback
 
