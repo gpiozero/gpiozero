@@ -410,18 +410,75 @@ Button.wait_for_press = Button.wait_for_active
 Button.wait_for_release = Button.wait_for_inactive
 
 
-class LineSensor(DigitalInputDevice):
+class LineSensor(SmoothedInputDevice):
     """
-    A single sensor line detector.
-    """
-    def __init__(self, pin=None, pull_up=True, bounce_time=None):
-        super(LineSensor, self).__init__(pin, pull_up, bounce_time)
+    Extends :class:`DigitalInputDevice` and represents a single pin line sensor
+    like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
+    EduKit`_.
 
-LineSensor.line_detected = LineSensor.is_active
-LineSensor.when_line = LineSensor.when_activated
-LineSensor.when_no_line = LineSensor.when_deactivated
-LineSensor.wait_for_line = LineSensor.wait_for_active
-LineSensor.wait_for_no_line = LineSensor.wait_for_inactive
+    A typical line sensor has a small circuit board with three pins: VCC, GND,
+    and OUT. VCC should be connected to a 3V3 pin, GND to one of the ground
+    pins, and finally OUT to the GPIO specified as the value of the *pin*
+    parameter in the constructor.
+
+    The following code will print a line of text indicating when the sensor
+    detects a line, or stops detecting a line::
+
+        from gpiozero import LineSensor
+        from signal import pause
+
+        sensor = LineSensor(4)
+        sensor.when_line = lambda: print('Line detected')
+        sensor.when_no_line = lambda: print('No line detected')
+        pause()
+
+    :param int pin:
+        The GPIO pin which the button is attached to. See :doc:`notes` for
+        valid pin numbers.
+
+    :param int queue_len:
+        The length of the queue used to store values read from the sensor. This
+        defaults to 5.
+
+    :param float sample_rate:
+        The number of values to read from the device (and append to the
+        internal queue) per second. Defaults to 100.
+
+    :param float threshold:
+        Defaults to 0.5. When the mean of all values in the internal queue
+        rises above this value, the sensor will be considered "active" by the
+        :attr:`~SmoothedInputDevice.is_active` property, and all appropriate
+        events will be fired.
+
+    :param bool partial:
+        When ``False`` (the default), the object will not return a value for
+        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to ``True`` if you require values
+        immediately after object construction.
+
+    .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
+    """
+    def __init__(
+            self, pin=None, queue_len=5, sample_rate=100, threshold=0.5,
+            partial=False):
+        super(LineSensor, self).__init__(
+            pin, pull_up=False, threshold=threshold,
+            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
+        )
+        try:
+            self._queue.start()
+        except:
+            self.close()
+            raise
+
+    @property
+    def line_detected(self):
+        return not self.is_active
+
+LineSensor.when_line = LineSensor.when_deactivated
+LineSensor.when_no_line = LineSensor.when_activated
+LineSensor.wait_for_line = LineSensor.wait_for_inactive
+LineSensor.wait_for_no_line = LineSensor.wait_for_active
 
 
 class MotionSensor(SmoothedInputDevice):
@@ -455,7 +512,7 @@ class MotionSensor(SmoothedInputDevice):
 
     :param float sample_rate:
         The number of values to read from the device (and append to the
-        internal queue) per second. Defaults to 10.
+        internal queue) per second. Defaults to 100.
 
     :param float threshold:
         Defaults to 0.5. When the mean of all values in the internal queue
@@ -762,9 +819,12 @@ class DistanceSensor(SmoothedInputDevice):
             # wrong (XXX raise a warning?)
             return 1.0
 
+    @property
+    def in_range(self):
+        return not self.is_active
+
 DistanceSensor.when_out_of_range = DistanceSensor.when_activated
 DistanceSensor.when_in_range = DistanceSensor.when_deactivated
 DistanceSensor.wait_for_out_of_range = DistanceSensor.wait_for_active
 DistanceSensor.wait_for_in_range = DistanceSensor.wait_for_inactive
-
 

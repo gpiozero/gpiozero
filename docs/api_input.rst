@@ -20,6 +20,13 @@ Button
     :members: wait_for_press, wait_for_release, pin, is_pressed, pull_up, when_pressed, when_released
 
 
+Line Sensor (TRCT5000)
+======================
+
+.. autoclass:: LineSensor(pin)
+    :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line
+
+
 Motion Sensor (D-SUN PIR)
 =========================
 

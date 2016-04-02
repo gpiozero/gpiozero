@@ -51,7 +51,6 @@ class GPIOQueue(GPIOThread):
     def __init__(
             self, parent, queue_len=5, sample_wait=0.0, partial=False,
             average=median):
-        assert isinstance(parent, GPIODevice)
         assert callable(average)
         super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:

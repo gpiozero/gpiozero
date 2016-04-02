@@ -23,6 +23,7 @@ digraph classes {
     Button->DigitalInputDevice;
     MotionSensor->SmoothedInputDevice;
     LightSensor->SmoothedInputDevice;
+    LineSensor->SmoothedInputDevice;
 
     OutputDevice->GPIODevice;
     DigitalOutputDevice->OutputDevice;
