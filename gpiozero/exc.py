@@ -64,9 +64,6 @@ class OutputDeviceBadValue(OutputDeviceError, ValueError):
 class PinError(GPIOZeroError):
     "Base class for errors related to pin implementations"
 
-class PinFixedFunction(PinError, AttributeError):
-    "Error raised when attempting to change the function of a fixed type pin"
-
 class PinInvalidFunction(PinError, ValueError):
     "Error raised when attempting to change the function of a pin to an invalid value"
 

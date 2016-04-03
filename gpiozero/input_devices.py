@@ -39,8 +39,7 @@ class InputDevice(GPIODevice):
     def __init__(self, pin=None, pull_up=False):
         super(InputDevice, self).__init__(pin)
         try:
-            if self.pin.function != 'input':
-                self.pin.function = 'input'
+            self.pin.function = 'input'
             pull = 'up' if pull_up else 'down'
             if self.pin.pull != pull:
                 self.pin.pull = pull
