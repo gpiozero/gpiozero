@@ -93,6 +93,12 @@ Errors
 
 .. autoexception:: PinPWMFixedValue
 
+.. autoexception:: PinMultiplePins
+
+.. autoexception:: PinNoPins
+
+.. autoexception:: PinUnknownPi
+
 Warnings
 ========
 

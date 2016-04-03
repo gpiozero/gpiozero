@@ -8,6 +8,11 @@ from __future__ import (
 from .pins import (
     Pin,
 )
+from .pins.data import (
+    PiBoardInfo,
+    PinInfo,
+    pi_info,
+)
 from .exc import (
     GPIOZeroError,
     DeviceClosed,
@@ -37,6 +42,9 @@ from .exc import (
     PinPWMError,
     PinPWMUnsupported,
     PinPWMFixedValue,
+    PinUnknownPi,
+    PinMultiplePins,
+    PinNoPins,
     GPIOZeroWarning,
     SPIWarning,
     SPISoftwareFallback,

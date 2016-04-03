@@ -97,6 +97,15 @@ class PinPWMUnsupported(PinPWMError, AttributeError):
 class PinPWMFixedValue(PinPWMError, AttributeError):
     "Error raised when attempting to initialize PWM on an input pin"
 
+class PinUnknownPi(PinError, RuntimeError):
+    "Error raised when gpiozero doesn't recognize a revision of the Pi"
+
+class PinMultiplePins(PinError, RuntimeError):
+    "Error raised when multiple pins support the requested function"
+
+class PinNoPins(PinError, RuntimeError):
+    "Error raised when no pins support the requested function"
+
 class GPIOZeroWarning(Warning):
     "Base class for all warnings in GPIO Zero"
 
