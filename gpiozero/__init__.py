@@ -27,7 +27,6 @@ from .exc import (
     OutputDeviceError,
     OutputDeviceBadValue,
     PinError,
-    PinFixedFunction,
     PinInvalidFunction,
     PinInvalidState,
     PinInvalidPull,
