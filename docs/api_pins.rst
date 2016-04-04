@@ -46,7 +46,8 @@ can pass a :class:`Pin` object itself::
     led = LED(NativePin(16))
 
 This is particularly useful with implementations that can take extra parameters
-such as :class:`PiGPIOPin` which can address pins on remote machines::
+such as :class:`~gpiozero.pins.pigpiod.PiGPIOPin` which can address pins on
+remote machines::
 
     from gpiozero.pins.pigpiod import PiGPIOPin
     from gpiozero import LED
@@ -73,40 +74,46 @@ to utilize pins that are part of IO extender chips. For example::
 RPiGPIOPin
 ==========
 
-.. currentmodule:: gpiozero.pins.rpigpio
-
-.. autoclass:: RPiGPIOPin
+.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOPin
 
 
 RPIOPin
 =======
 
-.. currentmodule:: gpiozero.pins.rpio
-
-.. autoclass:: RPIOPin
+.. autoclass:: gpiozero.pins.rpio.RPIOPin
 
 
 PiGPIOPin
 =========
 
-.. currentmodule:: gpiozero.pins.pigpiod
-
-.. autoclass:: PiGPIOPin
+.. autoclass:: gpiozero.pins.pigpiod.PiGPIOPin
 
 
 NativePin
 =========
 
-.. currentmodule:: gpiozero.pins.native
-
-.. autoclass:: NativePin
+.. autoclass:: gpiozero.pins.native.NativePin
 
 
 Abstract Pin
 ============
 
-.. currentmodule:: gpiozero.pins
-
 .. autoclass:: Pin
     :members:
+
+
+Utilities
+=========
+
+The pins module also contains a database of information about the various
+revisions of Raspberry Pi. This is used internally to raise warnings when
+non-physical pins are used, or to raise exceptions when pull-downs are
+requested on pins with physical pull-up resistors attached. The following
+functions and classes can be used to query this database:
+
+.. autofunction:: pi_info
+
+.. autoclass:: PiBoardInfo
+
+.. autoclass:: PinInfo
 
