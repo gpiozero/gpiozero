@@ -41,7 +41,7 @@ The gpiozero library provides two SPI implementations:
 SPI keyword args
 ================
 
-When constructing an SPI device the are two schemes for specifying which pins
+When constructing an SPI device there are two schemes for specifying which pins
 it is connected to:
 
 * You can specify *port* and *device* keyword arguments. The *port* parameter
