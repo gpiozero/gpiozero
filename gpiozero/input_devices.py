@@ -7,15 +7,12 @@ from __future__ import (
     division,
 )
 
-import inspect
 import warnings
-from functools import wraps
 from time import sleep, time
-from threading import Event
 
 from .exc import InputDeviceError, GPIODeviceError, GPIODeviceClosed
 from .devices import GPIODevice, CompositeDevice
-from .threads import GPIOQueue
+from .mixins import GPIOQueue, EventsMixin
 
 
 class InputDevice(GPIODevice):
@@ -65,148 +62,7 @@ class InputDevice(GPIODevice):
             return super(InputDevice, self).__repr__()
 
 
-class WaitableInputDevice(InputDevice):
-    """
-    Represents a generic input device with distinct waitable states.
-
-    This class extends :class:`InputDevice` with methods for waiting on the
-    device's status (:meth:`wait_for_active` and :meth:`wait_for_inactive`),
-    and properties that hold functions to be called when the device changes
-    state (:meth:`when_activated` and :meth:`when_deactivated`). These are
-    aliased appropriately in various subclasses.
-
-    .. note::
-
-        Note that this class provides no means of actually firing its events;
-        it's effectively an abstract base class.
-    """
-    def __init__(self, pin=None, pull_up=False):
-        super(WaitableInputDevice, self).__init__(pin, pull_up)
-        self._active_event = Event()
-        self._inactive_event = Event()
-        self._when_activated = None
-        self._when_deactivated = None
-        self._last_state = None
-
-    def wait_for_active(self, timeout=None):
-        """
-        Pause the script until the device is activated, or the timeout is
-        reached.
-
-        :param float timeout:
-            Number of seconds to wait before proceeding. If this is ``None``
-            (the default), then wait indefinitely until the device is active.
-        """
-        return self._active_event.wait(timeout)
-
-    def wait_for_inactive(self, timeout=None):
-        """
-        Pause the script until the device is deactivated, or the timeout is
-        reached.
-
-        :param float timeout:
-            Number of seconds to wait before proceeding. If this is ``None``
-            (the default), then wait indefinitely until the device is inactive.
-        """
-        return self._inactive_event.wait(timeout)
-
-    @property
-    def when_activated(self):
-        """
-        The function to run when the device changes state from inactive to
-        active.
-
-        This can be set to a function which accepts no (mandatory) parameters,
-        or a Python function which accepts a single mandatory parameter (with
-        as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device that activated will be passed
-        as that parameter.
-
-        Set this property to ``None`` (the default) to disable the event.
-        """
-        return self._when_activated
-
-    @when_activated.setter
-    def when_activated(self, value):
-        self._when_activated = self._wrap_callback(value)
-
-    @property
-    def when_deactivated(self):
-        """
-        The function to run when the device changes state from active to
-        inactive.
-
-        This can be set to a function which accepts no (mandatory) parameters,
-        or a Python function which accepts a single mandatory parameter (with
-        as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device that deactivated will be
-        passed as that parameter.
-
-        Set this property to ``None`` (the default) to disable the event.
-        """
-        return self._when_deactivated
-
-    @when_deactivated.setter
-    def when_deactivated(self, value):
-        self._when_deactivated = self._wrap_callback(value)
-
-    def _wrap_callback(self, fn):
-        if fn is None:
-            return None
-        elif not callable(fn):
-            raise InputDeviceError('value must be None or a callable')
-        elif inspect.isbuiltin(fn):
-            # We can't introspect the prototype of builtins. In this case we
-            # assume that the builtin has no (mandatory) parameters; this is
-            # the most reasonable assumption on the basis that pre-existing
-            # builtins have no knowledge of gpiozero, and the sole parameter
-            # we would pass is a gpiozero object
-            return fn
-        else:
-            # Try binding ourselves to the argspec of the provided callable.
-            # If this works, assume the function is capable of accepting no
-            # parameters
-            try:
-                inspect.getcallargs(fn)
-                return fn
-            except TypeError:
-                try:
-                    # If the above fails, try binding with a single parameter
-                    # (ourselves). If this works, wrap the specified callback
-                    inspect.getcallargs(fn, self)
-                    @wraps(fn)
-                    def wrapper():
-                        return fn(self)
-                    return wrapper
-                except TypeError:
-                    raise InputDeviceError(
-                        'value must be a callable which accepts up to one '
-                        'mandatory parameter')
-
-    def _fire_events(self):
-        old_state = self._last_state
-        new_state = self._last_state = self.is_active
-        if old_state is None:
-            # Initial "indeterminate" state; set events but don't fire
-            # callbacks as there's not necessarily an edge
-            if new_state:
-                self._active_event.set()
-            else:
-                self._inactive_event.set()
-        else:
-            if not old_state and new_state:
-                self._inactive_event.clear()
-                self._active_event.set()
-                if self.when_activated:
-                    self.when_activated()
-            elif old_state and not new_state:
-                self._active_event.clear()
-                self._inactive_event.set()
-                if self.when_deactivated:
-                    self.when_deactivated()
-
-
-class DigitalInputDevice(WaitableInputDevice):
+class DigitalInputDevice(EventsMixin, InputDevice):
     """
     Represents a generic input device with typical on/off behaviour.
 
@@ -233,7 +89,7 @@ class DigitalInputDevice(WaitableInputDevice):
             raise
 
 
-class SmoothedInputDevice(WaitableInputDevice):
+class SmoothedInputDevice(EventsMixin, InputDevice):
     """
     Represents a generic input device which takes its value from the mean of a
     queue of historical values.

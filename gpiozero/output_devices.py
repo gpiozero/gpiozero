@@ -11,7 +11,8 @@ from threading import Lock
 from itertools import repeat, cycle, chain
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing
-from .devices import GPIODevice, Device, CompositeDevice, SourceMixin
+from .devices import GPIODevice, Device, CompositeDevice
+from .mixins import SourceMixin
 from .threads import GPIOThread
 
 

@@ -11,6 +11,7 @@ from .pins import (
 from .exc import (
     GPIOZeroError,
     DeviceClosed,
+    BadEventHandler,
     CompositeDeviceError,
     CompositeDeviceBadName,
     SPIError,
@@ -45,13 +46,15 @@ from .devices import (
     Device,
     GPIODevice,
     CompositeDevice,
+)
+from .mixins import (
     SharedMixin,
     SourceMixin,
     ValuesMixin,
+    EventsMixin,
 )
 from .input_devices import (
     InputDevice,
-    WaitableInputDevice,
     DigitalInputDevice,
     SmoothedInputDevice,
     Button,
@@ -102,4 +105,25 @@ from .boards import (
     RyanteckRobot,
     CamJamKitRobot,
     Energenie,
+)
+from .other_devices import (
+    InternalDevice,
+    PingServer,
+    TimeOfDay,
+)
+from .source_tools import (
+    averaged,
+    clamped,
+    conjunction,
+    cos_values,
+    disjunction,
+    inverted,
+    negated,
+    post_delayed,
+    pre_delayed,
+    quantized,
+    queued,
+    random_values,
+    scaled,
+    sin_values,
 )

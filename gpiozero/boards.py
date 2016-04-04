@@ -22,7 +22,8 @@ from .exc import (
 from .input_devices import Button
 from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor
 from .threads import GPIOThread
-from .devices import Device, CompositeDevice, SharedMixin, SourceMixin
+from .devices import Device, CompositeDevice
+from .mixins import SharedMixin, SourceMixin
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
