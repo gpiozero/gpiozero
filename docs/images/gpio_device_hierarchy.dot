@@ -9,7 +9,6 @@ digraph classes {
     node [color="#9ec6e0", fontcolor="#000000"]
     Device;
     GPIODevice;
-    WaitableInputDevice;
     SmoothedInputDevice;
 
     /* Concrete classes */
@@ -17,9 +16,8 @@ digraph classes {
 
     GPIODevice->Device;
     InputDevice->GPIODevice;
-    WaitableInputDevice->InputDevice;
-    DigitalInputDevice->WaitableInputDevice;
-    SmoothedInputDevice->WaitableInputDevice;
+    DigitalInputDevice->InputDevice;
+    SmoothedInputDevice->InputDevice;
     Button->DigitalInputDevice;
     MotionSensor->SmoothedInputDevice;
     LightSensor->SmoothedInputDevice;

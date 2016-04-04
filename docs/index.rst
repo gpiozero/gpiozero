@@ -12,7 +12,9 @@ Table of Contents
     api_output
     api_spi
     api_boards
+    api_other
     api_generic
+    api_source_tools
     api_pins
     api_exc
     changelog

@@ -16,6 +16,9 @@ classes:
 * :class:`SPIDevice` represents devices that communicate over an SPI interface
   (implemented as four GPIO pins)
 
+* :class:`InternalDevice` represents devices that are entirely internal to
+  the Pi (usually operating system related services)
+
 * :class:`CompositeDevice` represents devices composed of multiple other
   devices like HATs
 
@@ -30,6 +33,9 @@ There are also several `mixin classes`_:
 
 * :class:`SharedMixin` which causes classes to track their construction and
   return existing instances when equivalent constructor arguments are passed
+
+* :class:`EventsMixin` which adds activated/deactivated events to devices
+  along with the machinery to trigger those events
 
 .. _mixin classes: https://en.wikipedia.org/wiki/Mixin
 
@@ -47,6 +53,10 @@ Next, the classes below :class:`SPIDevice`:
 
 .. image:: images/spi_device_hierarchy.*
 
+Next, the classes below :class:`InternalDevice`:
+
+.. image:: images/other_device_hierarchy.*
+
 Next, the classes below :class:`CompositeDevice`:
 
 .. image:: images/composite_device_hierarchy.*
@@ -60,24 +70,24 @@ Base Classes
 ============
 
 .. autoclass:: Device
-    :members: close, closed
+    :members: close, closed, value, is_active
 
 .. autoclass:: GPIODevice(pin)
     :members:
 
-.. autoclass:: CompositeDevice
+.. autoclass:: SPIDevice
     :members:
 
-.. autoclass:: SPIDevice
+.. autoclass:: InternalDevice
+    :members:
+
+.. autoclass:: CompositeDevice
     :members:
 
 Input Devices
 =============
 
 .. autoclass:: InputDevice(pin, pull_up=False)
-    :members:
-
-.. autoclass:: WaitableInputDevice
     :members:
 
 .. autoclass:: DigitalInputDevice(pin, pull_up=False, bounce_time=None)
@@ -127,4 +137,7 @@ Mixin Classes
 
 .. autoclass:: SharedMixin(...)
     :members: _shared_key
+
+.. autoclass:: EventsMixin(...)
+    :members:
 

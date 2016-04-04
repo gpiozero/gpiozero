@@ -41,6 +41,8 @@ Errors
 
 .. autoexception:: DeviceClosed
 
+.. autoexception:: BadEventHandler
+
 .. autoexception:: CompositeDeviceError
 
 .. autoexception:: CompositeDeviceBadName

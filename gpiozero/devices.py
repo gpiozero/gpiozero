@@ -15,6 +15,10 @@ from types import FunctionType
 from threading import RLock
 
 from .threads import GPIOThread, _threads_shutdown
+from .mixins import (
+    ValuesMixin,
+    SharedMixin,
+    )
 from .exc import (
     DeviceClosed,
     GPIOPinMissing,
@@ -201,126 +205,34 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         self.close()
 
 
-class ValuesMixin(object):
-    """
-    Adds a :attr:`values` property to the class which returns an infinite
-    generator of readings from the :attr:`value` property.
-
-    .. note::
-
-        Use this mixin *first* in the parent class list.
-    """
-
-    @property
-    def values(self):
-        """
-        An infinite iterator of values read from `value`.
-        """
-        while True:
-            try:
-                yield self.value
-            except GPIODeviceClosed:
-                break
-
-
-class SourceMixin(object):
-    """
-    Adds a :attr:`source` property to the class which, given an iterable,
-    sets :attr:`value` to each member of that iterable until it is exhausted.
-
-    .. note::
-
-        Use this mixin *first* in the parent class list.
-    """
-
-    def __init__(self, *args, **kwargs):
-        self._source = None
-        self._source_thread = None
-        self._source_delay = 0.01
-        super(SourceMixin, self).__init__(*args, **kwargs)
-
-    def close(self):
-        try:
-            super(SourceMixin, self).close()
-        except AttributeError:
-            pass
-        self.source = None
-
-    def _copy_values(self, source):
-        for v in source:
-            self.value = v
-            if self._source_thread.stopping.wait(self._source_delay):
-                break
-
-    @property
-    def source_delay(self):
-        """
-        The delay (measured in seconds) in the loop used to read values from
-        :attr:`source`. Defaults to 0.01 seconds which is generally sufficient
-        to keep CPU usage to a minimum while providing adequate responsiveness.
-        """
-        return self._source_delay
-
-    @source_delay.setter
-    def source_delay(self, value):
-        if value < 0:
-            raise GPIOBadSourceDelay('source_delay must be 0 or greater')
-        self._source_delay = float(value)
-
-    @property
-    def source(self):
-        """
-        The iterable to use as a source of values for :attr:`value`.
-        """
-        return self._source
-
-    @source.setter
-    def source(self, value):
-        if self._source_thread is not None:
-            self._source_thread.stop()
-            self._source_thread = None
-        self._source = value
-        if value is not None:
-            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
-            self._source_thread.start()
-
-
-class SharedMixin(object):
-    """
-    This mixin marks a class as "shared". In this case, the meta-class
-    (GPIOMeta) will use :meth:`_shared_key` to convert the constructor
-    arguments to an immutable key, and will check whether any existing
-    instances match that key. If they do, they will be returned by the
-    constructor instead of a new instance. An internal reference counter is
-    used to determine how many times an instance has been "constructed" in this
-    way.
-
-    When :meth:`close` is called, an internal reference counter will be
-    decremented and the instance will only close when it reaches zero.
-    """
-    _INSTANCES = {}
-
-    def __del__(self):
-        self._refs = 0
-        super(SharedMixin, self).__del__()
-
-    @classmethod
-    def _shared_key(cls, *args, **kwargs):
-        """
-        Given the constructor arguments, returns an immutable key representing
-        the instance. The default simply assumes all positional arguments are
-        immutable.
-        """
-        return args
-
-
 class Device(ValuesMixin, GPIOBase):
     """
     Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
-    etc. This is the base class of the device hierarchy.
+    etc. This is the base class of the device hierarchy. It defines the
+    basic services applicable to all devices (specifically thhe :attr:`is_active`
+    property, the :attr:`value` property, and the :meth:`close` method).
     """
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
+
+    @property
+    def value(self):
+        """
+        Returns a value representing the device's state. Frequently, this is a
+        boolean value, or a number between 0 and 1 but some devices use larger
+        ranges (e.g. -1 to +1) and composite devices usually use tuples to
+        return the states of all their subordinate components.
+        """
+        return 0
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise. This property is usually derived from :attr:`value`. Unlike
+        :attr:`value`, this is *always* a boolean.
+        """
+        return bool(self.value)
 
 
 class CompositeDevice(Device):
@@ -417,15 +329,16 @@ class CompositeDevice(Device):
     def value(self):
         return self.tuple(*(device.value for device in self))
 
+    @property
+    def is_active(self):
+        return any(self.value)
+
 
 class GPIODevice(Device):
     """
-    Extends :class:`Device`. Represents a generic GPIO device.
-
-    This is the class at the root of the gpiozero class hierarchy. It handles
-    ensuring that two GPIO devices do not share the same pin, and provides
-    basic services applicable to all devices (specifically the :attr:`pin`
-    property, :attr:`is_active` property, and the :attr:`close` method).
+    Extends :class:`Device`. Represents a generic GPIO device and provides
+    the services common to all single-pin GPIO devices (like ensuring two
+    GPIO devices do no share a :attr:`pin`).
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
@@ -494,13 +407,7 @@ class GPIODevice(Device):
 
     @property
     def value(self):
-        """
-        Returns ``True`` if the device is currently active and ``False``
-        otherwise.
-        """
         return self._read()
-
-    is_active = value
 
     def __repr__(self):
         try:

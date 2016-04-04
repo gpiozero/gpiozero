@@ -13,6 +13,9 @@ class GPIOZeroError(Exception):
 class DeviceClosed(GPIOZeroError):
     "Error raised when an operation is attempted on a closed device"
 
+class BadEventHandler(GPIOZeroError, ValueError):
+    "Error raised when an event handler with an incompatible prototype is specified"
+
 class CompositeDeviceError(GPIOZeroError):
     "Base class for errors specific to the CompositeDevice hierarchy"
 
