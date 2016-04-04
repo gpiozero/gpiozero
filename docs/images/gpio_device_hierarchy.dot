@@ -24,6 +24,7 @@ digraph classes {
     MotionSensor->SmoothedInputDevice;
     LightSensor->SmoothedInputDevice;
     LineSensor->SmoothedInputDevice;
+    DistanceSensor->SmoothedInputDevice;
 
     OutputDevice->GPIODevice;
     DigitalOutputDevice->OutputDevice;

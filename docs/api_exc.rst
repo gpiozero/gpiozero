@@ -73,8 +73,6 @@ Errors
 
 .. autoexception:: PinError
 
-.. autoexception:: PinFixedFunction
-
 .. autoexception:: PinInvalidFunction
 
 .. autoexception:: PinInvalidState
