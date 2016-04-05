@@ -41,6 +41,7 @@ class OutputDevice(SourceMixin, GPIODevice):
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
         super(OutputDevice, self).__init__(pin)
+        self._lock = Lock()
         self.active_high = active_high
         if initial_value is None:
             self.pin.function = 'output'
@@ -69,6 +70,17 @@ class OutputDevice(SourceMixin, GPIODevice):
         Turns the device off.
         """
         self._write(False)
+
+    def toggle(self):
+        """
+        Reverse the state of the device. If it's on, turn it off; if it's off,
+        turn it on.
+        """
+        with self._lock:
+            if self.is_active:
+                self.off()
+            else:
+                self.on()
 
     @property
     def value(self):
@@ -121,7 +133,6 @@ class DigitalOutputDevice(OutputDevice):
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._blink_thread = None
         super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
-        self._lock = Lock()
         self._controller = None
 
     @property
@@ -144,17 +155,6 @@ class DigitalOutputDevice(OutputDevice):
     def off(self):
         self._stop_blink()
         self._write(False)
-
-    def toggle(self):
-        """
-        Reverse the state of the device. If it's on, turn it off; if it's off,
-        turn it on.
-        """
-        with self._lock:
-            if self.is_active:
-                self.off()
-            else:
-                self.on()
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
@@ -757,7 +757,8 @@ class Motor(SourceMixin, CompositeDevice):
             )
         super(Motor, self).__init__(
                 forward_device=PWMOutputDevice(forward),
-                backward_device=PWMOutputDevice(backward))
+                backward_device=PWMOutputDevice(backward),
+                _order=('forward_device', 'backward_device'))
 
     @property
     def value(self):
