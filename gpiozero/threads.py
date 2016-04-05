@@ -23,8 +23,8 @@ def _threads_shutdown():
 
 class GPIOThread(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
-        super(GPIOThread, self).__init__(group, target, name, args, kwargs)
         self.stopping = Event()
+        super(GPIOThread, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
 
     def start(self):

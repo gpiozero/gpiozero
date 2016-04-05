@@ -21,6 +21,8 @@ from .mixins import (
     )
 from .exc import (
     DeviceClosed,
+    CompositeDeviceBadName,
+    CompositeDeviceBadOrder,
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
@@ -191,7 +193,7 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         method). Once a device is closed you can no longer use any other
         methods or properties to control or query the device.
         """
-        return False
+        raise NotImplementedError
 
     def _check_open(self):
         if self.closed:
@@ -223,7 +225,7 @@ class Device(ValuesMixin, GPIOBase):
         ranges (e.g. -1 to +1) and composite devices usually use tuples to
         return the states of all their subordinate components.
         """
-        return 0
+        raise NotImplementedError
 
     @property
     def is_active(self):
@@ -261,8 +263,8 @@ class CompositeDevice(Device):
         if self._order is None:
             self._order = kwargs.keys()
         self._order = tuple(self._order)
-        for missing_name in set(self._order) - set(kwargs.keys()):
-            raise ValueError('%s missing from _order' % missing_name)
+        for missing_name in set(kwargs.keys()) - set(self._order):
+            raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         super(CompositeDevice, self).__init__()
         for name in set(self._order) & set(dir(self)):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
@@ -371,9 +373,6 @@ class GPIODevice(Device):
         except (AttributeError, TypeError):
             self._check_open()
             raise
-
-    def _fire_events(self):
-        pass
 
     def close(self):
         super(GPIODevice, self).close()
