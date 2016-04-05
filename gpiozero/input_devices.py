@@ -9,6 +9,7 @@ from __future__ import (
 
 import warnings
 from time import sleep, time
+from threading import Event
 
 from .exc import InputDeviceError, GPIODeviceError, GPIODeviceClosed
 from .devices import GPIODevice, CompositeDevice
