@@ -22,6 +22,9 @@ class CompositeDeviceError(GPIOZeroError):
 class CompositeDeviceBadName(CompositeDeviceError, ValueError):
     "Error raised when a composite device is constructed with a reserved name"
 
+class CompositeDeviceBadOrder(CompositeDeviceError, ValueError):
+    "Error raised when a composite device is constructed with an incomplete order"
+
 class EnergenieSocketMissing(CompositeDeviceError, ValueError):
     "Error raised when socket number is not specified"
 

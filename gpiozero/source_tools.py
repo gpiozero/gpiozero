@@ -16,7 +16,7 @@ try:
 except ImportError:
     pass
 from itertools import count, cycle
-from math import sin, cos, floor
+from math import sin, cos, floor, radians
 try:
     from statistics import mean
 except ImportError:
@@ -270,7 +270,7 @@ def sin_values():
     If you require a wider range than 0 to 1, see :func:`scaled`.
     """
     for d in cycle(range(360)):
-        yield sin(d)
+        yield sin(radians(d))
 
 
 def cos_values():
@@ -292,5 +292,5 @@ def cos_values():
     If you require a wider range than 0 to 1, see :func:`scaled`.
     """
     for d in cycle(range(360)):
-        yield cos(d)
+        yield cos(radians(d))
 

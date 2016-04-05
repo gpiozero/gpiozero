@@ -68,3 +68,60 @@ def test_device_repr_after_close():
     device.close()
     assert repr(device) == '<gpiozero.GPIODevice object closed>'
 
+def test_device_unknown_attr():
+    pin = MockPin(2)
+    device = GPIODevice(pin)
+    with pytest.raises(AttributeError):
+        device.foo = 1
+
+def test_device_context_manager():
+    pin = MockPin(2)
+    with GPIODevice(pin) as device:
+        assert not device.closed
+    assert device.closed
+
+def test_composite_device_sequence():
+    device = CompositeDevice(
+        InputDevice(MockPin(2)),
+        InputDevice(MockPin(3))
+        )
+    assert len(device) == 2
+    assert device[0].pin.number == 2
+    assert device[1].pin.number == 3
+    assert device.tuple._fields == ('_0', '_1')
+
+def test_composite_device_values():
+    device = CompositeDevice(
+        InputDevice(MockPin(2)),
+        InputDevice(MockPin(3))
+        )
+    assert device.value == (0, 0)
+    assert not device.is_active
+    device[0].pin.drive_high()
+    assert device.value == (1, 0)
+    assert device.is_active
+
+def test_composite_device_named():
+    device = CompositeDevice(
+        foo=InputDevice(MockPin(2)),
+        bar=InputDevice(MockPin(3)),
+        _order=('foo', 'bar')
+        )
+    assert device.tuple._fields == ('foo', 'bar')
+    assert device.value == (0, 0)
+    assert not device.is_active
+
+def test_composite_device_bad_init():
+    with pytest.raises(ValueError):
+        CompositeDevice(foo=1, bar=2, _order=('foo',))
+    with pytest.raises(ValueError):
+        CompositeDevice(close=1)
+
+def test_composite_device_read_only():
+    device = CompositeDevice(
+        foo=InputDevice(MockPin(2)),
+        bar=InputDevice(MockPin(3))
+        )
+    with pytest.raises(AttributeError):
+        device.foo = 1
+

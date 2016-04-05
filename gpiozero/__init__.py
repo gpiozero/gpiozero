@@ -19,6 +19,7 @@ from .exc import (
     BadEventHandler,
     CompositeDeviceError,
     CompositeDeviceBadName,
+    CompositeDeviceBadOrder,
     SPIError,
     SPIBadArgs,
     EnergenieSocketMissing,

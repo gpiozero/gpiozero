@@ -11,7 +11,7 @@ import warnings
 from time import sleep, time
 from threading import Event
 
-from .exc import InputDeviceError, GPIODeviceError, GPIODeviceClosed
+from .exc import InputDeviceError, GPIODeviceError, DeviceClosed
 from .devices import GPIODevice, CompositeDevice
 from .mixins import GPIOQueue, EventsMixin
 
@@ -161,7 +161,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     def __repr__(self):
         try:
             self._check_open()
-        except GPIODeviceClosed:
+        except DeviceClosed:
             return super(SmoothedInputDevice, self).__repr__()
         else:
             if self.partial or self._queue.full.wait(0):
@@ -649,7 +649,9 @@ class DistanceSensor(SmoothedInputDevice):
         return self.pin
 
     def _read(self):
-        # Make sure the echo event is clear
+        # Make sure the echo pin is low then ensure the echo event is clear
+        while self.pin.state:
+            sleep(0.00001)
         self._echo.clear()
         # Fire the trigger
         self._trigger.pin.state = True

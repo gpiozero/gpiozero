@@ -7,11 +7,16 @@ from __future__ import (
 str = type('')
 
 
+import sys
 import pytest
-import mock
 from threading import Event
 
-from gpiozero.pins.mock import MockPin, MockPulledUpPin, MockChargingPin
+from gpiozero.pins.mock import (
+    MockPin,
+    MockPulledUpPin,
+    MockChargingPin,
+    MockTriggerPin,
+    )
 from gpiozero import *
 
 
@@ -136,12 +141,43 @@ def test_input_motion_sensor():
     assert sensor.wait_for_no_motion(1)
     assert not sensor.motion_detected
 
-@pytest.mark.skipif(True, reason='Freezes')
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_input_light_sensor():
     pin = MockChargingPin(2)
     sensor = LightSensor(pin)
-    pin.charge_time = 1
-    assert not sensor.light_detected
-    pin.charge_time = 0
-    assert sensor.light_detected
+    pin.charge_time = 0.1
+    assert sensor.wait_for_dark(1)
+    pin.charge_time = 0.0
+    assert sensor.wait_for_light(1)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_input_distance_sensor():
+    echo_pin = MockPin(2)
+    trig_pin = MockTriggerPin(3)
+    trig_pin.echo_pin = echo_pin
+    trig_pin.echo_time = 0.02
+    with pytest.raises(ValueError):
+        DistanceSensor(echo_pin, trig_pin, max_distance=-1)
+    # normal queue len is large (because the sensor is *really* jittery) but
+    # we want quick tests and we've got precisely controlled pins :)
+    sensor = DistanceSensor(echo_pin, trig_pin, queue_len=5, max_distance=1)
+    assert sensor.max_distance == 1
+    assert sensor.trigger is trig_pin
+    assert sensor.echo is echo_pin
+    assert sensor.wait_for_out_of_range(1)
+    assert not sensor.in_range
+    assert sensor.distance == 1.0 # should be waay before max-distance so this should work
+    trig_pin.echo_time = 0.0
+    assert sensor.wait_for_in_range(1)
+    assert sensor.in_range
+    assert sensor.distance < sensor.threshold_distance # depending on speed of machine, may not reach 0 here
+    sensor.threshold_distance = 0.1
+    assert sensor.threshold_distance == 0.1
+    with pytest.raises(ValueError):
+        sensor.max_distance = -1
+    sensor.max_distance = 20
+    assert sensor.max_distance == 20
+    assert sensor.threshold_distance == 0.1
 
