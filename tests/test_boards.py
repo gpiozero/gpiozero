@@ -196,6 +196,8 @@ def test_led_board_blink_take_over():
     pin2.assert_states_and_times(test)
     pin3.assert_states_and_times(test)
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
 def test_led_board_blink_control_all():
     pin1 = MockPin(2)
     pin2 = MockPin(3)
