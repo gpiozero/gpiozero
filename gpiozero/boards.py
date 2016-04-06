@@ -539,13 +539,15 @@ class SnowPi(LEDBoard):
                     _order=('top', 'middle', 'bottom')),
                 right=LEDBoard(
                     top=7, middle=8, bottom=9, pwm=pwm,
-                    _order=('top', 'middle', 'bottom'))
+                    _order=('top', 'middle', 'bottom')),
+                _order=('left', 'right')
                 ),
             eyes=LEDBoard(
                 left=23, right=24, pwm=pwm,
                 _order=('left', 'right')
                 ),
-            nose=25, pwm=pwm
+            nose=25, pwm=pwm,
+            _order=('eyes', 'nose', 'arms')
             )
 
 
@@ -629,9 +631,6 @@ class TrafficHat(TrafficLightsBuzzer):
         )
 
 
-RobotTuple = namedtuple('RobotTuple', ('left', 'right'))
-
-
 class Robot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
@@ -657,48 +656,10 @@ class Robot(SourceMixin, CompositeDevice):
     """
 
     def __init__(self, left=None, right=None):
-        if not all([left, right]):
-            raise GPIOPinMissing(
-                'left and right motor pins must be provided'
-            )
-        super(Robot, self).__init__()
-        self._left = Motor(*left)
-        self._right = Motor(*right)
-
-    def close(self):
-        self._left.close()
-        self._right.close()
-
-    @property
-    def closed(self):
-        return self._left.closed and self._right.closed
-
-    @property
-    def left_motor(self):
-        """
-        Returns the `Motor` device representing the robot's left motor.
-        """
-        return self._left
-
-    @property
-    def right_motor(self):
-        """
-        Returns the `Motor` device representing the robot's right motor.
-        """
-        return self._right
-
-    @property
-    def value(self):
-        """
-        Returns a tuple of two floating point values (-1 to 1) representing the
-        speeds of the robot's two motors (left and right). This property can
-        also be set to alter the speed of both motors.
-        """
-        return RobotTuple(self._left.value, self._right.value)
-
-    @value.setter
-    def value(self, value):
-        self._left.value, self._right.value = value
+        super(Robot, self).__init__(
+                left_motor=Motor(*left),
+                right_motor=Motor(*right),
+                _order=('left_motor', 'right_motor'))
 
     def forward(self, speed=1):
         """
@@ -708,8 +669,8 @@ class Robot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.forward(speed)
-        self._right.forward(speed)
+        self.left_motor.forward(speed)
+        self.right_motor.forward(speed)
 
     def backward(self, speed=1):
         """
@@ -719,8 +680,8 @@ class Robot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.backward(speed)
-        self._right.backward(speed)
+        self.left_motor.backward(speed)
+        self.right_motor.backward(speed)
 
     def left(self, speed=1):
         """
@@ -731,8 +692,8 @@ class Robot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._right.forward(speed)
-        self._left.backward(speed)
+        self.right_motor.forward(speed)
+        self.left_motor.backward(speed)
 
     def right(self, speed=1):
         """
@@ -743,8 +704,8 @@ class Robot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.forward(speed)
-        self._right.backward(speed)
+        self.left_motor.forward(speed)
+        self.right_motor.backward(speed)
 
     def reverse(self):
         """
@@ -753,15 +714,15 @@ class Robot(SourceMixin, CompositeDevice):
         robot is turning left at half-speed, it will turn right at half-speed.
         If the robot is currently stopped it will remain stopped.
         """
-        self._left.value = -self._left.value
-        self._right.value = -self._right.value
+        self.left_motor.reverse()
+        self.right_motor.reverse()
 
     def stop(self):
         """
         Stop the robot.
         """
-        self._left.stop()
-        self._right.stop()
+        self.left_motor.stop()
+        self.right_motor.stop()
 
 
 class RyanteckRobot(Robot):
@@ -779,7 +740,7 @@ class RyanteckRobot(Robot):
     """
 
     def __init__(self):
-        super(RyanteckRobot, self).__init__(left=(17, 18), right=(22, 23))
+        super(RyanteckRobot, self).__init__((17, 18), (22, 23))
 
 
 class CamJamKitRobot(Robot):
@@ -799,7 +760,7 @@ class CamJamKitRobot(Robot):
     """
 
     def __init__(self):
-        super(CamJamKitRobot, self).__init__(left=(9, 10), right=(7, 8))
+        super(CamJamKitRobot, self).__init__((9, 10), (7, 8))
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
@@ -807,7 +768,8 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         self._lock = Lock()
         super(_EnergenieMaster, self).__init__(
                 *(OutputDevice(pin) for pin in (17, 22, 23, 27)),
-                mode=OutputDevice(24), enable=OutputDevice(25))
+                mode=OutputDevice(24), enable=OutputDevice(25),
+                _order=('mode', 'enable'))
 
     def close(self):
         if self._lock:
@@ -823,7 +785,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
     def transmit(self, socket, enable):
         with self._lock:
             try:
-                code = (8 * bool(enable)) + (7 - socket)
+                code = (8 * bool(enable)) + (8 - socket)
                 for bit in self.all[:4]:
                     bit.value = (code & 1)
                     code >>= 1
@@ -844,12 +806,12 @@ class Energenie(SourceMixin, Device):
 
         from gpiozero import Energenie
 
-        lamp = Energenie(0)
+        lamp = Energenie(1)
         lamp.on()
 
     :param int socket:
         Which socket this instance should control. This is an integer number
-        between 0 and 3.
+        between 1 and 4.
 
     :param bool initial_value:
         The initial state of the socket. As Energenie sockets provide no
@@ -863,8 +825,8 @@ class Energenie(SourceMixin, Device):
     def __init__(self, socket=None, initial_value=False):
         if socket is None:
             raise EnergenieSocketMissing('socket number must be provided')
-        if not (0 <= socket < 4):
-            raise EnergenieBadSocket('socket number must be between 0 and 3')
+        if not (1 <= socket <= 4):
+            raise EnergenieBadSocket('socket number must be between 1 and 4')
         super(Energenie, self).__init__()
         self._socket = socket
         self._master = _EnergenieMaster()

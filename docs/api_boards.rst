@@ -99,3 +99,10 @@ CamJam #3 Kit Robot
     :inherited-members:
     :members:
 
+Energenie
+=========
+
+.. autoclass:: Energenie
+    :inherited-members:
+    :members:
+

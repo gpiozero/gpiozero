@@ -5,6 +5,50 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.2.0 (2016-04-??)
+==========================
+
+* Added :class:`Energenie` class for controlling Energenie plugs (`#69`_)
+* Added :class:`LineSensor` class for single line-sensors (`#109`_)
+* Added :class:`DistanceSensor` class for HC-SR04 ultra-sonic sensors (`#114`_)
+* Added :class:`SnowPi` class for the Ryanteck Snow-pi board (`#130`_)
+* Fixed issues with installing GPIO Zero for python 3 on Raspbian Wheezy
+  releases (`#140`_)
+* Added support for lots of ADC chips (MCP3xxx family) (`#162`_) - many thanks
+  to pcopa and lurch!
+* Added support for pigpiod as a pin implementation with
+  :class:`~gpiozero.pins.pigpiod.PiGPIOPin` (`#180`_)
+* Many refinements to the base classes mean more consistency in composite
+  devices and several bugs squashed (`#164`_, `#175`_, `#182`_, `#189`_,
+  `#193`_, `#229`_)
+* GPIO Zero is now aware of what sort of Pi it's running on via :func:`pi_info`
+  and has a fairly extensive database of Pi information which it uses to
+  determine when users request impossible things (like pull-down on a pin with
+  a physical pull-up resistor) (`#222`_)
+* The source/values system was enhanced to ensure normal usage doesn't stress
+  the CPU and lots of utilities were added (`#181`_, `#251`_)
+
+And I'll just add a note of thanks to the many people in the community who
+contributed to this release: we've had some great PRs, suggestions, and bug
+reports in this version - keep 'em coming!
+
+.. _#69: https://github.com/RPi-Distro/python-gpiozero/issues/69
+.. _#109: https://github.com/RPi-Distro/python-gpiozero/issues/109
+.. _#114: https://github.com/RPi-Distro/python-gpiozero/issues/114
+.. _#130: https://github.com/RPi-Distro/python-gpiozero/issues/130
+.. _#140: https://github.com/RPi-Distro/python-gpiozero/issues/140
+.. _#162: https://github.com/RPi-Distro/python-gpiozero/issues/162
+.. _#164: https://github.com/RPi-Distro/python-gpiozero/issues/164
+.. _#175: https://github.com/RPi-Distro/python-gpiozero/issues/175
+.. _#180: https://github.com/RPi-Distro/python-gpiozero/issues/180
+.. _#181: https://github.com/RPi-Distro/python-gpiozero/issues/181
+.. _#182: https://github.com/RPi-Distro/python-gpiozero/issues/182
+.. _#189: https://github.com/RPi-Distro/python-gpiozero/issues/189
+.. _#193: https://github.com/RPi-Distro/python-gpiozero/issues/193
+.. _#222: https://github.com/RPi-Distro/python-gpiozero/issues/222
+.. _#229: https://github.com/RPi-Distro/python-gpiozero/issues/229
+.. _#251: https://github.com/RPi-Distro/python-gpiozero/issues/251
+
 Release 1.1.0 (2016-02-08)
 ==========================
 
