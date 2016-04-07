@@ -9,7 +9,7 @@ str = type('')
 import io
 from collections import namedtuple
 
-from ..exc import PinUnknownPi, PinMultiplePins
+from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins
 
 
 # Some useful constants for describing pins

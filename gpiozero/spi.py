@@ -184,7 +184,7 @@ class SPISoftwareBus(SharedMixin, Device):
             for write_word in data:
                 mask = 1 if self.lsb_first else 1 << (self.bits_per_word - 1)
                 read_word = 0
-                for bit in range(self.bits_per_word):
+                for _ in range(self.bits_per_word):
                     if self.mosi is not None:
                         self.mosi.value = bool(write_word & mask)
                     self.clock.on()

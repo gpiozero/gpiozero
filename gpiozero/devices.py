@@ -14,7 +14,7 @@ from itertools import chain
 from types import FunctionType
 from threading import RLock
 
-from .threads import GPIOThread, _threads_shutdown
+from .threads import _threads_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
@@ -26,7 +26,6 @@ from .exc import (
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
-    GPIOBadSourceDelay,
     )
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here

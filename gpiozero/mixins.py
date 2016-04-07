@@ -13,13 +13,18 @@ from functools import wraps
 from threading import Event
 from collections import deque
 try:
-    from statistics import median, mean
+    from statistics import median
 except ImportError:
-    from .compat import median, mean
+    from .compat import median
 
 from .threads import GPIOThread
-from .exc import BadEventHandler, DeviceClosed
-
+from .exc import (
+    BadEventHandler,
+    DeviceClosed,
+    GPIOBadSourceDelay,
+    GPIOBadQueueLen,
+    GPIOBadSampleWait,
+    )
 
 class ValuesMixin(object):
     """

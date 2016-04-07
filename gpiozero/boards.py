@@ -10,11 +10,11 @@ except ImportError:
     pass
 
 from time import sleep
-from collections import namedtuple
 from itertools import repeat, cycle, chain
 from threading import Lock
 
 from .exc import (
+    DeviceClosed,
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
