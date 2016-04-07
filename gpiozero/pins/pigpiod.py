@@ -16,6 +16,7 @@ from ..exc import (
     PinFixedPull,
     PinInvalidPull,
     PinInvalidBounce,
+    PinInvalidState,
     )
 
 
@@ -135,7 +136,7 @@ class PiGPIOPin(Pin):
         if self._host == 'localhost':
             return "GPIO%d" % self._number
         else:
-            return "GPIO%d on %s:%d" % (self._host, self._port)
+            return "GPIO%d on %s:%d" % (self._number, self._host, self._port)
 
     @property
     def host(self):
@@ -182,7 +183,7 @@ class PiGPIOPin(Pin):
             try:
                 self._connection.set_PWM_dutycycle(self._number, int(value * 255))
             except pigpio.error:
-                raise PinInvalidValue('invalid state "%s" for pin %r' % (value, self))
+                raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         elif self.function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
         else:

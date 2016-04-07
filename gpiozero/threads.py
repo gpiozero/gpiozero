@@ -8,11 +8,6 @@ str = type('')
 
 from threading import Thread, Event
 
-from .exc import (
-    GPIOBadQueueLen,
-    GPIOBadSampleWait,
-    )
-
 
 _THREADS = set()
 def _threads_shutdown():
@@ -22,7 +17,9 @@ def _threads_shutdown():
 
 
 class GPIOThread(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         self.stopping = Event()
         super(GPIOThread, self).__init__(group, target, name, args, kwargs)
         self.daemon = True

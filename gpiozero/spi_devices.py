@@ -7,9 +7,9 @@ from __future__ import (
 str = type('')
 
 
-from .exc import DeviceClosed
+from .exc import DeviceClosed, InputDeviceError
 from .devices import Device
-from .spi import extract_spi_args, SPI
+from .spi import SPI
 
 
 class SPIDevice(Device):
@@ -206,7 +206,7 @@ class MCP33xx(MCP3xxx):
         data = data[-2:]
         result = ((data[0] & 63) << 7) | (data[1] >> 1)
         # Account for the sign bit
-        if self.differential and value > 4095:
+        if self.differential and result > 4095:
             result = -(8192 - result)
         assert -4096 <= result < 4096
         return result

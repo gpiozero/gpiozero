@@ -5,8 +5,6 @@ from __future__ import (
     division,
 )
 
-import warnings
-from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
@@ -194,7 +192,7 @@ class DigitalOutputDevice(OutputDevice):
 
     def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
-        for i in iterable:
+        for _ in iterable:
             self._write(True)
             if self._blink_thread.stopping.wait(on_time):
                 break

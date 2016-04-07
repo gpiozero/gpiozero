@@ -7,12 +7,11 @@ from __future__ import (
     division,
 )
 
-import warnings
 from time import sleep, time
 from threading import Event
 
-from .exc import InputDeviceError, GPIODeviceError, DeviceClosed
-from .devices import GPIODevice, CompositeDevice
+from .exc import InputDeviceError, DeviceClosed
+from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin
 
 
@@ -560,7 +559,7 @@ class DistanceSensor(SmoothedInputDevice):
     def __init__(
             self, echo=None, trigger=None, queue_len=30, max_distance=1,
             threshold_distance=0.3, partial=False):
-        if not (max_distance > 0):
+        if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(

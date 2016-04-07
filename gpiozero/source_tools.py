@@ -15,8 +15,8 @@ try:
     from itertools import izip as zip
 except ImportError:
     pass
-from itertools import count, cycle
-from math import sin, cos, floor, radians
+from itertools import cycle
+from math import sin, cos, radians
 try:
     from statistics import mean
 except ImportError:
