@@ -260,7 +260,7 @@ class CompositeDevice(Device):
         self._tuple = None
         self._order = kwargs.pop('_order', None)
         if self._order is None:
-            self._order = kwargs.keys()
+            self._order = sorted(kwargs.keys())
         self._order = tuple(self._order)
         for missing_name in set(kwargs.keys()) - set(self._order):
             raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
