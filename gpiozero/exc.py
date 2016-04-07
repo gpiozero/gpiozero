@@ -16,6 +16,12 @@ class DeviceClosed(GPIOZeroError):
 class BadEventHandler(GPIOZeroError, ValueError):
     "Error raised when an event handler with an incompatible prototype is specified"
 
+class BadWaitTime(GPIOZeroError, ValueError):
+    "Error raised when an invalid wait time is specified"
+
+class BadQueueLen(GPIOZeroError, ValueError):
+    "Error raised when non-positive queue length is specified"
+
 class CompositeDeviceError(GPIOZeroError):
     "Base class for errors specific to the CompositeDevice hierarchy"
 
@@ -48,15 +54,6 @@ class GPIOPinInUse(GPIODeviceError):
 
 class GPIOPinMissing(GPIODeviceError, ValueError):
     "Error raised when a pin number is not specified"
-
-class GPIOBadQueueLen(GPIODeviceError, ValueError):
-    "Error raised when non-positive queue length is specified"
-
-class GPIOBadSampleWait(GPIODeviceError, ValueError):
-    "Error raised when a negative sampling wait period is specified"
-
-class GPIOBadSourceDelay(GPIODeviceError, ValueError):
-    "Error raised when a negative source delay is specified"
 
 class InputDeviceError(GPIODeviceError):
     "Base class for errors specific to the InputDevice hierarchy"
