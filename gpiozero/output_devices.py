@@ -806,7 +806,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
     to a Phase/Enable motor driver circuit.
     The following code will make the motor turn "forwards"::
         from gpiozero import PhaseEnableMotor
-        motor = PhaseEnableMotor(17, 18)
+        motor = PhaseEnableMotor(12, 5)
         motor.forward()
     :param int power:
         The GPIO pin that the power input (PWM) of the motor driver chip is
