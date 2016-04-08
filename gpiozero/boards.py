@@ -147,7 +147,7 @@ class LEDBoard(LEDCollection):
     :param bool initial_value:
         If ``False`` (the default), all LEDs will be off initially. If
         ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). The ``True``,
+        in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
 
     :param \*\*named_pins:
