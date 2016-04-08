@@ -11,8 +11,8 @@
 <polygon fill="white" stroke="none" points="-4,4 -4,-328 717,-328 717,4 -4,4"/>
 <!-- Device -->
 <g id="node1" class="node"><title>Device</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="499,-324 445,-324 445,-288 499,-288 499,-324"/>
-<text text-anchor="middle" x="472" y="-303.5" font-family="Sans" font-size="10.00" fill="#000000">Device</text>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="540,-324 486,-324 486,-288 540,-288 540,-324"/>
+<text text-anchor="middle" x="513" y="-303.5" font-family="Sans" font-size="10.00" fill="#000000">Device</text>
 </g>
 <!-- GPIODevice -->
 <g id="node2" class="node"><title>GPIODevice</title>
@@ -21,8 +21,8 @@
 </g>
 <!-- GPIODevice&#45;&gt;Device -->
 <g id="edge1" class="edge"><title>GPIODevice&#45;&gt;Device</title>
-<path fill="none" stroke="black" d="M472,-252.303C472,-260.017 472,-269.288 472,-277.888"/>
-<polygon fill="black" stroke="black" points="468.5,-277.896 472,-287.896 475.5,-277.896 468.5,-277.896"/>
+<path fill="none" stroke="black" d="M482.135,-252.303C486.852,-260.356 492.562,-270.106 497.782,-279.018"/>
+<polygon fill="black" stroke="black" points="494.908,-281.036 502.982,-287.896 500.948,-277.498 494.908,-281.036"/>
 </g>
 <!-- SmoothedInputDevice -->
 <g id="node3" class="node"><title>SmoothedInputDevice</title>
@@ -163,6 +163,16 @@
 <g id="edge15" class="edge"><title>PWMLED&#45;&gt;PWMOutputDevice</title>
 <path fill="none" stroke="black" d="M661,-36.3034C661,-44.0173 661,-53.2875 661,-61.8876"/>
 <polygon fill="black" stroke="black" points="657.5,-61.8956 661,-71.8957 664.5,-61.8957 657.5,-61.8956"/>
+</g>
+<!-- RGBLED -->
+<g id="node17" class="node"><title>RGBLED</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="582,-252 526,-252 526,-216 582,-216 582,-252"/>
+<text text-anchor="middle" x="554" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">RGBLED</text>
+</g>
+<!-- RGBLED&#45;&gt;Device -->
+<g id="edge16" class="edge"><title>RGBLED&#45;&gt;Device</title>
+<path fill="none" stroke="black" d="M543.865,-252.303C539.148,-260.356 533.438,-270.106 528.218,-279.018"/>
+<polygon fill="black" stroke="black" points="525.052,-277.498 523.018,-287.896 531.092,-281.036 525.052,-277.498"/>
 </g>
 </g>
 </svg>

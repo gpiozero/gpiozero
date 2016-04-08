@@ -24,21 +24,22 @@ def test_device_no_pin():
 
 def test_device_init():
     pin = MockPin(2)
-    device = GPIODevice(pin)
-    assert not device.closed
-    assert device.pin == pin
+    with GPIODevice(pin) as device:
+        assert not device.closed
+        assert device.pin == pin
 
 def test_device_init_twice_same_pin():
     pin = MockPin(2)
-    device = GPIODevice(pin)
-    with pytest.raises(GPIOPinInUse):
-        device2 = GPIODevice(pin)
+    with GPIODevice(pin) as device:
+        with pytest.raises(GPIOPinInUse):
+            device2 = GPIODevice(pin)
 
 def test_device_init_twice_different_pin():
     pin = MockPin(2)
-    device = GPIODevice(pin)
     pin2 = MockPin(3)
-    device2 = GPIODevice(pin2)
+    with GPIODevice(pin) as device:
+        with GPIODevice(pin2) as device2:
+            pass
 
 def test_device_close():
     pin = MockPin(2)
@@ -56,11 +57,12 @@ def test_device_reopen_same_pin():
     assert device2.pin == pin
     assert device.closed
     assert device.pin is None
+    device2.close()
 
 def test_device_repr():
     pin = MockPin(2)
-    device = GPIODevice(pin)
-    assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % pin
+    with GPIODevice(pin) as device:
+        assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % pin
 
 def test_device_repr_after_close():
     pin = MockPin(2)
@@ -70,9 +72,9 @@ def test_device_repr_after_close():
 
 def test_device_unknown_attr():
     pin = MockPin(2)
-    device = GPIODevice(pin)
-    with pytest.raises(AttributeError):
-        device.foo = 1
+    with GPIODevice(pin) as device:
+        with pytest.raises(AttributeError):
+            device.foo = 1
 
 def test_device_context_manager():
     pin = MockPin(2)
@@ -81,35 +83,35 @@ def test_device_context_manager():
     assert device.closed
 
 def test_composite_device_sequence():
-    device = CompositeDevice(
-        InputDevice(MockPin(2)),
-        InputDevice(MockPin(3))
-        )
-    assert len(device) == 2
-    assert device[0].pin.number == 2
-    assert device[1].pin.number == 3
-    assert device.tuple._fields == ('_0', '_1')
+    with CompositeDevice(
+            InputDevice(MockPin(2)),
+            InputDevice(MockPin(3))
+            ) as device:
+        assert len(device) == 2
+        assert device[0].pin.number == 2
+        assert device[1].pin.number == 3
+        assert device.tuple._fields == ('_0', '_1')
 
 def test_composite_device_values():
-    device = CompositeDevice(
-        InputDevice(MockPin(2)),
-        InputDevice(MockPin(3))
-        )
-    assert device.value == (0, 0)
-    assert not device.is_active
-    device[0].pin.drive_high()
-    assert device.value == (1, 0)
-    assert device.is_active
+    with CompositeDevice(
+            InputDevice(MockPin(2)),
+            InputDevice(MockPin(3))
+            ) as device:
+        assert device.value == (0, 0)
+        assert not device.is_active
+        device[0].pin.drive_high()
+        assert device.value == (1, 0)
+        assert device.is_active
 
 def test_composite_device_named():
-    device = CompositeDevice(
-        foo=InputDevice(MockPin(2)),
-        bar=InputDevice(MockPin(3)),
-        _order=('foo', 'bar')
-        )
-    assert device.tuple._fields == ('foo', 'bar')
-    assert device.value == (0, 0)
-    assert not device.is_active
+    with CompositeDevice(
+            foo=InputDevice(MockPin(2)),
+            bar=InputDevice(MockPin(3)),
+            _order=('foo', 'bar')
+            ) as device:
+        assert device.tuple._fields == ('foo', 'bar')
+        assert device.value == (0, 0)
+        assert not device.is_active
 
 def test_composite_device_bad_init():
     with pytest.raises(ValueError):

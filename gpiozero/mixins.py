@@ -374,7 +374,7 @@ class HoldMixin(EventsMixin):
     @hold_time.setter
     def hold_time(self, value):
         if value < 0:
-            raise BadWaitTime('source_delay must be 0 or greater')
+            raise BadWaitTime('hold_time must be 0 or greater')
         self._hold_time = float(value)
 
     @property
@@ -403,8 +403,8 @@ class HoldMixin(EventsMixin):
         The length of time (in seconds) that the device has been held for.
         This is counted from the first execution of the :attr:`when_held` event
         rather than when the device activated, in contrast to
-        :attr:`active_time`. If the device is not currently held, this is
-        ``None``.
+        :attr:`~EventsMixin.active_time`. If the device is not currently held,
+        this is ``None``.
         """
         if self._held_from is not None:
             return time() - self._held_from

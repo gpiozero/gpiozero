@@ -19,8 +19,8 @@ class OutputDevice(SourceMixin, GPIODevice):
     Represents a generic GPIO output device.
 
     This class extends :class:`GPIODevice` to add facilities common to GPIO
-    output devices: an :meth:`on` method to switch the device on, and a
-    corresponding :meth:`off` method.
+    output devices: an :meth:`on` method to switch the device on, a
+    corresponding :meth:`off` method, and a :meth:`toggle` method.
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
@@ -123,10 +123,9 @@ class DigitalOutputDevice(OutputDevice):
     """
     Represents a generic output device with typical on/off behaviour.
 
-    This class extends :class:`OutputDevice` with a :meth:`toggle` method to
-    switch the device between its on and off states, and a :meth:`blink` method
-    which uses an optional background thread to handle toggling the device
-    state without further interaction.
+    This class extends :class:`OutputDevice` with a :meth:`blink` method which
+    uses an optional background thread to handle toggling the device state
+    without further interaction.
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._blink_thread = None
@@ -458,7 +457,7 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _blink_device(
-            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
         if fade_in_time > 0:
             sequence += [
@@ -686,7 +685,7 @@ class RGBLED(SourceMixin, Device):
 
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, on_color,
-            off_color, n, fps=50):
+            off_color, n, fps=25):
         # Define some simple lambdas to perform linear interpolation between
         # off_color and on_color
         lerp = lambda t, fade_in: tuple(

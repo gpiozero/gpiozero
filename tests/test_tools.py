@@ -11,7 +11,7 @@ import pytest
 from math import sin, cos, radians
 from time import time
 
-from gpiozero import *
+from gpiozero.tools import *
 try:
     from math import isclose
 except ImportError:

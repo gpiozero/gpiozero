@@ -32,6 +32,5 @@ digraph classes {
     RyanteckRobot->Robot;
     CamJamKitRobot->Robot;
 
-    RGBLED->CompositeDevice;
     Motor->CompositeDevice;
 }

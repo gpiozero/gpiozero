@@ -159,7 +159,7 @@ class MockPin(Pin):
         # that's about all we can reasonably expect in a non-realtime
         # environment on a Pi 1)
         for actual, expected in zip(self.states, expected_states):
-            assert isclose(actual.timestamp, expected[0], rel_tol=0.01, abs_tol=0.01)
+            assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
             assert isclose(actual.state, expected[1])
 
 
