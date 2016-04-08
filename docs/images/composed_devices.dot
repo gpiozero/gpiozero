@@ -8,6 +8,8 @@ digraph classes {
     RGBLED->PWMLED;
     LEDBoard->LED;
     LEDBoard->PWMLED;
+    LEDBarGraph->LED;
+    LEDBarGraph->PWMLED;
 
     TrafficLightsBuzzer->TrafficLights;
     TrafficLightsBuzzer->Buzzer;
