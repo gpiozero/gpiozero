@@ -239,7 +239,7 @@ class EventsMixin(object):
     def inactive_time(self):
         """
         The length of time (in seconds) that the device has been inactive for.
-        When the device is inactive, this is ``None``.
+        When the device is active, this is ``None``.
         """
         if self._inactive_event.wait(0):
             return time() - self._last_changed
