@@ -456,8 +456,8 @@ class GPIOQueue(GPIOThread):
         if sample_wait < 0:
             raise BadWaitTime('sample_wait must be 0 or greater')
         self.queue = deque(maxlen=queue_len)
-        self.partial = partial
-        self.sample_wait = sample_wait
+        self.partial = bool(partial)
+        self.sample_wait = float(sample_wait)
         self.full = Event()
         self.parent = weakref.proxy(parent)
         self.average = average
