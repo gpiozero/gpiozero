@@ -81,10 +81,10 @@ Base Classes
 .. autoclass:: SPIDevice
     :members:
 
-.. autoclass:: InternalDevice
+.. autoclass:: InternalDevice()
     :members:
 
-.. autoclass:: CompositeDevice
+.. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
     :members:
 
 Input Devices

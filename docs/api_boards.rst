@@ -18,7 +18,7 @@ individually.
 LED Board
 =========
 
-.. autoclass:: LEDBoard(\*pins, pwm=False, active_high=True, initial_value=False)
+.. autoclass:: LEDBoard(\*pins, pwm=False, active_high=True, initial_value=False, \*\*named_pins)
     :inherited-members:
     :members:
 

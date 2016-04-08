@@ -12,6 +12,8 @@ Release 1.2.0 (2016-04-??)
 * Added :class:`LineSensor` class for single line-sensors (`#109`_)
 * Added :class:`DistanceSensor` class for HC-SR04 ultra-sonic sensors (`#114`_)
 * Added :class:`SnowPi` class for the Ryanteck Snow-pi board (`#130`_)
+* Added :attr:`~Button.when_held` (and related properties) to :class:`Button`
+  (`#115`_)
 * Fixed issues with installing GPIO Zero for python 3 on Raspbian Wheezy
   releases (`#140`_)
 * Added support for lots of ADC chips (MCP3xxx family) (`#162`_) - many thanks
@@ -35,6 +37,7 @@ reports in this version - keep 'em coming!
 .. _#69: https://github.com/RPi-Distro/python-gpiozero/issues/69
 .. _#109: https://github.com/RPi-Distro/python-gpiozero/issues/109
 .. _#114: https://github.com/RPi-Distro/python-gpiozero/issues/114
+.. _#115: https://github.com/RPi-Distro/python-gpiozero/issues/115
 .. _#130: https://github.com/RPi-Distro/python-gpiozero/issues/130
 .. _#140: https://github.com/RPi-Distro/python-gpiozero/issues/140
 .. _#162: https://github.com/RPi-Distro/python-gpiozero/issues/162

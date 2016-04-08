@@ -14,7 +14,7 @@ Table of Contents
     api_boards
     api_other
     api_generic
-    api_source_tools
+    api_tools
     api_pins
     api_exc
     changelog

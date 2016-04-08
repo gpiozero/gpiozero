@@ -107,7 +107,13 @@ class GPIOMeta(type):
                         try:
                             old_close()
                         finally:
-                            del cls._INSTANCES[key]
+                            try:
+                                del cls._INSTANCES[key]
+                            except KeyError:
+                                # If the _refs go negative (too many closes)
+                                # just ignore the resulting KeyError here -
+                                # it's already gone
+                                pass
                 self.close = close
                 cls._INSTANCES[key] = weakref.proxy(self)
         else:

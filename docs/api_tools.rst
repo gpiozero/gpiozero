@@ -2,13 +2,20 @@
 Source Tools
 ============
 
-.. currentmodule:: gpiozero
+.. currentmodule:: gpiozero.tools
 
 GPIO Zero includes several utility routines which are intended to be used with
-the :attr:`~SourceMixin.source` and :attr:`~ValuesMixin.values` attributes
-common to most devices in the library. Given that ``source`` and ``values``
-deal with infinite iterators, another excellent source of utilities is the
-:mod:`itertools` module in the standard library.
+the :attr:`~gpiozero.SourceMixin.source` and
+:attr:`~gpiozero.ValuesMixin.values` attributes common to most devices in the
+library. These utility routines are in the ``tools`` module of GPIO Zero and
+are typically imported as follows::
+
+    from gpiozero.tools import scaled, negated, conjunction
+
+Given that :attr:`~gpiozero.SourceMixin.source` and
+:attr:`~gpiozero.ValuesMixin.values` deal with infinite iterators, another
+excellent source of utilities is the :mod:`itertools` module in the standard
+library.
 
 Single source conversions
 =========================

@@ -258,7 +258,7 @@ class LEDBoard(LEDCollection):
             on_time, off_time, fade_in_time, fade_out_time, n, background
         )
 
-    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
         if fade_in_time > 0:
             sequence += [
