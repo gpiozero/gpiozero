@@ -12,7 +12,7 @@ from threading import Event
 
 from .exc import InputDeviceError, DeviceClosed
 from .devices import GPIODevice
-from .mixins import GPIOQueue, EventsMixin
+from .mixins import GPIOQueue, EventsMixin, HoldMixin
 
 
 class InputDevice(GPIODevice):
@@ -222,7 +222,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         return self.value > self.threshold
 
 
-class Button(DigitalInputDevice):
+class Button(HoldMixin, DigitalInputDevice):
     """
     Extends :class:`DigitalInputDevice` and represents a simple push button
     or switch.
@@ -254,11 +254,24 @@ class Button(DigitalInputDevice):
         If ``None`` (the default), no software bounce compensation will be
         performed. Otherwise, this is the length in time (in seconds) that the
         component will ignore changes in state after an initial change.
+
+    :param float hold_time:
+        The length of time (in seconds) to wait after the button is pushed,
+        until executing the :attr:`when_held` handler.
+
+    :param bool hold_repeat:
+        If ``True``, the :attr:`when_held` handler will be repeatedly executed
+        as long as the device remains active, every *hold_time* seconds.
     """
-    def __init__(self, pin=None, pull_up=True, bounce_time=None):
+    def __init__(
+            self, pin=None, pull_up=True, bounce_time=None,
+            hold_time=1, hold_repeat=False):
         super(Button, self).__init__(pin, pull_up, bounce_time)
+        self.hold_time = hold_time
+        self.hold_repeat = hold_repeat
 
 Button.is_pressed = Button.is_active
+Button.pressed_time = Button.active_time
 Button.when_pressed = Button.when_activated
 Button.when_released = Button.when_deactivated
 Button.wait_for_press = Button.wait_for_active

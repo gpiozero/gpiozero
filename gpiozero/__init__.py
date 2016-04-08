@@ -17,6 +17,8 @@ from .exc import (
     GPIOZeroError,
     DeviceClosed,
     BadEventHandler,
+    BadWaitTime,
+    BadQueueLen,
     CompositeDeviceError,
     CompositeDeviceBadName,
     CompositeDeviceBadOrder,
@@ -28,8 +30,6 @@ from .exc import (
     GPIODeviceClosed,
     GPIOPinInUse,
     GPIOPinMissing,
-    GPIOBadQueueLen,
-    GPIOBadSampleWait,
     InputDeviceError,
     OutputDeviceError,
     OutputDeviceBadValue,
@@ -61,6 +61,7 @@ from .mixins import (
     SourceMixin,
     ValuesMixin,
     EventsMixin,
+    HoldMixin,
 )
 from .input_devices import (
     InputDevice,

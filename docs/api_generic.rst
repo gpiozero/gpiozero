@@ -37,6 +37,9 @@ There are also several `mixin classes`_:
 * :class:`EventsMixin` which adds activated/deactivated events to devices
   along with the machinery to trigger those events
 
+* :class:`HoldMixin` which derives from :class:`EventsMixin` and adds the
+  held event to devices along with the machinery to repeatedly trigger it
+
 .. _mixin classes: https://en.wikipedia.org/wiki/Mixin
 
 The current class hierarchies are displayed below. For brevity, the mixin
@@ -139,5 +142,8 @@ Mixin Classes
     :members: _shared_key
 
 .. autoclass:: EventsMixin(...)
+    :members:
+
+.. autoclass:: HoldMixin(...)
     :members:
 

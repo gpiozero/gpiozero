@@ -72,7 +72,7 @@ to utilize pins that are part of IO extender chips. For example::
 
 .. warning::
 
-    The astute and mischievious reader may note that it is possible to mix pin
+    The astute and mischievous reader may note that it is possible to mix pin
     implementations, e.g. using ``RPiGPIOPin`` for one pin, and ``NativePin``
     for another. This is unsupported, and if it results in your script
     crashing, your components failing, or your Raspberry Pi turning into an

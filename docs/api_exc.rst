@@ -43,6 +43,10 @@ Errors
 
 .. autoexception:: BadEventHandler
 
+.. autoexception:: BadQueueLen
+
+.. autoexception:: BadWaitTime
+
 .. autoexception:: CompositeDeviceError
 
 .. autoexception:: CompositeDeviceBadName
@@ -62,10 +66,6 @@ Errors
 .. autoexception:: GPIOPinInUse
 
 .. autoexception:: GPIOPinMissing
-
-.. autoexception:: GPIOBadQueueLen
-
-.. autoexception:: GPIOBadSampleWait
 
 .. autoexception:: InputDeviceError
 
