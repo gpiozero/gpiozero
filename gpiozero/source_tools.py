@@ -146,7 +146,7 @@ def disjunction(*values):
     """
     Returns the `logical disjunction`_ of all supplied values (the result is
     ``True`` if any of the input values are currently ``True``). One or more
-    *values* can be specified. For example, the light an :class:`LED` when
+    *values* can be specified. For example, to light an :class:`LED` when
     *any* button is pressed::
 
         from gpiozero import LED, Button, conjunction
