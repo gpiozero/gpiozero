@@ -31,6 +31,13 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
     Extends :class:`CompositeDevice` with :meth:`on`, :meth:`off`, and
     :meth:`toggle` methods for controlling subordinate output devices.  Also
     extends :attr:`value` to be writeable.
+
+    :param list _order:
+        If specified, this is the order of named items specified by keyword
+        arguments (to ensure that the :attr:`value` tuple is constructed with a
+        specific order). All keyword arguments *must* be included in the
+        collection. If omitted, an alphabetically sorted order will be selected
+        for keyword arguments.
     """
 
     def on(self):

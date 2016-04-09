@@ -87,6 +87,9 @@ Base Classes
 .. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
     :members:
 
+.. autoclass:: CompositeOutputDevice(\*args, _order=None, \*\*kwargs)
+    :members:
+
 Input Devices
 =============
 
@@ -114,17 +117,11 @@ Output Devices
 SPI Devices
 ===========
 
-.. autoclass:: SPIDevice
-    :members:
-
 .. autoclass:: AnalogInputDevice
     :members:
 
 Composite Devices
 =================
-
-.. autoclass:: CompositeOutputDevice
-    :members:
 
 .. autoclass:: LEDCollection
     :members:
