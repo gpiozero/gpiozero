@@ -66,10 +66,10 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     """
     Represents a generic input device with typical on/off behaviour.
 
-    This class extends :class:`WaitableInputDevice` with machinery to fire the
-    active and inactive events for devices that operate in a typical digital
-    manner: straight forward on / off states with (reasonably) clean
-    transitions between the two.
+    This class extends :class:`InputDevice` with machinery to fire the active
+    and inactive events for devices that operate in a typical digital manner:
+    straight forward on / off states with (reasonably) clean transitions
+    between the two.
 
     :param float bouncetime:
         Specifies the length of time (in seconds) that the component will
@@ -94,11 +94,10 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     Represents a generic input device which takes its value from the mean of a
     queue of historical values.
 
-    This class extends :class:`WaitableInputDevice` with a queue which is
-    filled by a background thread which continually polls the state of the
-    underlying device. The mean of the values in the queue is compared to a
-    threshold which is used to determine the state of the :attr:`is_active`
-    property.
+    This class extends :class:`InputDevice` with a queue which is filled by a
+    background thread which continually polls the state of the underlying
+    device. The mean of the values in the queue is compared to a threshold
+    which is used to determine the state of the :attr:`is_active` property.
 
     .. note::
 

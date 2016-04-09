@@ -17,16 +17,23 @@ Given that :attr:`~gpiozero.SourceMixin.source` and
 excellent source of utilities is the :mod:`itertools` module in the standard
 library.
 
+.. warning::
+
+    While the devices API is now considered stable and won't change in
+    backwards incompatible ways, the tools API is *not* yet considered stable.
+    It is potentially subject to change in future versions. We welcome any
+    comments from testers!
+
 Single source conversions
 =========================
 
-.. autofunction:: negated
+.. autofunction:: absoluted
+
+.. autofunction:: clamped
 
 .. autofunction:: inverted
 
-.. autofunction:: scaled
-
-.. autofunction:: clamped
+.. autofunction:: negated
 
 .. autofunction:: post_delayed
 
@@ -36,21 +43,23 @@ Single source conversions
 
 .. autofunction:: queued
 
+.. autofunction:: scaled
+
 Combining sources
 =================
 
-.. autofunction:: conjunction
+.. autofunction:: all_values
 
-.. autofunction:: disjunction
+.. autofunction:: any_values
 
 .. autofunction:: averaged
 
 Artifical sources
 =================
 
+.. autofunction:: cos_values
+
 .. autofunction:: random_values
 
 .. autofunction:: sin_values
-
-.. autofunction:: cos_values
 

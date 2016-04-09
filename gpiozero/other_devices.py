@@ -21,7 +21,7 @@ from .mixins import EventsMixin
 class InternalDevice(EventsMixin, Device):
     """
     Extends :class:`Device` to provide a basis for devices which have no
-    specific hardware representation. This are effectively pseudo-devices and
+    specific hardware representation. These are effectively pseudo-devices and
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """

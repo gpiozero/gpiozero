@@ -29,7 +29,9 @@ from .exc import (
 class ValuesMixin(object):
     """
     Adds a :attr:`values` property to the class which returns an infinite
-    generator of readings from the :attr:`value` property.
+    generator of readings from the :attr:`value` property. There is rarely a
+    need to use this mixin directly as all base classes in GPIO Zero include
+    it.
 
     .. note::
 
@@ -50,8 +52,10 @@ class ValuesMixin(object):
 
 class SourceMixin(object):
     """
-    Adds a :attr:`source` property to the class which, given an iterable,
-    sets :attr:`value` to each member of that iterable until it is exhausted.
+    Adds a :attr:`source` property to the class which, given an iterable, sets
+    :attr:`value` to each member of that iterable until it is exhausted.  This
+    mixin is generally included in novel output devices to allow their state to
+    be driven from another device.
 
     .. note::
 
@@ -312,6 +316,11 @@ class EventsMixin(object):
 
 
 class HoldMixin(EventsMixin):
+    """
+    Extends :class:`EventsMixin` to add the :attr:`when_held` event and the
+    machinery to fire that event repeatedly (when :attr:`hold_repeat` is
+    ``True``) at internals defined by :attr:`hold_time`.
+    """
     def __init__(self, *args, **kwargs):
         super(HoldMixin, self).__init__(*args, **kwargs)
         self._when_held = None

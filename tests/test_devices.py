@@ -90,7 +90,7 @@ def test_composite_device_sequence():
         assert len(device) == 2
         assert device[0].pin.number == 2
         assert device[1].pin.number == 3
-        assert device.tuple._fields == ('_0', '_1')
+        assert device.namedtuple._fields == ('_0', '_1')
 
 def test_composite_device_values():
     with CompositeDevice(
@@ -109,7 +109,7 @@ def test_composite_device_named():
             bar=InputDevice(MockPin(3)),
             _order=('foo', 'bar')
             ) as device:
-        assert device.tuple._fields == ('foo', 'bar')
+        assert device.namedtuple._fields == ('foo', 'bar')
         assert device.value == (0, 0)
         assert not device.is_active
 
