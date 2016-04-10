@@ -333,12 +333,8 @@ class CompositeDevice(Device):
         return all(device.closed for device in self)
 
     @property
-    def tuple(self):
-        return self._tuple
-
-    @property
     def value(self):
-        return self.tuple(*(device.value for device in self))
+        return self._tuple(*(device.value for device in self))
 
     @property
     def is_active(self):
