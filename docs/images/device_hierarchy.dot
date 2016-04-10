@@ -1,0 +1,99 @@
+/* vim: set et sw=4 sts=4: */
+
+digraph classes {
+    graph [rankdir=BT];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    ValuesMixin;
+    SourceMixin;
+    SharedMixin;
+    EventsMixin;
+    HoldMixin;
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+
+    Device;
+    GPIODevice;
+
+    SmoothedInputDevice;
+    AnalogInputDevice;
+    MCP3xxx;
+    MCP33xx;
+    CompositeDevice;
+    CompositeOutputDevice;
+    LEDCollection;
+    InternalDevice;
+
+    GPIODevice->Device;
+    Device->ValuesMixin;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+
+    InputDevice->GPIODevice;
+    DigitalInputDevice->InputDevice;
+    DigitalInputDevice->EventsMixin;
+    SmoothedInputDevice->InputDevice;
+    SmoothedInputDevice->EventsMixin;
+    Button->DigitalInputDevice;
+    Button->HoldMixin;
+    MotionSensor->SmoothedInputDevice;
+    LightSensor->SmoothedInputDevice;
+    LineSensor->SmoothedInputDevice;
+    DistanceSensor->SmoothedInputDevice;
+
+    OutputDevice->GPIODevice;
+    OutputDevice->SourceMixin;
+    DigitalOutputDevice->OutputDevice;
+    LED->DigitalOutputDevice;
+    Buzzer->DigitalOutputDevice;
+    PWMOutputDevice->OutputDevice;
+    PWMLED->PWMOutputDevice;
+    RGBLED->Device;
+    RGBLED->SourceMixin;
+
+    SPIDevice->Device;
+    AnalogInputDevice->SPIDevice;
+    MCP3xxx->AnalogInputDevice;
+    MCP33xx->MCP3xxx;
+    MCP3004->MCP3xxx;
+    MCP3008->MCP3xxx;
+    MCP3204->MCP3xxx;
+    MCP3208->MCP3xxx;
+    MCP3301->MCP33xx;
+    MCP3302->MCP33xx;
+    MCP3304->MCP33xx;
+
+    CompositeDevice->Device;
+    CompositeOutputDevice->CompositeDevice;
+    CompositeOutputDevice->SourceMixin;
+    LEDCollection->CompositeOutputDevice;
+    LEDBoard->LEDCollection;
+    LEDBarGraph->LEDCollection;
+    PiLiter->LEDBoard;
+    PiLiterBarGraph->LEDBarGraph;
+    TrafficLights->LEDBoard;
+    PiTraffic->TrafficLights;
+    TrafficLightsBuzzer->CompositeOutputDevice;
+    FishDish->TrafficLightsBuzzer;
+    TrafficHat->TrafficLightsBuzzer;
+    Robot->CompositeDevice;
+    Robot->SourceMixin;
+    Energenie->Device;
+    Energenie->SourceMixin;
+    RyanteckRobot->Robot;
+    CamJamKitRobot->Robot;
+    Motor->CompositeDevice;
+    Motor->SourceMixin;
+
+    InternalDevice->Device;
+    InternalDevice->EventsMixin;
+    TimeOfDay->InternalDevice;
+    PingServer->InternalDevice;
+}
+

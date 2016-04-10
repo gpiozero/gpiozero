@@ -15,22 +15,22 @@ individually.
     All GPIO pin numbers use Broadcom (BCM) numbering. See the :doc:`recipes`
     page for more information.
 
-LED Board
-=========
+LEDBoard
+========
 
 .. autoclass:: LEDBoard(\*pins, pwm=False, active_high=True, initial_value=False, \*\*named_pins)
     :inherited-members:
     :members:
 
-LED Bar Graph
-=============
+LEDBarGraph
+===========
 
 .. autoclass:: LEDBarGraph(\*pins, initial_value=0)
     :inherited-members:
     :members:
 
-Traffic Lights
-==============
+TrafficLights
+=============
 
 .. autoclass:: TrafficLights
     :inherited-members:
@@ -104,5 +104,40 @@ Energenie
 
 .. autoclass:: Energenie
     :inherited-members:
+    :members:
+
+Base Classes
+============
+
+The classes in the sections above are derived from a series of base classes,
+some of which are effectively abstract. The classes form the (partial)
+hierarchy displayed in the graph below:
+
+.. image:: images/composite_device_hierarchy.*
+
+For composite devices, the following chart shows which devices are composed of
+which other devices:
+
+.. image:: images/composed_devices.*
+
+The following sections document these base classes for advanced users that wish
+to construct classes for their own devices.
+
+LEDCollection
+=============
+
+.. autoclass:: LEDCollection
+    :members:
+
+CompositeOutputDevice
+=====================
+
+.. autoclass:: CompositeOutputDevice(\*args, _order=None, \*\*kwargs)
+    :members:
+
+CompositeDevice
+===============
+
+.. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
     :members:
 

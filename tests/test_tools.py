@@ -33,21 +33,24 @@ def test_scaled():
 def test_clamped():
     assert list(clamped((-1, 0, 1, 2))) == [0, 0, 1, 1]
 
+def test_absoluted():
+    assert list(absoluted((-2, -1, 0, 1, 2))) == [2, 1, 0, 1, 2]
+
 def test_quantized():
     assert list(quantized((0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), 4)) == [
             0.0, 0.0, 0.0, 0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 1.0]
     assert list(quantized((0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), 5)) == [
             0.0, 0.0, 0.2, 0.2, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1.0]
 
-def test_conjunction():
-    assert list(conjunction(())) == []
-    assert list(conjunction((False, True))) == [False, True]
-    assert list(conjunction((0, 1, 0, 1), (0, 0, 0, 1))) == [0, 0, 0, 1]
+def test_all_values():
+    assert list(all_values(())) == []
+    assert list(all_values((False, True))) == [False, True]
+    assert list(all_values((0, 1, 0, 1), (0, 0, 0, 1))) == [0, 0, 0, 1]
 
-def test_disjunction():
-    assert list(disjunction(())) == []
-    assert list(disjunction((False, True))) == [False, True]
-    assert list(disjunction((0, 1, 0, 1), (0, 0, 0, 1))) == [0, 1, 0, 1]
+def test_any_values():
+    assert list(any_values(())) == []
+    assert list(any_values((False, True))) == [False, True]
+    assert list(any_values((0, 1, 0, 1), (0, 0, 0, 1))) == [0, 1, 0, 1]
 
 def test_averaged():
     assert list(averaged(())) == []

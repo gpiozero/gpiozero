@@ -228,7 +228,7 @@ class MCP3001(MCP3xxx):
 class MCP3002(MCP3xxx):
     """
     The `MCP3002`_ is a 10-bit analog to digital converter with 2 channels
-    (0-3).
+    (0-1).
 
     .. _MCP3002: http://www.farnell.com/datasheets/1599363.pdf
     """

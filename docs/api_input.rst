@@ -47,3 +47,39 @@ Distance Sensor (HC-SR04)
 .. autoclass:: DistanceSensor(echo, trigger, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False)
     :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance
 
+Base Classes
+============
+
+The classes in the sections above are derived from a series of base classes,
+some of which are effectively abstract. The classes form the (partial)
+hierarchy displayed in the graph below:
+
+.. image:: images/input_device_hierarchy.*
+
+The following sections document these base classes for advanced users that wish
+to construct classes for their own devices.
+
+DigitalInputDevice
+==================
+
+.. autoclass:: DigitalInputDevice(pin, pull_up=False, bounce_time=None)
+    :members:
+
+SmoothedInputDevice
+===================
+
+.. autoclass:: SmoothedInputDevice
+    :members:
+
+InputDevice
+===========
+
+.. autoclass:: InputDevice(pin, pull_up=False)
+    :members:
+
+GPIODevice
+==========
+
+.. autoclass:: GPIODevice(pin)
+    :members:
+

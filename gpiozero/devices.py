@@ -264,7 +264,7 @@ class CompositeDevice(Device):
     def __init__(self, *args, **kwargs):
         self._all = ()
         self._named = {}
-        self._tuple = None
+        self._namedtuple = None
         self._order = kwargs.pop('_order', None)
         if self._order is None:
             self._order = sorted(kwargs.keys())
@@ -279,7 +279,7 @@ class CompositeDevice(Device):
             if not isinstance(dev, Device):
                 raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
         self._named = kwargs
-        self._tuple = namedtuple('%sValue' % self.__class__.__name__, chain(
+        self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             (str(i) for i in range(len(args))), self._order),
             rename=True)
 
@@ -333,12 +333,12 @@ class CompositeDevice(Device):
         return all(device.closed for device in self)
 
     @property
-    def tuple(self):
-        return self._tuple
+    def namedtuple(self):
+        return self._namedtuple
 
     @property
     def value(self):
-        return self.tuple(*(device.value for device in self))
+        return self.namedtuple(*(device.value for device in self))
 
     @property
     def is_active(self):

@@ -83,10 +83,22 @@ implementation if not.
 Analog to Digital Converters (ADC)
 ==================================
 
+.. autoclass:: MCP3001
+    :members: value
+
+.. autoclass:: MCP3002
+    :members: channel, value, differential
+
 .. autoclass:: MCP3004
     :members: channel, value, differential
 
 .. autoclass:: MCP3008
+    :members: channel, value, differential
+
+.. autoclass:: MCP3201
+    :members: value
+
+.. autoclass:: MCP3202
     :members: channel, value, differential
 
 .. autoclass:: MCP3204
@@ -103,4 +115,28 @@ Analog to Digital Converters (ADC)
 
 .. autoclass:: MCP3304
     :members: channel, value, differential
+
+Base Classes
+============
+
+The classes in the sections above are derived from a series of base classes,
+some of which are effectively abstract. The classes form the (partial)
+hierarchy displayed in the graph below:
+
+.. image:: images/spi_device_hierarchy.*
+
+The following sections document these base classes for advanced users that wish
+to construct classes for their own devices.
+
+AnalogInputDevice
+=================
+
+.. autoclass:: AnalogInputDevice
+    :members:
+
+SPIDevice
+=========
+
+.. autoclass:: SPIDevice
+    :members:
 
