@@ -16,7 +16,7 @@ try:
 except ImportError:
     pass
 from itertools import cycle
-from math import sin, cos, radians
+from math import sin, cos, pi
 try:
     from statistics import mean
 except ImportError:
@@ -285,12 +285,11 @@ def random_values():
         yield random()
 
 
-def sin_values():
+def sin_values(period=360):
     """
     Provides an infinite source of values representing a sine wave (from -1 to
-    +1), calculated as the result of applying sign to a simple degrees counter
-    that increments by one for each requested value. For example, to produce a
-    "siren" effect with a couple of LEDs::
+    +1) which repeats every *period* values. For example, to produce a "siren"
+    effect with a couple of LEDs that repeats once a second::
 
         from gpiozero import PWMLED
         from gpiozero.tools import sin_values, scaled, inverted
@@ -300,22 +299,22 @@ def sin_values():
         blue = PWMLED(3)
         red.source_delay = 0.01
         blue.source_delay = 0.01
-        red.source = scaled(sin_values(), 0, 1, -1, 1)
+        red.source = scaled(sin_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
         pause()
 
-    If you require a wider range than 0 to 1, see :func:`scaled`.
+    If you require a different range than -1 to +1, see :func:`scaled`.
     """
-    for d in cycle(range(360)):
-        yield sin(radians(d))
+    angles = (2 * pi * i / period for i in range(period))
+    for a in cycle(angles):
+        yield sin(a)
 
 
-def cos_values():
+def cos_values(period=360):
     """
     Provides an infinite source of values representing a cosine wave (from -1
-    to +1), calculated as the result of applying sign to a simple degrees
-    counter that increments by one for each requested value. For example, to
-    produce a "siren" effect with a couple of LEDs::
+    to +1) which repeats every *period* values. For example, to produce a
+    "siren" effect with a couple of LEDs that repeats once a second::
 
         from gpiozero import PWMLED
         from gpiozero.tools import cos_values, scaled, inverted
@@ -325,12 +324,13 @@ def cos_values():
         blue = PWMLED(3)
         red.source_delay = 0.01
         blue.source_delay = 0.01
-        red.source = scaled(cos_values(), 0, 1, -1, 1)
+        red.source = scaled(cos_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
         pause()
 
-    If you require a wider range than 0 to 1, see :func:`scaled`.
+    If you require a different range than -1 to +1, see :func:`scaled`.
     """
-    for d in cycle(range(360)):
-        yield cos(radians(d))
+    angles = (2 * pi * i / period for i in range(period))
+    for a in cycle(angles):
+        yield cos(a)
 

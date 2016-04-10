@@ -5,7 +5,7 @@ Changelog
 .. currentmodule:: gpiozero
 
 
-Release 1.2.0 (2016-04-??)
+Release 1.2.0 (2016-04-10)
 ==========================
 
 * Added :class:`Energenie` class for controlling Energenie plugs (`#69`_)
@@ -32,7 +32,16 @@ Release 1.2.0 (2016-04-??)
 
 And I'll just add a note of thanks to the many people in the community who
 contributed to this release: we've had some great PRs, suggestions, and bug
-reports in this version - keep 'em coming!
+reports in this version. Of particular note:
+
+* Schelto van Doorn was instrumental in adding support for numerous ADC chips
+* Alex Eames generously donated a RasPiO Analog board which was extremely
+  useful in developing the software SPI interface (and testing the ADC support)
+* Andrew Scheller squashed several dozen bugs (usually a day or so after Dave
+  had introduced them ;)
+
+As always, many thanks to the whole community - we look forward to hearing from
+you more in 1.3!
 
 .. _#69: https://github.com/RPi-Distro/python-gpiozero/issues/69
 .. _#109: https://github.com/RPi-Distro/python-gpiozero/issues/109

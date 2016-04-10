@@ -322,6 +322,7 @@ class HoldMixin(EventsMixin):
     ``True``) at internals defined by :attr:`hold_time`.
     """
     def __init__(self, *args, **kwargs):
+        self._hold_thread = None
         super(HoldMixin, self).__init__(*args, **kwargs)
         self._when_held = None
         self._held_from = None

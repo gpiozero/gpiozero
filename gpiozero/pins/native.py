@@ -12,6 +12,7 @@ import os
 import mmap
 import errno
 import struct
+import warnings
 from time import sleep
 from threading import Thread, Event, Lock
 from collections import Counter
@@ -24,6 +25,8 @@ from ..exc import (
     PinInvalidFunction,
     PinFixedPull,
     PinSetInput,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -213,7 +216,12 @@ class NativePin(Pin):
             return cls._PINS[number]
         except KeyError:
             self = super(NativePin, cls).__new__(cls)
-            cls._PINS[number] = self
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._func_offset = self._MEM.GPFSEL_OFFSET + (number // 10)
             self._func_shift = (number % 10) * 3
@@ -238,6 +246,7 @@ class NativePin(Pin):
             self.pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self.bounce = None
             self.edges = 'both'
+            cls._PINS[number] = self
             return self
 
     def __repr__(self):

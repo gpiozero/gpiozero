@@ -261,11 +261,11 @@ PI_REVISIONS = {
     '0013':   ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     '0014':   ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
     '0015':   ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    #'a01041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    #'a21041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    #'900092': ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
-    #'a02082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
-    #'a22082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    'a01041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    'a21041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    '900092': ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
+    'a02082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    'a22082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
     }
 
 
@@ -479,8 +479,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             The pin function you wish to determine pull-up for. Usually this is
             something like "GPIO9" for Broadcom GPIO pin 9.
         """
-        header, number = self.physical_pin(function)
-        return self.headers[header][number].pull_up
+        try:
+            header, number = self.physical_pin(function)
+        except PinNoPins:
+            return False
+        else:
+            return self.headers[header][number].pull_up
 
 
 _PI_REVISION = None

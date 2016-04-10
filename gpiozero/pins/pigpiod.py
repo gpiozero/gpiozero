@@ -6,6 +6,7 @@ from __future__ import (
     )
 str = type('')
 
+import warnings
 import pigpio
 
 from . import Pin
@@ -17,6 +18,8 @@ from ..exc import (
     PinInvalidPull,
     PinInvalidBounce,
     PinInvalidState,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -107,12 +110,17 @@ class PiGPIOPin(Pin):
             return cls._PINS[(host, port, number)]
         except KeyError:
             self = super(PiGPIOPin, cls).__new__(cls)
-            cls._PINS[(host, port, number)] = self
             try:
                 self._connection = cls._CONNECTIONS[(host, port)]
             except KeyError:
                 self._connection = pigpio.pi(host, port)
                 cls._CONNECTIONS[(host, port)] = self._connection
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._host = host
             self._port = port
             self._number = number
@@ -125,11 +133,11 @@ class PiGPIOPin(Pin):
             try:
                 self._connection.set_mode(self._number, pigpio.INPUT)
             except pigpio.error as e:
-                del cls._PINS[(host, port, number)]
                 raise ValueError(e)
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[self._pull])
             self._connection.set_glitch_filter(self._number, 0)
             self._connection.set_PWM_range(self._number, 255)
+            cls._PINS[(host, port, number)] = self
             return self
 
     def __repr__(self):
