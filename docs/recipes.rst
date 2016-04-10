@@ -567,10 +567,52 @@ Use four GPIO buttons as forward/back/left/right controls for a robot::
 Keyboard controlled robot
 =========================
 
-.. XXX Rewrite this using curses (to avoid evdev dep, which isn't packaged
-   on Raspbian)
-
 Use up/down/left/right keys to control a robot::
+
+    import curses
+    from gpiozero import RyanteckRobot
+
+    robot = RyanteckRobot()
+
+    actions = {
+        curses.KEY_UP:    robot.forward,
+        curses.KEY_DOWN:  robot.backward,
+        curses.KEY_LEFT:  robot.left,
+        curses.KEY_RIGHT: robot.right,
+        }
+
+    def main(window):
+        next_key = None
+        while True:
+            curses.halfdelay(1)
+            if next_key is None:
+                key = window.getch()
+            else:
+                key = next_key
+                next_key = None
+            if key != -1:
+                # KEY DOWN
+                curses.halfdelay(3)
+                action = actions.get(key)
+                if action is not None:
+                    action()
+                next_key = key
+                while next_key == key:
+                    next_key = window.getch()
+                # KEY UP
+                robot.stop()
+
+    curses.wrapper(main)
+
+.. note::
+
+    This recipe uses the ``curses`` module. This module requires that Python is
+    running in a terminal in order to work correctly, hence this recipe will
+    *not* work in environments like IDLE.
+
+If you prefer a version that works under IDLE, the following recipe should
+suffice, but will require that you install the evdev library with ``sudo pip
+install evdev`` first::
 
     from gpiozero import RyanteckRobot
     from evdev import InputDevice, list_devices, ecodes
