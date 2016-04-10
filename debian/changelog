@@ -1,3 +1,26 @@
+gpiozero (1.2.0) stable; urgency=low
+
+  * Added "Energenie" class for controlling Energenie plugs (#69)
+  * Added "LineSensor" class for single line-sensors (#109)
+  * Added "DistanceSensor" class for HC-SR04 ultra-sonic sensors (#114)
+  * Added "SnowPi" class for the Ryanteck Snow-pi board (#130)
+  * Added "when_held" (and related properties) to "Button" (#115)
+  * Fixed issues with installing GPIO Zero for python 3 on Raspbian Wheezy
+    releases (#140)
+  * Added support for lots of ADC chips (MCP3xxx family) (#162) - many thanks
+    to pcopa and lurch!
+  * Added support for pigpiod as a pin implementation with "PiGPIOPin" (#180)
+  * Many refinements to the base classes mean more consistency in composite
+    devices and several bugs squashed (#164, #175, #182, #189, #193, #229)
+  * GPIO Zero is now aware of what sort of Pi it's running on via "pi_info"
+    and has a fairly extensive database of Pi information which it uses to
+    determine when users request impossible things (like pull-down on a pin
+    with a physical pull-up resistor) (#222)
+  * The source/values system was enhanced to ensure normal usage doesn't
+    stress the CPU and lots of utilities were added (#181, #251)
+
+ -- Dave Jones <dave@waveform.org.uk>  Sun, 10 Apr 2016 21:04:42 +0100
+
 gpiozero (1.1.0) stable; urgency=low
 
   * Documentation converted to reST and expanded to include generic classes
