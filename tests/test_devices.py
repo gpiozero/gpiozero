@@ -118,6 +118,10 @@ def test_composite_device_bad_init():
         CompositeDevice(foo=1, bar=2, _order=('foo',))
     with pytest.raises(ValueError):
         CompositeDevice(close=1)
+    with pytest.raises(ValueError):
+        CompositeDevice(2)
+    with pytest.raises(ValueError):
+        CompositeDevice(MockPin(2))
 
 def test_composite_device_read_only():
     device = CompositeDevice(

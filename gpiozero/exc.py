@@ -31,6 +31,9 @@ class CompositeDeviceBadName(CompositeDeviceError, ValueError):
 class CompositeDeviceBadOrder(CompositeDeviceError, ValueError):
     "Error raised when a composite device is constructed with an incomplete order"
 
+class CompositeDeviceBadDevice(CompositeDeviceError, ValueError):
+    "Error raised when a composite device is constructed with an object that doesn't inherit from :class:`Device`"
+
 class EnergenieSocketMissing(CompositeDeviceError, ValueError):
     "Error raised when socket number is not specified"
 
