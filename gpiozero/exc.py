@@ -121,3 +121,9 @@ class SPIWarning(GPIOZeroWarning):
 class SPISoftwareFallback(SPIWarning):
     "Warning raised when falling back to the software implementation"
 
+class PinWarning(GPIOZeroWarning):
+    "Base class for warnings related to pin implementations"
+
+class PinNonPhysical(PinWarning):
+    "Warning raised when a non-physical pin is specified in a constructor"
+

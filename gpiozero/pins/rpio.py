@@ -7,6 +7,7 @@ from __future__ import (
 str = type('')
 
 
+import warnings
 import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException
@@ -21,6 +22,8 @@ from ..exc import (
     PinInvalidBounce,
     PinInvalidState,
     PinPWMError,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -81,7 +84,12 @@ class RPIOPin(Pin):
             return cls._PINS[number]
         except KeyError:
             self = super(RPIOPin, cls).__new__(cls)
-            cls._PINS[number] = self
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = False
@@ -93,6 +101,7 @@ class RPIOPin(Pin):
                 RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
             except InvalidChannelException as e:
                 raise ValueError(e)
+            cls._PINS[number] = self
             return self
 
     def __repr__(self):

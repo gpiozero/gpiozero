@@ -51,6 +51,8 @@ from .exc import (
     GPIOZeroWarning,
     SPIWarning,
     SPISoftwareFallback,
+    PinWarning,
+    PinNonPhysical,
 )
 from .devices import (
     Device,

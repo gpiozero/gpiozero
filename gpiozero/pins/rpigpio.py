@@ -6,6 +6,7 @@ from __future__ import (
     )
 str = type('')
 
+import warnings
 from RPi import GPIO
 
 from . import Pin
@@ -18,6 +19,8 @@ from ..exc import (
     PinInvalidState,
     PinInvalidBounce,
     PinPWMFixedValue,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -84,7 +87,12 @@ class RPiGPIOPin(Pin):
             return cls._PINS[number]
         except KeyError:
             self = super(RPiGPIOPin, cls).__new__(cls)
-            cls._PINS[number] = self
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = None
@@ -94,6 +102,7 @@ class RPiGPIOPin(Pin):
             self._when_changed = None
             self._edges = GPIO.BOTH
             GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[self._pull])
+            cls._PINS[number] = self
             return self
 
     def __repr__(self):
