@@ -23,6 +23,7 @@ from .exc import (
     DeviceClosed,
     CompositeDeviceBadName,
     CompositeDeviceBadOrder,
+    CompositeDeviceBadDevice,
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
@@ -274,6 +275,9 @@ class CompositeDevice(Device):
         for name in set(self._order) & set(dir(self)):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
         self._all = args + tuple(kwargs[v] for v in self._order)
+        for dev in self._all:
+            if not isinstance(dev, Device):
+                raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
         self._named = kwargs
         self._tuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             (str(i) for i in range(len(args))), self._order),

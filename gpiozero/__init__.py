@@ -22,6 +22,7 @@ from .exc import (
     CompositeDeviceError,
     CompositeDeviceBadName,
     CompositeDeviceBadOrder,
+    CompositeDeviceBadDevice,
     SPIError,
     SPIBadArgs,
     EnergenieSocketMissing,
