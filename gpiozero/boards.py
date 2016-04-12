@@ -19,6 +19,7 @@ from .exc import (
     EnergenieSocketMissing,
     EnergenieBadSocket,
     )
+from .input_devices import Button
 from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor, PhaseEnableMotor
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
@@ -1016,4 +1017,3 @@ class Energenie(SourceMixin, Device):
     def off(self):
         self.value = False
 
->>>>>>> refs/remotes/RPi-Distro/master
