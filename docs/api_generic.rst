@@ -1,87 +1,67 @@
 ===============
-Generic Devices
+Generic Classes
 ===============
 
 .. currentmodule:: gpiozero
 
-The GPIO Zero class hierarchy is quite extensive. It contains a couple of base
-classes:
+The GPIO Zero class hierarchy is quite extensive. It contains several base
+classes (most of which are documented in their corresponding chapters):
 
-* :class:`GPIODevice` for individual devices that attach to a single GPIO pin
+* :class:`Device` is the root of the hierarchy, implementing base functionality
+  like :meth:`~Device.close` and context manager handlers.
 
-* :class:`CompositeDevice` for devices composed of multiple other devices like
-  HATs
+* :class:`GPIODevice` represents individual devices that attach to a single
+  GPIO pin
 
-There are also a couple of `mixin classes`_:
+* :class:`SPIDevice` represents devices that communicate over an SPI interface
+  (implemented as four GPIO pins)
 
-* :class:`ValuesMixin` which defines the ``values`` properties; there is rarely
-  a need to use this as the base classes mentioned above both include it
-  (so all classes in GPIO Zero include the ``values`` property)
+* :class:`InternalDevice` represents devices that are entirely internal to
+  the Pi (usually operating system related services)
 
-* :class:`SourceMixin` which defines the ``source`` property; this is generally
-  included in novel output device classes
+* :class:`CompositeDevice` represents devices composed of multiple other
+  devices like HATs
+
+There are also several `mixin classes`_ for adding important functionality
+at numerous points in the hierarchy, which is illustrated below:
+
+.. image:: images/device_hierarchy.*
 
 .. _mixin classes: https://en.wikipedia.org/wiki/Mixin
 
-The current class hierarchies are displayed below. For brevity, the mixin
-classes are omitted:
+Device
+======
 
-.. image:: images/gpio_device_hierarchy.*
+.. autoclass:: Device
+    :members: close, closed, value, is_active
 
-.. image:: images/composite_device_hierarchy.*
-
-Finally, for composite devices, the following chart shows which devices are
-composed of which other devices:
-
-.. image:: images/composed_devices.*
-
-Base Classes
-============
-
-.. autoclass:: GPIODevice(pin)
-    :inherited-members:
-    :members:
-
-.. autoclass:: CompositeDevice
-    :inherited-members:
-    :members:
-
-Input Devices
-=============
-
-.. autoclass:: InputDevice(pin, pull_up=False)
-    :members:
-
-.. autoclass:: WaitableInputDevice
-    :members:
-
-.. autoclass:: DigitalInputDevice(pin, pull_up=False, bounce_time=None)
-    :members:
-
-.. autoclass:: SmoothedInputDevice
-    :members:
-
-.. autoclass:: AnalogInputDevice
-    :members:
-
-Output Devices
-==============
-
-.. autoclass:: OutputDevice(pin, active_high=True, initial_value=False)
-    :members:
-
-.. autoclass:: PWMOutputDevice(pin, active_high=True, initial_value=0, frequency=100)
-    :members:
-
-.. autoclass:: DigitalOutputDevice(pin, active_high=True, initial_value=False)
-    :members:
-
-Mixin Classes
-=============
+ValuesMixin
+===========
 
 .. autoclass:: ValuesMixin(...)
     :members:
 
+SourceMixin
+===========
+
 .. autoclass:: SourceMixin(...)
+    :members:
+
+SharedMixin
+===========
+
+.. autoclass:: SharedMixin(...)
+    :members: _shared_key
+
+EventsMixin
+===========
+
+.. autoclass:: EventsMixin(...)
+    :members:
+
+HoldMixin
+=========
+
+.. autoclass:: HoldMixin(...)
     :members:
 

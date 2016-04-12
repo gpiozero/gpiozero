@@ -8,14 +8,15 @@ str = type('')
 
 
 from collections import namedtuple
-from time import time
+from time import time, sleep
+from threading import Thread, Event
 try:
     from math import isclose
 except ImportError:
     from ..compat import isclose
 
-from . import Pin, PINS_CLEANUP
-from ..exc import PinSetInput, PinPWMUnsupported
+from . import Pin
+from ..exc import PinSetInput, PinPWMUnsupported, PinFixedPull
 
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
@@ -37,7 +38,7 @@ class MockPin(Pin):
         try:
             old_pin = cls._PINS[number]
         except KeyError:
-            self = super(Pin, cls).__new__(cls)
+            self = super(MockPin, cls).__new__(cls)
             cls._PINS[number] = self
             self._number = number
             self._function = 'input'
@@ -158,8 +159,85 @@ class MockPin(Pin):
         # that's about all we can reasonably expect in a non-realtime
         # environment on a Pi 1)
         for actual, expected in zip(self.states, expected_states):
-            assert isclose(actual.timestamp, expected[0], rel_tol=0.01, abs_tol=0.01)
+            assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
             assert isclose(actual.state, expected[1])
+
+
+class MockPulledUpPin(MockPin):
+    """
+    This derivative of :class:`MockPin` emulates a pin with a physical pull-up
+    resistor.
+    """
+    def _set_pull(self, value):
+        if value != 'up':
+            raise PinFixedPull('pin has a physical pull-up resistor')
+
+
+class MockChargingPin(MockPin):
+    """
+    This derivative of :class:`MockPin` emulates a pin which, when set to
+    input, waits a predetermined length of time and then drives itself high
+    (as if attached to, e.g. a typical circuit using an LDR and a capacitor
+    to time the charging rate).
+    """
+    def __init__(self, number):
+        super(MockChargingPin, self).__init__()
+        self.charge_time = 0.01 # dark charging time
+        self._charge_stop = Event()
+        self._charge_thread = None
+
+    def _set_function(self, value):
+        super(MockChargingPin, self)._set_function(value)
+        if value == 'input':
+            if self._charge_thread:
+                self._charge_stop.set()
+                self._charge_thread.join()
+            self._charge_stop.clear()
+            self._charge_thread = Thread(target=self._charge)
+            self._charge_thread.start()
+        elif value == 'output':
+            if self._charge_thread:
+                self._charge_stop.set()
+                self._charge_thread.join()
+
+    def _charge(self):
+        if not self._charge_stop.wait(self.charge_time):
+            try:
+                self.drive_high()
+            except AssertionError:
+                # Charging pins are typically flipped between input and output
+                # repeatedly; if another thread has already flipped us to
+                # output ignore the assertion-error resulting from attempting
+                # to drive the pin high
+                pass
+
+
+class MockTriggerPin(MockPin):
+    """
+    This derivative of :class:`MockPin` is intended to be used with another
+    :class:`MockPin` to emulate a distance sensor. Set :attr:`echo_pin` to the
+    corresponding pin instance. When this pin is driven high it will trigger
+    the echo pin to drive high for the echo time.
+    """
+    def __init__(self, number):
+        super(MockTriggerPin, self).__init__()
+        self.echo_pin = None
+        self.echo_time = 0.04 # longest echo time
+        self._echo_thread = None
+
+    def _set_state(self, value):
+        super(MockTriggerPin, self)._set_state(value)
+        if value:
+            if self._echo_thread:
+                self._echo_thread.join()
+            self._echo_thread = Thread(target=self._echo)
+            self._echo_thread.start()
+
+    def _echo(self):
+        sleep(0.001)
+        self.echo_pin.drive_high()
+        sleep(self.echo_time)
+        self.echo_pin.drive_low()
 
 
 class MockPWMPin(MockPin):

@@ -7,7 +7,7 @@ from __future__ import (
 str = type('')
 
 from ..exc import (
-    PinFixedFunction,
+    PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
     PinPWMUnsupported,
@@ -16,6 +16,9 @@ from ..exc import (
 
 
 PINS_CLEANUP = []
+def _pins_shutdown():
+    for routine in PINS_CLEANUP:
+        routine()
 
 
 class Pin(object):
@@ -27,12 +30,12 @@ class Pin(object):
     overridden:
 
     * :meth:`_get_function`
+    * :meth:`_set_function`
     * :meth:`_get_state`
 
     The following functions *may* be overridden if applicable:
 
     * :meth:`close`
-    * :meth:`_set_function`
     * :meth:`_set_state`
     * :meth:`_get_frequency`
     * :meth:`_set_frequency`
@@ -102,7 +105,9 @@ class Pin(object):
         return "input"
 
     def _set_function(self, value):
-        raise PinFixedFunction("Cannot set the function of pin %r" % self)
+        if value != "input":
+            raise PinInvalidFunction(
+                "Cannot set the function of pin %r to %s" % (self, value))
 
     function = property(
         lambda self: self._get_function(),
@@ -116,8 +121,7 @@ class Pin(object):
         With certain pin types (e.g. GPIO pins), this attribute can be changed
         to configure the function of a pin. If an invalid function is
         specified, for this attribute, :exc:`PinInvalidFunction` will be
-        raised. If this pin is fixed function and an attempt is made to set
-        this attribute, :exc:`PinFixedFunction` will be raised.
+        raised.
         """)
 
     def _get_state(self):

@@ -42,3 +42,41 @@ Motor
 
 .. autoclass:: Motor(forward, backward)
     :members: forward, backward, stop
+
+Base Classes
+============
+
+The classes in the sections above are derived from a series of base classes,
+some of which are effectively abstract. The classes form the (partial)
+hierarchy displayed in the graph below:
+
+.. image:: images/output_device_hierarchy.*
+
+The following sections document these base classes for advanced users that wish
+to construct classes for their own devices.
+
+DigitalOutputDevice
+===================
+
+.. autoclass:: DigitalOutputDevice(pin, active_high=True, initial_value=False)
+    :members:
+
+PWMOutputDevice
+===============
+
+.. autoclass:: PWMOutputDevice(pin, active_high=True, initial_value=0, frequency=100)
+    :members:
+
+OutputDevice
+============
+
+.. autoclass:: OutputDevice(pin, active_high=True, initial_value=False)
+    :members:
+
+GPIODevice
+==========
+
+.. autoclass:: GPIODevice(pin)
+    :members:
+    :noindex:
+

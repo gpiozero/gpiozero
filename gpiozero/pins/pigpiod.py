@@ -6,15 +6,20 @@ from __future__ import (
     )
 str = type('')
 
+import warnings
 import pigpio
 
 from . import Pin
+from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
     PinInvalidPull,
     PinInvalidBounce,
+    PinInvalidState,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -93,21 +98,33 @@ class PiGPIOPin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
+    PI_INFO = None
+
     def __new__(cls, number, host='localhost', port=8888):
+        # XXX What about remote pins? This should probably be instance
+        # specific rather than class specific for pigpio. Need to check how
+        # to query remote info though...
+        if cls.PI_INFO is None:
+            cls.PI_INFO = pi_info()
         try:
             return cls._PINS[(host, port, number)]
         except KeyError:
             self = super(PiGPIOPin, cls).__new__(cls)
-            cls._PINS[(host, port, number)] = self
             try:
                 self._connection = cls._CONNECTIONS[(host, port)]
             except KeyError:
                 self._connection = pigpio.pi(host, port)
                 cls._CONNECTIONS[(host, port)] = self._connection
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._host = host
             self._port = port
             self._number = number
-            self._pull = 'up' if number in (2, 3) else 'floating'
+            self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = False
             self._bounce = None
             self._when_changed = None
@@ -116,18 +133,18 @@ class PiGPIOPin(Pin):
             try:
                 self._connection.set_mode(self._number, pigpio.INPUT)
             except pigpio.error as e:
-                del cls._PINS[(host, port, number)]
                 raise ValueError(e)
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[self._pull])
             self._connection.set_glitch_filter(self._number, 0)
             self._connection.set_PWM_range(self._number, 255)
+            cls._PINS[(host, port, number)] = self
             return self
 
     def __repr__(self):
         if self._host == 'localhost':
             return "GPIO%d" % self._number
         else:
-            return "GPIO%d on %s:%d" % (self._host, self._port)
+            return "GPIO%d on %s:%d" % (self._number, self._host, self._port)
 
     @property
     def host(self):
@@ -150,7 +167,7 @@ class PiGPIOPin(Pin):
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self.number in (2, 3) else 'floating'
+            self.pull = 'up' if self.PI_INFO.pulled_up('GPIO%d' % self.number) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self._connection.get_mode(self._number)]
@@ -174,7 +191,7 @@ class PiGPIOPin(Pin):
             try:
                 self._connection.set_PWM_dutycycle(self._number, int(value * 255))
             except pigpio.error:
-                raise PinInvalidValue('invalid state "%s" for pin %r' % (value, self))
+                raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         elif self.function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
         else:
@@ -187,7 +204,7 @@ class PiGPIOPin(Pin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self._number in (2, 3):
+        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[value])

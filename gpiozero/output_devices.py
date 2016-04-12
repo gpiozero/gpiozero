@@ -5,13 +5,13 @@ from __future__ import (
     division,
 )
 
-import warnings
-from time import sleep
 from threading import Lock
 from itertools import repeat, cycle, chain
 
-from .exc import OutputDeviceBadValue, GPIOPinMissing, GPIODeviceClosed
-from .devices import GPIODevice, GPIOThread, CompositeDevice, SourceMixin
+from .exc import OutputDeviceBadValue, GPIOPinMissing
+from .devices import GPIODevice, Device, CompositeDevice
+from .mixins import SourceMixin
+from .threads import GPIOThread
 
 
 class OutputDevice(SourceMixin, GPIODevice):
@@ -19,8 +19,8 @@ class OutputDevice(SourceMixin, GPIODevice):
     Represents a generic GPIO output device.
 
     This class extends :class:`GPIODevice` to add facilities common to GPIO
-    output devices: an :meth:`on` method to switch the device on, and a
-    corresponding :meth:`off` method.
+    output devices: an :meth:`on` method to switch the device on, a
+    corresponding :meth:`off` method, and a :meth:`toggle` method.
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
@@ -38,10 +38,9 @@ class OutputDevice(SourceMixin, GPIODevice):
         device will be switched on initially.
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
-        self._active_high = active_high
         super(OutputDevice, self).__init__(pin)
-        self._active_state = True if active_high else False
-        self._inactive_state = False if active_high else True
+        self._lock = Lock()
+        self.active_high = active_high
         if initial_value is None:
             self.pin.function = 'output'
         elif initial_value:
@@ -70,8 +69,23 @@ class OutputDevice(SourceMixin, GPIODevice):
         """
         self._write(False)
 
+    def toggle(self):
+        """
+        Reverse the state of the device. If it's on, turn it off; if it's off,
+        turn it on.
+        """
+        with self._lock:
+            if self.is_active:
+                self.off()
+            else:
+                self.on()
+
     @property
     def value(self):
+        """
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise. Setting this property changes the state of the device.
+        """
         return super(OutputDevice, self).value
 
     @value.setter
@@ -80,7 +94,22 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     @property
     def active_high(self):
-        return self._active_high
+        """
+        When ``True``, the :attr:`value` property is ``True`` when the device's
+        :attr:`pin` is high. When ``False`` the :attr:`value` property is
+        ``True`` when the device's pin is low (i.e. the value is inverted).
+
+        This property can be set after construction; be warned that changing it
+        will invert :attr:`value` (i.e. changing this property doesn't change
+        the device's pin state - it just changes how that state is
+        interpreted).
+        """
+        return self._active_state
+
+    @active_high.setter
+    def active_high(self, value):
+        self._active_state = True if value else False
+        self._inactive_state = False if value else True
 
     def __repr__(self):
         try:
@@ -94,15 +123,23 @@ class DigitalOutputDevice(OutputDevice):
     """
     Represents a generic output device with typical on/off behaviour.
 
-    This class extends :class:`OutputDevice` with a :meth:`toggle` method to
-    switch the device between its on and off states, and a :meth:`blink` method
-    which uses an optional background thread to handle toggling the device
-    state without further interaction.
+    This class extends :class:`OutputDevice` with a :meth:`blink` method which
+    uses an optional background thread to handle toggling the device state
+    without further interaction.
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._blink_thread = None
         super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
-        self._lock = Lock()
+        self._controller = None
+
+    @property
+    def value(self):
+        return self._read()
+
+    @value.setter
+    def value(self, value):
+        self._stop_blink()
+        self._write(value)
 
     def close(self):
         self._stop_blink()
@@ -115,17 +152,6 @@ class DigitalOutputDevice(OutputDevice):
     def off(self):
         self._stop_blink()
         self._write(False)
-
-    def toggle(self):
-        """
-        Reverse the state of the device. If it's on, turn it off; if it's off,
-        turn it on.
-        """
-        with self._lock:
-            if self.is_active:
-                self.off()
-            else:
-                self.on()
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
         """
@@ -156,13 +182,16 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_blink(self):
+        if self._controller:
+            self._controller._stop_blink(self)
+            self._controller = None
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
 
     def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
-        for i in iterable:
+        for _ in iterable:
             self._write(True)
             if self._blink_thread.stopping.wait(on_time):
                 break
@@ -268,6 +297,7 @@ class PWMOutputDevice(OutputDevice):
     """
     def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
         self._blink_thread = None
+        self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
         super(PWMOutputDevice, self).__init__(pin, active_high)
@@ -419,12 +449,15 @@ class PWMOutputDevice(OutputDevice):
         )
 
     def _stop_blink(self):
+        if self._controller:
+            self._controller._stop_blink(self)
+            self._controller = None
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
 
     def _blink_device(
-            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=50):
+            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
         if fade_in_time > 0:
             sequence += [
@@ -490,10 +523,10 @@ def _led_property(index, doc=None):
     return property(getter, setter, doc=doc)
 
 
-class RGBLED(SourceMixin, CompositeDevice):
+class RGBLED(SourceMixin, Device):
     """
-    Extends :class:`CompositeDevice` and represents a full color LED component
-    (composed of red, green, and blue LEDs).
+    Extends :class:`Device` and represents a full color LED component (composed
+    of red, green, and blue LEDs).
 
     Connect the common cathode (longest leg) to a ground pin; connect each of
     the other legs (representing the red, green, and blue anodes) to any GPIO
@@ -538,6 +571,18 @@ class RGBLED(SourceMixin, CompositeDevice):
     green = _led_property(1)
     blue = _led_property(2)
 
+    def close(self):
+        if self._leds:
+            self._stop_blink()
+            for led in self._leds:
+                led.close()
+            self._leds = ()
+        super(RGBLED, self).close()
+
+    @property
+    def closed(self):
+        return bool(self._leds)
+
     @property
     def value(self):
         """
@@ -551,6 +596,7 @@ class RGBLED(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
+        self._stop_blink()
         self.red, self.green, self.blue = value
 
     @property
@@ -587,11 +633,6 @@ class RGBLED(SourceMixin, CompositeDevice):
         """
         r, g, b = self.value
         self.value = (1 - r, 1 - g, 1 - b)
-
-    def close(self):
-        self._stop_blink()
-        for led in self._leds:
-            led.close()
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
@@ -636,14 +677,15 @@ class RGBLED(SourceMixin, CompositeDevice):
             self._blink_thread.join()
             self._blink_thread = None
 
-    def _stop_blink(self):
+    def _stop_blink(self, led=None):
+        # If this is called with a single led, we stop all blinking anyway
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
 
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, on_color,
-            off_color, n, fps=50):
+            off_color, n, fps=25):
         # Define some simple lambdas to perform linear interpolation between
         # off_color and on_color
         lerp = lambda t, fade_in: tuple(
@@ -669,16 +711,19 @@ class RGBLED(SourceMixin, CompositeDevice):
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
                 )
+        for l in self._leds:
+            l._controller = self
         for value, delay in sequence:
-            self._leds[0].value, self._leds[1].value, self._leds[2].value = value
+            for l, v in zip(self._leds, value):
+                l._write(v)
             if self._blink_thread.stopping.wait(delay):
                 break
 
 
 class Motor(SourceMixin, CompositeDevice):
     """
-    Extends :class:`CompositeDevice` and represents a generic motor connected
-    to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
+    Extends :class:`CompositeDevice` and represents a generic motor
+    connected to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
 
     Attach an `H-bridge`_ motor controller to your Pi; connect a power source
     (e.g. a battery pack or the 5V pin) to the controller; connect the outputs
@@ -707,33 +752,10 @@ class Motor(SourceMixin, CompositeDevice):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
-        super(Motor, self).__init__()
-        self._forward = PWMOutputDevice(forward)
-        self._backward = PWMOutputDevice(backward)
-
-    def close(self):
-        self._forward.close()
-        self._backward.close()
-
-    @property
-    def closed(self):
-        return self._forward.closed and self._backward.closed
-
-    @property
-    def forward_device(self):
-        """
-        Returns the `PWMOutputDevice` representing the forward pin of the motor
-        controller.
-        """
-        return self._forward
-
-    @property
-    def backward_device(self):
-        """
-        Returns the `PWMOutputDevice` representing the backward pin of the
-        motor controller.
-        """
-        return self._backward
+        super(Motor, self).__init__(
+                forward_device=PWMOutputDevice(forward),
+                backward_device=PWMOutputDevice(backward),
+                _order=('forward_device', 'backward_device'))
 
     @property
     def value(self):
@@ -741,7 +763,7 @@ class Motor(SourceMixin, CompositeDevice):
         Represents the speed of the motor as a floating point value between -1
         (full speed backward) and 1 (full speed forward).
         """
-        return self._forward.value - self._backward.value
+        return self.forward_device.value - self.backward_device.value
 
     @value.setter
     def value(self, value):
@@ -770,8 +792,8 @@ class Motor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self._backward.off()
-        self._forward.value = speed
+        self.backward_device.off()
+        self.forward_device.value = speed
 
     def backward(self, speed=1):
         """
@@ -781,8 +803,8 @@ class Motor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self._forward.off()
-        self._backward.value = speed
+        self.forward_device.off()
+        self.backward_device.value = speed
 
     def reverse(self):
         """
@@ -796,8 +818,8 @@ class Motor(SourceMixin, CompositeDevice):
         """
         Stop the motor.
         """
-        self._forward.off()
-        self._backward.off()
+        self.forward_device.off()
+        self.backward_device.off()
 
 
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
@@ -821,16 +843,16 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
                 'power and direction pins must be provided'
             )
         super(PhaseEnableMotor, self).__init__()
-        self._power = PWMOutputDevice(power)
-        self._direction = OutputDevice(direction)
+        self.power_device = PWMOutputDevice(power)
+        self.direction_device = OutputDevice(direction)
 
     def close(self):
-        self._power.close()
-        self._direction.close()
+        self.power_device.close()
+        self.direction_device.close()
 
     @property
     def closed(self):
-        return self._power.closed and self._direction.closed
+        return self.power_device.closed and self.direction_device.closed
 
     @property
     def power_device(self):
@@ -838,7 +860,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Returns the `PWMOutputDevice` representing the power pin of the
         motor controller.
         """
-        return self._power
+        return self.power_device
 
     @property
     def direction_device(self):
@@ -846,7 +868,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Returns the `OutputDevice` representing the direction pin of the motor
         controller.
         """
-        return self._direction
+        return self.direction_device
 
     @property
     def value(self):
@@ -854,7 +876,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Represents the speed of the motor as a floating point value between -1
         (full speed backward) and 1 (full speed forward).
         """
-        return self._power.value if self._direction.is_active() else -self._power.value
+        return self.power_device.value if self.direction_device.is_active() else -self.power_device.value
 
     @value.setter
     def value(self, value):
@@ -882,8 +904,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self._direction.on()
-        self._power.value = speed
+        self.direction_device.on()
+        self.power_device.value = speed
 
     def backward(self, speed=1):
         """
@@ -892,8 +914,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self._direction.off()
-        self._power.value = speed
+        self.direction_device.off()
+        self.power_device.value = speed
 
     def reverse(self):
         """
@@ -907,5 +929,5 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         Stop the motor.
         """
-        self._power.off()
-        self._direction.off()
+        self.power_device.off()
+        self.direction_device.off()

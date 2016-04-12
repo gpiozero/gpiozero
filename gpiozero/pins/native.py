@@ -12,17 +12,21 @@ import os
 import mmap
 import errno
 import struct
+import warnings
 from time import sleep
 from threading import Thread, Event, Lock
 from collections import Counter
 
 from . import Pin, PINS_CLEANUP
+from .data import pi_info
 from ..exc import (
     PinInvalidPull,
     PinInvalidEdges,
     PinInvalidFunction,
     PinFixedPull,
     PinSetInput,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -198,17 +202,26 @@ class NativePin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
+    PI_INFO = None
+
     def __new__(cls, number):
         if not cls._PINS:
             cls._MEM = GPIOMemory()
             PINS_CLEANUP.append(cls._MEM.close)
+        if cls.PI_INFO is None:
+            cls.PI_INFO = pi_info()
         if not (0 <= number < 54):
             raise ValueError('invalid pin %d specified (must be 0..53)' % number)
         try:
             return cls._PINS[number]
         except KeyError:
             self = super(NativePin, cls).__new__(cls)
-            cls._PINS[number] = self
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._func_offset = self._MEM.GPFSEL_OFFSET + (number // 10)
             self._func_shift = (number % 10) * 3
@@ -230,9 +243,10 @@ class NativePin(Pin):
             self._change_thread = None
             self._change_event = Event()
             self.function = 'input'
-            self.pull = 'up' if number in (2, 3) else 'floating'
+            self.pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self.bounce = None
             self.edges = 'both'
+            cls._PINS[number] = self
             return self
 
     def __repr__(self):
@@ -245,7 +259,7 @@ class NativePin(Pin):
     def close(self):
         self.when_changed = None
         self.function = 'input'
-        self.pull = 'up' if self.number in (2, 3) else 'floating'
+        self.pull = 'up' if self.PI_INFO.pulled_up('GPIO%d' % self.number) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[(self._MEM[self._func_offset] >> self._func_shift) & 7]
@@ -278,7 +292,7 @@ class NativePin(Pin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self._number in (2, 3):
+        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self.number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             value = self.GPIO_PULL_UPS[value]

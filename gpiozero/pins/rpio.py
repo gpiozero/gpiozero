@@ -7,19 +7,23 @@ from __future__ import (
 str = type('')
 
 
-from threading import Lock
-
+import warnings
 import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException
 
 from . import Pin, PINS_CLEANUP
+from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
     PinInvalidPull,
     PinInvalidBounce,
+    PinInvalidState,
+    PinPWMError,
+    PinNonPhysical,
+    PinNoPins,
     )
 
 
@@ -62,6 +66,8 @@ class RPIOPin(Pin):
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
+    PI_INFO = None
+
     def __new__(cls, number):
         if not cls._PINS:
             RPIO.setmode(RPIO.BCM)
@@ -72,13 +78,20 @@ class RPIOPin(Pin):
             PINS_CLEANUP.append(RPIO.PWM.cleanup)
             PINS_CLEANUP.append(RPIO.stop_waiting_for_interrupts)
             PINS_CLEANUP.append(RPIO.cleanup)
+        if cls.PI_INFO is None:
+            cls.PI_INFO = pi_info()
         try:
             return cls._PINS[number]
         except KeyError:
             self = super(RPIOPin, cls).__new__(cls)
-            cls._PINS[number] = self
+            try:
+                cls.PI_INFO.physical_pin('GPIO%d' % number)
+            except PinNoPins:
+                warnings.warn(
+                    PinNonPhysical(
+                        'no physical pins exist for GPIO%d' % number))
             self._number = number
-            self._pull = 'up' if number in (2, 3) else 'floating'
+            self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = False
             self._duty_cycle = None
             self._bounce = None
@@ -88,6 +101,7 @@ class RPIOPin(Pin):
                 RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
             except InvalidChannelException as e:
                 raise ValueError(e)
+            cls._PINS[number] = self
             return self
 
     def __repr__(self):
@@ -121,7 +135,7 @@ class RPIOPin(Pin):
 
     def _set_state(self, value):
         if not 0 <= value <= 1:
-            raise PinInvalidValue('invalid state "%s" for pin %r' % (value, self))
+            raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         if self._pwm:
             RPIO.PWM.clear_channel_gpio(0, self._number)
             if value == 0:
@@ -145,7 +159,7 @@ class RPIOPin(Pin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self._number in (2, 3):
+        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[value])

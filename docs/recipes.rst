@@ -567,10 +567,52 @@ Use four GPIO buttons as forward/back/left/right controls for a robot::
 Keyboard controlled robot
 =========================
 
-.. XXX Rewrite this using curses (to avoid evdev dep, which isn't packaged
-   on Raspbian)
-
 Use up/down/left/right keys to control a robot::
+
+    import curses
+    from gpiozero import RyanteckRobot
+
+    robot = RyanteckRobot()
+
+    actions = {
+        curses.KEY_UP:    robot.forward,
+        curses.KEY_DOWN:  robot.backward,
+        curses.KEY_LEFT:  robot.left,
+        curses.KEY_RIGHT: robot.right,
+        }
+
+    def main(window):
+        next_key = None
+        while True:
+            curses.halfdelay(1)
+            if next_key is None:
+                key = window.getch()
+            else:
+                key = next_key
+                next_key = None
+            if key != -1:
+                # KEY DOWN
+                curses.halfdelay(3)
+                action = actions.get(key)
+                if action is not None:
+                    action()
+                next_key = key
+                while next_key == key:
+                    next_key = window.getch()
+                # KEY UP
+                robot.stop()
+
+    curses.wrapper(main)
+
+.. note::
+
+    This recipe uses the ``curses`` module. This module requires that Python is
+    running in a terminal in order to work correctly, hence this recipe will
+    *not* work in environments like IDLE.
+
+If you prefer a version that works under IDLE, the following recipe should
+suffice, but will require that you install the evdev library with ``sudo pip
+install evdev`` first::
 
     from gpiozero import RyanteckRobot
     from evdev import InputDevice, list_devices, ecodes
@@ -638,6 +680,17 @@ connected to a :class:`MCP3008` analog to digital converter::
         with MCP3008(channel=0) as pot:
             print(pot.value)
 
+Present the value of a potentiometer on an LED bar graph using PWM to represent
+states that won't "fill" an LED::
+
+    from gpiozero import LEDBarGraph, MCP3008
+    from signal import pause
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, pwm=True)
+    pot = MCP3008(channel=0)
+    graph.source = pot.values
+    pause()
+
 
 Measure temperature with an ADC
 ===============================
@@ -696,6 +749,53 @@ Alternatively, the following example is identical, but uses the
 
 Please note the example above requires Python 3. In Python 2, :func:`zip`
 doesn't support lazy evaluation so the script will simply hang.
+
+
+Controlling the Pi's own LEDs
+=============================
+
+On certain models of Pi (specifically the model A+, B+, and 2B) it's possible
+to control the power and activity LEDs.  This can be useful for testing GPIO
+functionality without the need to wire up your own LEDs (also useful because
+the power and activity LEDs are "known good").
+
+Firstly you need to disable the usual triggers for the built-in LEDs. This can
+be done from the terminal with the following commands::
+
+    $ echo none | sudo tee /sys/class/leds/led0/trigger
+    $ echo gpio | sudo tee /sys/class/leds/led1/trigger
+
+Now you can control the LEDs with gpiozero like so::
+
+    from gpiozero import LED
+    from signal import pause
+
+    power = LED(35)
+    activity = LED(47)
+
+    activity.blink()
+    power.blink()
+    pause()
+
+To revert the LEDs to their usual purpose you can either reboot your Pi or
+run the following commands::
+
+    $ echo mmc0 | sudo tee /sys/class/leds/led0/trigger
+    $ echo input | sudo tee /sys/class/leds/led1/trigger
+
+.. note::
+
+    On the Pi Zero you can control the activity LED with this recipe, but
+    there's no separate power LED to control (it's also worth noting the
+    activity LED is active low, so set ``active_high=False`` when constructing
+    your LED component.
+
+    On the original Pi 1 (model A or B), the activity LED can be controlled
+    with GPIO16 (after disabling its trigger as above) but the power LED is
+    hard-wired on.
+
+    On the Pi 3B the LEDs are controlled by a GPIO expander which is not
+    accessible from gpiozero (yet).
 
 
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/

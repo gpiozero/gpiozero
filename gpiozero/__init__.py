@@ -8,20 +8,33 @@ from __future__ import (
 from .pins import (
     Pin,
 )
+from .pins.data import (
+    PiBoardInfo,
+    PinInfo,
+    pi_info,
+)
 from .exc import (
     GPIOZeroError,
+    DeviceClosed,
+    BadEventHandler,
+    BadWaitTime,
+    BadQueueLen,
     CompositeDeviceError,
+    CompositeDeviceBadName,
+    CompositeDeviceBadOrder,
+    CompositeDeviceBadDevice,
+    SPIError,
+    SPIBadArgs,
+    EnergenieSocketMissing,
+    EnergenieBadSocket,
     GPIODeviceError,
     GPIODeviceClosed,
     GPIOPinInUse,
     GPIOPinMissing,
-    GPIOBadQueueLen,
-    GPIOBadSampleWait,
     InputDeviceError,
     OutputDeviceError,
     OutputDeviceBadValue,
     PinError,
-    PinFixedFunction,
     PinInvalidFunction,
     PinInvalidState,
     PinInvalidPull,
@@ -32,24 +45,39 @@ from .exc import (
     PinPWMError,
     PinPWMUnsupported,
     PinPWMFixedValue,
+    PinUnknownPi,
+    PinMultiplePins,
+    PinNoPins,
+    GPIOZeroWarning,
+    SPIWarning,
+    SPISoftwareFallback,
+    PinWarning,
+    PinNonPhysical,
 )
 from .devices import (
+    Device,
     GPIODevice,
     CompositeDevice,
+)
+from .mixins import (
+    SharedMixin,
     SourceMixin,
     ValuesMixin,
+    EventsMixin,
+    HoldMixin,
 )
 from .input_devices import (
     InputDevice,
-    WaitableInputDevice,
     DigitalInputDevice,
     SmoothedInputDevice,
-    AnalogInputDevice,
     Button,
     LineSensor,
     MotionSensor,
     LightSensor,
     DistanceSensor,
+)
+from .spi_devices import (
+    SPIDevice,
     AnalogInputDevice,
     MCP3001,
     MCP3002,
@@ -74,16 +102,25 @@ from .output_devices import (
     RGBLED,
 )
 from .boards import (
+    CompositeOutputDevice,
+    LEDCollection,
     LEDBoard,
     LEDBarGraph,
     PiLiter,
     PiLiterBarGraph,
     TrafficLights,
     PiTraffic,
+    SnowPi,
     TrafficLightsBuzzer,
     FishDish,
     TrafficHat,
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    Energenie,
+)
+from .other_devices import (
+    InternalDevice,
+    PingServer,
+    TimeOfDay,
 )

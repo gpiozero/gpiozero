@@ -20,6 +20,13 @@ Button
     :members: wait_for_press, wait_for_release, pin, is_pressed, pull_up, when_pressed, when_released
 
 
+Line Sensor (TRCT5000)
+======================
+
+.. autoclass:: LineSensor(pin)
+    :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line
+
+
 Motion Sensor (D-SUN PIR)
 =========================
 
@@ -40,28 +47,39 @@ Distance Sensor (HC-SR04)
 .. autoclass:: DistanceSensor(echo, trigger, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False)
     :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance
 
+Base Classes
+============
 
-Analog to Digital Converters (ADC)
-==================================
+The classes in the sections above are derived from a series of base classes,
+some of which are effectively abstract. The classes form the (partial)
+hierarchy displayed in the graph below:
 
-.. autoclass:: MCP3004
-    :members: bus, device, channel, value, differential
+.. image:: images/input_device_hierarchy.*
 
-.. autoclass:: MCP3008
-    :members: bus, device, channel, value, differential
+The following sections document these base classes for advanced users that wish
+to construct classes for their own devices.
 
-.. autoclass:: MCP3204
-    :members: bus, device, channel, value, differential
+DigitalInputDevice
+==================
 
-.. autoclass:: MCP3208
-    :members: bus, device, channel, value, differential
+.. autoclass:: DigitalInputDevice(pin, pull_up=False, bounce_time=None)
+    :members:
 
-.. autoclass:: MCP3301
-    :members: bus, device, value
+SmoothedInputDevice
+===================
 
-.. autoclass:: MCP3302
-    :members: bus, device, channel, value, differential
+.. autoclass:: SmoothedInputDevice
+    :members:
 
-.. autoclass:: MCP3304
-    :members: bus, device, channel, value, differential
+InputDevice
+===========
+
+.. autoclass:: InputDevice(pin, pull_up=False)
+    :members:
+
+GPIODevice
+==========
+
+.. autoclass:: GPIODevice(pin)
+    :members:
 

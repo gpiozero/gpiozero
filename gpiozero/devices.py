@@ -9,28 +9,31 @@ str = type('')
 
 import atexit
 import weakref
-from threading import Thread, Event, RLock
-from collections import deque
+from collections import namedtuple
+from itertools import chain
 from types import FunctionType
-try:
-    from statistics import median, mean
-except ImportError:
-    from .compat import median, mean
+from threading import RLock
 
+from .threads import _threads_shutdown
+from .mixins import (
+    ValuesMixin,
+    SharedMixin,
+    )
 from .exc import (
+    DeviceClosed,
+    CompositeDeviceBadName,
+    CompositeDeviceBadOrder,
+    CompositeDeviceBadDevice,
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
-    GPIOBadQueueLen,
-    GPIOBadSampleWait,
-    GPIOBadSourceDelay,
     )
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here
 # as it supports PWM, and all Pi revisions. If no third-party libraries are
 # available, however, we fall back to a pure Python implementation which
 # supports platforms like PyPy
-from .pins import PINS_CLEANUP
+from .pins import _pins_shutdown
 try:
     from .pins.rpigpio import RPiGPIOPin
     DefaultPin = RPiGPIOPin
@@ -47,24 +50,17 @@ except ImportError:
             DefaultPin = NativePin
 
 
-_THREADS = set()
 _PINS = set()
-# Due to interactions between RPi.GPIO cleanup and the GPIODevice.close()
-# method the same thread may attempt to acquire this lock, leading to deadlock
-# unless the lock is re-entrant
-_PINS_LOCK = RLock()
+_PINS_LOCK = RLock() # Yes, this needs to be re-entrant
 
 def _shutdown():
-    while _THREADS:
-        for t in _THREADS.copy():
-            t.stop()
+    _threads_shutdown()
     with _PINS_LOCK:
         while _PINS:
             _PINS.pop().close()
     # Any cleanup routines registered by pins libraries must be called *after*
     # cleanup of pin objects used by devices
-    for routine in PINS_CLEANUP:
-        routine()
+    _pins_shutdown()
 
 atexit.register(_shutdown)
 
@@ -75,9 +71,9 @@ class GPIOMeta(type):
     def __new__(mcls, name, bases, cls_dict):
         # Construct the class as normal
         cls = super(GPIOMeta, mcls).__new__(mcls, name, bases, cls_dict)
+        # If there's a method in the class which has no docstring, search
+        # the base classes recursively for a docstring to copy
         for attr_name, attr in cls_dict.items():
-            # If there's a method in the class which has no docstring, search
-            # the base classes recursively for a docstring to copy
             if isinstance(attr, FunctionType) and not attr.__doc__:
                 for base_cls in cls.__mro__:
                     if hasattr(base_cls, attr_name):
@@ -87,17 +83,51 @@ class GPIOMeta(type):
                             break
         return cls
 
-    def __call__(mcls, *args, **kwargs):
-        # Construct the instance as normal and ensure it's an instance of
-        # GPIOBase (defined below with a custom __setattrs__)
-        result = super(GPIOMeta, mcls).__call__(*args, **kwargs)
-        assert isinstance(result, GPIOBase)
+    def __call__(cls, *args, **kwargs):
+        # Make sure cls has GPIOBase somewhere in its ancestry (otherwise
+        # setting __attrs__ below will be rather pointless)
+        assert issubclass(cls, GPIOBase)
+        if issubclass(cls, SharedMixin):
+            # If SharedMixin appears in the class' ancestry, convert the
+            # constructor arguments to a key and check whether an instance
+            # already exists. Only construct the instance if the key's new.
+            key = cls._shared_key(*args, **kwargs)
+            try:
+                self = cls._INSTANCES[key]
+                self._refs += 1
+            except (KeyError, ReferenceError) as e:
+                self = super(GPIOMeta, cls).__call__(*args, **kwargs)
+                self._refs = 1
+                # Replace the close method with one that merely decrements
+                # the refs counter and calls the original close method when
+                # it reaches zero
+                old_close = self.close
+                def close():
+                    self._refs = max(0, self._refs - 1)
+                    if not self._refs:
+                        try:
+                            old_close()
+                        finally:
+                            try:
+                                del cls._INSTANCES[key]
+                            except KeyError:
+                                # If the _refs go negative (too many closes)
+                                # just ignore the resulting KeyError here -
+                                # it's already gone
+                                pass
+                self.close = close
+                cls._INSTANCES[key] = weakref.proxy(self)
+        else:
+            # Construct the instance as normal
+            self = super(GPIOMeta, cls).__call__(*args, **kwargs)
         # At this point __new__ and __init__ have all been run. We now fix the
         # set of attributes on the class by dir'ing the instance and creating a
         # frozenset of the result called __attrs__ (which is queried by
-        # GPIOBase.__setattr__)
-        result.__attrs__ = frozenset(dir(result))
-        return result
+        # GPIOBase.__setattr__). An exception is made for SharedMixin devices
+        # which can be constructed multiple times, returning the same instance
+        if not issubclass(cls, SharedMixin) or self._refs == 1:
+            self.__attrs__ = frozenset(dir(self))
+        return self
 
 
 # Cross-version compatible method of using a metaclass
@@ -119,13 +149,47 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         self.close()
 
     def close(self):
+        """
+        Shut down the device and release all associated resources. This method
+        can be called on an already closed device without raising an exception.
+
+        This method is primarily intended for interactive use at the command
+        line. It disables the device and releases its pin(s) for use by another
+        device.
+
+        You can attempt to do this simply by deleting an object, but unless
+        you've cleaned up all references to the object this may not work (even
+        if you've cleaned up all references, there's still no guarantee the
+        garbage collector will actually delete the object at that point).  By
+        contrast, the close method provides a means of ensuring that the object
+        is shut down.
+
+        For example, if you have a breadboard with a buzzer connected to pin
+        16, but then wish to attach an LED instead:
+
+            >>> from gpiozero import *
+            >>> bz = Buzzer(16)
+            >>> bz.on()
+            >>> bz.off()
+            >>> bz.close()
+            >>> led = LED(16)
+            >>> led.blink()
+
+        :class:`Device` descendents can also be used as context managers using
+        the :keyword:`with` statement. For example:
+
+            >>> from gpiozero import *
+            >>> with Buzzer(16) as bz:
+            ...     bz.on()
+            ...
+            >>> with LED(16) as led:
+            ...     led.on()
+            ...
+        """
         # This is a placeholder which is simply here to ensure close() can be
         # safely called from subclasses without worrying whether super-class'
         # have it (which in turn is useful in conjunction with the SourceMixin
         # class).
-        """
-        Shut down the device and release all associated resources.
-        """
         pass
 
     @property
@@ -135,7 +199,12 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         method). Once a device is closed you can no longer use any other
         methods or properties to control or query the device.
         """
-        return False
+        raise NotImplementedError
+
+    def _check_open(self):
+        if self.closed:
+            raise DeviceClosed(
+                '%s is closed or uninitialized' % self.__class__.__name__)
 
     def __enter__(self):
         return self
@@ -144,93 +213,143 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         self.close()
 
 
-class ValuesMixin(object):
-    # NOTE Use this mixin *first* in the parent list
-
-    @property
-    def values(self):
-        """
-        An infinite iterator of values read from `value`.
-        """
-        while True:
-            try:
-                yield self.value
-            except GPIODeviceClosed:
-                break
-
-
-class SourceMixin(object):
-    # NOTE Use this mixin *first* in the parent list
-
-    def __init__(self, *args, **kwargs):
-        self._source = None
-        self._source_thread = None
-        self._source_delay = 0.01
-        super(SourceMixin, self).__init__(*args, **kwargs)
-
-    def close(self):
-        try:
-            super(SourceMixin, self).close()
-        except AttributeError:
-            pass
-        self.source = None
-
-    def _copy_values(self, source):
-        for v in source:
-            self.value = v
-            if self._source_thread.stopping.wait(self._source_delay):
-                break
-
-    @property
-    def source_delay(self):
-        """
-        The delay (measured in seconds) in the loop used to read values from
-        :attr:`source`. Defaults to 0.01 seconds which is generally sufficient
-        to keep CPU usage to a minimum while providing adequate responsiveness.
-        """
-        return self._source_delay
-
-    @source_delay.setter
-    def source_delay(self, value):
-        if value < 0:
-            raise GPIOBadSourceDelay('source_delay must be 0 or greater')
-        self._source_delay = float(value)
-
-    @property
-    def source(self):
-        """
-        The iterable to use as a source of values for :attr:`value`.
-        """
-        return self._source
-
-    @source.setter
-    def source(self, value):
-        if self._source_thread is not None:
-            self._source_thread.stop()
-            self._source_thread = None
-        self._source = value
-        if value is not None:
-            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
-            self._source_thread.start()
-
-
-class CompositeDevice(ValuesMixin, GPIOBase):
+class Device(ValuesMixin, GPIOBase):
     """
-    Represents a device composed of multiple GPIO devices like simple HATs,
-    H-bridge motor controllers, robots composed of multiple motors, etc.
+    Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
+    etc. This is the base class of the device hierarchy. It defines the
+    basic services applicable to all devices (specifically thhe :attr:`is_active`
+    property, the :attr:`value` property, and the :meth:`close` method).
     """
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
 
+    @property
+    def value(self):
+        """
+        Returns a value representing the device's state. Frequently, this is a
+        boolean value, or a number between 0 and 1 but some devices use larger
+        ranges (e.g. -1 to +1) and composite devices usually use tuples to
+        return the states of all their subordinate components.
+        """
+        raise NotImplementedError
 
-class GPIODevice(ValuesMixin, GPIOBase):
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` if the device is currently active and ``False``
+        otherwise. This property is usually derived from :attr:`value`. Unlike
+        :attr:`value`, this is *always* a boolean.
+        """
+        return bool(self.value)
+
+
+class CompositeDevice(Device):
     """
-    Represents a generic GPIO device.
+    Extends :class:`Device`. Represents a device composed of multiple devices
+    like simple HATs, H-bridge motor controllers, robots composed of multiple
+    motors, etc.
 
-    This is the class at the root of the gpiozero class hierarchy. It handles
-    ensuring that two GPIO devices do not share the same pin, and provides
-    basic services applicable to all devices (specifically the :attr:`pin`
-    property, :attr:`is_active` property, and the :attr:`close` method).
+    The constructor accepts subordinate devices as positional or keyword
+    arguments.  Positional arguments form unnamed devices accessed via the
+    :attr:`all` attribute, while keyword arguments are added to the device
+    as named (read-only) attributes.
+
+    :param list _order:
+        If specified, this is the order of named items specified by keyword
+        arguments (to ensure that the :attr:`value` tuple is constructed with a
+        specific order). All keyword arguments *must* be included in the
+        collection. If omitted, an alphabetically sorted order will be selected
+        for keyword arguments.
+    """
+    def __init__(self, *args, **kwargs):
+        self._all = ()
+        self._named = {}
+        self._namedtuple = None
+        self._order = kwargs.pop('_order', None)
+        if self._order is None:
+            self._order = sorted(kwargs.keys())
+        self._order = tuple(self._order)
+        for missing_name in set(kwargs.keys()) - set(self._order):
+            raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
+        super(CompositeDevice, self).__init__()
+        for name in set(self._order) & set(dir(self)):
+            raise CompositeDeviceBadName('%s is a reserved name' % name)
+        self._all = args + tuple(kwargs[v] for v in self._order)
+        for dev in self._all:
+            if not isinstance(dev, Device):
+                raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
+        self._named = kwargs
+        self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
+            (str(i) for i in range(len(args))), self._order),
+            rename=True)
+
+    def __getattr__(self, name):
+        # if _named doesn't exist yet, pretend it's an empty dict
+        if name == '_named':
+            return {}
+        try:
+            return self._named[name]
+        except KeyError:
+            raise AttributeError("no such attribute %s" % name)
+
+    def __setattr__(self, name, value):
+        # make named components read-only properties
+        if name in self._named:
+            raise AttributeError("can't set attribute %s" % name)
+        return super(CompositeDevice, self).__setattr__(name, value)
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
+                    self.__class__.__name__,
+                    len(self), ','.join(self._named),
+                    len(self) - len(self._named)
+                    )
+        except DeviceClosed:
+            return "<gpiozero.%s object closed>"
+
+    def __len__(self):
+        return len(self._all)
+
+    def __getitem__(self, index):
+        return self._all[index]
+
+    def __iter__(self):
+        return iter(self._all)
+
+    @property
+    def all(self):
+        # XXX Deprecate this in favour of using the instance as a container
+        return self._all
+
+    def close(self):
+        if self._all:
+            for device in self._all:
+                device.close()
+
+    @property
+    def closed(self):
+        return all(device.closed for device in self)
+
+    @property
+    def namedtuple(self):
+        return self._namedtuple
+
+    @property
+    def value(self):
+        return self.namedtuple(*(device.value for device in self))
+
+    @property
+    def is_active(self):
+        return any(self.value)
+
+
+class GPIODevice(Device):
+    """
+    Extends :class:`Device`. Represents a generic GPIO device and provides
+    the services common to all single-pin GPIO devices (like ensuring two
+    GPIO devices do no share a :attr:`pin`).
 
     :param int pin:
         The GPIO pin (in BCM numbering) that the device is connected to. If
@@ -264,51 +383,7 @@ class GPIODevice(ValuesMixin, GPIOBase):
             self._check_open()
             raise
 
-    def _fire_events(self):
-        pass
-
-    def _check_open(self):
-        if self.closed:
-            raise GPIODeviceClosed(
-                '%s is closed or uninitialized' % self.__class__.__name__)
-
     def close(self):
-        """
-        Shut down the device and release all associated resources.
-
-        This method is primarily intended for interactive use at the command
-        line. It disables the device and releases its pin for use by another
-        device.
-
-        You can attempt to do this simply by deleting an object, but unless
-        you've cleaned up all references to the object this may not work (even
-        if you've cleaned up all references, there's still no guarantee the
-        garbage collector will actually delete the object at that point).  By
-        contrast, the close method provides a means of ensuring that the object
-        is shut down.
-
-        For example, if you have a breadboard with a buzzer connected to pin
-        16, but then wish to attach an LED instead:
-
-            >>> from gpiozero import *
-            >>> bz = Buzzer(16)
-            >>> bz.on()
-            >>> bz.off()
-            >>> bz.close()
-            >>> led = LED(16)
-            >>> led.blink()
-
-        :class:`GPIODevice` descendents can also be used as context managers
-        using the :keyword:`with` statement. For example:
-
-            >>> from gpiozero import *
-            >>> with Buzzer(16) as bz:
-            ...     bz.on()
-            ...
-            >>> with LED(16) as led:
-            ...     led.on()
-            ...
-        """
         super(GPIODevice, self).close()
         with _PINS_LOCK:
             pin = self._pin
@@ -320,6 +395,13 @@ class GPIODevice(ValuesMixin, GPIOBase):
     @property
     def closed(self):
         return self._pin is None
+
+    def _check_open(self):
+        try:
+            super(GPIODevice, self)._check_open()
+        except DeviceClosed as e:
+            # For backwards compatibility; GPIODeviceClosed is deprecated
+            raise GPIODeviceClosed(str(e))
 
     @property
     def pin(self):
@@ -333,82 +415,12 @@ class GPIODevice(ValuesMixin, GPIOBase):
 
     @property
     def value(self):
-        """
-        Returns ``True`` if the device is currently active and ``False``
-        otherwise.
-        """
         return self._read()
-
-    is_active = value
 
     def __repr__(self):
         try:
             return "<gpiozero.%s object on pin %r, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.is_active)
-        except GPIODeviceClosed:
+        except DeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
-
-
-class GPIOThread(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
-        super(GPIOThread, self).__init__(group, target, name, args, kwargs)
-        self.stopping = Event()
-        self.daemon = True
-
-    def start(self):
-        self.stopping.clear()
-        _THREADS.add(self)
-        super(GPIOThread, self).start()
-
-    def stop(self):
-        self.stopping.set()
-        self.join()
-
-    def join(self):
-        super(GPIOThread, self).join()
-        _THREADS.discard(self)
-
-
-class GPIOQueue(GPIOThread):
-    def __init__(
-            self, parent, queue_len=5, sample_wait=0.0, partial=False,
-            average=median):
-        assert isinstance(parent, GPIODevice)
-        assert callable(average)
-        super(GPIOQueue, self).__init__(target=self.fill)
-        if queue_len < 1:
-            raise GPIOBadQueueLen('queue_len must be at least one')
-        if sample_wait < 0:
-            raise GPIOBadSampleWait('sample_wait must be 0 or greater')
-        self.queue = deque(maxlen=queue_len)
-        self.partial = partial
-        self.sample_wait = sample_wait
-        self.full = Event()
-        self.parent = weakref.proxy(parent)
-        self.average = average
-
-    @property
-    def value(self):
-        if not self.partial:
-            self.full.wait()
-        try:
-            return self.average(self.queue)
-        except ZeroDivisionError:
-            # No data == inactive value
-            return 0.0
-
-    def fill(self):
-        try:
-            while (not self.stopping.wait(self.sample_wait) and
-                    len(self.queue) < self.queue.maxlen):
-                self.queue.append(self.parent._read())
-                if self.partial:
-                    self.parent._fire_events()
-            self.full.set()
-            while not self.stopping.wait(self.sample_wait):
-                self.queue.append(self.parent._read())
-                self.parent._fire_events()
-        except ReferenceError:
-            # Parent is dead; time to die!
-            pass
 

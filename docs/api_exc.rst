@@ -34,9 +34,30 @@ so you can still do::
         print('Bad value specified')
 
 
+Errors
+======
+
 .. autoexception:: GPIOZeroError
 
+.. autoexception:: DeviceClosed
+
+.. autoexception:: BadEventHandler
+
+.. autoexception:: BadQueueLen
+
+.. autoexception:: BadWaitTime
+
 .. autoexception:: CompositeDeviceError
+
+.. autoexception:: CompositeDeviceBadName
+
+.. autoexception:: EnergenieSocketMissing
+
+.. autoexception:: EnergenieBadSocket
+
+.. autoexception:: SPIError
+
+.. autoexception:: SPIBadArgs
 
 .. autoexception:: GPIODeviceError
 
@@ -46,10 +67,6 @@ so you can still do::
 
 .. autoexception:: GPIOPinMissing
 
-.. autoexception:: GPIOBadQueueLen
-
-.. autoexception:: GPIOBadSampleWait
-
 .. autoexception:: InputDeviceError
 
 .. autoexception:: OutputDeviceError
@@ -57,8 +74,6 @@ so you can still do::
 .. autoexception:: OutputDeviceBadValue
 
 .. autoexception:: PinError
-
-.. autoexception:: PinFixedFunction
 
 .. autoexception:: PinInvalidFunction
 
@@ -79,4 +94,19 @@ so you can still do::
 .. autoexception:: PinPWMUnsupported
 
 .. autoexception:: PinPWMFixedValue
+
+.. autoexception:: PinMultiplePins
+
+.. autoexception:: PinNoPins
+
+.. autoexception:: PinUnknownPi
+
+Warnings
+========
+
+.. autoexception:: GPIOZeroWarning
+
+.. autoexception:: SPIWarning
+
+.. autoexception:: SPISoftwareFallback
 
