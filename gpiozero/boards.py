@@ -118,6 +118,7 @@ class LEDCollection(CompositeOutputDevice):
             if isinstance(item, LEDCollection):
                 for subitem in item.leds:
                     yield subitem
+            else:
                 yield item
 
 
