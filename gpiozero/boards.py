@@ -94,18 +94,23 @@ class LEDCollection(CompositeOutputDevice):
         initial_value = kwargs.pop('initial_value', False)
         order = kwargs.pop('_order', None)
         LEDClass = PWMLED if pwm else LED
+        def _get_pin_or_collection(pin_or_collection):
+            if isinstance(pin_or_collection, LEDCollection):
+                return pin_or_collection
+            else:
+                return LEDClass.construct_object(
+                    pin_or_collection,
+                    active_high=active_high,
+                    initial_value=initial_value
+                )
         super(LEDCollection, self).__init__(
             *(
-                pin_or_collection
-                if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
+                _get_pin_or_collection(pin_or_collection)
                 for pin_or_collection in args
                 ),
             _order=order,
             **{
-                name: pin_or_collection
-                if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
+                name: _get_pin_or_collection(pin_or_collection)
                 for name, pin_or_collection in kwargs.items()
                 })
 
@@ -588,7 +593,9 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
 
     def __init__(self, lights, buzzer, button):
         super(TrafficLightsBuzzer, self).__init__(
-            lights=lights, buzzer=buzzer, button=button,
+            lights=TrafficLights.construct_object(lights),
+            buzzer=Buzzer.construct_object(buzzer),
+            button=Button.construct_object(button),
             _order=('lights', 'buzzer', 'button'))
 
 
@@ -676,8 +683,8 @@ class Robot(SourceMixin, CompositeDevice):
 
     def __init__(self, left=None, right=None):
         super(Robot, self).__init__(
-                left_motor=Motor(*left),
-                right_motor=Motor(*right),
+                left_motor=Motor.construct_object(left),
+                right_motor=Motor.construct_object(right),
                 _order=('left_motor', 'right_motor'))
 
     def forward(self, speed=1):

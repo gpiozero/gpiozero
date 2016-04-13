@@ -9,7 +9,7 @@ str = type('')
 
 import atexit
 import weakref
-from collections import namedtuple
+from collections import namedtuple, Sequence
 from itertools import chain
 from types import FunctionType
 from threading import RLock
@@ -222,6 +222,19 @@ class Device(ValuesMixin, GPIOBase):
     """
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
+
+    @classmethod
+    def construct_object(cls, value, **kwargs):
+        if isinstance(value, cls):
+            # if we already have an object of the right class _and_ we're
+            # given kwargs, we ignore the kwargs and assume the object has
+            # already been properly constructed
+            return value
+        else:
+            if isinstance(value, Sequence):
+                return cls(*value, **kwargs)
+            else:
+                return cls(value, **kwargs)
 
     @property
     def value(self):
