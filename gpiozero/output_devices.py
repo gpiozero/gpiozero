@@ -842,33 +842,10 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             raise GPIOPinMissing(
                 'power and direction pins must be provided'
             )
-        super(PhaseEnableMotor, self).__init__()
-        self.power_device = PWMOutputDevice(power)
-        self.direction_device = OutputDevice(direction)
-
-    def close(self):
-        self.power_device.close()
-        self.direction_device.close()
-
-    @property
-    def closed(self):
-        return self.power_device.closed and self.direction_device.closed
-
-    @property
-    def power_device(self):
-        """
-        Returns the `PWMOutputDevice` representing the power pin of the
-        motor controller.
-        """
-        return self.power_device
-
-    @property
-    def direction_device(self):
-        """
-        Returns the `OutputDevice` representing the direction pin of the motor
-        controller.
-        """
-        return self.direction_device
+        super(PhaseEnableMotor, self).__init__(
+            self.power_device = PWMOutputDevice(power),
+            self.direction_device = OutputDevice(direction),
+            _order = ('power_device', 'direction_device'))
 
     @property
     def value(self):
@@ -904,6 +881,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
+        self.power_device.off()
         self.direction_device.on()
         self.power_device.value = speed
 
@@ -914,6 +892,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
+        self.power_device.off()
         self.direction_device.off()
         self.power_device.value = speed
 
@@ -930,4 +909,3 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Stop the motor.
         """
         self.power_device.off()
-        self.direction_device.off()
