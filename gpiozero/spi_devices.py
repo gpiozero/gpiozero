@@ -92,7 +92,7 @@ class AnalogInputDevice(SPIDevice):
     def value(self):
         """
         The current value read from the device, scaled to a value between 0 and
-        1 (or -1 to +1 for devices operating in differential mode).
+        1.
         """
         return self._read() / (2**self.bits - 1)
 
@@ -119,8 +119,9 @@ class MCP3xxx(AnalogInputDevice):
     def channel(self):
         """
         The channel to read data from. The MCP3008/3208/3304 have 8 channels
-        (0-7), while the MCP3004/3204/3302 have 4 channels (0-3), and the
-        MCP3301 only has 1 channel.
+        (0-7), while the MCP3004/3204/3302 have 4 channels (0-3), the
+        MCP3002/3202 have 2 channels (0-1), and the MCP3001/3201/3301 only
+        have 1 channel.
         """
         return self._channel
 
@@ -162,6 +163,26 @@ class MCP3xxx(AnalogInputDevice):
         # XXX Differential mode still requires testing
         data = self._spi.transfer([16 + [8, 0][self.differential] + self.channel, 0, 0])
         return ((data[1] & 63) << (self.bits - 6)) | (data[2] >> (14 - self.bits))
+
+
+class MCP30xx(MCP3xxx):
+    """
+    Extends :class:`MCP3xxx` to implement an interface for all ADC
+    chips with a protocol similar to the Microchip MCP30xx series of devices.
+    """
+
+    def __init__(self, channel=0, differential=False, **spi_args):
+        super(MCP30xx, self).__init__(channel, 10, differential, **spi_args)
+
+
+class MCP32xx(MCP3xxx):
+    """
+    Extends :class:`MCP3xxx` to implement an interface for all ADC
+    chips with a protocol similar to the Microchip MCP32xx series of devices.
+    """
+
+    def __init__(self, channel=0, differential=False, **spi_args):
+        super(MCP32xx, self).__init__(channel, 12, differential, **spi_args)
 
 
 class MCP33xx(MCP3xxx):
@@ -213,18 +234,40 @@ class MCP33xx(MCP3xxx):
     def _send(self):
         return [16 + [8, 0][self.differential] + self.channel, 0, 0]
 
+    @property
+    def differential(self):
+        """
+        If ``True``, the device is operated in differential mode. In this mode
+        one channel (specified by the channel attribute) is read relative to
+        the value of a second channel (implied by the chip's design).
 
-class MCP3001(MCP3xxx):
+        Please refer to the device data-sheet to determine which channel is
+        used as the relative base value (for example, when using an
+        :class:`MCP3304` in differential mode, channel 0 is read relative to
+        channel 1).
+        """
+        return super(MCP33xx, self).differential
+
+    @property
+    def value(self):
+        """
+        The current value read from the device, scaled to a value between 0 and
+        1 (or -1 to +1 for devices operating in differential mode).
+        """
+        return super(MCP33xx, self).value
+
+
+class MCP3001(MCP30xx):
     """
     The `MCP3001`_ is a 10-bit analog to digital converter with 1 channel
 
     .. _MCP3001: http://www.farnell.com/datasheets/630400.pdf
     """
     def __init__(self, **spi_args):
-        super(MCP3001, self).__init__(0, 10, differential=True, **spi_args)
+        super(MCP3001, self).__init__(0, differential=True, **spi_args)
 
 
-class MCP3002(MCP3xxx):
+class MCP3002(MCP30xx):
     """
     The `MCP3002`_ is a 10-bit analog to digital converter with 2 channels
     (0-1).
@@ -234,10 +277,10 @@ class MCP3002(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 2:
             raise InputDeviceError('channel must be 0 or 1')
-        super(MCP3002, self).__init__(channel, 10, differential, **spi_args)
+        super(MCP3002, self).__init__(channel, differential, **spi_args)
 
 
-class MCP3004(MCP3xxx):
+class MCP3004(MCP30xx):
     """
     The `MCP3004`_ is a 10-bit analog to digital converter with 4 channels
     (0-3).
@@ -247,10 +290,10 @@ class MCP3004(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-        super(MCP3004, self).__init__(channel, 10, differential, **spi_args)
+        super(MCP3004, self).__init__(channel, differential, **spi_args)
 
 
-class MCP3008(MCP3xxx):
+class MCP3008(MCP30xx):
     """
     The `MCP3008`_ is a 10-bit analog to digital converter with 8 channels
     (0-7).
@@ -260,20 +303,20 @@ class MCP3008(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
-        super(MCP3008, self).__init__(channel, 10, differential, **spi_args)
+        super(MCP3008, self).__init__(channel, differential, **spi_args)
 
 
-class MCP3201(MCP3xxx):
+class MCP3201(MCP32xx):
     """
     The `MCP3201`_ is a 12-bit analog to digital converter with 1 channel
 
     .. _MCP3201: http://www.farnell.com/datasheets/1669366.pdf
     """
     def __init__(self, **spi_args):
-        super(MCP3201, self).__init__(0, 12, differential=True, **spi_args)
+        super(MCP3201, self).__init__(0, differential=True, **spi_args)
 
 
-class MCP3202(MCP3xxx):
+class MCP3202(MCP32xx):
     """
     The `MCP3202`_ is a 12-bit analog to digital converter with 2 channels
     (0-1).
@@ -283,10 +326,10 @@ class MCP3202(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 2:
             raise InputDeviceError('channel must be 0 or 1')
-        super(MCP3202, self).__init__(channel, 12, differential, **spi_args)
+        super(MCP3202, self).__init__(channel, differential, **spi_args)
 
 
-class MCP3204(MCP3xxx):
+class MCP3204(MCP32xx):
     """
     The `MCP3204`_ is a 12-bit analog to digital converter with 4 channels
     (0-3).
@@ -296,10 +339,10 @@ class MCP3204(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 4:
             raise InputDeviceError('channel must be between 0 and 3')
-        super(MCP3204, self).__init__(channel, 12, differential, **spi_args)
+        super(MCP3204, self).__init__(channel, differential, **spi_args)
 
 
-class MCP3208(MCP3xxx):
+class MCP3208(MCP32xx):
     """
     The `MCP3208`_ is a 12-bit analog to digital converter with 8 channels
     (0-7).
@@ -309,7 +352,7 @@ class MCP3208(MCP3xxx):
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 8:
             raise InputDeviceError('channel must be between 0 and 7')
-        super(MCP3208, self).__init__(channel, 12, differential, **spi_args)
+        super(MCP3208, self).__init__(channel, differential, **spi_args)
 
 
 class MCP3301(MCP33xx):
