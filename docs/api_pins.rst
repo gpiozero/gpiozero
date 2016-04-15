@@ -25,34 +25,45 @@ integer number instead, it uses one of the following classes to provide the
 4. :class:`gpiozero.pins.native.NativePin`
 
 You can change the default pin implementation by over-writing the
-``DefaultPin`` global in the ``devices`` module like so::
+``pin_factory`` global in the ``devices`` module like so::
 
     from gpiozero.pins.native import NativePin
     import gpiozero.devices
     # Force the default pin implementation to be NativePin
-    gpiozero.devices.DefaultPin = NativePin
+    gpiozero.devices.pin_factory = NativePin
 
     from gpiozero import LED
 
     # This will now use NativePin instead of RPiGPIOPin
     led = LED(16)
 
+``pin_factory`` is simply a callable that accepts a single argument: the number
+of the pin to be constructed (this prototype *may* be expanded in future). This
+means you can define it as a function that provides additional parameters to an
+underlying class. For example, to default to creating pins with
+:class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``::
+
+    from gpiozero.pins.pigpiod import PiGPIOPin
+    import gpiozero.devices
+
+    def my_pin_factory(number):
+        return PiGPIOPin(number, host='remote-pi')
+
+    gpiozero.devices.pin_factory = my_pin_factory
+
+    from gpiozero import TrafficLights
+
+    # This will now use pins on remote-pi (assuming it has the
+    # pigpiod daemon installed and running)
+    tl = TrafficLights(13, 19, 26)
+
 Alternatively, instead of passing an integer to the device constructor, you
-can pass a :class:`Pin` object itself::
+can pass an object derived from :class:`Pin` itself::
 
     from gpiozero.pins.native import NativePin
     from gpiozero import LED
 
     led = LED(NativePin(16))
-
-This is particularly useful with implementations that can take extra parameters
-such as :class:`~gpiozero.pins.pigpiod.PiGPIOPin` which can address pins on
-remote machines::
-
-    from gpiozero.pins.pigpiod import PiGPIOPin
-    from gpiozero import LED
-
-    led = LED(PiGPIOPin(16, host='my_other_pi'))
 
 In future, this separation of pins and devices should also permit the library
 to utilize pins that are part of IO extender chips. For example::

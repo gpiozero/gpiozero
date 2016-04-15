@@ -36,18 +36,18 @@ from .exc import (
 from .pins import _pins_shutdown
 try:
     from .pins.rpigpio import RPiGPIOPin
-    DefaultPin = RPiGPIOPin
+    pin_factory = RPiGPIOPin
 except ImportError:
     try:
         from .pins.rpio import RPIOPin
-        DefaultPin = RPIOPin
+        pin_factory = RPIOPin
     except ImportError:
         try:
             from .pins.pigipod import PiGPIOPin
-            DefaultPin = PiGPIOPin
+            pin_factory = PiGPIOPin
         except ImportError:
             from .pins.native import NativePin
-            DefaultPin = NativePin
+            pin_factory = NativePin
 
 
 _PINS = set()
@@ -365,7 +365,7 @@ class GPIODevice(Device):
         if pin is None:
             raise GPIOPinMissing('No pin given')
         if isinstance(pin, int):
-            pin = DefaultPin(pin)
+            pin = pin_factory(pin)
         with _PINS_LOCK:
             if pin in _PINS:
                 raise GPIOPinInUse(
