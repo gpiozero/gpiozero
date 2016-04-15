@@ -16,4 +16,5 @@ digraph classes {
     TrafficLightsBuzzer->Button;
 
     Robot->Motor;
+    Motor->PWMOutputDevice;
 }
