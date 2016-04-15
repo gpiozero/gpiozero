@@ -98,25 +98,20 @@ class PiGPIOPin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    PI_INFO = None
-
     def __new__(cls, number, host='localhost', port=8888):
-        # XXX What about remote pins? This should probably be instance
-        # specific rather than class specific for pigpio. Need to check how
-        # to query remote info though...
-        if cls.PI_INFO is None:
-            cls.PI_INFO = pi_info()
         try:
             return cls._PINS[(host, port, number)]
         except KeyError:
             self = super(PiGPIOPin, cls).__new__(cls)
             try:
-                self._connection = cls._CONNECTIONS[(host, port)]
+                self._connection, self._pi_info = cls._CONNECTIONS[(host, port)]
             except KeyError:
                 self._connection = pigpio.pi(host, port)
-                cls._CONNECTIONS[(host, port)] = self._connection
+                revision = hex(self._connection.get_hardware_revision())[2:]
+                self._pi_info = pi_info(revision)
+                cls._CONNECTIONS[(host, port)] = (self._connection, self._pi_info)
             try:
-                cls.PI_INFO.physical_pin('GPIO%d' % number)
+                self._pi_info.physical_pin('GPIO%d' % number)
             except PinNoPins:
                 warnings.warn(
                     PinNonPhysical(
@@ -124,7 +119,7 @@ class PiGPIOPin(Pin):
             self._host = host
             self._port = port
             self._number = number
-            self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
+            self._pull = 'up' if self._pi_info.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = False
             self._bounce = None
             self._when_changed = None
@@ -167,7 +162,7 @@ class PiGPIOPin(Pin):
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self.PI_INFO.pulled_up('GPIO%d' % self.number) else 'floating'
+            self.pull = 'up' if self._pi_info.pulled_up('GPIO%d' % self.number) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self._connection.get_mode(self._number)]
@@ -204,7 +199,7 @@ class PiGPIOPin(Pin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
+        if value != 'up' and self._pi_info.pulled_up('GPIO%d' % self._number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[value])

@@ -19,9 +19,9 @@ def setup_function(function):
     import gpiozero.devices
     # dirty, but it does the job
     if function.__name__ in ('test_robot', 'test_ryanteck_robot', 'test_camjam_kit_robot'):
-        gpiozero.devices.DefaultPin = MockPWMPin
+        gpiozero.devices.pin_factory = MockPWMPin
     else:
-        gpiozero.devices.DefaultPin = MockPin
+        gpiozero.devices.pin_factory = MockPin
 
 def teardown_function(function):
     MockPin.clear_pins()
