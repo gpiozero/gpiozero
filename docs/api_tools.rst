@@ -54,7 +54,7 @@ Combining sources
 
 .. autofunction:: averaged
 
-Artifical sources
+Artificial sources
 =================
 
 .. autofunction:: cos_values
