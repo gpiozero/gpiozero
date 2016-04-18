@@ -846,8 +846,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
                 'power and direction pins must be provided'
             )
         super(PhaseEnableMotor, self).__init__(
-            power_device = PWMOutputDevice(power),
-            direction_device = OutputDevice(direction),
+            self.power_device = PWMOutputDevice(power),
+            self.direction_device = OutputDevice(direction),
             _order = ('power_device', 'direction_device'))
 
     @property
