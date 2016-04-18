@@ -564,10 +564,7 @@ class RGBLED(SourceMixin, Device):
         if not all([red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         super(RGBLED, self).__init__()
-        self._leds = tuple(
-            PWMLED.construct_object(pin, active_high=active_high)
-            for pin in (red, green, blue)
-        )
+        self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
         self.value = initial_value
 
     red = _led_property(0)
@@ -756,8 +753,8 @@ class Motor(SourceMixin, CompositeDevice):
                 'forward and backward pins must be provided'
             )
         super(Motor, self).__init__(
-                forward_device=PWMOutputDevice.construct_object(forward),
-                backward_device=PWMOutputDevice.construct_object(backward),
+                forward_device=PWMOutputDevice(forward),
+                backward_device=PWMOutputDevice(backward),
                 _order=('forward_device', 'backward_device'))
 
     @property
