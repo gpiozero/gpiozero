@@ -279,7 +279,7 @@ Button.wait_for_release = Button.wait_for_inactive
 
 class LineSensor(SmoothedInputDevice):
     """
-    Extends :class:`DigitalInputDevice` and represents a single pin line sensor
+    Extends :class:`SmoothedInputDevice` and represents a single pin line sensor
     like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
     EduKit`_.
 
