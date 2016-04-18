@@ -572,7 +572,7 @@ class SnowPi(LEDBoard):
 
 class TrafficLightsBuzzer(CompositeOutputDevice):
     """
-    Extends :class:`CompositeDevice` and is a generic class for HATs with
+    Extends :class:`CompositeOutputDevice` and is a generic class for HATs with
     traffic lights, a button and a buzzer.
 
     :param TrafficLights lights:
