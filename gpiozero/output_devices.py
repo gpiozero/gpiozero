@@ -881,6 +881,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
+        self.power_device.off()
         self.direction_device.on()
         self.power_device.value = speed
 
@@ -891,6 +892,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
+        self.power_device.off()
         self.direction_device.off()
         self.power_device.value = speed
 
@@ -907,4 +909,3 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Stop the motor.
         """
         self.power_device.off()
-        self.direction_device.off()
