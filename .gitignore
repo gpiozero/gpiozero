@@ -27,3 +27,6 @@ coverage
 .coverage
 .tox
 .cache
+
+# Generated documentation
+docs/_build
