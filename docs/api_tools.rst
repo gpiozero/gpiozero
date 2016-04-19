@@ -43,6 +43,8 @@ Single source conversions
 
 .. autofunction:: queued
 
+.. autofunction:: smoothed
+
 .. autofunction:: scaled
 
 Combining sources
@@ -53,6 +55,10 @@ Combining sources
 .. autofunction:: any_values
 
 .. autofunction:: averaged
+
+.. autofunction:: summed
+
+.. autofunction:: multiplied
 
 Artificial sources
 ==================

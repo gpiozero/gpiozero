@@ -218,6 +218,54 @@ def averaged(*values):
         yield mean(v)
 
 
+def summed(*values):
+    """
+    Returns the sum of all supplied values. One or more *values* can be
+    specified. For example, to light a :class:`PWMLED` as the (scaled) sum of
+    several potentiometers connected to an :class:`MCP3008` ADC::
+
+        from gpiozero import MCP3008, PWMLED
+        from gpiozero.tools import summed, scaled
+        from signal import pause
+
+        pot1 = MCP3008(channel=0)
+        pot2 = MCP3008(channel=1)
+        pot3 = MCP3008(channel=2)
+        led = PWMLED(4)
+        led.source = scaled(summed(pot1.values, pot2.values, pot3.values), 0, 1, 0, 3)
+        pause()
+    """
+    for v in zip(*values):
+        yield sum(v)
+
+
+def multiplied(*values):
+    """
+    Returns the product of all supplied values. One or more *values* can be
+    specified. For example, to light a :class:`PWMLED` as the product (i.e.
+    multiplication) of several potentiometers connected to an :class:`MCP3008`
+    ADC::
+
+        from gpiozero import MCP3008, PWMLED
+        from gpiozero.tools import multiplied
+        from signal import pause
+
+        pot1 = MCP3008(channel=0)
+        pot2 = MCP3008(channel=1)
+        pot3 = MCP3008(channel=2)
+        led = PWMLED(4)
+        led.source = multiplied(pot1.values, pot2.values, pot3.values)
+        pause()
+    """
+    def _product(it):
+        p = 1
+        for n in it:
+            p *= n
+        return p
+    for v in zip(*values):
+        yield _product(v)
+
+
 def queued(values, qsize):
     """
     Queues up readings from *values* (the number of readings queued is
@@ -242,6 +290,33 @@ def queued(values, qsize):
         q.append(next(it))
     for i in cycle(range(qsize)):
         yield q[i]
+        try:
+            q[i] = next(it)
+        except StopIteration:
+            break
+
+
+def smoothed(values, qsize, average=mean):
+    """
+    Queues up readings from *values* (the number of readings queued is
+    determined by *qsize*) and begins yielding the *average* of the last
+    *qsize* values when the queue is full. The larger the *qsize*, the more the
+    values are smoothed. For example, to smooth the analog values read from an
+    ADC::
+
+        from gpiozero import MCP3008
+        from gpiozero.tools import smoothed
+
+        with MCP3008(channel=0) as adc:
+            for smoothvalue in smoothed(adc.values, 5):
+                print smoothvalue
+    """
+    q = []
+    it = iter(values)
+    for i in range(qsize):
+        q.append(next(it))
+    for i in cycle(range(qsize)):
+        yield average(q)
         try:
             q[i] = next(it)
         except StopIteration:
