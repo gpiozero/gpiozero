@@ -221,14 +221,14 @@ Capture a picture with the camera module every time a button is pressed::
     from picamera import PiCamera
 
     button = Button(2)
+    camera = PiCamera()
 
-    with PiCamera() as camera:
-        camera.start_preview()
-        frame = 1
-        while True:
-            button.wait_for_press()
-            camera.capture('/home/pi/frame%03d.jpg' % frame)
-            frame += 1
+    camera.start_preview()
+    frame = 1
+    while True:
+        button.wait_for_press()
+        camera.capture('/home/pi/frame%03d.jpg' % frame)
+        frame += 1
 
 See `Push Button Stop Motion`_ for a full resource.
 
@@ -676,9 +676,10 @@ connected to a :class:`MCP3008` analog to digital converter::
 
     from gpiozero import MCP3008
 
-    with MCP3008(channel=0) as pot:
-        while True:
-            print(pot.value)
+    pot = MCP3008(channel=0)
+    
+    while True:
+        print(pot.value)
 
 Present the value of a potentiometer on an LED bar graph using PWM to represent
 states that won't "fill" an LED::
