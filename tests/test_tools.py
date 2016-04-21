@@ -16,6 +16,14 @@ try:
     from math import isclose
 except ImportError:
     from gpiozero.compat import isclose
+try:
+    from statistics import mean
+except ImportError:
+    from gpiozero.compat import mean
+try:
+    from statistics import median
+except ImportError:
+    from gpiozero.compat import median
 
 
 def test_negated():
@@ -56,9 +64,23 @@ def test_averaged():
     assert list(averaged(())) == []
     assert list(averaged((0, 0.5, 1), (1, 1, 1))) == [0.5, 0.75, 1]
 
+def test_summed():
+    assert list(summed(())) == []
+    assert list(summed((0, 0.5, 0.5, 1), (1, 0.5, 1, 1))) == [1, 1, 1.5, 2]
+
+def test_multiplied():
+    assert list(multiplied(())) == []
+    assert list(multiplied((0, 0.5, 0.5, 1), (1, 0.5, 1, 1))) == [0, 0.25, 0.5, 1]
+
 def test_queued():
     assert list(queued((1, 2, 3, 4, 5), 5)) == [1]
     assert list(queued((1, 2, 3, 4, 5, 6), 5)) == [1, 2]
+
+def test_smoothed():
+    assert list(smoothed((1, 2, 3, 4, 5), 5)) == [3.0]
+    assert list(smoothed((1, 2, 3, 4, 5, 6), 5)) == [3.0, 4.0]
+    assert list(smoothed((1, 1, 1, 4, 5, 5), 5, average=mean)) == [2.4, 3.2]
+    assert list(smoothed((1, 1, 1, 4, 5, 5), 5, average=median)) == [1, 4]
 
 def test_pre_delayed():
     start = time()
