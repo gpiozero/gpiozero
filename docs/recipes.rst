@@ -676,8 +676,8 @@ connected to a :class:`MCP3008` analog to digital converter::
 
     from gpiozero import MCP3008
 
-    while True:
-        with MCP3008(channel=0) as pot:
+    with MCP3008(channel=0) as pot:
+        while True:
             print(pot.value)
 
 Present the value of a potentiometer on an LED bar graph using PWM to represent
