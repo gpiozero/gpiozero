@@ -10,6 +10,10 @@ gpiozero
     :target: https://travis-ci.org/RPi-Distro/python-gpiozero
     :alt: Build Tests
 
+.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+    :alt: Code Coverage
+
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
