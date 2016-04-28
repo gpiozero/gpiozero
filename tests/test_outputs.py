@@ -440,8 +440,8 @@ def test_motor_close():
         assert device.backward_device.pin is None
 
 def test_motor_value():
-    f = MockPWMPin(1)
-    b = MockPWMPin(2)
+    f = MockPin(1)
+    b = MockPin(2)
     with Motor(f, b) as device:
         device.value = -1
         assert device.is_active
