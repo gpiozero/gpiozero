@@ -442,7 +442,7 @@ Run a function when the light changes::
 Or make a :class:`PWMLED` change brightness according to the detected light
 level::
 
-    from gpiozero import LightSensor, LED
+    from gpiozero import LightSensor, PWMLED
     from signal import pause
 
     sensor = LightSensor(18)
