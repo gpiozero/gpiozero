@@ -28,7 +28,7 @@ PWMLED
 RGBLED
 ======
 
-.. autoclass:: RGBLED(red, green, blue, active_high=True, initial_value=(0, 0, 0))
+.. autoclass:: RGBLED(red, green, blue, active_high=True, initial_value=(0, 0, 0), pwm=True)
     :members: on, off, toggle, blink, pulse, red, green, blue, is_lit, color
 
 Buzzer
@@ -40,7 +40,7 @@ Buzzer
 Motor
 =====
 
-.. autoclass:: Motor(forward, backward)
+.. autoclass:: Motor(forward, backward, pwm=True)
     :members: forward, backward, stop
 
 Base Classes

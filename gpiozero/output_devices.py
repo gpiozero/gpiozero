@@ -555,16 +555,22 @@ class RGBLED(SourceMixin, Device):
 
     :param bool initial_value:
         The initial color for the LED. Defaults to black ``(0, 0, 0)``.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMLED` instances for
+        each component of the RGBLED. If ``False``, construct regular
+        :class:`LED` instances, which prevents smooth color graduations.
     """
     def __init__(
             self, red=None, green=None, blue=None, active_high=True,
-            initial_value=(0, 0, 0)):
+            initial_value=(0, 0, 0), pwm=True):
         self._leds = ()
         self._blink_thread = None
         if not all([red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
+        LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__()
-        self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
+        self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
         self.value = initial_value
 
     red = _led_property(0)
@@ -587,7 +593,8 @@ class RGBLED(SourceMixin, Device):
     def value(self):
         """
         Represents the color of the LED as an RGB 3-tuple of ``(red, green,
-        blue)`` where each value is between 0 and 1.
+        blue)`` where each value is between 0 and 1 if ``pwm`` was ``True``
+        when the class was constructed (and only 0 or 1 if not).
 
         For example, purple would be ``(1, 0, 1)`` and yellow would be ``(1, 1,
         0)``, while orange would be ``(1, 0.5, 0)``.
@@ -596,6 +603,12 @@ class RGBLED(SourceMixin, Device):
 
     @value.setter
     def value(self, value):
+        for component in value:
+            if not 0 <= component <= 1:
+                raise OutputDeviceBadValue('each RGB color component must be between 0 and 1')
+            if isinstance(self._leds[0], LED):
+                if component not in (0, 1):
+                    raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
         self._stop_blink()
         self.red, self.green, self.blue = value
 
@@ -647,10 +660,14 @@ class RGBLED(SourceMixin, Device):
             Number of seconds off. Defaults to 1 second.
 
         :param float fade_in_time:
-            Number of seconds to spend fading in. Defaults to 0.
+            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param float fade_out_time:
-            Number of seconds to spend fading out. Defaults to 0.
+            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param tuple on_color:
             The color to use when the LED is "on". Defaults to white.
@@ -667,6 +684,11 @@ class RGBLED(SourceMixin, Device):
             blink is finished (warning: the default value of *n* will result in
             this method never returning).
         """
+        if isinstance(self._leds[0], LED):
+            if fade_in_time:
+                raise ValueError('fade_in_time must be 0 with non-PWM RGBLEDs')
+            if fade_out_time:
+                raise ValueError('fade_out_time must be 0 with non-PWM RGBLEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
@@ -782,22 +804,31 @@ class Motor(SourceMixin, CompositeDevice):
     :param int backward:
         The GPIO pin that the backward input of the motor driver chip is
         connected to.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
     """
-    def __init__(self, forward=None, backward=None):
+    def __init__(self, forward=None, backward=None, pwm=True):
         if not all([forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
+        PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super(Motor, self).__init__(
-                forward_device=PWMOutputDevice(forward),
-                backward_device=PWMOutputDevice(backward),
+                forward_device=PinClass(forward),
+                backward_device=PinClass(backward),
                 _order=('forward_device', 'backward_device'))
 
     @property
     def value(self):
         """
         Represents the speed of the motor as a floating point value between -1
-        (full speed backward) and 1 (full speed forward).
+        (full speed backward) and 1 (full speed forward), with 0 representing
+        stopped.
         """
         return self.forward_device.value - self.backward_device.value
 
@@ -806,9 +837,15 @@ class Motor(SourceMixin, CompositeDevice):
         if not -1 <= value <= 1:
             raise OutputDeviceBadValue("Motor value must be between -1 and 1")
         if value > 0:
-            self.forward(value)
+            try:
+                self.forward(value)
+            except ValueError as e:
+                raise OutputDeviceBadValue(e)
         elif value < 0:
-            self.backward(-value)
+            try:
+               self.backward(-value)
+            except ValueError as e:
+                raise OutputDeviceBadValue(e)
         else:
             self.stop()
 
@@ -826,8 +863,14 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
+            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
+            ``True`` when the class was constructed (and only 0 or 1 if not).
         """
+        if not 0 <= speed <= 1:
+            raise ValueError('forward speed must be between 0 and 1')
+        if isinstance(self.forward_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
         self.backward_device.off()
         self.forward_device.value = speed
 
@@ -837,8 +880,14 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
+            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
+            ``True`` when the class was constructed (and only 0 or 1 if not).
         """
+        if not 0 <= speed <= 1:
+            raise ValueError('backward speed must be between 0 and 1')
+        if isinstance(self.backward_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
         self.forward_device.off()
         self.backward_device.value = speed
 
