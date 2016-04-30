@@ -437,6 +437,8 @@ def test_energenie():
     pins = [MockPin(n) for n in (17, 22, 23, 27, 24, 25)]
     with Energenie(1, initial_value=True) as device1, \
             Energenie(2, initial_value=False) as device2:
+        assert repr(device1) == '<gpiozero.Energenie object on socket 1>'
+        assert repr(device2) == '<gpiozero.Energenie object on socket 2>'
         assert device1.value
         assert not device2.value
         [pin.clear_states() for pin in pins]
@@ -457,4 +459,5 @@ def test_energenie():
         pins[3].assert_states_and_times([(0.0, True), (0.0, True)])
         pins[4].assert_states_and_times([(0.0, False)])
         pins[5].assert_states_and_times([(0.0, False), (0.1, True), (0.25, False)])
-
+        device1.close()
+        assert repr(device1) == '<gpiozero.Energenie object closed>'
