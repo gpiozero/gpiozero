@@ -794,27 +794,55 @@ class Robot(SourceMixin, CompositeDevice):
     def value(self, value):
         self.left_motor.value, self.right_motor.value = value
 
-    def forward(self, speed=1):
+    def forward(self, speed=1, curve=0):
         """
         Drive the robot forward by running both motors forward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
-        """
-        self.left_motor.forward(speed)
-        self.right_motor.forward(speed)
 
-    def backward(self, speed=1):
+        :param float curve:
+            The amount to curve left (if ``curve`` is less than 0) or curve
+            right (if ``curve`` is greater than 0) while moving forwards, by
+            driving one of the motors at a slower speed. Maximum left curve is
+            -1, maximum right curve is 1. The default is 0 (no curve).
+        """
+        left_speed = speed
+        right_speed = speed
+        if not -1 <= curve <= 1:
+            raise ValueError('curve must be between -1 and 1')
+        if curve < 0:
+            left_speed *= 1 + curve
+        elif curve > 0:
+            right_speed *= 1 - curve
+        self.left_motor.forward(left_speed)
+        self.right_motor.forward(right_speed)
+
+    def backward(self, speed=1, curve=0):
         """
         Drive the robot backward by running both motors backward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
+
+        :param float curve:
+            The amount to curve left (if ``curve`` is less than 0) or curve
+            right (if ``curve`` is greater than 0) while moving backwards, by
+            driving one of the motors at a slower speed. Maximum left curve is
+            -1, maximum right curve is 1. The default is 0 (no curve).
         """
-        self.left_motor.backward(speed)
-        self.right_motor.backward(speed)
+        left_speed = speed
+        right_speed = speed
+        if not -1 <= curve <= 1:
+            raise ValueError('curve must be between -1 and 1')
+        if curve < 0:
+            left_speed *= 1 + curve
+        elif curve > 0:
+            right_speed *= 1 - curve
+        self.left_motor.backward(left_speed)
+        self.right_motor.backward(right_speed)
 
     def left(self, speed=1):
         """
