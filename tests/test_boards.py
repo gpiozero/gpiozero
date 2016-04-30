@@ -430,6 +430,8 @@ def test_energenie_bad_init():
         Energenie()
     with pytest.raises(ValueError):
         Energenie(0)
+    with pytest.raises(ValueError):
+        Energenie(5)
 
 def test_energenie():
     pins = [MockPin(n) for n in (17, 22, 23, 27, 24, 25)]
