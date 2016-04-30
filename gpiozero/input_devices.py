@@ -165,7 +165,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             if self.partial or self._queue.full.wait(0):
                 return super(SmoothedInputDevice, self).__repr__()
             else:
-                return "<gpiozero.%s object on pin=%d, pull_up=%s>" % (
+                return "<gpiozero.%s object on pin=%r, pull_up=%s>" % (
                     self.__class__.__name__, self.pin, self.pull_up)
 
     @property

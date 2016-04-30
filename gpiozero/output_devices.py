@@ -581,7 +581,7 @@ class RGBLED(SourceMixin, Device):
 
     @property
     def closed(self):
-        return bool(self._leds)
+        return len(self._leds) == 0
 
     @property
     def value(self):
