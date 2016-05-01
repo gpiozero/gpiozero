@@ -443,7 +443,7 @@ class LightSensor(SmoothedInputDevice):
     :param float charge_time_limit:
         If the capacitor in the circuit takes longer than this length of time
         to charge, it is assumed to be dark. The default (0.01 seconds) is
-        appropriate for a 0.01µf capacitor coupled with the LDR from the
+        appropriate for a 1µf capacitor coupled with the LDR from the
         `CamJam #2 EduKit`_. You may need to adjust this value for different
         valued capacitors or LDRs.
 
