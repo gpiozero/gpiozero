@@ -163,7 +163,7 @@ class SPISoftwareBus(SharedMixin, Device):
         return self.lock is None
 
     @classmethod
-    def _shared_key(self, clock_pin, mosi_pin, miso_pin):
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin):
         return (clock_pin, mosi_pin, miso_pin)
 
     def read(self, n):
