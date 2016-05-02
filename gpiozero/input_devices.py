@@ -418,7 +418,7 @@ class LightSensor(SmoothedInputDevice):
     Extends :class:`SmoothedInputDevice` and represents a light dependent
     resistor (LDR).
 
-    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µf
+    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µF
     capacitor to a ground pin; connect the other leg of the LDR and the other
     leg of the capacitor to the same GPIO pin. This class repeatedly discharges
     the capacitor, then times the duration it takes to charge (which will vary
