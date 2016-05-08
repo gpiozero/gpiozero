@@ -418,7 +418,7 @@ class LightSensor(SmoothedInputDevice):
     Extends :class:`SmoothedInputDevice` and represents a light dependent
     resistor (LDR).
 
-    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µf
+    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µF
     capacitor to a ground pin; connect the other leg of the LDR and the other
     leg of the capacitor to the same GPIO pin. This class repeatedly discharges
     the capacitor, then times the duration it takes to charge (which will vary
@@ -443,7 +443,7 @@ class LightSensor(SmoothedInputDevice):
     :param float charge_time_limit:
         If the capacitor in the circuit takes longer than this length of time
         to charge, it is assumed to be dark. The default (0.01 seconds) is
-        appropriate for a 0.01µf capacitor coupled with the LDR from the
+        appropriate for a 1µF capacitor coupled with the LDR from the
         `CamJam #2 EduKit`_. You may need to adjust this value for different
         valued capacitors or LDRs.
 
