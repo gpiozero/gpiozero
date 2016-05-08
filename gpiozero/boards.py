@@ -846,6 +846,7 @@ class Energenie(SourceMixin, Device):
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
+        self._value = None
         super(Energenie, self).__init__()
         self._socket = socket
         self._master = _EnergenieMaster()
@@ -877,8 +878,9 @@ class Energenie(SourceMixin, Device):
 
     @value.setter
     def value(self, value):
-        self._master.transmit(self._socket, bool(value))
-        self._value = bool(value)
+        value = bool(value)
+        self._master.transmit(self._socket, value)
+        self._value = value
 
     def on(self):
         self.value = True
