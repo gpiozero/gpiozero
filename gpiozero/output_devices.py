@@ -753,8 +753,8 @@ class Motor(SourceMixin, CompositeDevice):
                 'forward and backward pins must be provided'
             )
         super(Motor, self).__init__(
-                forward_device=PWMOutputDevice(forward),
-                backward_device=PWMOutputDevice(backward),
+                forward_device=DigitalOutputDevice(forward),
+                backward_device=DigitalOutputDevice(backward),
                 _order=('forward_device', 'backward_device'))
 
     @property
