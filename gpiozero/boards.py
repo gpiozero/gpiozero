@@ -18,6 +18,7 @@ from .exc import (
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
+    OutputDeviceBadValue,
     )
 from .input_devices import Button
 from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor
@@ -402,6 +403,8 @@ class LEDBarGraph(LEDCollection):
 
     @value.setter
     def value(self, value):
+        if not -1 <= value <= 1:
+            raise OutputDeviceBadValue('LEDBarGraph value must be between -1 and 1')
         count = len(self)
         leds = self
         if value < 0:

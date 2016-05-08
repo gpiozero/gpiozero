@@ -85,6 +85,36 @@ def test_led_board_on_off():
         assert not pin1.state
         assert pin2.state
         assert pin3.state
+        board.toggle(0,1)
+        assert board.value == (1, 0, 1)
+        assert pin1.state
+        assert not pin2.state
+        assert pin3.state
+        board.off(2)
+        assert board.value == (1, 0, 0)
+        assert pin1.state
+        assert not pin2.state
+        assert not pin3.state
+        board.on(1)
+        assert board.value == (1, 1, 0)
+        assert pin1.state
+        assert pin2.state
+        assert not pin3.state
+        board.off(0,1)
+        assert board.value == (0, 0, 0)
+        assert not pin1.state
+        assert not pin2.state
+        assert not pin3.state
+        board.on(1,2)
+        assert board.value == (0, 1, 1)
+        assert not pin1.state
+        assert pin2.state
+        assert pin3.state
+        board.toggle(0)
+        assert board.value == (1, 1, 1)
+        assert pin1.state
+        assert pin2.state
+        assert pin3.state
 
 def test_led_board_nested():
     pin1 = MockPin(2)
@@ -321,12 +351,48 @@ def test_led_bar_graph_pwm_value():
         pin3.state = 1
         assert graph.value == -1/2
 
+def test_led_bar_graph_bad_value():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBarGraph(pin1, pin2, pin3) as graph:
+        with pytest.raises(ValueError):
+            graph.value = -2
+        with pytest.raises(ValueError):
+            graph.value = 2
+
 def test_led_bar_graph_bad_init():
     pin1 = MockPin(2)
     pin2 = MockPin(3)
     pin3 = MockPin(4)
     with pytest.raises(TypeError):
         LEDBarGraph(pin1, pin2, foo=pin3)
+    with pytest.raises(ValueError):
+        LEDBarGraph(pin1, pin2, pin3, initial_value=-2)
+    with pytest.raises(ValueError):
+        LEDBarGraph(pin1, pin2, pin3, initial_value=2)
+
+def test_led_bar_graph_initial_value():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBarGraph(pin1, pin2, pin3, initial_value=1/3) as graph:
+        assert graph.value == 1/3
+        assert pin1.state and not (pin2.state or pin3.state)
+    with LEDBarGraph(pin1, pin2, pin3, initial_value=-1/3) as graph:
+        assert graph.value == -1/3
+        assert pin3.state and not (pin1.state or pin2.state)
+
+def test_led_bar_graph_pwm_initial_value():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(3)
+    pin3 = MockPWMPin(4)
+    with LEDBarGraph(pin1, pin2, pin3, pwm=True, initial_value=0.5) as graph:
+        assert graph.value == 0.5
+        assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
+    with LEDBarGraph(pin1, pin2, pin3, pwm=True, initial_value=-0.5) as graph:
+        assert graph.value == -0.5
+        assert (pin1.state, pin2.state, pin3.state) == (0, 0.5, 1)
 
 def test_pi_liter():
     pins = [MockPin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]

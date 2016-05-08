@@ -34,13 +34,25 @@ def test_input_initial_values():
         assert pin.pull == 'down'
         assert not device.pull_up
 
-def test_input_is_active():
+def test_input_is_active_low():
     pin = MockPin(2)
     with InputDevice(pin, pull_up=True) as device:
         pin.drive_high()
         assert not device.is_active
+        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=True, is_active=False>'
         pin.drive_low()
         assert device.is_active
+        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=True, is_active=True>'
+
+def test_input_is_active_high():
+    pin = MockPin(2)
+    with InputDevice(pin, pull_up=False) as device:
+        pin.drive_high()
+        assert device.is_active
+        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=False, is_active=True>'
+        pin.drive_low()
+        assert not device.is_active
+        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=False, is_active=False>'
 
 def test_input_pulled_up():
     pin = MockPulledUpPin(2)
@@ -83,11 +95,14 @@ def test_input_wait_inactive():
 def test_input_smoothed_attrib():
     pin = MockPin(2)
     with SmoothedInputDevice(pin, threshold=0.5, queue_len=5, partial=False) as device:
+        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin=MOCK2, pull_up=False>'
         assert device.threshold == 0.5
         assert device.queue_len == 5
         assert not device.partial
         device._queue.start()
         assert not device.is_active
+        with pytest.raises(InputDeviceError):
+            device.threshold = 1
 
 def test_input_smoothed_values():
     pin = MockPin(2)

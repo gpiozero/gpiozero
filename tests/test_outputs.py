@@ -53,6 +53,9 @@ def test_output_write_active_low():
 def test_output_write_closed():
     with OutputDevice(MockPin(2)) as device:
         device.close()
+        assert device.closed
+        device.close()
+        assert device.closed
         with pytest.raises(GPIODeviceClosed):
             device.on()
 
@@ -294,6 +297,67 @@ def test_output_pwm_fade_foreground():
             (0.04, 0),
             ])
 
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_output_pwm_pulse_background():
+    pin = MockPWMPin(2)
+    with PWMOutputDevice(pin) as device:
+        device.pulse(0.2, 0.2, n=2)
+        device._blink_thread.join()
+        pin.assert_states_and_times([
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ])
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_output_pwm_pulse_foreground():
+    pin = MockPWMPin(2)
+    with PWMOutputDevice(pin) as device:
+        device.pulse(0.2, 0.2, n=2, background=False)
+        pin.assert_states_and_times([
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ])
+
 def test_output_pwm_blink_interrupt():
     pin = MockPWMPin(2)
     with PWMOutputDevice(pin) as device:
@@ -409,7 +473,7 @@ def test_rgbled_fade_background():
         g.assert_states_and_times(expected)
         b.assert_states_and_times(expected)
 
-def test_output_rgbled_blink_interrupt():
+def test_rgbled_blink_interrupt():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
         device.blink(1, 0.1)
@@ -418,6 +482,15 @@ def test_output_rgbled_blink_interrupt():
         r.assert_states([0, 1, 0])
         g.assert_states([0, 1, 0])
         b.assert_states([0, 1, 0])
+
+def test_rgbled_close():
+    r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
+    with RGBLED(r, g, b) as device:
+        assert not device.closed
+        device.close()
+        assert device.closed
+        device.close()
+        assert device.closed
 
 def test_motor_missing_pins():
     with pytest.raises(ValueError):
@@ -438,6 +511,8 @@ def test_motor_close():
         assert device.closed
         assert device.forward_device.pin is None
         assert device.backward_device.pin is None
+        device.close()
+        assert device.closed
 
 def test_motor_value():
     f = MockPWMPin(1)
