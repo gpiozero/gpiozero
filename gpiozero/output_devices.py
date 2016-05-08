@@ -435,12 +435,12 @@ class PWMOutputDevice(OutputDevice):
             Number of seconds to spend fading out. Defaults to 1.
 
         :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+            Number of times to pulse; ``None`` (the default) means forever.
 
         :param bool background:
             If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
+            pulsing and return immediately. If ``False``, only return when the
+            pulse is finished (warning: the default value of *n* will result in
             this method never returning).
         """
         on_time = off_time = 0
@@ -670,12 +670,48 @@ class RGBLED(SourceMixin, Device):
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, on_color, off_color, n)
+            args=(
+                on_time, off_time, fade_in_time, fade_out_time,
+                on_color, off_color, n
+            )
         )
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
+
+    def pulse(
+            self, fade_in_time=1, fade_out_time=1,
+            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+        """
+        Make the device fade in and out repeatedly.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 1.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 1.
+
+        :param tuple on_color:
+            The color to use when the LED is "on". Defaults to white.
+
+        :param tuple off_color:
+            The color to use when the LED is "off". Defaults to black.
+
+        :param int n:
+            Number of times to pulse; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            pulsing and return immediately. If ``False``, only return when the
+            pulse is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        on_time = off_time = 0
+        self.blink(
+            on_time, off_time, fade_in_time, fade_out_time,
+            on_color, off_color, n, background
+        )
 
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway

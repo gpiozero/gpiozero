@@ -8,7 +8,7 @@ str = type('')
 
 
 import sys
-from time import sleep
+from time import sleep, time
 try:
     from math import isclose
 except ImportError:
@@ -95,8 +95,11 @@ def test_output_digital_toggle():
 def test_output_blink_background():
     pin = MockPin(2)
     with DigitalOutputDevice(pin) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, False),
             (0.0, True),
@@ -110,7 +113,9 @@ def test_output_blink_background():
 def test_output_blink_foreground():
     pin = MockPin(2)
     with DigitalOutputDevice(pin) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2, background=False)
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, False),
             (0.0, True),
@@ -212,8 +217,11 @@ def test_output_pwm_write_silly():
 def test_output_pwm_blink_background():
     pin = MockPWMPin(2)
     with PWMOutputDevice(pin) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join()
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
             (0.0, 1),
@@ -227,7 +235,9 @@ def test_output_pwm_blink_background():
 def test_output_pwm_blink_foreground():
     pin = MockPWMPin(2)
     with PWMOutputDevice(pin) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2, background=False)
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
             (0.0, 1),
@@ -241,8 +251,11 @@ def test_output_pwm_blink_foreground():
 def test_output_pwm_fade_background():
     pin = MockPWMPin(2)
     with PWMOutputDevice(pin) as device:
+        start = time()
         device.blink(0, 0, 0.2, 0.2, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join()
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
             (0.04, 0.2),
@@ -272,7 +285,75 @@ def test_output_pwm_fade_background():
 def test_output_pwm_fade_foreground():
     pin = MockPWMPin(2)
     with PWMOutputDevice(pin) as device:
+        start = time()
         device.blink(0, 0, 0.2, 0.2, n=2, background=False)
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
+        pin.assert_states_and_times([
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ])
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_output_pwm_pulse_background():
+    pin = MockPWMPin(2)
+    with PWMOutputDevice(pin) as device:
+        start = time()
+        device.pulse(0.2, 0.2, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
+        device._blink_thread.join()
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
+        pin.assert_states_and_times([
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ])
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_output_pwm_pulse_foreground():
+    pin = MockPWMPin(2)
+    with PWMOutputDevice(pin) as device:
+        start = time()
+        device.pulse(0.2, 0.2, n=2, background=False)
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
             (0.04, 0.2),
@@ -409,8 +490,11 @@ def test_rgbled_toggle():
 def test_rgbled_blink_background():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join()
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         expected = [
             (0.0, 0),
             (0.0, 1),
@@ -427,7 +511,9 @@ def test_rgbled_blink_background():
 def test_rgbled_blink_foreground():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
+        start = time()
         device.blink(0.1, 0.1, n=2, background=False)
+        assert isclose(time() - start, 0.4, abs_tol=0.05)
         expected = [
             (0.0, 0),
             (0.0, 1),
@@ -444,8 +530,118 @@ def test_rgbled_blink_foreground():
 def test_rgbled_fade_background():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
+        start = time()
         device.blink(0, 0, 0.2, 0.2, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join()
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
+        expected = [
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ]
+        r.assert_states_and_times(expected)
+        g.assert_states_and_times(expected)
+        b.assert_states_and_times(expected)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbled_fade_foreground():
+    r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
+    with RGBLED(r, g, b) as device:
+        start = time()
+        device.blink(0, 0, 0.2, 0.2, n=2, background=False)
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
+        expected = [
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ]
+        r.assert_states_and_times(expected)
+        g.assert_states_and_times(expected)
+        b.assert_states_and_times(expected)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbled_pulse_background():
+    r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
+    with RGBLED(r, g, b) as device:
+        start = time()
+        device.pulse(0.2, 0.2, n=2)
+        assert isclose(time() - start, 0, abs_tol=0.05)
+        device._blink_thread.join()
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
+        expected = [
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ]
+        r.assert_states_and_times(expected)
+        g.assert_states_and_times(expected)
+        b.assert_states_and_times(expected)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbled_pulse_foreground():
+    r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
+    with RGBLED(r, g, b) as device:
+        start = time()
+        device.pulse(0.2, 0.2, n=2, background=False)
+        assert isclose(time() - start, 0.8, abs_tol=0.05)
         expected = [
             (0.0, 0),
             (0.04, 0.2),
