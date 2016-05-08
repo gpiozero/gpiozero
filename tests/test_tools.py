@@ -199,10 +199,9 @@ def test_post_delayed():
         count += 1
         if v == 1:
             assert time() - start < 0.01
-        elif v == 2:
-            assert time() - start >= 0.01
         else:
-            assert False
+            assert v == 2
+            assert time() - start >= 0.01
         start = time()
     assert time() - start >= 0.01
     assert count == 3
