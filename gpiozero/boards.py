@@ -123,6 +123,10 @@ class LEDCollection(CompositeOutputDevice):
             else:
                 yield item
 
+    @property
+    def active_high(self):
+        return self[0].active_high
+
 
 class LEDBoard(LEDCollection):
     """
@@ -149,21 +153,23 @@ class LEDBoard(LEDCollection):
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set all the
-        associates pins to HIGH. If ``False``, the :meth:`on` method will set
-        all pins to LOW (the :meth:`off` method always does the opposite).
+        associated pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite). This
+        parameter can only be specified as a keyword parameter.
 
     :param bool initial_value:
         If ``False`` (the default), all LEDs will be off initially. If
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+        the device will be switched on initially. This parameter can only be
+        specified as a keyword parameter.
 
     :param \*\*named_pins:
-        Sepcify GPIO pins that LEDs of the board are attached to, associated
+        Specify GPIO pins that LEDs of the board are attached to, associating
         each LED with a property name. You can designate as many pins as
-        necessary and any name provided it's not already in use by something
-        else. You can also specify :class:`LEDBoard` instances to create
-        trees of LEDs.
+        necessary and use any names, provided they're not already in use by
+        something else. You can also specify :class:`LEDBoard` instances to
+        create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
         self._blink_leds = []
@@ -346,15 +352,21 @@ class LEDBarGraph(LEDCollection):
         Specify the GPIO pins that the LEDs of the bar graph are attached to.
         You can designate as many pins as necessary.
 
-    :param float initial_value:
-        The initial :attr:`value` of the graph given as a float between -1 and
-        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
-        parameter.
-
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite). This
+        parameter can only be specified as a keyword parameter.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
+        parameter.
     """
 
     def __init__(self, *pins, **kwargs):
@@ -362,10 +374,11 @@ class LEDBarGraph(LEDCollection):
         for pin in pins:
             assert not isinstance(pin, LEDCollection)
         pwm = kwargs.pop('pwm', False)
+        active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', 0)
         if kwargs:
             raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
-        super(LEDBarGraph, self).__init__(*pins, pwm=pwm)
+        super(LEDBarGraph, self).__init__(*pins, pwm=pwm, active_high=active_high)
         try:
             self.value = initial_value
         except:
