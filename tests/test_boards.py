@@ -189,7 +189,7 @@ def test_led_board_blink_control():
         board.blink(0.1, 0.1, n=2)
         # make sure the blink thread's started
         while not board._blink_leds:
-            sleep(0.00001)
+            sleep(0.00001) # pragma: no cover
         board[1][0].off() # immediately take over the second LED
         board._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
         test = [
@@ -236,7 +236,7 @@ def test_led_board_blink_control_all():
         board.blink(0.1, 0.1, n=2)
         # make sure the blink thread's started
         while not board._blink_leds:
-            sleep(0.00001)
+            sleep(0.00001) # pragma: no cover
         board[0].off() # immediately take over all LEDs
         board[1][0].off()
         board[1][1].off()
