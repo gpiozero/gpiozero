@@ -71,6 +71,10 @@ def test_led_board_on_off():
         assert isinstance(board[0], LED)
         assert isinstance(board[1], LED)
         assert isinstance(board[2], LED)
+        assert board.active_high
+        assert board[0].active_high
+        assert board[1].active_high
+        assert board[2].active_high
         board.on()
         assert all((pin1.state, pin2.state, pin3.state))
         board.off()
@@ -115,6 +119,91 @@ def test_led_board_on_off():
         assert pin1.state
         assert pin2.state
         assert pin3.state
+
+def test_led_board_active_low():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3, active_high=False) as board:
+        assert not board.active_high
+        assert not board[0].active_high
+        assert not board[1].active_high
+        assert not board[2].active_high
+        board.on()
+        assert not any ((pin1.state, pin2.state, pin3.state))
+        board.off()
+        assert all((pin1.state, pin2.state, pin3.state))
+        board[0].on()
+        assert board.value == (1, 0, 0)
+        assert not pin1.state
+        assert pin2.state
+        assert pin3.state
+        board.toggle()
+        assert board.value == (0, 1, 1)
+        assert pin1.state
+        assert not pin2.state
+        assert not pin3.state
+
+def test_led_board_value():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3) as board:
+        assert board.value == (0, 0, 0)
+        board.value = (0, 1, 0)
+        assert board.value == (0, 1, 0)
+        board.value = (1, 0, 1)
+        assert board.value == (1, 0, 1)
+
+def test_led_board_pwm_value():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(3)
+    pin3 = MockPWMPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3, pwm=True) as board:
+        assert board.value == (0, 0, 0)
+        board.value = (0, 1, 0)
+        assert board.value == (0, 1, 0)
+        board.value = (0.5, 0, 0.75)
+        assert board.value == (0.5, 0, 0.75)
+
+def test_led_board_pwm_bad_value():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(3)
+    pin3 = MockPWMPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3, pwm=True) as board:
+        with pytest.raises(ValueError):
+            board.value = (-1, 0, 0)
+        with pytest.raises(ValueError):
+            board.value = (0, 2, 0)
+
+def test_led_board_initial_value():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3, initial_value=0) as board:
+        assert board.value == (0, 0, 0)
+    with LEDBoard(pin1, pin2, foo=pin3, initial_value=1) as board:
+        assert board.value == (1, 1, 1)
+
+def test_led_board_pwm_initial_value():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(3)
+    pin3 = MockPWMPin(4)
+    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=0) as board:
+        assert board.value == (0, 0, 0)
+    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=1) as board:
+        assert board.value == (1, 1, 1)
+    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=0.5) as board:
+        assert board.value == (0.5, 0.5, 0.5)
+
+def test_led_board_pwm_bad_initial_value():
+    pin1 = MockPWMPin(2)
+    pin2 = MockPWMPin(3)
+    pin3 = MockPWMPin(4)
+    with pytest.raises(ValueError):
+        LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=-1)
+    with pytest.raises(ValueError):
+        LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=2)
 
 def test_led_board_nested():
     pin1 = MockPin(2)
@@ -315,13 +404,24 @@ def test_led_bar_graph_value():
     pin2 = MockPin(3)
     pin3 = MockPin(4)
     with LEDBarGraph(pin1, pin2, pin3) as graph:
+        assert isinstance(graph[0], LED)
+        assert isinstance(graph[1], LED)
+        assert isinstance(graph[2], LED)
+        assert graph.active_high
+        assert graph[0].active_high
+        assert graph[1].active_high
+        assert graph[2].active_high
         graph.value = 0
+        assert graph.value == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
+        assert graph.value == 1
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
+        assert graph.value == 1/3
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
+        assert graph.value == -1/3
         assert pin3.state and not (pin1.state or pin2.state)
         pin1.state = True
         pin2.state = True
@@ -332,20 +432,50 @@ def test_led_bar_graph_value():
         pin1.state = False
         assert graph.value == -2/3
 
+def test_led_bar_graph_active_low():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    with LEDBarGraph(pin1, pin2, pin3, active_high=False) as graph:
+        assert not graph.active_high
+        assert not graph[0].active_high
+        assert not graph[1].active_high
+        assert not graph[2].active_high
+        graph.value = 0
+        assert graph.value == 0
+        assert all((pin1.state, pin2.state, pin3.state))
+        graph.value = 1
+        assert graph.value == 1
+        assert not any((pin1.state, pin2.state, pin3.state))
+        graph.value = 1/3
+        assert graph.value == 1/3
+        assert not pin1.state and pin2.state and pin3.state
+        graph.value = -1/3
+        assert graph.value == -1/3
+        assert not pin3.state and pin1.state and pin2.state
+
 def test_led_bar_graph_pwm_value():
     pin1 = MockPWMPin(2)
     pin2 = MockPWMPin(3)
     pin3 = MockPWMPin(4)
     with LEDBarGraph(pin1, pin2, pin3, pwm=True) as graph:
+        assert isinstance(graph[0], PWMLED)
+        assert isinstance(graph[1], PWMLED)
+        assert isinstance(graph[2], PWMLED)
         graph.value = 0
+        assert graph.value == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
+        assert graph.value == 1
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
+        assert graph.value == 1/3
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
+        assert graph.value == -1/3
         assert pin3.state and not (pin1.state or pin2.state)
         graph.value = 1/2
+        assert graph.value == 1/2
         assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
         pin1.state = 0
         pin3.state = 1
