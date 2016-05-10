@@ -35,8 +35,8 @@ phrase "fix #123" where `#123` is the issue number.
 
 ## Backwards compatibility
 
-Since this library reached v1.0 we aim to maintain backwards-compatability
-thereafter. Changes which break backwards-compatability will not be accepted.
+Since this library reached v1.0 we aim to maintain backwards-compatibility
+thereafter. Changes which break backwards-compatibility will not be accepted.
 
 ## Python
 
