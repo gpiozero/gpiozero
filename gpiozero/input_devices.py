@@ -162,7 +162,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         except DeviceClosed:
             return super(SmoothedInputDevice, self).__repr__()
         else:
-            if self.partial or self._queue.full.wait(0):
+            if self.partial or self._queue.full.is_set():
                 return super(SmoothedInputDevice, self).__repr__()
             else:
                 return "<gpiozero.%s object on pin=%r, pull_up=%s>" % (

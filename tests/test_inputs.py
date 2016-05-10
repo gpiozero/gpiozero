@@ -64,20 +64,20 @@ def test_input_event_activated():
     pin = MockPin(2)
     with DigitalInputDevice(pin) as device:
         device.when_activated = lambda: event.set()
-        assert not event.wait(0)
+        assert not event.is_set()
         pin.drive_high()
-        assert event.wait(0)
+        assert event.is_set()
 
 def test_input_event_deactivated():
     event = Event()
     pin = MockPin(2)
     with DigitalInputDevice(pin) as device:
         device.when_deactivated = lambda: event.set()
-        assert not event.wait(0)
+        assert not event.is_set()
         pin.drive_high()
-        assert not event.wait(0)
+        assert not event.is_set()
         pin.drive_low()
-        assert event.wait(0)
+        assert event.is_set()
 
 def test_input_wait_active():
     pin = MockPin(2)
