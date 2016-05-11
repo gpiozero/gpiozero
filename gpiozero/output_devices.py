@@ -43,16 +43,15 @@ class OutputDevice(SourceMixin, GPIODevice):
         self.active_high = active_high
         if initial_value is None:
             self.pin.function = 'output'
-        elif initial_value:
-            self.pin.output_with_state(self._active_state)
         else:
-            self.pin.output_with_state(self._inactive_state)
+            self.pin.output_with_state(self._value_to_state(initial_value))
+
+    def _value_to_state(self, value):
+        return bool(self._active_state if value else self._inactive_state)
 
     def _write(self, value):
-        if not self.active_high:
-            value = not value
         try:
-            self.pin.state = bool(value)
+            self.pin.state = self._value_to_state(value)
         except AttributeError:
             self._check_open()
             raise
@@ -318,23 +317,16 @@ class PWMOutputDevice(OutputDevice):
             pass
         super(PWMOutputDevice, self).close()
 
-    def _read(self):
-        self._check_open()
-        if self.active_high:
-            return self.pin.state
-        else:
-            return 1 - self.pin.state
+    def _state_to_value(self, state):
+        return float(state if self.active_high else 1 - state)
+
+    def _value_to_state(self, value):
+        return float(value if self.active_high else 1 - value)
 
     def _write(self, value):
-        if not self.active_high:
-            value = 1 - value
         if not 0 <= value <= 1:
             raise OutputDeviceBadValue("PWM value must be between 0 and 1")
-        try:
-            self.pin.state = value
-        except AttributeError:
-            self._check_open()
-            raise
+        super(PWMOutputDevice, self)._write(value)
 
     @property
     def value(self):

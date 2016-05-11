@@ -376,9 +376,12 @@ class GPIODevice(Device):
         self._active_state = True
         self._inactive_state = False
 
+    def _state_to_value(self, state):
+        return bool(state == self._active_state)
+
     def _read(self):
         try:
-            return self.pin.state == self._active_state
+            return self._state_to_value(self.pin.state)
         except (AttributeError, TypeError):
             self._check_open()
             raise
