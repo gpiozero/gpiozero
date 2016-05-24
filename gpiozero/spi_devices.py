@@ -112,7 +112,6 @@ class MCP3xxx(AnalogInputDevice):
 
     def __init__(self, channel=0, bits=10, differential=False, **spi_args):
         self._channel = channel
-        self._bits = bits
         self._differential = bool(differential)
         super(MCP3xxx, self).__init__(bits, **spi_args)
 
