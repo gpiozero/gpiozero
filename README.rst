@@ -73,7 +73,7 @@ or::
 Documentation
 =============
 
-Comprehensive documentation is available at https://gpiozero.readthedocs.org/.
+Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
 
 Development
 ===========
@@ -99,7 +99,7 @@ Contributors
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
+.. _recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
 .. _Contribute: CONTRIBUTING.md
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
