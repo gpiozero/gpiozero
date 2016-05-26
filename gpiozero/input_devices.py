@@ -615,7 +615,7 @@ class DistanceSensor(SmoothedInputDevice):
 
     @max_distance.setter
     def max_distance(self, value):
-        if not (value > 0):
+        if value <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         t = self.threshold_distance
         self._max_distance = value
