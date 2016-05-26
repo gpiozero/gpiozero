@@ -299,7 +299,7 @@ class PWMOutputDevice(OutputDevice):
         self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
-        super(PWMOutputDevice, self).__init__(pin, active_high)
+        super(PWMOutputDevice, self).__init__(pin, active_high, initial_value=None)
         try:
             # XXX need a way of setting these together
             self.pin.frequency = frequency
