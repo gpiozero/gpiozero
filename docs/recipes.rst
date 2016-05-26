@@ -196,7 +196,7 @@ Button controlled camera
 ========================
 
 Using the button press to trigger picamera to take a pitcure using
-``button.when_pressed = camera.capture`` would not work because it requires an
+``button/when_pressed = camera.capture`` would not work because it requires an
 ``output`` parameter. However, this can be achieved using a custom function
 which requires no parameters::
     
@@ -326,28 +326,25 @@ Travis build LED indicator
 Use LEDs to indicate the status of a Travis build. A green light means the
 tests are passing, a red light means the build is broken::
 
-	from travispy import TravisPy
-	from gpiozero import LED
-	from time import sleep
-	from signal import pause
+    from travispy import TravisPy
+    from gpiozero import LED
+    from gpiozero.tools import negated
+    from time import sleep
+    from signal import pause
 
-	def build_passed(repo='RPi-Distro/python-gpiozero', delay=3600):
-		t = TravisPy()
-		r = t.repo(repo)
-		while True:
-			yield r.last_build_state == 'passed'
-			sleep(delay) # Sleep an hour before hitting travis again
+    def build_passed(repo='RPi-Distro/python-gpiozero', delay=3600):
+        t = TravisPy()
+        r = t.repo(repo)
+        while True:
+            yield r.last_build_state == 'passed'
+            sleep(delay) # Sleep an hour before hitting travis again
 
-	def invert(values):
-		for value in values:
-			yield not value
+    red = LED(12)
+    green = LED(16)
 
-	red = LED(12)
-	green = LED(16)
-
-	red.source = invert(green.values)
-	green.source = build_passed()
-	pause()
+    red.source = negated(green.values)
+    green.source = build_passed()
+    pause()
 
 
 Note this recipe requires travispy. Install with ``sudo pip3 install travispy``.
