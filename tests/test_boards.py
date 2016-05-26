@@ -18,7 +18,7 @@ from gpiozero import *
 def setup_function(function):
     import gpiozero.devices
     # dirty, but it does the job
-    if function.__name__ in ('test_robot', 'test_ryanteck_robot', 'test_camjam_kit_robot'):
+    if function.__name__ in ('test_robot', 'test_ryanteck_robot', 'test_camjam_kit_robot', 'test_led_borg'):
         gpiozero.devices.pin_factory = MockPWMPin
     else:
         gpiozero.devices.pin_factory = MockPin
@@ -523,6 +523,11 @@ def test_led_bar_graph_pwm_initial_value():
     with LEDBarGraph(pin1, pin2, pin3, pwm=True, initial_value=-0.5) as graph:
         assert graph.value == -0.5
         assert (pin1.state, pin2.state, pin3.state) == (0, 0.5, 1)
+
+def test_led_borg():
+    pins = [MockPWMPin(n) for n in (17, 27, 22)]
+    with LedBorg() as board:
+        assert [device.pin for device in board._leds] == pins
 
 def test_pi_liter():
     pins = [MockPin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]

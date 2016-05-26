@@ -106,6 +106,7 @@ from .boards import (
     LEDCollection,
     LEDBoard,
     LEDBarGraph,
+    LedBorg,
     PiLiter,
     PiLiterBarGraph,
     TrafficLights,
