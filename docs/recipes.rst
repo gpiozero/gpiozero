@@ -59,6 +59,40 @@ Alternatively::
     :ref:`keep-your-script-running` for more information.
 
 
+LED with variable brightness
+============================
+
+Any regular LED can have its brightness value set using PWM (pulse-width-modulation).
+In GPIO Zero, this can be achieved using :class:`PWMLED` using values between 0
+and 1::
+
+    from gpiozero import PWMLED
+    from time import sleep
+
+    led = PWMLED(17)
+
+    while True:
+        led.value = 0  # off
+        sleep(1)
+        led.value = 0.5  # half brightness
+        sleep(1)
+        led.value = 1  # full brightness
+        sleep(1)
+
+
+Similarly to blinking on and off continuously, a PWMLED can pulse (fade in and
+out continuously)::
+
+    from gpiozero import PWMLED
+    from signal import pause
+
+    led = PWMLED(17)
+
+    led.pulse()
+
+    pause()
+
+
 Button
 ======
 
