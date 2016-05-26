@@ -133,6 +133,33 @@ Run a function every time the button is pressed::
 
     pause()
 
+.. note::
+
+    Note that the line ``button.when_pressed = say_hello`` does not run the
+    function ``say_hello``, rather it creates a reference to the function to
+    be called when the button is pressed. Accidental use of
+    ``button.when_pressed = say_hello()`` would set the ``when_pressed`` action
+    to ``None`` (the return value of this function) which would mean nothing
+    happens when the button is pressed.
+
+Similarly, functions can be attached to button releases::
+
+    from gpiozero import Button
+    from signal import pause
+
+    def say_hello():
+        print("Hello!")
+
+    def say_goodbye():
+        print("Goodbye!")
+
+    button = Button(2)
+
+    button.when_pressed = say_hello
+    button.when_released = say_goodbye
+
+    pause()
+
 
 Button controlled LED
 =====================
@@ -161,6 +188,53 @@ Alternatively::
     button = Button(2)
 
     led.source = button.values
+
+    pause()
+
+
+Button controlled camera
+========================
+
+Using the button press to trigger picamera to take a pitcure using
+``button/when_pressed = camera.capture`` would not work because it requires an
+``output`` parameter. However, this can be achieved using a custom function
+which requires no parameters::
+    
+    from gpiozero import Button
+    from picamera import PiCamera
+    from datetime import datetime
+    from signal import pause
+
+    button = Button(2)
+    camera = PiCamera()
+
+    def capture():
+        datetime = datetime.now().isoformat()
+        camera.capture('/home/pi/%s.jpg' % datetime)
+
+    button.when_pressed = capture
+
+    pause()
+
+Another example could use one button to start and stop the camera preview, and
+another to capture::
+
+    from gpiozero import Button
+    from picamera import PiCamera
+    from datetime import datetime
+    from signal import pause
+
+    left_button = Button(2)
+    right_button = Button(3)
+    camera = PiCamera()
+
+    def capture():
+        datetime = datetime.now().isoformat()
+        camera.capture('/home/pi/%s.jpg' % datetime)
+
+    left_button.when_pressed = camera.start_preview
+    left_button.when_released = camera.stop_preview
+    right_button.when_pressed = capture
 
     pause()
 
