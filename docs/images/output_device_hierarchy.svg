@@ -11,18 +11,18 @@
 <polygon fill="white" stroke="none" points="-4,4 -4,-328 255,-328 255,4 -4,4"/>
 <!-- Device -->
 <g id="node1" class="node"><title>Device</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="204,-324 150,-324 150,-288 204,-288 204,-324"/>
-<text text-anchor="middle" x="177" y="-303.5" font-family="Sans" font-size="10.00" fill="#000000">Device</text>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="206,-324 152,-324 152,-288 206,-288 206,-324"/>
+<text text-anchor="middle" x="179" y="-303.5" font-family="Sans" font-size="10.00" fill="#000000">Device</text>
 </g>
 <!-- GPIODevice -->
 <g id="node2" class="node"><title>GPIODevice</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="172,-252 100,-252 100,-216 172,-216 172,-252"/>
-<text text-anchor="middle" x="136" y="-231.5" font-family="Sans" font-size="10.00" fill="#000000">GPIODevice</text>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="173,-252 101,-252 101,-216 173,-216 173,-252"/>
+<text text-anchor="middle" x="137" y="-231.5" font-family="Sans" font-size="10.00" fill="#000000">GPIODevice</text>
 </g>
 <!-- GPIODevice&#45;&gt;Device -->
 <g id="edge1" class="edge"><title>GPIODevice&#45;&gt;Device</title>
-<path fill="none" stroke="black" d="M146.135,-252.303C150.852,-260.356 156.562,-270.106 161.782,-279.018"/>
-<polygon fill="black" stroke="black" points="158.908,-281.036 166.982,-287.896 164.948,-277.498 158.908,-281.036"/>
+<path fill="none" stroke="black" d="M147.382,-252.303C152.265,-260.441 158.187,-270.311 163.579,-279.299"/>
+<polygon fill="black" stroke="black" points="160.591,-281.121 168.737,-287.896 166.594,-277.52 160.591,-281.121"/>
 </g>
 <!-- OutputDevice -->
 <g id="node3" class="node"><title>OutputDevice</title>
@@ -31,8 +31,8 @@
 </g>
 <!-- OutputDevice&#45;&gt;GPIODevice -->
 <g id="edge2" class="edge"><title>OutputDevice&#45;&gt;GPIODevice</title>
-<path fill="none" stroke="black" d="M136,-180.303C136,-188.017 136,-197.288 136,-205.888"/>
-<polygon fill="black" stroke="black" points="132.5,-205.896 136,-215.896 139.5,-205.896 132.5,-205.896"/>
+<path fill="none" stroke="black" d="M136.247,-180.303C136.357,-188.017 136.49,-197.288 136.613,-205.888"/>
+<polygon fill="black" stroke="black" points="133.113,-205.947 136.756,-215.896 140.112,-205.847 133.113,-205.947"/>
 </g>
 <!-- DigitalOutputDevice -->
 <g id="node4" class="node"><title>DigitalOutputDevice</title>
@@ -86,13 +86,23 @@
 </g>
 <!-- RGBLED -->
 <g id="node9" class="node"><title>RGBLED</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="246,-252 190,-252 190,-216 246,-216 246,-252"/>
-<text text-anchor="middle" x="218" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">RGBLED</text>
+<polygon fill="#2980b9" stroke="#2980b9" points="249,-252 193,-252 193,-216 249,-216 249,-252"/>
+<text text-anchor="middle" x="221" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">RGBLED</text>
 </g>
 <!-- RGBLED&#45;&gt;Device -->
 <g id="edge8" class="edge"><title>RGBLED&#45;&gt;Device</title>
-<path fill="none" stroke="black" d="M207.865,-252.303C203.148,-260.356 197.438,-270.106 192.218,-279.018"/>
-<polygon fill="black" stroke="black" points="189.052,-277.498 187.018,-287.896 195.092,-281.036 189.052,-277.498"/>
+<path fill="none" stroke="black" d="M210.618,-252.303C205.735,-260.441 199.813,-270.311 194.421,-279.299"/>
+<polygon fill="black" stroke="black" points="191.406,-277.52 189.263,-287.896 197.409,-281.121 191.406,-277.52"/>
+</g>
+<!-- LedBorg -->
+<g id="node10" class="node"><title>LedBorg</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="251,-180 195,-180 195,-144 251,-144 251,-180"/>
+<text text-anchor="middle" x="223" y="-159.5" font-family="Sans" font-size="10.00" fill="#ffffff">LedBorg</text>
+</g>
+<!-- LedBorg&#45;&gt;RGBLED -->
+<g id="edge9" class="edge"><title>LedBorg&#45;&gt;RGBLED</title>
+<path fill="none" stroke="black" d="M222.506,-180.303C222.285,-188.017 222.02,-197.288 221.775,-205.888"/>
+<polygon fill="black" stroke="black" points="218.276,-205.8 221.489,-215.896 225.273,-206 218.276,-205.8"/>
 </g>
 </g>
 </svg>

@@ -21,7 +21,14 @@ from .exc import (
     OutputDeviceBadValue,
     )
 from .input_devices import Button
-from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor
+from .output_devices import (
+    OutputDevice,
+    LED,
+    PWMLED,
+    RGBLED,
+    Buzzer,
+    Motor,
+    )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin
@@ -429,6 +436,36 @@ class LEDBarGraph(LEDCollection):
             calc_value = lambda index: value >= ((index + 1) / count)
         for index, led in enumerate(leds):
             led.value = calc_value(index)
+
+
+class LedBorg(RGBLED):
+    """
+    Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board
+    containing a very bright RGB LED.
+
+    The LedBorg pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example turns the LedBorg
+    purple::
+
+        from gpiozero import LedBorg
+
+        led = LedBorg()
+        led.color = (1, 0, 1)
+
+    :param tuple initial_value:
+        The initial color for the LedBorg. Defaults to black ``(0, 0, 0)``.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMLED` instances for
+        each component of the LedBorg. If ``False``, construct regular
+        :class:`LED` instances, which prevents smooth color graduations.
+
+    .. _PiBorg LedBorg: https://www.piborg.org/ledborg
+    """
+
+    def __init__(self, initial_value=(0, 0, 0), pwm=True):
+        super(LedBorg, self).__init__(red=17, green=27, blue=22,
+                                      initial_value=initial_value, pwm=pwm)
 
 
 class PiLiter(LEDBoard):
