@@ -212,6 +212,38 @@ Using :class:`LED` components::
         red.off()
 
 
+Travis build LED indicator
+==========================
+
+Use LEDs to indicate the status of a Travis build. A green light means the
+tests are passing, a red light means the build is broken::
+
+	from travispy import TravisPy
+	from gpiozero import LED
+	from time import sleep
+	from signal import pause
+
+	def build_passed(repo='RPi-Distro/python-gpiozero', delay=3600):
+		t = TravisPy()
+		r = t.repo(repo)
+		while True:
+			yield r.last_build_state == 'passed'
+			sleep(delay) # Sleep an hour before hitting travis again
+
+	def invert(values):
+		for value in values:
+			yield not value
+
+	red = LED(12)
+	green = LED(16)
+
+	red.source = invert(green.values)
+	green.source = build_passed()
+	pause()
+
+
+Note this recipe requires travispy. Install with ``sudo pip3 install travispy``.
+
 Push button stop motion
 =======================
 
@@ -611,7 +643,7 @@ Use up/down/left/right keys to control a robot::
     *not* work in environments like IDLE.
 
 If you prefer a version that works under IDLE, the following recipe should
-suffice, but will require that you install the evdev library with ``sudo pip
+suffice, but will require that you install the evdev library with ``sudo pip3
 install evdev`` first::
 
     from gpiozero import RyanteckRobot
