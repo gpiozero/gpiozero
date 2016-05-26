@@ -119,8 +119,10 @@ class AnalogInputDevice(SPIDevice):
         self._bits = bits
         self._min_value = -(2 ** bits)
         self._range = 2 ** (bits + 1) - 1
+        if max_voltage <= 0:
+            raise InputDeviceError('max_voltage must be positive')
+        self._max_voltage = float(max_voltage)
         super(AnalogInputDevice, self).__init__(shared=True, **spi_args)
-        self._max_voltage = max_voltage
 
     @property
     def bits(self):
@@ -146,6 +148,13 @@ class AnalogInputDevice(SPIDevice):
         The raw value as read from the device.
         """
         return self._read()
+
+    @property
+    def max_voltage(self):
+        """
+        The voltage required to set the device's value to 1
+        """
+        return self._max_voltage
 
     @property
     def voltage(self):
