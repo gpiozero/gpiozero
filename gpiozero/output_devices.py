@@ -545,8 +545,8 @@ class RGBLED(SourceMixin, Device):
         Set to ``True`` (the default) for common cathode RGB LEDs. If you are
         using a common anode RGB LED, set this to ``False``.
 
-    :param bool initial_value:
-        The initial color for the LED. Defaults to black ``(0, 0, 0)``.
+    :param tuple initial_value:
+        The initial color for the RGB LED. Defaults to black ``(0, 0, 0)``.
 
     :param bool pwm:
         If ``True`` (the default), construct :class:`PWMLED` instances for
