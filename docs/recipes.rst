@@ -196,7 +196,7 @@ Button controlled camera
 ========================
 
 Using the button press to trigger picamera to take a pitcure using
-``button/when_pressed = camera.capture`` would not work because it requires an
+``button.when_pressed = camera.capture`` would not work because it requires an
 ``output`` parameter. However, this can be achieved using a custom function
 which requires no parameters::
     
