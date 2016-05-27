@@ -565,8 +565,8 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
     pause()
 
 
-RGB LED
-=======
+Full color LED
+==============
 
 .. image:: images/rgb_led_bb.*
 
