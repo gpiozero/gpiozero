@@ -284,7 +284,7 @@ class PWMOutputDevice(OutputDevice):
         HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
         :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
+    :param float initial_value:
         If ``0`` (the default), the device's duty cycle will be 0 initially.
         Other values between 0 and 1 can be specified as an initial duty cycle.
         Note that ``None`` cannot be specified (unlike the parent class) as
@@ -491,7 +491,7 @@ class PWMLED(PWMOutputDevice):
         HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
         :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
+    :param float initial_value:
         If ``0`` (the default), the LED will be off initially. Other values
         between 0 and 1 can be specified as an initial brightness for the LED.
         Note that ``None`` cannot be specified (unlike the parent class) as
