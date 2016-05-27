@@ -508,16 +508,28 @@ class PiLiterBarGraph(LEDBarGraph):
         graph = PiLiterBarGraph()
         graph.value = 0.5
 
-    :param bool initial_value:
-        The initial value of the graph given as a float between -1 and +1.
-        Defaults to 0.0.
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances. This
+        parameter can only be specified as a keyword parameter.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite). This
+        parameter can only be specified as a keyword parameter.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
+        parameter.
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, initial_value=0):
-        super(PiLiterBarGraph, self).__init__(
-                4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
+    def __init__(self, **kwargs):
+        pins = (4, 17, 27, 18, 22, 23, 24, 25)
+        super(PiLiterBarGraph, self).__init__(*pins, **kwargs)
 
 
 class TrafficLights(LEDBoard):
