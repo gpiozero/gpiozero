@@ -239,6 +239,81 @@ another to capture::
     pause()
 
 
+LEDBoard
+========
+
+A collection of LEDs can be accessed using :class:`LEDBoard`::
+
+    from gpiozero import LEDBoard
+    from time import sleep
+    from signal import pause
+
+    leds = LEDBoard(5, 6, 13, 19, 26)
+
+    leds.on()
+    sleep(1)
+    leds.off()
+    sleep(1)
+    leds.value = (1, 0, 1, 0, 1)
+    sleep(1)
+    leds.blink()
+
+    pause()
+
+Using :class:`LEDBoard` with ``pwm=True`` allows each LED's brightness to be
+controlled::
+
+    from gpiozero import LEDBoard
+
+    leds = LEDBoard(5, 6, 13, 19, 26, pwm=True)
+
+    leds.value = (0.2, 0.4, 0.6, 0.8, 1.0)
+
+LEDBarGraph
+===========
+
+A collection of LEDs can be treated like a bar graph using
+:class:`LEDBarGraph`::
+
+    from gpiozero import LEDBarGraph
+    from time import sleep
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, 20)
+
+    graph.value = 1  # (1, 1, 1, 1, 1, 1)
+    sleep(1)
+    graph.value = 1/2  # (1, 1, 1, 0, 0, 0)
+    sleep(1)
+    graph.value = -1/2  # (0, 0, 0, 1, 1, 1)
+    sleep(1)
+    graph.value = 1/4  # (1, 0, 0, 0, 0, 0)
+    sleep(1)
+    graph.value = -1  # (1, 1, 1, 1, 1, 1)
+    sleep(1)
+
+Note values are essentially rounded to encounter the fact LEDs can only be on
+or off when ``pwm=False`` (the default).
+
+However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
+values using LED brightness::
+
+    from gpiozero import LEDBarGraph
+    from time import sleep
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, pwm=True)
+
+    graph.value = 1/10  # (0.5, 0, 0, 0, 0)
+    sleep(1)
+    graph.value = 3/10  # (1, 0.5, 0, 0, 0)
+    sleep(1)
+    graph.value = -3/10  # (0, 0, 0, 0.5, 1)
+    sleep(1)
+    graph.value = 9/10  # (1, 1, 1, 1, 0.5)
+    sleep(1)
+    graph.value = 95/100  # (1, 1, 1, 1, 0.75)
+    sleep(1)
+
+
 Traffic Lights
 ==============
 
