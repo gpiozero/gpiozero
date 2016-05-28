@@ -489,7 +489,7 @@ class PiLiter(LEDBoard):
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances.
 
-    :param: bool initial_value:
+    :param bool initial_value:
         If ``False`` (the default), all LEDs will be off initially. If
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). If ``True``,
