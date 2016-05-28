@@ -372,8 +372,8 @@ class LEDBarGraph(LEDCollection):
 
     :param float initial_value:
         The initial :attr:`value` of the graph given as a float between -1 and
-        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
-        parameter.
+        +1.  Defaults to ``0.0``. This parameter can only be specified as a
+        keyword parameter.
     """
 
     def __init__(self, *pins, **kwargs):
@@ -382,7 +382,7 @@ class LEDBarGraph(LEDCollection):
             assert not isinstance(pin, LEDCollection)
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', 0)
+        initial_value = kwargs.pop('initial_value', 0.0)
         if kwargs:
             raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
         super(LEDBarGraph, self).__init__(*pins, pwm=pwm, active_high=active_high)
@@ -465,7 +465,7 @@ class LedBorg(RGBLED):
 
     def __init__(self, initial_value=(0, 0, 0), pwm=True):
         super(LedBorg, self).__init__(red=17, green=27, blue=22,
-                                      initial_value=initial_value, pwm=pwm)
+                                      pwm=pwm, initial_value=initial_value)
 
 
 class PiLiter(LEDBoard):
@@ -484,14 +484,20 @@ class PiLiter(LEDBoard):
 
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances. This
-        parameter can only be specified as a keyword parameter.
+        ``False`` (the default), construct regular :class:`LED` instances.
+
+    :param: bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False):
-        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
+    def __init__(self, pwm=False, initial_value=False):
+        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25,
+                                      pwm=pwm, initial_value=initial_value)
 
 
 class PiLiterBarGraph(LEDBarGraph):
@@ -514,15 +520,15 @@ class PiLiterBarGraph(LEDBarGraph):
 
     :param float initial_value:
         The initial :attr:`value` of the graph given as a float between -1 and
-        +1.
+        +1. Defaults to ``0.0``.
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
     def __init__(self, pwm=False, initial_value=0.0):
         pins = (4, 17, 27, 18, 22, 23, 24, 25)
-        super(PiLiterBarGraph, self).__init__(*pins, pwm=pwm,
-                initial_value=initial_value)
+        super(PiLiterBarGraph, self).__init__(*pins,
+                pwm=pwm, initial_value=initial_value)
 
 
 class TrafficLights(LEDBoard):
@@ -551,14 +557,22 @@ class TrafficLights(LEDBoard):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
     """
-    def __init__(self, red=None, amber=None, green=None, pwm=False):
+    def __init__(self, red=None, amber=None, green=None,
+                 pwm=False, initial_value=False):
         if not all([red, amber, green]):
             raise GPIOPinMissing(
                 'red, amber and green pins must be provided'
             )
         super(TrafficLights, self).__init__(
-            red=red, amber=amber, green=green, pwm=pwm,
+            red=red, amber=amber, green=green,
+            pwm=pwm, initial_value=initial_value,
             _order=('red', 'amber', 'green'))
 
 
@@ -579,11 +593,22 @@ class PiTraffic(TrafficLights):
     To use the PI-TRAFFIC board when attached to a non-standard set of pins,
     simply use the parent class, :class:`TrafficLights`.
 
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
     .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
-
-    def __init__(self):
-        super(PiTraffic, self).__init__(9, 10, 11)
+    def __init__(self, pwm=False, initial_value=False):
+        super(PiTraffic, self).__init__(9, 10, 11,
+                                        pwm=pwm, initial_value=initial_value)
 
 
 class SnowPi(LEDBoard):
@@ -606,24 +631,34 @@ class SnowPi(LEDBoard):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
 
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
     .. _Ryanteck SnowPi: https://ryanteck.uk/raspberry-pi/114-snowpi-the-gpio-snowman-for-raspberry-pi-0635648608303.html
     """
-    def __init__(self, pwm=False):
+    def __init__(self, pwm=False, initial_value=False):
         super(SnowPi, self).__init__(
             arms=LEDBoard(
                 left=LEDBoard(
-                    top=17, middle=18, bottom=22, pwm=pwm,
+                    top=17, middle=18, bottom=22,
+                    pwm=pwm, initial_value=initial_value,
                     _order=('top', 'middle', 'bottom')),
                 right=LEDBoard(
-                    top=7, middle=8, bottom=9, pwm=pwm,
+                    top=7, middle=8, bottom=9,
+                    pwm=pwm, initial_value=initial_value,
                     _order=('top', 'middle', 'bottom')),
                 _order=('left', 'right')
                 ),
             eyes=LEDBoard(
-                left=23, right=24, pwm=pwm,
+                left=23, right=24,
+                pwm=pwm, initial_value=initial_value,
                 _order=('left', 'right')
                 ),
-            nose=25, pwm=pwm,
+            nose=25,
+            pwm=pwm, initial_value=initial_value,
             _order=('eyes', 'nose', 'arms')
             )
 
