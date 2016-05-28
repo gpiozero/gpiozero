@@ -617,20 +617,34 @@ def test_robot():
         assert (
             [device.pin for device in robot.left_motor] +
             [device.pin for device in robot.right_motor]) == pins
+        assert robot.value == (0, 0)
         robot.forward()
         assert [pin.state for pin in pins] == [1, 0, 1, 0]
+        assert robot.value == (1, 1)
         robot.backward()
         assert [pin.state for pin in pins] == [0, 1, 0, 1]
+        assert robot.value == (-1, -1)
         robot.forward(0.5)
         assert [pin.state for pin in pins] == [0.5, 0, 0.5, 0]
+        assert robot.value == (0.5, 0.5)
         robot.left()
         assert [pin.state for pin in pins] == [0, 1, 1, 0]
+        assert robot.value == (-1, 1)
         robot.right()
         assert [pin.state for pin in pins] == [1, 0, 0, 1]
+        assert robot.value == (1, -1)
         robot.reverse()
         assert [pin.state for pin in pins] == [0, 1, 1, 0]
+        assert robot.value == (-1, 1)
         robot.stop()
         assert [pin.state for pin in pins] == [0, 0, 0, 0]
+        assert robot.value == (0, 0)
+        robot.value = (-1, -1)
+        assert robot.value == (-1, -1)
+        robot.value = (0.5, 1)
+        assert robot.value == (0.5, 1)
+        robot.value = (0, -0.5)
+        assert robot.value == (0, -0.5)
 
 def test_ryanteck_robot():
     pins = [MockPWMPin(n) for n in (17, 18, 22, 23)]
