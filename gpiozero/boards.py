@@ -116,19 +116,22 @@ class LEDCollection(CompositeOutputDevice):
                 LEDClass(pin_or_collection, active_high, initial_value)
                 for name, pin_or_collection in kwargs.items()
                 })
+        leds = []
+        for item in self:
+            if isinstance(item, LEDCollection):
+                for subitem in item.leds:
+                    leds.append(subitem)
+            else:
+                leds.append(item)
+        self._leds = tuple(leds)
 
     @property
     def leds(self):
         """
-        A flat iterator over all LEDs contained in this collection (and all
+        A flat tuple of all LEDs contained in this collection (and all
         sub-collections).
         """
-        for item in self:
-            if isinstance(item, LEDCollection):
-                for subitem in item.leds:
-                    yield subitem
-            else:
-                yield item
+        return self._leds
 
     @property
     def active_high(self):
