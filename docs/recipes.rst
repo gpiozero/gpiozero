@@ -291,7 +291,7 @@ A collection of LEDs can be treated like a bar graph using
     graph.value = -1  # (1, 1, 1, 1, 1, 1)
     sleep(1)
 
-Note values are essentially rounded to encounter the fact LEDs can only be on
+Note values are essentially rounded to account for the fact LEDs can only be on
 or off when ``pwm=False`` (the default).
 
 However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
