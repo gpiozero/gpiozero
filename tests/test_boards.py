@@ -18,7 +18,7 @@ from gpiozero import *
 def setup_function(function):
     import gpiozero.devices
     # dirty, but it does the job
-    if function.__name__ in ('test_robot', 'test_ryanteck_robot', 'test_camjam_kit_robot', 'test_led_borg'):
+    if function.__name__ in ('test_robot', 'test_ryanteck_robot', 'test_camjam_kit_robot', 'test_led_borg', 'test_snow_pi_initial_value_pwm'):
         gpiozero.devices.pin_factory = MockPWMPin
     else:
         gpiozero.devices.pin_factory = MockPin
@@ -565,6 +565,22 @@ def test_snow_pi():
     pins = [MockPin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi() as board:
         assert [device.pin for device in board.leds] == pins
+
+def test_snow_pi_initial_value():
+    with SnowPi() as board:
+        assert all(device.pin.state == False for device in board.leds)
+    with SnowPi(initial_value=False) as board:
+        assert all(device.pin.state == False for device in board.leds)
+    with SnowPi(initial_value=True) as board:
+        assert all(device.pin.state == True for device in board.leds)
+    with SnowPi(initial_value=0.5) as board:
+        assert all(device.pin.state == True for device in board.leds)
+
+def test_snow_pi_initial_value_pwm():
+    pins = [MockPWMPin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
+    with SnowPi(pwm=True, initial_value=0.5) as board:
+        assert [device.pin for device in board.leds] == pins
+        assert all(device.pin.state == 0.5 for device in board.leds)
 
 def test_traffic_lights_buzzer():
     red_pin = MockPin(2)
