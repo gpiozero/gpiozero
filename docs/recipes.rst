@@ -751,10 +751,10 @@ Button controlled robot
 
 Use four GPIO buttons as forward/back/left/right controls for a robot::
 
-    from gpiozero import RyanteckRobot, Button
+    from gpiozero import Robot, Button
     from signal import pause
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     left = Button(26)
     right = Button(16)
@@ -782,9 +782,9 @@ Keyboard controlled robot
 Use up/down/left/right keys to control a robot::
 
     import curses
-    from gpiozero import RyanteckRobot
+    from gpiozero import Robot
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     actions = {
         curses.KEY_UP:    robot.forward,
@@ -826,10 +826,10 @@ If you prefer a version that works under IDLE, the following recipe should
 suffice, but will require that you install the evdev library with ``sudo pip3
 install evdev`` first::
 
-    from gpiozero import RyanteckRobot
+    from gpiozero import Robot
     from evdev import InputDevice, list_devices, ecodes
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     devices = [InputDevice(device) for device in list_devices()]
     keyboard = devices[0]  # this may vary
