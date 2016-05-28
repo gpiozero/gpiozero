@@ -776,6 +776,20 @@ class Robot(SourceMixin, CompositeDevice):
                 right_motor=Motor(*right),
                 _order=('left_motor', 'right_motor'))
 
+    @property
+    def value(self):
+        """
+        Represents the motion of the robot as a tuple of (left_motor_speed,
+        right_motor_speed) with ``(-1, -1)`` representing full speed backwards,
+        ``(1, 1)`` representing full speed forwards, and ``(0, 0)``
+        representing stopped.
+        """
+        return super(Robot, self).value
+
+    @value.setter
+    def value(self, value):
+        self.left_motor.value, self.right_motor.value = value
+
     def forward(self, speed=1):
         """
         Drive the robot forward by running both motors forward.
