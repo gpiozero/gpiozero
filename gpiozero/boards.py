@@ -52,7 +52,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         """
         Turn all the output devices on.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.on()
 
@@ -60,7 +60,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         """
         Turn all the output devices off.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.off()
 
@@ -69,7 +69,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Toggle all the output devices. For each device, if it's on, turn it
         off; if it's off, turn it on.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.toggle()
 
@@ -83,7 +83,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
-        for device, v in zip(self.all, value):
+        for device, v in zip(self, value):
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.value = v
             # Simply ignore values for non-output devices
@@ -866,7 +866,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         with self._lock:
             try:
                 code = (8 * bool(enable)) + (8 - socket)
-                for bit in self.all[:4]:
+                for bit in self[:4]:
                     bit.value = (code & 1)
                     code >>= 1
                 sleep(0.1)
