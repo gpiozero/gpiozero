@@ -518,7 +518,6 @@ def sin_values(period=360):
         red = PWMLED(2)
         blue = PWMLED(3)
         red.source_delay = 0.01
-        blue.source_delay = 0.01
         red.source = scaled(sin_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
         pause()
@@ -543,7 +542,6 @@ def cos_values(period=360):
         red = PWMLED(2)
         blue = PWMLED(3)
         red.source_delay = 0.01
-        blue.source_delay = 0.01
         red.source = scaled(cos_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
         pause()
