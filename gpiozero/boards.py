@@ -690,7 +690,7 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
 
 class FishDish(TrafficLightsBuzzer):
     """
-    Extends :class:`TrafficLightsBuzzer` for the Pi Supply FishDish: traffic
+    Extends :class:`TrafficLightsBuzzer` for the `Pi Supply FishDish`_: traffic
     light LEDs, a button and a buzzer.
 
     The FishDish pins are fixed and therefore there's no need to specify them
@@ -707,6 +707,8 @@ class FishDish(TrafficLightsBuzzer):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
 
     def __init__(self, pwm=False):
@@ -719,7 +721,7 @@ class FishDish(TrafficLightsBuzzer):
 
 class TrafficHat(TrafficLightsBuzzer):
     """
-    Extends :class:`TrafficLightsBuzzer` for the Ryanteck Traffic HAT: traffic
+    Extends :class:`TrafficLightsBuzzer` for the `Ryanteck Traffic HAT`_: traffic
     light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
@@ -736,6 +738,8 @@ class TrafficHat(TrafficLightsBuzzer):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
     """
 
     def __init__(self, pwm=False):
@@ -856,7 +860,7 @@ class Robot(SourceMixin, CompositeDevice):
 
 class RyanteckRobot(Robot):
     """
-    Extends :class:`Robot` for the Ryanteck MCB robot.
+    Extends :class:`Robot` for the `Ryanteck MCB`_ robot.
 
     The Ryanteck MCB pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example turns the robot
@@ -866,6 +870,8 @@ class RyanteckRobot(Robot):
 
         robot = RyanteckRobot()
         robot.left()
+
+    .. _Ryanteck MCB: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
 
     def __init__(self):
