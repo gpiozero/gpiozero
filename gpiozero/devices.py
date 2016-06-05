@@ -43,7 +43,7 @@ except ImportError:
         pin_factory = RPIOPin
     except ImportError:
         try:
-            from .pins.pigipod import PiGPIOPin
+            from .pins.pigpiod import PiGPIOPin
             pin_factory = PiGPIOPin
         except ImportError:
             from .pins.native import NativePin
