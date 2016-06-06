@@ -50,7 +50,7 @@ class InputDevice(GPIODevice):
     def pull_up(self):
         """
         If ``True``, the device uses a pull-up resistor to set the GPIO pin
-        "high" by default. Defaults to ``False``.
+        "high" by default.
         """
         return self.pin.pull == 'up'
 
