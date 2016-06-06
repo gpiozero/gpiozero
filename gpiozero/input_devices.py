@@ -251,7 +251,7 @@ class Button(HoldMixin, DigitalInputDevice):
 
     :param float bounce_time:
         If ``None`` (the default), no software bounce compensation will be
-        performed. Otherwise, this is the length in time (in seconds) that the
+        performed. Otherwise, this is the length of time (in seconds) that the
         component will ignore changes in state after an initial change.
 
     :param float hold_time:
