@@ -814,7 +814,7 @@ class Motor(SourceMixin, CompositeDevice):
                 'forward and backward pins must be provided'
             )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
-        if enable:
+        if enable is not None:
             super(Motor, self).__init__(
                 forward_device=PinClass(forward),
                 backward_device=PinClass(backward),
