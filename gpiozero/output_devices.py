@@ -797,6 +797,10 @@ class Motor(SourceMixin, CompositeDevice):
         The GPIO pin that the backward input of the motor driver chip is
         connected to.
 
+    :param int enable:
+        (Optional) The GPIO pin that enables the motor. Required for some motor
+        controller boards. Defaults to ``None``.
+
     :param bool pwm:
         If ``True`` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
@@ -804,13 +808,20 @@ class Motor(SourceMixin, CompositeDevice):
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
     """
-    def __init__(self, forward=None, backward=None, pwm=True):
+    def __init__(self, forward=None, backward=None, enable=None, pwm=True):
         if not all([forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
-        super(Motor, self).__init__(
+        if enable:
+            super(Motor, self).__init__(
+                forward_device=PinClass(forward),
+                backward_device=PinClass(backward),
+                enable_device=DigitalOutputDevice(enable, initial_value=True),
+                _order=('forward_device', 'backward_device', 'enable_device'))
+        else:
+            super(Motor, self).__init__(
                 forward_device=PinClass(forward),
                 backward_device=PinClass(backward),
                 _order=('forward_device', 'backward_device'))
