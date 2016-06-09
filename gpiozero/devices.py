@@ -28,6 +28,7 @@ from .exc import (
     GPIOPinInUse,
     GPIODeviceClosed,
     )
+from .compat import frozendict
 
 # Get a pin implementation to use as the default; we prefer RPi.GPIO's here
 # as it supports PWM, and all Pi revisions. If no third-party libraries are
@@ -263,7 +264,7 @@ class CompositeDevice(Device):
     """
     def __init__(self, *args, **kwargs):
         self._all = ()
-        self._named = {}
+        self._named = frozendict({})
         self._namedtuple = None
         self._order = kwargs.pop('_order', None)
         if self._order is None:
@@ -279,7 +280,7 @@ class CompositeDevice(Device):
         for dev in self._all:
             if not isinstance(dev, Device):
                 raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
-        self._named = kwargs
+        self._named = frozendict(kwargs)
         self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             (str(i) for i in range(len(args))), self._order),
             rename=True)
@@ -287,7 +288,7 @@ class CompositeDevice(Device):
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
         if name == '_named':
-            return {}
+            return frozendict({})
         try:
             return self._named[name]
         except KeyError:
