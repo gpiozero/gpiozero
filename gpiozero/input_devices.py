@@ -251,16 +251,18 @@ class Button(HoldMixin, DigitalInputDevice):
 
     :param float bounce_time:
         If ``None`` (the default), no software bounce compensation will be
-        performed. Otherwise, this is the length in time (in seconds) that the
+        performed. Otherwise, this is the length of time (in seconds) that the
         component will ignore changes in state after an initial change.
 
     :param float hold_time:
         The length of time (in seconds) to wait after the button is pushed,
-        until executing the :attr:`when_held` handler.
+        until executing the :attr:`when_held` handler. Defaults to ``1``.
 
     :param bool hold_repeat:
         If ``True``, the :attr:`when_held` handler will be repeatedly executed
-        as long as the device remains active, every *hold_time* seconds.
+        as long as the device remains active, every *hold_time* seconds. If
+        ``False`` (the default) the :attr:`when_held` handler will be only be
+        executed once per hold.
     """
     def __init__(
             self, pin=None, pull_up=True, bounce_time=None,
