@@ -268,9 +268,10 @@ class CompositeDevice(Device):
         self._order = kwargs.pop('_order', None)
         if self._order is None:
             self._order = sorted(kwargs.keys())
+        else:
+            for missing_name in set(kwargs.keys()) - set(self._order):
+                raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         self._order = tuple(self._order)
-        for missing_name in set(kwargs.keys()) - set(self._order):
-            raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         super(CompositeDevice, self).__init__()
         for name in set(self._order) & set(dir(self)):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
@@ -303,7 +304,7 @@ class CompositeDevice(Device):
             self._check_open()
             return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
                     self.__class__.__name__,
-                    len(self), ','.join(self._named),
+                    len(self), ','.join(self._order),
                     len(self) - len(self._named)
                     )
         except DeviceClosed:
