@@ -413,24 +413,36 @@ def test_led_bar_graph_value():
         assert graph[2].active_high
         graph.value = 0
         assert graph.value == 0
+        assert graph.lit_count == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
         assert graph.value == 1
+        assert graph.lit_count == 3
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
         assert graph.value == 1/3
+        assert graph.lit_count == 1
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
         assert graph.value == -1/3
+        assert graph.lit_count == -1
         assert pin3.state and not (pin1.state or pin2.state)
         pin1.state = True
         pin2.state = True
         assert graph.value == 1
+        assert graph.lit_count == 3
         pin3.state = False
         assert graph.value == 2/3
+        assert graph.lit_count == 2
         pin3.state = True
         pin1.state = False
         assert graph.value == -2/3
+        graph.lit_count = 2
+        assert graph.value == 2/3
+        graph.lit_count = -1
+        assert graph.value == -1/3
+        graph.lit_count = -3
+        assert graph.value == 1
 
 def test_led_bar_graph_active_low():
     pin1 = MockPin(2)
@@ -464,22 +476,30 @@ def test_led_bar_graph_pwm_value():
         assert isinstance(graph[2], PWMLED)
         graph.value = 0
         assert graph.value == 0
+        assert graph.lit_count == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
         assert graph.value == 1
+        assert graph.lit_count == 3
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
         assert graph.value == 1/3
+        assert graph.lit_count == 1
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
         assert graph.value == -1/3
+        assert graph.lit_count == -1
         assert pin3.state and not (pin1.state or pin2.state)
         graph.value = 1/2
         assert graph.value == 1/2
+        assert graph.lit_count == 1.5
         assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
         pin1.state = 0
         pin3.state = 1
         assert graph.value == -1/2
+        assert graph.lit_count == -1.5
+        graph.lit_count = 1.5
+        assert graph.value == 0.5
 
 def test_led_bar_graph_bad_value():
     pin1 = MockPin(2)
@@ -490,6 +510,10 @@ def test_led_bar_graph_bad_value():
             graph.value = -2
         with pytest.raises(ValueError):
             graph.value = 2
+        with pytest.raises(ValueError):
+            graph.lit_count = -4
+        with pytest.raises(ValueError):
+            graph.lit_count = 4
 
 def test_led_bar_graph_bad_init():
     pin1 = MockPin(2)

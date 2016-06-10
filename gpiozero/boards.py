@@ -440,6 +440,22 @@ class LEDBarGraph(LEDCollection):
         for index, led in enumerate(leds):
             led.value = calc_value(index)
 
+    @property
+    def lit_count(self):
+        """
+        The number of LEDs on the bar graph actually lit up. Note that just
+        like ``value``, this can be negative if the LEDs are lit from last to
+        first.
+        """
+        lit_value = self.value * len(self)
+        if not isinstance(self[0], PWMLED):
+            lit_value = int(lit_value)
+        return lit_value
+
+    @lit_count.setter
+    def lit_count(self, value):
+        self.value = value / len(self)
+
 
 class LedBorg(RGBLED):
     """
