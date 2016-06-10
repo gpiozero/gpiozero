@@ -12,6 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
+from collections import OrderedDict
 
 from .exc import (
     DeviceClosed,
@@ -578,24 +579,33 @@ class TrafficLights(LEDBoard):
             raise OutputDeviceBadValue(
                 'Only one of amber or yellow can be specified'
             )
-        if amber is None:
-            amber = yellow
-        if not all(p is not None for p in [red, amber, green]):
+        devices = OrderedDict((('red', red), ))
+        self._display_yellow = amber is None and yellow is not None
+        if self._display_yellow:
+            devices['yellow'] = yellow
+        else:
+            devices['amber'] = amber
+        devices['green'] = green
+        if not all(p is not None for p in devices.values()):
             raise GPIOPinMissing(
-                'red, amber and green pins must be provided'
+                ', '.join(devices.keys())+' pins must be provided'
             )
         super(TrafficLights, self).__init__(
-            red=red, amber=amber, green=green,
             pwm=pwm, initial_value=initial_value,
-            _order=('red', 'amber', 'green'))
+            _order=devices.keys(),
+            **devices)
 
     def __getattr__(self, name):
-        if name == 'yellow':
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
             name = 'amber'
         return super(TrafficLights, self).__getattr__(name)
 
     def __setattr__(self, name, value):
-        if name == 'yellow':
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
             name = 'amber'
         return super(TrafficLights, self).__setattr__(name, value)
 

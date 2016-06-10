@@ -548,11 +548,19 @@ def test_traffic_lights():
     green_pin = MockPin(4)
     with TrafficLights(red_pin, amber_pin, green_pin) as board:
         board.red.on()
+        assert board.red.value
+        assert not board.amber.value
+        assert not board.yellow.value
+        assert not board.green.value
         assert red_pin.state
         assert not amber_pin.state
         assert not green_pin.state
     with TrafficLights(red=red_pin, yellow=amber_pin, green=green_pin) as board:
         board.yellow.on()
+        assert not board.red.value
+        assert board.amber.value
+        assert board.yellow.value
+        assert not board.green.value
         assert not red_pin.state
         assert amber_pin.state
         assert not green_pin.state
@@ -560,6 +568,12 @@ def test_traffic_lights():
 def test_traffic_lights_bad_init():
     with pytest.raises(ValueError):
         TrafficLights()
+    red_pin = MockPin(2)
+    amber_pin = MockPin(3)
+    green_pin = MockPin(4)
+    yellow_pin = MockPin(5)
+    with pytest.raises(ValueError):
+        TrafficLights(red=red_pin, amber=amber_pin, yellow=yellow_pin, green=green_pin)
 
 def test_pi_traffic():
     pins = [MockPin(n) for n in (9, 10, 11)]
