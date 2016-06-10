@@ -558,7 +558,7 @@ class RGBLED(SourceMixin, Device):
             initial_value=(0, 0, 0), pwm=True):
         self._leds = ()
         self._blink_thread = None
-        if not all([red, green, blue]):
+        if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__()
@@ -805,7 +805,7 @@ class Motor(SourceMixin, CompositeDevice):
         control.
     """
     def __init__(self, forward=None, backward=None, pwm=True):
-        if not all([forward, backward]):
+        if not all(p is not None for p in [forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )

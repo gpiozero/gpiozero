@@ -569,7 +569,7 @@ class TrafficLights(LEDBoard):
     """
     def __init__(self, red=None, amber=None, green=None,
                  pwm=False, initial_value=False):
-        if not all([red, amber, green]):
+        if not all(p is not None for p in [red, amber, green]):
             raise GPIOPinMissing(
                 'red, amber and green pins must be provided'
             )
