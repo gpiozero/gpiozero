@@ -410,7 +410,17 @@ def test_rgbled_initial_value_nonpwm():
 def test_rgbled_initial_bad_value():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
     with pytest.raises(ValueError):
-        RGBLED(r, g, b, initial_value=(0.1, 0.2, 1.2))
+        RGBLED(r, g, b, initial_value=(1.1, 0.2, 0.3))
+    with pytest.raises(ValueError):
+        RGBLED(r, g, b, initial_value=(0.1, 1.2, 0.3))
+    with pytest.raises(ValueError):
+        RGBLED(r, g, b, initial_value=(0.1, 0.2, 1.3))
+    with pytest.raises(ValueError):
+        RGBLED(r, g, b, initial_value=(-0.1, 0.2, 0.3))
+    with pytest.raises(ValueError):
+        RGBLED(r, g, b, initial_value=(0.1, -0.2, 0.3))
+    with pytest.raises(ValueError):
+        RGBLED(r, g, b, initial_value=(0.1, 0.2, -0.3))
 
 def test_rgbled_initial_bad_value_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
@@ -458,6 +468,9 @@ def test_rgbled_bad_value():
     with RGBLED(r, g, b) as device:
         with pytest.raises(ValueError):
             device.value = (0, -1, 0)
+    with RGBLED(r, g, b) as device:
+        with pytest.raises(ValueError):
+            device.value = (0, 0, -0.5)
 
 def test_rgbled_bad_value_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
@@ -622,7 +635,9 @@ def test_rgbled_fade_background_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
-            device.blink(0, 0, 0.2, 0.2, n=2)
+            device.blink(0, 0, 0.2, 0, n=2)
+        with pytest.raises(ValueError):
+            device.blink(0, 0, 0, 0.2, n=2)
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
@@ -663,7 +678,9 @@ def test_rgbled_fade_foreground_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
-            device.blink(0, 0, 0.2, 0.2, n=2, background=False)
+            device.blink(0, 0, 0.2, 0, n=2, background=False)
+        with pytest.raises(ValueError):
+            device.blink(0, 0, 0, 0.2, n=2, background=False)
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
@@ -706,7 +723,7 @@ def test_rgbled_pulse_background_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
-            device.pulse(0.2, 0.2, n=2)
+            device.pulse(n=2)
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
@@ -747,7 +764,7 @@ def test_rgbled_pulse_foreground_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
-            device.pulse(0.2, 0.2, n=2, background=False)
+            device.pulse(n=2, background=False)
 
 def test_rgbled_blink_interrupt():
     r, g, b = (MockPWMPin(i) for i in (1, 2, 3))
