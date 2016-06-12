@@ -758,12 +758,12 @@ class Robot(SourceMixin, CompositeDevice):
     backward pins of the left and right controllers respectively. For example,
     if the left motor's controller is connected to GPIOs 4 and 14, while the
     right motor's controller is connected to GPIOs 17 and 18 then the following
-    example will turn the robot left::
+    example will drive the robot forward::
 
         from gpiozero import Robot
 
         robot = Robot(left=(4, 14), right=(17, 18))
-        robot.left()
+        robot.forward()
 
     :param tuple left:
         A tuple of two GPIO pins representing the forward and backward inputs
@@ -863,13 +863,13 @@ class RyanteckRobot(Robot):
     Extends :class:`Robot` for the `Ryanteck MCB`_ robot.
 
     The Ryanteck MCB pins are fixed and therefore there's no need to specify
-    them when constructing this class. The following example turns the robot
-    left::
+    them when constructing this class. The following example drives the robot
+    forward::
 
         from gpiozero import RyanteckRobot
 
         robot = RyanteckRobot()
-        robot.left()
+        robot.forward()
 
     .. _Ryanteck MCB: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
@@ -883,13 +883,13 @@ class CamJamKitRobot(Robot):
     Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
 
     The CamJam robot controller pins are fixed and therefore there's no need
-    to specify them when constructing this class. The following example turns
-    the robot left::
+    to specify them when constructing this class. The following example drives
+    the robot forward::
 
         from gpiozero import CamJamKitRobot
 
         robot = CamJamKitRobot()
-        robot.left()
+        robot.forward()
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
