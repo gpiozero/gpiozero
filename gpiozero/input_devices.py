@@ -71,7 +71,7 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     straight forward on / off states with (reasonably) clean transitions
     between the two.
 
-    :param float bouncetime:
+    :param float bounce_time:
         Specifies the length of time (in seconds) that the component will
         ignore changes in state after an initial change. This defaults to
         ``None`` which indicates that no bounce compensation will be performed.
