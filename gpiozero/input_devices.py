@@ -302,7 +302,7 @@ class LineSensor(SmoothedInputDevice):
         pause()
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
@@ -371,7 +371,7 @@ class MotionSensor(SmoothedInputDevice):
         print("Motion detected!")
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
@@ -435,7 +435,7 @@ class LightSensor(SmoothedInputDevice):
         print("Light detected!")
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
