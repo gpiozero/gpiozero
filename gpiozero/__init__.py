@@ -100,6 +100,8 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    Servo,
+    AngularServo,
     RGBLED,
 )
 from .boards import (
