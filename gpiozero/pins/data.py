@@ -258,7 +258,7 @@ PI_REVISIONS = {
     0x11:     ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
     0x12:     ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
     0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     0xa01041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     0xa21041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
