@@ -234,7 +234,7 @@ class EventsMixin(object):
         The length of time (in seconds) that the device has been active for.
         When the device is inactive, this is ``None``.
         """
-        if self._active_event.wait(0):
+        if self._active_event.is_set():
             return time() - self._last_changed
         else:
             return None
@@ -245,7 +245,7 @@ class EventsMixin(object):
         The length of time (in seconds) that the device has been inactive for.
         When the device is active, this is ``None``.
         """
-        if self._inactive_event.wait(0):
+        if self._inactive_event.is_set():
             return time() - self._last_changed
         else:
             return None
@@ -434,11 +434,11 @@ class HoldThread(GPIOThread):
         self.start()
 
     def held(self, parent):
-        while not self.stopping.wait(0):
+        while not self.stopping.is_set():
             if self.holding.wait(0.1):
                 self.holding.clear()
                 while not (
-                        self.stopping.wait(0) or
+                        self.stopping.is_set() or
                         parent._inactive_event.wait(parent.hold_time)
                         ):
                     if parent._held_from is None:

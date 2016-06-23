@@ -50,7 +50,7 @@ class InputDevice(GPIODevice):
     def pull_up(self):
         """
         If ``True``, the device uses a pull-up resistor to set the GPIO pin
-        "high" by default. Defaults to ``False``.
+        "high" by default.
         """
         return self.pin.pull == 'up'
 
@@ -71,7 +71,7 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     straight forward on / off states with (reasonably) clean transitions
     between the two.
 
-    :param float bouncetime:
+    :param float bounce_time:
         Specifies the length of time (in seconds) that the component will
         ignore changes in state after an initial change. This defaults to
         ``None`` which indicates that no bounce compensation will be performed.
@@ -162,10 +162,10 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         except DeviceClosed:
             return super(SmoothedInputDevice, self).__repr__()
         else:
-            if self.partial or self._queue.full.wait(0):
+            if self.partial or self._queue.full.is_set():
                 return super(SmoothedInputDevice, self).__repr__()
             else:
-                return "<gpiozero.%s object on pin=%d, pull_up=%s>" % (
+                return "<gpiozero.%s object on pin=%r, pull_up=%s>" % (
                     self.__class__.__name__, self.pin, self.pull_up)
 
     @property
@@ -251,16 +251,18 @@ class Button(HoldMixin, DigitalInputDevice):
 
     :param float bounce_time:
         If ``None`` (the default), no software bounce compensation will be
-        performed. Otherwise, this is the length in time (in seconds) that the
+        performed. Otherwise, this is the length of time (in seconds) that the
         component will ignore changes in state after an initial change.
 
     :param float hold_time:
         The length of time (in seconds) to wait after the button is pushed,
-        until executing the :attr:`when_held` handler.
+        until executing the :attr:`when_held` handler. Defaults to ``1``.
 
     :param bool hold_repeat:
         If ``True``, the :attr:`when_held` handler will be repeatedly executed
-        as long as the device remains active, every *hold_time* seconds.
+        as long as the device remains active, every *hold_time* seconds. If
+        ``False`` (the default) the :attr:`when_held` handler will be only be
+        executed once per hold.
     """
     def __init__(
             self, pin=None, pull_up=True, bounce_time=None,
@@ -279,7 +281,7 @@ Button.wait_for_release = Button.wait_for_inactive
 
 class LineSensor(SmoothedInputDevice):
     """
-    Extends :class:`DigitalInputDevice` and represents a single pin line sensor
+    Extends :class:`SmoothedInputDevice` and represents a single pin line sensor
     like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
     EduKit`_.
 
@@ -300,7 +302,7 @@ class LineSensor(SmoothedInputDevice):
         pause()
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
@@ -369,7 +371,7 @@ class MotionSensor(SmoothedInputDevice):
         print("Motion detected!")
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
@@ -418,7 +420,7 @@ class LightSensor(SmoothedInputDevice):
     Extends :class:`SmoothedInputDevice` and represents a light dependent
     resistor (LDR).
 
-    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µf
+    Connect one leg of the LDR to the 3V3 pin; connect one leg of a 1µF
     capacitor to a ground pin; connect the other leg of the LDR and the other
     leg of the capacitor to the same GPIO pin. This class repeatedly discharges
     the capacitor, then times the duration it takes to charge (which will vary
@@ -433,7 +435,7 @@ class LightSensor(SmoothedInputDevice):
         print("Light detected!")
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :doc:`notes` for
+        The GPIO pin which the sensor is attached to. See :doc:`notes` for
         valid pin numbers.
 
     :param int queue_len:
@@ -443,7 +445,7 @@ class LightSensor(SmoothedInputDevice):
     :param float charge_time_limit:
         If the capacitor in the circuit takes longer than this length of time
         to charge, it is assumed to be dark. The default (0.01 seconds) is
-        appropriate for a 0.01µf capacitor coupled with the LDR from the
+        appropriate for a 1µF capacitor coupled with the LDR from the
         `CamJam #2 EduKit`_. You may need to adjust this value for different
         valued capacitors or LDRs.
 
@@ -534,7 +536,7 @@ class DistanceSensor(SmoothedInputDevice):
         from gpiozero import DistanceSensor
         from time import sleep
 
-        sensor = DistanceSensor(18, 17)
+        sensor = DistanceSensor(echo=18, trigger=17)
         while True:
             print('Distance: ', sensor.distance * 100)
             sleep(1)
@@ -615,7 +617,7 @@ class DistanceSensor(SmoothedInputDevice):
 
     @max_distance.setter
     def max_distance(self, value):
-        if not (value > 0):
+        if value <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         t = self.threshold_distance
         self._max_distance = value

@@ -36,6 +36,13 @@ TrafficLights
     :inherited-members:
     :members:
 
+LedBorg
+=======
+
+.. autoclass:: LedBorg
+    :inherited-members:
+    :members:
+
 PiLITEr
 =======
 

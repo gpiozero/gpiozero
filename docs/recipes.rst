@@ -59,6 +59,40 @@ Alternatively::
     :ref:`keep-your-script-running` for more information.
 
 
+LED with variable brightness
+============================
+
+Any regular LED can have its brightness value set using PWM (pulse-width-modulation).
+In GPIO Zero, this can be achieved using :class:`PWMLED` using values between 0
+and 1::
+
+    from gpiozero import PWMLED
+    from time import sleep
+
+    led = PWMLED(17)
+
+    while True:
+        led.value = 0  # off
+        sleep(1)
+        led.value = 0.5  # half brightness
+        sleep(1)
+        led.value = 1  # full brightness
+        sleep(1)
+
+
+Similarly to blinking on and off continuously, a PWMLED can pulse (fade in and
+out continuously)::
+
+    from gpiozero import PWMLED
+    from signal import pause
+
+    led = PWMLED(17)
+
+    led.pulse()
+
+    pause()
+
+
 Button
 ======
 
@@ -99,6 +133,33 @@ Run a function every time the button is pressed::
 
     pause()
 
+.. note::
+
+    Note that the line ``button.when_pressed = say_hello`` does not run the
+    function ``say_hello``, rather it creates a reference to the function to
+    be called when the button is pressed. Accidental use of
+    ``button.when_pressed = say_hello()`` would set the ``when_pressed`` action
+    to ``None`` (the return value of this function) which would mean nothing
+    happens when the button is pressed.
+
+Similarly, functions can be attached to button releases::
+
+    from gpiozero import Button
+    from signal import pause
+
+    def say_hello():
+        print("Hello!")
+
+    def say_goodbye():
+        print("Goodbye!")
+
+    button = Button(2)
+
+    button.when_pressed = say_hello
+    button.when_released = say_goodbye
+
+    pause()
+
 
 Button controlled LED
 =====================
@@ -129,6 +190,147 @@ Alternatively::
     led.source = button.values
 
     pause()
+
+
+Button controlled camera
+========================
+
+Using the button press to trigger picamera to take a pitcure using
+``button.when_pressed = camera.capture`` would not work because it requires an
+``output`` parameter. However, this can be achieved using a custom function
+which requires no parameters::
+    
+    from gpiozero import Button
+    from picamera import PiCamera
+    from datetime import datetime
+    from signal import pause
+
+    button = Button(2)
+    camera = PiCamera()
+
+    def capture():
+        datetime = datetime.now().isoformat()
+        camera.capture('/home/pi/%s.jpg' % datetime)
+
+    button.when_pressed = capture
+
+    pause()
+
+Another example could use one button to start and stop the camera preview, and
+another to capture::
+
+    from gpiozero import Button
+    from picamera import PiCamera
+    from datetime import datetime
+    from signal import pause
+
+    left_button = Button(2)
+    right_button = Button(3)
+    camera = PiCamera()
+
+    def capture():
+        datetime = datetime.now().isoformat()
+        camera.capture('/home/pi/%s.jpg' % datetime)
+
+    left_button.when_pressed = camera.start_preview
+    left_button.when_released = camera.stop_preview
+    right_button.when_pressed = capture
+
+    pause()
+
+
+Shutdown button
+===============
+
+The :class:`Button` class also provides the ability to run a function when the
+button has been held for a given length of time. This example will shut down
+the Raspberry Pi when the button is held for 2 seconds::
+
+	from gpiozero import Button
+	from subprocess import check_call
+	from signal import pause
+
+	def shutdown():
+	    check_call(['sudo', 'poweroff'])
+
+	shutdown_btn = Button(17, hold_time=2)
+	shutdown_btn.when_held = shutdown
+
+	pause() 
+
+LEDBoard
+========
+
+A collection of LEDs can be accessed using :class:`LEDBoard`::
+
+    from gpiozero import LEDBoard
+    from time import sleep
+    from signal import pause
+
+    leds = LEDBoard(5, 6, 13, 19, 26)
+
+    leds.on()
+    sleep(1)
+    leds.off()
+    sleep(1)
+    leds.value = (1, 0, 1, 0, 1)
+    sleep(1)
+    leds.blink()
+
+    pause()
+
+Using :class:`LEDBoard` with ``pwm=True`` allows each LED's brightness to be
+controlled::
+
+    from gpiozero import LEDBoard
+
+    leds = LEDBoard(5, 6, 13, 19, 26, pwm=True)
+
+    leds.value = (0.2, 0.4, 0.6, 0.8, 1.0)
+
+LEDBarGraph
+===========
+
+A collection of LEDs can be treated like a bar graph using
+:class:`LEDBarGraph`::
+
+    from gpiozero import LEDBarGraph
+    from time import sleep
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, 20)
+
+    graph.value = 1  # (1, 1, 1, 1, 1, 1)
+    sleep(1)
+    graph.value = 1/2  # (1, 1, 1, 0, 0, 0)
+    sleep(1)
+    graph.value = -1/2  # (0, 0, 0, 1, 1, 1)
+    sleep(1)
+    graph.value = 1/4  # (1, 0, 0, 0, 0, 0)
+    sleep(1)
+    graph.value = -1  # (1, 1, 1, 1, 1, 1)
+    sleep(1)
+
+Note values are essentially rounded to account for the fact LEDs can only be on
+or off when ``pwm=False`` (the default).
+
+However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
+values using LED brightness::
+
+    from gpiozero import LEDBarGraph
+    from time import sleep
+
+    graph = LEDBarGraph(5, 6, 13, 19, 26, pwm=True)
+
+    graph.value = 1/10  # (0.5, 0, 0, 0, 0)
+    sleep(1)
+    graph.value = 3/10  # (1, 0.5, 0, 0, 0)
+    sleep(1)
+    graph.value = -3/10  # (0, 0, 0, 0.5, 1)
+    sleep(1)
+    graph.value = 9/10  # (1, 1, 1, 1, 0.5)
+    sleep(1)
+    graph.value = 95/100  # (1, 1, 1, 1, 0.75)
+    sleep(1)
 
 
 Traffic Lights
@@ -212,6 +414,35 @@ Using :class:`LED` components::
         red.off()
 
 
+Travis build LED indicator
+==========================
+
+Use LEDs to indicate the status of a Travis build. A green light means the
+tests are passing, a red light means the build is broken::
+
+    from travispy import TravisPy
+    from gpiozero import LED
+    from gpiozero.tools import negated
+    from time import sleep
+    from signal import pause
+
+    def build_passed(repo='RPi-Distro/python-gpiozero', delay=3600):
+        t = TravisPy()
+        r = t.repo(repo)
+        while True:
+            yield r.last_build_state == 'passed'
+            sleep(delay) # Sleep an hour before hitting travis again
+
+    red = LED(12)
+    green = LED(16)
+
+    red.source = negated(green.values)
+    green.source = build_passed()
+    pause()
+
+
+Note this recipe requires travispy. Install with ``sudo pip3 install travispy``.
+
 Push button stop motion
 =======================
 
@@ -221,14 +452,14 @@ Capture a picture with the camera module every time a button is pressed::
     from picamera import PiCamera
 
     button = Button(2)
+    camera = PiCamera()
 
-    with PiCamera() as camera:
-        camera.start_preview()
-        frame = 1
-        while True:
-            button.wait_for_press()
-            camera.capture('/home/pi/frame%03d.jpg' % frame)
-            frame += 1
+    camera.start_preview()
+    frame = 1
+    while True:
+        button.wait_for_press()
+        camera.capture('/home/pi/frame%03d.jpg' % frame)
+        frame += 1
 
 See `Push Button Stop Motion`_ for a full resource.
 
@@ -353,8 +584,8 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
     pause()
 
 
-RGB LED
-=======
+Full color LED
+==============
 
 .. image:: images/rgb_led_bb.*
 
@@ -442,7 +673,7 @@ Run a function when the light changes::
 Or make a :class:`PWMLED` change brightness according to the detected light
 level::
 
-    from gpiozero import LightSensor, LED
+    from gpiozero import LightSensor, PWMLED
     from signal import pause
 
     sensor = LightSensor(18)
@@ -493,7 +724,7 @@ Spin a :class:`Motor` around forwards and backwards::
     from gpiozero import Motor
     from time import sleep
 
-    motor = Motor(forward=4, back=14)
+    motor = Motor(forward=4, backward=14)
 
     while True:
         motor.forward()
@@ -539,10 +770,10 @@ Button controlled robot
 
 Use four GPIO buttons as forward/back/left/right controls for a robot::
 
-    from gpiozero import RyanteckRobot, Button
+    from gpiozero import Robot, Button
     from signal import pause
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     left = Button(26)
     right = Button(16)
@@ -570,9 +801,9 @@ Keyboard controlled robot
 Use up/down/left/right keys to control a robot::
 
     import curses
-    from gpiozero import RyanteckRobot
+    from gpiozero import Robot
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     actions = {
         curses.KEY_UP:    robot.forward,
@@ -611,13 +842,13 @@ Use up/down/left/right keys to control a robot::
     *not* work in environments like IDLE.
 
 If you prefer a version that works under IDLE, the following recipe should
-suffice, but will require that you install the evdev library with ``sudo pip
+suffice, but will require that you install the evdev library with ``sudo pip3
 install evdev`` first::
 
-    from gpiozero import RyanteckRobot
+    from gpiozero import Robot
     from evdev import InputDevice, list_devices, ecodes
 
-    robot = RyanteckRobot()
+    robot = Robot(left=(4, 14), right=(17, 18))
 
     devices = [InputDevice(device) for device in list_devices()]
     keyboard = devices[0]  # this may vary
@@ -676,9 +907,10 @@ connected to a :class:`MCP3008` analog to digital converter::
 
     from gpiozero import MCP3008
 
+    pot = MCP3008(channel=0)
+    
     while True:
-        with MCP3008(channel=0) as pot:
-            print(pot.value)
+        print(pot.value)
 
 Present the value of a potentiometer on an LED bar graph using PWM to represent
 states that won't "fill" an LED::

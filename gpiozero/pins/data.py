@@ -243,29 +243,29 @@ CM_SODIMM = {
 
 PI_REVISIONS = {
     # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers
-    'beta':   ('B',    '?',   '2012Q1', 'BCM2835', '?',         256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0002':   ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0003':   ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0004':   ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0005':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0006':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0007':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0008':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0009':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000d':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000e':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000f':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0010':   ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0011':   ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    '0012':   ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0013':   ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0014':   ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    '0015':   ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    'a01041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    'a21041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '900092': ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
-    'a02082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
-    'a22082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
+    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
+    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x11:     ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
+    0x12:     ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0xa01041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0xa21041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x900092: ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
+    0xa02082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0xa22082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0x900093: ('Zero', '1.3', '2016Q2', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  0,  {'P1': PLUS_P1},               ),
     }
 
 
@@ -512,10 +512,9 @@ def _parse_pi_revision(revision):
     # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
     # PPPP     - Processor (0=2835, 1=2836, 2=2837)
     # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
-    # RRR      - Revision (0, 1, or 2)
-    i = int(revision, base=16)
-    if not (i & 0x800000):
-        raise ValueError('cannot parse "%s"; this is not a new-style revision' % revision)
+    # RRRR     - Revision (0, 1, or 2)
+    if not (revision & 0x800000):
+        raise ValueError('cannot parse "%x"; this is not a new-style revision' % revision)
     try:
         model = {
             0: 'A',
@@ -526,15 +525,15 @@ def _parse_pi_revision(revision):
             6: 'CM',
             8: '3B',
             9: 'Zero',
-            }[(i & 0xff0) >> 4]
+            }[(revision & 0xff0) >> 4]
         if model in ('A', 'B'):
             pcb_revision = {
                 0: '1.0', # is this right?
                 1: '1.0',
                 2: '2.0',
-                }[i & 0x0f]
+                }[revision & 0x0f]
         else:
-            pcb_revision = '1.%d' % (i & 0x0f)
+            pcb_revision = '1.%d' % (revision & 0x0f)
         released = {
             'A':    '2013Q1',
             'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
@@ -549,17 +548,17 @@ def _parse_pi_revision(revision):
             0: 'BCM2835',
             1: 'BCM2836',
             2: 'BCM2837',
-            }[(i & 0xf000) >> 12]
+            }[(revision & 0xf000) >> 12]
         manufacturer = {
             0: 'Sony',
             1: 'Egoman',
             2: 'Embest',
-            }[(i & 0xf0000) >> 16]
+            }[(revision & 0xf0000) >> 16]
         memory = {
             0: 256,
             1: 512,
             2: 1024,
-            }[(i & 0x700000) >> 20]
+            }[(revision & 0x700000) >> 20]
         storage = {
             'A': 'SD',
             'B': 'SD',
@@ -595,7 +594,7 @@ def _parse_pi_revision(revision):
             'CM': {'SODIMM': CM_SODIMM},
             }.get(model, {'P1': PLUS_P1})
     except KeyError:
-        raise ValueError('unable to parse new-style revision "%s"' % revision)
+        raise ValueError('unable to parse new-style revision "%x"' % revision)
     else:
         return (
             model,
@@ -636,6 +635,10 @@ def pi_info(revision=None):
                 _PI_REVISION = 'unknown'
         revision = _PI_REVISION
     try:
+        revision_int = int(revision, base=16)
+    except ValueError:
+        raise PinUnknownPi('unknown RPi revision "%s"' % revision)
+    try:
         (
             model,
             pcb_revision,
@@ -651,7 +654,7 @@ def pi_info(revision=None):
             csi,
             dsi,
             headers,
-            ) = PI_REVISIONS[revision]
+            ) = PI_REVISIONS[revision_int]
     except KeyError:
         try:
             (
@@ -669,7 +672,7 @@ def pi_info(revision=None):
                 csi,
                 dsi,
                 headers,
-                ) = _parse_pi_revision(revision)
+                ) = _parse_pi_revision(revision_int)
         except ValueError:
             raise PinUnknownPi('unknown RPi revision "%s"' % revision)
     headers = {

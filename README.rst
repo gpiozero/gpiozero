@@ -10,6 +10,10 @@ gpiozero
     :target: https://travis-ci.org/RPi-Distro/python-gpiozero
     :alt: Build Tests
 
+.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+    :alt: Code Coverage
+
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
@@ -69,7 +73,7 @@ or::
 Documentation
 =============
 
-Comprehensive documentation is available at https://gpiozero.readthedocs.org/.
+Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
 
 Development
 ===========
@@ -95,7 +99,7 @@ Contributors
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
+.. _recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
 .. _Contribute: CONTRIBUTING.md
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80

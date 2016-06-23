@@ -5,6 +5,7 @@ digraph classes {
     node [shape=rect, style=filled, color="#298029", fontname=Sans, fontcolor="#ffffff", fontsize=10];
     edge [arrowhead=onormal, style=dashed];
 
+    RGBLED->LED;
     RGBLED->PWMLED;
     LEDBoard->LED;
     LEDBoard->PWMLED;
@@ -16,4 +17,6 @@ digraph classes {
     TrafficLightsBuzzer->Button;
 
     Robot->Motor;
+    Motor->DigitalOutputDevice;
+    Motor->PWMOutputDevice;
 }

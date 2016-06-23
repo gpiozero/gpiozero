@@ -160,15 +160,15 @@ def test_mock_pin_edges():
     pin.when_changed = changed
     pin.drive_high()
     assert pin.state
-    assert fired.wait(0)
+    assert fired.is_set()
     fired.clear()
     pin.edges = 'falling'
     pin.drive_low()
     assert not pin.state
-    assert fired.wait(0)
+    assert fired.is_set()
     fired.clear()
     pin.drive_high()
     assert pin.state
-    assert not fired.wait(0)
+    assert not fired.is_set()
     assert pin.edges == 'falling'
 

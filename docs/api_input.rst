@@ -17,7 +17,7 @@ Button
 ======
 
 .. autoclass:: Button(pin, pull_up=True, bounce_time=None)
-    :members: wait_for_press, wait_for_release, pin, is_pressed, pull_up, when_pressed, when_released
+    :members: wait_for_press, wait_for_release, pin, is_pressed, is_held, hold_time, held_time, hold_repeat, pull_up, when_pressed, when_released, when_held
 
 
 Line Sensor (TRCT5000)
