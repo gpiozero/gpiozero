@@ -931,28 +931,6 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         self._left = PhaseEnableMotor(*left)
         self._right = PhaseEnableMotor(*right)
 
-    def close(self):
-        self._left.close()
-        self._right.close()
-
-    @property
-    def closed(self):
-        return self._left.closed and self._right.closed
-
-    @property
-    def left_motor(self):
-        """
-        Returns the `PhaseEnableMotor` device representing the robot's left motor.
-        """
-        return self._left
-
-    @property
-    def right_motor(self):
-        """
-        Returns the `PhaseEnableMotor` device representing the robot's right motor.
-        """
-        return self._right
-
     @property
     def value(self):
         """
