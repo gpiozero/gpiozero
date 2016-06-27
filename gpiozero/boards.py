@@ -30,7 +30,6 @@ from .output_devices import (
     Motor,
     PhaseEnableMotor,
     )
-    )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin
