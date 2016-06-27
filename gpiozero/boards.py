@@ -901,35 +901,25 @@ class CamJamKitRobot(Robot):
 
 class PhaseEnableRobot(SourceMixin, CompositeDevice):
     """
-    Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
+    Extends :class:`CompositeDevice` to represent a dual-motor robot based
+    around a Pololu Phase/Enable motor board.
 
     This class is constructed with two tuples representing the power and
-    direction pins of the left and right controllers respectively. For example,
-    if the left motor's controller is connected to GPIOs 12 and 5, while the
-    right motor's controller is connected to GPIOs 13 and 6 then the following
+    direction pins of the left and right controllers respectively. By default,
+    the left motor's controller is connected to GPIOs 12 and 5, while the
+    right motor's controller is connected to GPIOs 13 and 6 so the following
     example will turn the robot left::
 
         from gpiozero import PhaseEnableRobot
 
-        robot = PhaseEnableRobot(left=(12, 5), right=(13, 6))
+        robot = PhaseEnableRobot()
         robot.left()
 
-    :param tuple left:
-        A tuple of two GPIO pins representing the power and direction inputs
-        of the left motor's controller.
-
-    :param tuple right:
-        A tuple of two GPIO pins representing the power and direction inputs
-        of the right motor's controller.
     """
-    def __init__(self, left=None, right=None):
-        if not all([left, right]):
-            raise OutputDeviceError(
-                'left and right motor pins must be provided'
-            )
-        super(Robot, self).__init__()
-        self._left = PhaseEnableMotor(*left)
-        self._right = PhaseEnableMotor(*right)
+    def __init__(self):
+        super(PhaseEnableRobot, self).__init__()
+        self._left = PhaseEnableMotor(12, 5)
+        self._right = PhaseEnableMotor(13, 6)
 
     @property
     def value(self):
