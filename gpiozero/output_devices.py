@@ -897,3 +897,92 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
+
+
+class PhaseEnableMotor(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a generic motor connected
+    to a Phase/Enable motor driver circuit.
+    The following code will make the motor turn "forwards"::
+        from gpiozero import PhaseEnableMotor
+        motor = PhaseEnableMotor(12, 5)
+        motor.forward()
+    :param int power:
+        The GPIO pin that the power input (PWM) of the motor driver chip is
+        connected to.
+    :param int direction:
+        The GPIO pin that the direction input of the motor driver chip is
+        connected to.
+    """
+    def __init__(self, power=None, direction=None):
+        if not all([power, direction]):
+            raise GPIOPinMissing(
+                'power and direction pins must be provided'
+            )
+        super(PhaseEnableMotor, self).__init__(
+            power_device = PWMOutputDevice(power),
+            direction_device = OutputDevice(direction),
+            _order = ('power_device', 'direction_device'))
+
+    @property
+    def value(self):
+        """
+        Represents the speed of the motor as a floating point value between -1
+        (full speed backward) and 1 (full speed forward).
+        """
+        return self.power_device.value if self.direction_device.is_active() else -self.power_device.value
+
+    @value.setter
+    def value(self, value):
+        if not -1 <= value <= 1:
+            raise OutputDeviceBadValue("Motor value must be between -1 and 1")
+        if value > 0:
+            self.forward(value)
+        elif value < 0:
+            self.backward(-value)
+        else:
+            self.stop()
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` if the motor is currently running and ``False``
+        otherwise.
+        """
+        return self.value != 0
+
+    def forward(self, speed=1):
+        """
+        Drive the motor forwards.
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
+        """
+        self.power_device.off()
+        self.direction_device.on()
+        self.power_device.value = speed
+
+    def backward(self, speed=1):
+        """
+        Drive the motor backwards.
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
+        """
+        self.power_device.off()
+        self.direction_device.off()
+        self.power_device.value = speed
+
+    def reverse(self):
+        """
+        Reverse the current direction of the motor. If the motor is currently
+        idle this does nothing. Otherwise, the motor's direction will be
+        reversed at the current speed.
+        """
+        self.value = -self.value
+
+    def stop(self):
+        """
+        Stop the motor.
+        """
+        self.power_device.off()

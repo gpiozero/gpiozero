@@ -113,13 +113,6 @@ Energenie
     :inherited-members:
     :members:
 
-SnowPi
-======
-
-.. autoclass:: SnowPi
-    :inherited-members:
-    :members:
-
 Base Classes
 ============
 
