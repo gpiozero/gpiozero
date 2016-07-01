@@ -493,9 +493,9 @@ def _get_pi_revision():
         for line in f:
             if line.startswith('Revision'):
                 revision = line.split(':')[1].strip().lower()
-                overvolted = revision.startswith('1000')
+                overvolted = revision.startswith('100')
                 if overvolted:
-                    revision = revision[4:]
+                    revision = revision[3:]
                 return revision
         raise IOError('unable to locate Pi revision in /proc/cpuinfo')
 
