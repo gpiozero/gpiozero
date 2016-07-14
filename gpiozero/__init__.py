@@ -99,6 +99,7 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    PhaseEnableMotor,
     RGBLED,
 )
 from .boards import (
@@ -118,6 +119,7 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    PhaseEnableRobot,
     Energenie,
 )
 from .other_devices import (

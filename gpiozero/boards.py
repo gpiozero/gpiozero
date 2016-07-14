@@ -908,18 +908,19 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
     direction pins of the left and right controllers respectively. By default,
     the left motor's controller is connected to GPIOs 12 and 5, while the
     right motor's controller is connected to GPIOs 13 and 6 so the following
-    example will turn the robot left::
+    example will drive the robot forward::
 
         from gpiozero import PhaseEnableRobot
 
         robot = PhaseEnableRobot()
-        robot.left()
+        robot.forward()
 
     """
     def __init__(self):
-        super(PhaseEnableRobot, self).__init__()
-        self._left = PhaseEnableMotor(12, 5)
-        self._right = PhaseEnableMotor(13, 6)
+        super(PhaseEnableRobot, self).__init__(
+            left_motor = PhaseEnableMotor(12, 5),
+            right_motor = PhaseEnableMotor(13, 6),
+            _order = ('left_motor', 'right_motor'))
 
     @property
     def value(self):
@@ -928,11 +929,11 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         speeds of the robot's two motors (left and right). This property can
         also be set to alter the speed of both motors.
         """
-        return RobotTuple(self._left.value, self._right.value)
+        return super(PhaseEnableRobot, self).value
 
     @value.setter
     def value(self, value):
-        self._left.value, self._right.value = value
+        self.left_motor.value, self.right_motor.value = value
 
     def forward(self, speed=1):
         """
@@ -942,8 +943,8 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.forward(speed)
-        self._right.forward(speed)
+        self.left_motor.forward(speed)
+        self.right_motor.forward(speed)
 
     def backward(self, speed=1):
         """
@@ -953,8 +954,8 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.backward(speed)
-        self._right.backward(speed)
+        self.left_motor.backward(speed)
+        self.right_motor.backward(speed)
 
     def left(self, speed=1):
         """
@@ -965,8 +966,8 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._right.forward(speed)
-        self._left.backward(speed)
+        self.right_motor.forward(speed)
+        self.left_motor.backward(speed)
 
     def right(self, speed=1):
         """
@@ -977,8 +978,8 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
         """
-        self._left.forward(speed)
-        self._right.backward(speed)
+        self.left_motor.forward(speed)
+        self.right_motor.backward(speed)
 
     def reverse(self):
         """
@@ -987,15 +988,15 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         robot is turning left at half-speed, it will turn right at half-speed.
         If the robot is currently stopped it will remain stopped.
         """
-        self._left.value = -self._left.value
-        self._right.value = -self._right.value
+        self.left_motor.value = -self.left_motor.value
+        self.right_motor.value = -self.right_motor.value
 
     def stop(self):
         """
         Stop the robot.
         """
-        self._left.stop()
-        self._right.stop()
+        self.left_motor.stop()
+        self.right_motor.stop()
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):

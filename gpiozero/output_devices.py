@@ -930,7 +930,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Represents the speed of the motor as a floating point value between -1
         (full speed backward) and 1 (full speed forward).
         """
-        return self.power_device.value if self.direction_device.is_active() else -self.power_device.value
+        return self.power_device.value if self.direction_device.is_active else -self.power_device.value
 
     @value.setter
     def value(self, value):
