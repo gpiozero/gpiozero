@@ -7,6 +7,7 @@ from __future__ import (
 nstr = str
 str = type('')
 
+import os
 import atexit
 import weakref
 from collections import namedtuple
@@ -35,20 +36,50 @@ from .compat import frozendict
 # available, however, we fall back to a pure Python implementation which
 # supports platforms like PyPy
 from .pins import _pins_shutdown
+
+pin_factory = None
+env_default = os.getenv('GPIOZERO_PIN_FACTORY', None)
+
 try:
-    from .pins.rpigpio import RPiGPIOPin
-    pin_factory = RPiGPIOPin
-except ImportError:
-    try:
-        from .pins.rpio import RPIOPin
-        pin_factory = RPIOPin
-    except ImportError:
-        try:
+    if env_default is not None:
+        if env_default == 'RPiGPIOPin':
+            from .pins.rpigpio import RPiGPIOPin
+            pin_factory = RPiGPIOPin
+        elif env_default == 'RPIOPin':
+            from .pins.rpio import RPIOPin
+            pin_factory = RPIOPin
+        elif env_default == 'PiGPIOPin':
             from .pins.pigpiod import PiGPIOPin
             pin_factory = PiGPIOPin
-        except ImportError:
+        elif env_default == 'NativePin':
             from .pins.native import NativePin
             pin_factory = NativePin
+        elif env_default == 'MockPin':
+            from .pins.mock import MockPin
+            pin_factory = MockPin
+        elif env_default == 'MockPWMPin':
+            from .pins.mock import MockPWMPin
+            pin_factory = MockPWMPin
+        else:
+#            print ("Valid value for GPIOZERO_PIN_FACTORY are: 'RPiGPIOPin' 'RPIOPin' 'PiGPIOPin' 'NativePin' 'MockPin' 'MockPWMPin'")
+except ImportError:
+#    print ("Failure to import requested pin factory requested by GPIOZERO_PIN_FACTORY. Using default fallback sequence.")
+
+if pin_factory is None:
+    try:
+        from .pins.rpigpio import RPiGPIOPin
+        pin_factory = RPiGPIOPin
+    except ImportError:
+        try:
+            from .pins.rpio import RPIOPin
+            pin_factory = RPIOPin
+        except ImportError:
+            try:
+                from .pins.pigpiod import PiGPIOPin
+                pin_factory = PiGPIOPin
+            except ImportError:
+                from .pins.native import NativePin
+                pin_factory = NativePin
 
 
 _PINS = set()
