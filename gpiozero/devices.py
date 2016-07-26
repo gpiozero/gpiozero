@@ -61,8 +61,10 @@ try:
             from .pins.mock import MockPWMPin
             pin_factory = MockPWMPin
         else:
+            pass
 #            print ("Valid value for GPIOZERO_PIN_FACTORY are: 'RPiGPIOPin' 'RPIOPin' 'PiGPIOPin' 'NativePin' 'MockPin' 'MockPWMPin'")
 except ImportError:
+    pass
 #    print ("Failure to import requested pin factory requested by GPIOZERO_PIN_FACTORY. Using default fallback sequence.")
 
 if pin_factory is None:
