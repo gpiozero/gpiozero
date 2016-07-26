@@ -99,7 +99,7 @@ class PiGPIOPin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    def __new__(cls, number, host=os.getenv("PIGPIO_ADDR", 'localhost'), port=os.getenv("PIGPIO_PORT", 8888)):
+    def __new__(cls, number, host=os.getenv('PIGPIO_ADDR', 'localhost'), port=int(os.getenv('PIGPIO_PORT', 8888))):
         try:
             return cls._PINS[(host, port, number)]
         except KeyError:
