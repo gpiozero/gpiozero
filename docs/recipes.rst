@@ -1020,7 +1020,7 @@ run the following commands::
     On the Pi Zero you can control the activity LED with this recipe, but
     there's no separate power LED to control (it's also worth noting the
     activity LED is active low, so set ``active_high=False`` when constructing
-    your LED component.
+    your LED component).
 
     On the original Pi 1 (model A or B), the activity LED can be controlled
     with GPIO16 (after disabling its trigger as above) but the power LED is
