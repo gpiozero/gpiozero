@@ -61,6 +61,14 @@ if sys.version_info[:2] == (3, 2):
     __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
+    'gpiozero_pin_factories': [
+        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOPin',
+        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOPin',
+        'RPIOPin    = gpiozero.pins.rpio:RPIOPin',
+        'NativePin  = gpiozero.pins.native:NativePin',
+        'MockPin    = gpiozero.pins.mock:MockPin',
+        'MockPWMPin = gpiozero.pins.mock:MockPWMPin',
+    ],
 }
 
 
