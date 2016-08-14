@@ -100,7 +100,7 @@ Contributors
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _Contribute: CONTRIBUTING.md
+.. _contribute: http://gpiozero.readthedocs.io/en/latest/contributing.html
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon
