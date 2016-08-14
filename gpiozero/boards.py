@@ -12,6 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
+from collections import OrderedDict
 
 from .exc import (
     DeviceClosed,
@@ -536,11 +537,11 @@ class PiLiterBarGraph(LEDBarGraph):
 
 class TrafficLights(LEDBoard):
     """
-    Extends :class:`LEDBoard` for devices containing red, amber, and green
+    Extends :class:`LEDBoard` for devices containing red, yellow, and green
     LEDs.
 
     The following example initializes a device connected to GPIO pins 2, 3,
-    and 4, then lights the amber LED attached to GPIO 3::
+    and 4, then lights the amber (yellow) LED attached to GPIO 3::
 
         from gpiozero import TrafficLights
 
@@ -566,17 +567,47 @@ class TrafficLights(LEDBoard):
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
+
+    :param int yellow:
+        The GPIO pin that the yellow LED is attached to. This is merely an
+        alias for the ``amber`` parameter - you can't specify both ``amber``
+        and ``yellow``.
     """
     def __init__(self, red=None, amber=None, green=None,
-                 pwm=False, initial_value=False):
-        if not all(p is not None for p in [red, amber, green]):
+                 pwm=False, initial_value=False, yellow=None):
+        if amber is not None and yellow is not None:
+            raise OutputDeviceBadValue(
+                'Only one of amber or yellow can be specified'
+            )
+        devices = OrderedDict((('red', red), ))
+        self._display_yellow = amber is None and yellow is not None
+        if self._display_yellow:
+            devices['yellow'] = yellow
+        else:
+            devices['amber'] = amber
+        devices['green'] = green
+        if not all(p is not None for p in devices.values()):
             raise GPIOPinMissing(
-                'red, amber and green pins must be provided'
+                ', '.join(devices.keys())+' pins must be provided'
             )
         super(TrafficLights, self).__init__(
-            red=red, amber=amber, green=green,
             pwm=pwm, initial_value=initial_value,
-            _order=('red', 'amber', 'green'))
+            _order=devices.keys(),
+            **devices)
+
+    def __getattr__(self, name):
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
+            name = 'amber'
+        return super(TrafficLights, self).__getattr__(name)
+
+    def __setattr__(self, name, value):
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
+            name = 'amber'
+        return super(TrafficLights, self).__setattr__(name, value)
 
 
 class PiTraffic(TrafficLights):
