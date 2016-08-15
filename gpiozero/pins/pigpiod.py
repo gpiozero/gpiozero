@@ -69,7 +69,7 @@ class PiGPIOPin(Pin):
     .. _pigpio: http://abyz.co.uk/rpi/pigpio/
     """
 
-    _CONNECTIONS = {}
+    _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
     _PINS = {}
 
     GPIO_FUNCTIONS = {
@@ -99,18 +99,15 @@ class PiGPIOPin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    def __new__(cls, number, host=os.getenv('PIGPIO_ADDR', 'localhost'), port=int(os.getenv('PIGPIO_PORT', 8888))):
+    def __new__(
+            cls, number, host=os.getenv('PIGPIO_ADDR', 'localhost'),
+            port=int(os.getenv('PIGPIO_PORT', 8888))):
         try:
             return cls._PINS[(host, port, number)]
         except KeyError:
             self = super(PiGPIOPin, cls).__new__(cls)
-            try:
-                self._connection, self._pi_info = cls._CONNECTIONS[(host, port)]
-            except KeyError:
-                self._connection = pigpio.pi(host, port)
-                revision = hex(self._connection.get_hardware_revision())[2:]
-                self._pi_info = pi_info(revision)
-                cls._CONNECTIONS[(host, port)] = (self._connection, self._pi_info)
+            cls.pi_revision(host, port) # implicitly creates connection
+            self._connection, self._pi_info = cls._CONNECTIONS[(host, port)]
             try:
                 self._pi_info.physical_pin('GPIO%d' % number)
             except PinNoPins:
@@ -258,4 +255,17 @@ class PiGPIOPin(Pin):
             self._callback = self._connection.callback(
                     self._number, self._edges,
                     lambda gpio, level, tick: value())
+
+    @classmethod
+    def pi_info(
+            cls, host=os.getenv('PIGPIO_ADDR', 'localhost'),
+            port=int(os.getenv('PIGPIO_PORT', 8888))):
+        try:
+            connection, info = cls._CONNECTIONS[(host, port)]
+        except KeyError:
+            connection = pigpio.pi(host, port)
+            revision = '%04x' % connection.get_hardware_revision()
+            info = pi_info(revision)
+            cls._CONNECTIONS[(host, port)] = (connection, info)
+        return info
 

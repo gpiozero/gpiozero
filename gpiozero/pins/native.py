@@ -17,7 +17,7 @@ from time import sleep
 from threading import Thread, Event, Lock
 from collections import Counter
 
-from . import Pin, PINS_CLEANUP
+from . import LocalPin, PINS_CLEANUP
 from .data import pi_info
 from ..exc import (
     PinInvalidPull,
@@ -149,7 +149,7 @@ class GPIOFS(object):
                     f.write(str(pin).encode('ascii'))
 
 
-class NativePin(Pin):
+class NativePin(LocalPin):
     """
     Uses a built-in pure Python implementation to interface to the Pi's GPIO
     pins. This is the default pin implementation if no third-party libraries
