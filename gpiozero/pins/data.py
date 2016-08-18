@@ -389,10 +389,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         .. note::
 
             This does *not* include the micro-USB port used to power the Pi.
-            On the Compute Module this is listed as 0 as the compute module
-            itself doesn't have any physical USB headers, despite providing one
-            on the I/O development board and having the pins for one on the
-            module itself.
 
     .. attribute:: ethernet
 
