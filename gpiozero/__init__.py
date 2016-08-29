@@ -7,6 +7,7 @@ from __future__ import (
 
 from .pins import (
     Pin,
+    LocalPin,
 )
 from .pins.data import (
     PiBoardInfo,

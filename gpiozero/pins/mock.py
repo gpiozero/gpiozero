@@ -16,6 +16,7 @@ except ImportError:
     from ..compat import isclose
 
 from . import Pin
+from .data import pi_info
 from ..exc import PinSetInput, PinPWMUnsupported, PinFixedPull
 
 
@@ -31,6 +32,10 @@ class MockPin(Pin):
     @classmethod
     def clear_pins(cls):
         cls._PINS.clear()
+
+    @classmethod
+    def pi_info(cls):
+        return pi_info('a21041') # Pretend we're a Pi 2B
 
     def __new__(cls, number):
         if not (0 <= number < 54):

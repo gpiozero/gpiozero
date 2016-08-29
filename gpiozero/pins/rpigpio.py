@@ -9,7 +9,7 @@ str = type('')
 import warnings
 from RPi import GPIO
 
-from . import Pin
+from . import LocalPin
 from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
@@ -24,7 +24,7 @@ from ..exc import (
     )
 
 
-class RPiGPIOPin(Pin):
+class RPiGPIOPin(LocalPin):
     """
     Uses the `RPi.GPIO`_ library to interface to the Pi's GPIO pins. This is
     the default pin implementation if the RPi.GPIO library is installed.

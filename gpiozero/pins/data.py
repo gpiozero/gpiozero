@@ -324,6 +324,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     a tuple, it is strongly recommended that you use the following named
     attributes to access the data contained within.
 
+    .. automethod:: physical_pin
+
+    .. automethod:: physical_pins
+
+    .. automethod:: pulled_up
+
     .. attribute:: revision
 
         A string indicating the revision of the Pi. This is unique to each
@@ -426,7 +432,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
 
     def physical_pins(self, function):
         """
-        Return the physical pins supporting the specified *function* as a tuple
+        Return the physical pins supporting the specified *function* as tuples
         of ``(header, pin_number)`` where *header* is a string specifying the
         header containing the *pin_number*. Note that the return value is a
         :class:`set` which is not indexable. Use :func:`physical_pin` if you
@@ -483,19 +489,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             return self.headers[header][number].pull_up
 
 
-_PI_REVISION = None
-def _get_pi_revision():
-    with io.open('/proc/cpuinfo', 'r') as f:
-        for line in f:
-            if line.startswith('Revision'):
-                revision = line.split(':')[1].strip().lower()
-                overvolted = revision.startswith('1000')
-                if overvolted:
-                    revision = revision[4:]
-                return revision
-        raise IOError('unable to locate Pi revision in /proc/cpuinfo')
-
-
 def _parse_pi_revision(revision):
     # For new-style revisions the value's bit pattern is as follows:
     #
@@ -510,7 +503,7 @@ def _parse_pi_revision(revision):
     # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
     # RRRR     - Revision (0, 1, or 2)
     if not (revision & 0x800000):
-        raise ValueError('cannot parse "%x"; this is not a new-style revision' % revision)
+        raise PinUnknownPi('cannot parse "%x"; this is not a new-style revision' % revision)
     try:
         model = {
             0: 'A',
@@ -538,7 +531,7 @@ def _parse_pi_revision(revision):
             '2B':   '2015Q1',
             'CM':   '2014Q2',
             '3B':   '2016Q1',
-            'Zero': '2015Q4',
+            'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
             }[model]
         soc = {
             0: 'BCM2835',
@@ -580,7 +573,7 @@ def _parse_pi_revision(revision):
             '3B': True,
             }.get(model, False)
         csi = {
-            'Zero': 0,
+            'Zero': 0 if pcb_revision == '0.0' else 1,
             'CM':   2,
             }.get(model, 1)
         dsi = csi
@@ -590,7 +583,7 @@ def _parse_pi_revision(revision):
             'CM': {'SODIMM': CM_SODIMM},
             }.get(model, {'P1': PLUS_P1})
     except KeyError:
-        raise ValueError('unable to parse new-style revision "%x"' % revision)
+        raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
     else:
         return (
             model,
@@ -620,20 +613,26 @@ def pi_info(revision=None):
         or ``None`` (the default), then the library will attempt to determine
         the model of Pi it is running on and return information about that.
     """
-    # cache the result as we can reasonably assume the revision of the Pi isn't
-    # going to change at runtime...
     if revision is None:
-        global _PI_REVISION
-        if _PI_REVISION is None:
-            try:
-                _PI_REVISION = _get_pi_revision()
-            except IOError:
-                _PI_REVISION = 'unknown'
-        revision = _PI_REVISION
-    try:
-        revision_int = int(revision, base=16)
-    except ValueError:
-        raise PinUnknownPi('unknown RPi revision "%s"' % revision)
+        # NOTE: This import is declared locally for two reasons. Firstly it
+        # avoids a circular dependency (devices->pins->pins.data->devices).
+        # Secondly, pin_factory is one global which might potentially be
+        # re-written by a user's script at runtime hence we should re-import
+        # here in case it's changed since initialization
+        from ..devices import pin_factory
+        result = pin_factory.pi_info()
+        if result is None:
+            raise PinUnknownPi('The default pin_factory is not attached to a Pi')
+        else:
+            return result
+    else:
+        if isinstance(revision, bytes):
+            revision = revision.decode('ascii')
+        if isinstance(revision, str):
+            revision = int(revision, base=16)
+        else:
+            # be nice to people passing an int (or something numeric anyway)
+            revision = int(revision)
     try:
         (
             model,
@@ -650,27 +649,24 @@ def pi_info(revision=None):
             csi,
             dsi,
             headers,
-            ) = PI_REVISIONS[revision_int]
+            ) = PI_REVISIONS[revision]
     except KeyError:
-        try:
-            (
-                model,
-                pcb_revision,
-                released,
-                soc,
-                manufacturer,
-                memory,
-                storage,
-                usb,
-                ethernet,
-                wifi,
-                bluetooth,
-                csi,
-                dsi,
-                headers,
-                ) = _parse_pi_revision(revision_int)
-        except ValueError:
-            raise PinUnknownPi('unknown RPi revision "%s"' % revision)
+        (
+            model,
+            pcb_revision,
+            released,
+            soc,
+            manufacturer,
+            memory,
+            storage,
+            usb,
+            ethernet,
+            wifi,
+            bluetooth,
+            csi,
+            dsi,
+            headers,
+            ) = _parse_pi_revision(revision)
     headers = {
         header: {
             number: PinInfo(number, function, pull_up)
@@ -679,7 +675,7 @@ def pi_info(revision=None):
         for header, header_data in headers.items()
         }
     return PiBoardInfo(
-        revision,
+        '%04x' % revision,
         model,
         pcb_revision,
         released,
