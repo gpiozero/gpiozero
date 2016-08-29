@@ -345,10 +345,15 @@ Use up/down/left/right keys to control a robot:
     recipe will *not* work in environments like IDLE.
 
 If you prefer a version that works under IDLE, the following recipe should
-suffice, but will require that you install the evdev library with ``sudo pip3
-install evdev`` first:
+suffice:
 
 .. literalinclude:: examples/robot_keyboard_2.py
+
+.. note::
+
+    This recipe uses the third-party ``evdev`` module. Install this library
+    with ``sudo pip3 install evdev`` first. Be aware that ``evdev`` will only
+    work with local input devices; this recipe will *not* work over SSH.
 
 
 Motion sensor robot
