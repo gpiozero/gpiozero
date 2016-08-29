@@ -25,6 +25,11 @@ PingServer
 
 .. autoclass:: PingServer
 
+CPUTemperature
+==============
+
+.. autoclass:: CPUTemperature
+
 Base Classes
 ============
 

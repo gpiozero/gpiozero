@@ -124,5 +124,6 @@ from .boards import (
 from .other_devices import (
     InternalDevice,
     PingServer,
+    CPUTemperature,
     TimeOfDay,
 )
