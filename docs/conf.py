@@ -74,6 +74,7 @@ autodoc_member_order = 'groupwise'
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3.4', None),
+    'picamera': ('http://picamera.readthedocs.io/en/latest', None),
     }
 
 # -- Options for HTML output ----------------------------------------------
