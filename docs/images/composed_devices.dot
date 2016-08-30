@@ -12,6 +12,8 @@ digraph classes {
     LEDBarGraph->LED;
     LEDBarGraph->PWMLED;
 
+    ButtonBoard->Button;
+
     TrafficLightsBuzzer->TrafficLights;
     TrafficLightsBuzzer->Buzzer;
     TrafficLightsBuzzer->Button;

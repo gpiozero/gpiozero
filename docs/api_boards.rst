@@ -29,6 +29,13 @@ LEDBarGraph
     :inherited-members:
     :members:
 
+ButtonBoard
+===========
+
+.. autoclass:: ButtonBoard(\*pins, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False, \*\*named_pins)
+    :inherited-members:
+    :members:
+
 TrafficLights
 =============
 

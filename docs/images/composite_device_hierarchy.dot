@@ -35,4 +35,5 @@ digraph classes {
     Servo->CompositeDevice;
     AngularServo->Servo;
     Energenie->Device;
+    ButtonBoard->CompositeDevice;
 }
