@@ -2,19 +2,17 @@
 gpiozero
 ========
 
-.. ifconfig:: html_theme == 'sphinx_rtd_theme'
+.. image:: https://badge.fury.io/py/gpiozero.svg
+    :target: https://badge.fury.io/py/gpiozero
+    :alt: Latest Version
 
-    .. image:: https://badge.fury.io/py/gpiozero.svg
-        :target: https://badge.fury.io/py/gpiozero
-        :alt: Latest Version
+.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+    :alt: Build Tests
 
-    .. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
-        :target: https://travis-ci.org/RPi-Distro/python-gpiozero
-        :alt: Build Tests
-
-    .. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
-        :target: https://codecov.io/github/RPi-Distro/python-gpiozero
-        :alt: Code Coverage
+.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+    :alt: Code Coverage
 
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
