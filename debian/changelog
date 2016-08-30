@@ -1,3 +1,18 @@
+gpiozero (1.3.0) stable; urgency=low
+
+  * Added "ButtonBoard" for reading multiple buttons in a single class (#340)
+  * Added "Servo" and "AngularServo" classes for controlling simple servo
+    motors (#248)
+  * Lots of work on supporting easier use of internal and third-part pin
+    implementations (#359)
+  * "Robot" now has a proper "value" attribute (#305)
+  * Added "CPUTemperature" as another demo of "internal" devices (#294)
+  * A temporary work-around for an issue with "DistanceSensor" was included
+    but a full fix is in the works (#385)
+  * More work on the documentation (#320, #295, #289, etc.)
+
+ -- Dave Jones <dave@waveform.org.uk>  Wed, 31 Aug 2016 00:18:18 +0100
+
 gpiozero (1.2.0) stable; urgency=low
 
   * Added "Energenie" class for controlling Energenie plugs (#69)
