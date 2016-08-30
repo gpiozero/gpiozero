@@ -106,6 +106,7 @@ from .output_devices import (
 )
 from .boards import (
     CompositeOutputDevice,
+    ButtonBoard,
     LEDCollection,
     LEDBoard,
     LEDBarGraph,
