@@ -585,11 +585,19 @@ class DistanceSensor(SmoothedInputDevice):
             self._max_distance = max_distance
             self._trigger = GPIODevice(trigger)
             self._echo = Event()
+            self._echo_rise = None
+            self._echo_fall = None
             self._trigger.pin.function = 'output'
             self._trigger.pin.state = False
             self.pin.edges = 'both'
             self.pin.bounce = None
-            self.pin.when_changed = self._echo.set
+            def callback():
+                if self._echo_rise is None:
+                    self._echo_rise = time()
+                else:
+                    self._echo_fall = time()
+                self._echo.set()
+            self.pin.when_changed = callback
             self._queue.start()
         except:
             self.close()
@@ -672,14 +680,15 @@ class DistanceSensor(SmoothedInputDevice):
         self._trigger.pin.state = False
         # Wait up to 1 second for the echo pin to rise
         if self._echo.wait(1):
-            start = time()
             self._echo.clear()
             # Wait up to 40ms for the echo pin to fall (35ms is maximum pulse
             # time so any longer means something's gone wrong). Calculate
             # distance as time for echo multiplied by speed of sound divided by
             # two to compensate for travel to and from the reflector
-            if self._echo.wait(0.04):
-                distance = (time() - start) * self.speed_of_sound / 2.0
+            if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
+                distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
+                self._echo_fall = None
+                self._echo_rise = None
                 return min(1.0, distance / self._max_distance)
             else:
                 # If we only saw one edge it means we missed the echo because
