@@ -920,3 +920,115 @@ def test_motor_reverse_nonpwm():
         device.reverse()
         assert device.value == -1
         assert b.state == 1 and f.state == 0
+
+def test_servo_pins():
+    p = MockPWMPin(1)
+    with Servo(p) as device:
+        assert device.pwm_device.pin is p
+        assert isinstance(device.pwm_device, PWMOutputDevice)
+
+def test_servo_bad_value():
+    p = MockPWMPin(1)
+    with pytest.raises(ValueError):
+        Servo(p, initial_value=2)
+    with pytest.raises(ValueError):
+        Servo(p, min_pulse_width=30/1000)
+    with pytest.raises(ValueError):
+        Servo(p, max_pulse_width=30/1000)
+
+def test_servo_pins_nonpwm():
+    p = MockPin(2)
+    with pytest.raises(PinPWMUnsupported):
+        Servo(p)
+
+def test_servo_close():
+    p = MockPWMPin(2)
+    with Servo(p) as device:
+        device.close()
+        assert device.closed
+        assert device.pwm_device.pin is None
+        device.close()
+        assert device.closed
+
+def test_servo_pulse_width():
+    p = MockPWMPin(2)
+    with Servo(p, min_pulse_width=5/10000, max_pulse_width=25/10000) as device:
+        assert isclose(device.min_pulse_width, 5/10000)
+        assert isclose(device.max_pulse_width, 25/10000)
+        assert isclose(device.frame_width, 20/1000)
+        assert isclose(device.pulse_width, 15/10000)
+        device.value = -1
+        assert isclose(device.pulse_width, 5/10000)
+        device.value = 1
+        assert isclose(device.pulse_width, 25/10000)
+        device.value = None
+        assert device.pulse_width is None
+
+def test_servo_values():
+    p = MockPWMPin(1)
+    with Servo(p) as device:
+        device.min()
+        assert device.is_active
+        assert device.value == -1
+        assert isclose(p.state, 0.05)
+        device.max()
+        assert device.is_active
+        assert device.value == 1
+        assert isclose(p.state, 0.1)
+        device.mid()
+        assert device.is_active
+        assert device.value == 0.0
+        assert isclose(p.state, 0.075)
+        device.value = 0.5
+        assert device.is_active
+        assert device.value == 0.5
+        assert isclose(p.state, 0.0875)
+        device.detach()
+        assert not device.is_active
+        assert device.value is None
+        device.value = 0
+        assert device.value == 0
+        device.value = None
+        assert device.value is None
+
+def test_angular_servo_range():
+    p = MockPWMPin(1)
+    with AngularServo(p, initial_angle=15, min_angle=0, max_angle=90) as device:
+        assert device.min_angle == 0
+        assert device.max_angle == 90
+
+def test_angular_servo_angles():
+    p = MockPWMPin(1)
+    with AngularServo(p) as device:
+        device.angle = 0
+        assert device.angle == 0
+        assert isclose(device.value, 0)
+        device.max()
+        assert device.angle == 90
+        assert isclose(device.value, 1)
+        device.min()
+        assert device.angle == -90
+        assert isclose(device.value, -1)
+        device.detach()
+        assert device.angle is None
+    with AngularServo(p, initial_angle=15, min_angle=0, max_angle=90) as device:
+        assert device.angle == 15
+        assert isclose(device.value, -2/3)
+        device.angle = 0
+        assert device.angle == 0
+        assert isclose(device.value, -1)
+        device.angle = 90
+        assert device.angle == 90
+        assert isclose(device.value, 1)
+        device.angle = None
+        assert device.angle is None
+    with AngularServo(p, min_angle=45, max_angle=-45) as device:
+        assert device.angle == 0
+        assert isclose(device.value, 0)
+        device.angle = -45
+        assert device.angle == -45
+        assert isclose(device.value, 1)
+        device.angle = -15
+        assert device.angle == -15
+        assert isclose(device.value, 1/3)
+

@@ -43,6 +43,20 @@ Motor
 .. autoclass:: Motor(forward, backward, pwm=True)
     :members: forward, backward, stop
 
+Servo
+=====
+
+.. autoclass:: Servo(pin, initial_value=0, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000)
+    :inherited-members:
+    :members:
+
+AngularServo
+============
+
+.. autoclass:: AngularServo(pin, initial_angle=0, min_angle=-90, max_angle=90, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000)
+    :inherited-members:
+    :members:
+
 Base Classes
 ============
 
