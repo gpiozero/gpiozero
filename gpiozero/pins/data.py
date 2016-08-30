@@ -573,10 +573,12 @@ def _parse_pi_revision(revision):
             '3B': True,
             }.get(model, False)
         csi = {
-            'Zero': 0 if pcb_revision == '0.0' else 1,
+            'Zero': 0 if pcb_revision == '1.0' else 1,
             'CM':   2,
             }.get(model, 1)
-        dsi = csi
+        dsi = {
+            'Zero': 0,
+            }.get(model, csi)
         headers = {
             'A':  {'P1': REV2_P1, 'P5': REV2_P5},
             'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},

@@ -12,9 +12,9 @@ devices = [InputDevice(device) for device in list_devices()]
 must_have = {i for i in range(1, 32)}
 must_not_have = {0}
 devices = [
-    device
-    for device in devices
-    for keys in (set(device.capabilities().get(ecodes.EV_KEY, [])),)
+    dev
+    for dev in devices
+    for keys in (set(dev.capabilities().get(ecodes.EV_KEY, [])),)
     if must_have.issubset(keys)
     and must_not_have.isdisjoint(keys)
 ]

@@ -9,6 +9,8 @@ library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
 
 
+.. _pin_numbering:
+
 Pin Numbering
 =============
 
@@ -18,8 +20,9 @@ configurable.
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 
-Any pin marked ``GPIO`` in the diagram below can be used for generic
-components:
+Any pin marked "GPIO" in the diagram below can be used as a pin number.  For
+example, if an LED was attached to "GPIO17" you would specify the pin number as
+17 rather than 11:
 
 .. image:: images/pin_layout.*
 
