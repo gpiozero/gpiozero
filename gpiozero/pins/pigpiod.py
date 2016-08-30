@@ -106,7 +106,7 @@ class PiGPIOPin(Pin):
             return cls._PINS[(host, port, number)]
         except KeyError:
             self = super(PiGPIOPin, cls).__new__(cls)
-            cls.pi_revision(host, port) # implicitly creates connection
+            cls.pi_info(host, port) # implicitly creates connection
             self._connection, self._pi_info = cls._CONNECTIONS[(host, port)]
             try:
                 self._pi_info.physical_pin('GPIO%d' % number)
@@ -129,7 +129,6 @@ class PiGPIOPin(Pin):
                 raise ValueError(e)
             self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[self._pull])
             self._connection.set_glitch_filter(self._number, 0)
-            self._connection.set_PWM_range(self._number, 255)
             cls._PINS[(host, port, number)] = self
             return self
 
@@ -175,14 +174,19 @@ class PiGPIOPin(Pin):
 
     def _get_state(self):
         if self._pwm:
-            return self._connection.get_PWM_dutycycle(self._number) / 255
+            return (
+                self._connection.get_PWM_dutycycle(self._number) /
+                self._connection.get_PWM_range(self._number)
+                )
         else:
             return bool(self._connection.read(self._number))
 
     def _set_state(self, value):
         if self._pwm:
             try:
-                self._connection.set_PWM_dutycycle(self._number, int(value * 255))
+                value = int(value * self._connection.get_PWM_range(self._number))
+                if value != self._connection.get_PWM_dutycycle(self._number):
+                    self._connection.set_PWM_dutycycle(self._number, value)
             except pigpio.error:
                 raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         elif self.function == 'input':
@@ -213,12 +217,15 @@ class PiGPIOPin(Pin):
     def _set_frequency(self, value):
         if not self._pwm and value is not None:
             self._connection.set_PWM_frequency(self._number, value)
+            self._connection.set_PWM_range(self._number, 10000)
             self._connection.set_PWM_dutycycle(self._number, 0)
             self._pwm = True
         elif self._pwm and value is not None:
-            self._connection.set_PWM_frequency(self._number, value)
+            if value != self._connection.get_PWM_frequency(self._number):
+                self._connection.set_PWM_frequency(self._number, value)
+                self._connection.set_PWM_range(self._number, 10000)
         elif self._pwm and value is None:
-            self._connection.set_PWM_dutycycle(self._number, 0)
+            self._connection.write(self._number, 0)
             self._pwm = False
 
     def _get_bounce(self):

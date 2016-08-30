@@ -217,8 +217,8 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for valid
-        pin numbers.
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the LED will operate normally with the
@@ -252,8 +252,8 @@ class Buzzer(DigitalOutputDevice):
         bz.on()
 
     :param int pin:
-        The GPIO pin which the buzzer is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the buzzer is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the buzzer will operate normally with the
@@ -276,8 +276,8 @@ class PWMOutputDevice(OutputDevice):
     Generic output device configured for pulse-width modulation (PWM).
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set the GPIO to
@@ -483,7 +483,7 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -897,3 +897,4 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
+
