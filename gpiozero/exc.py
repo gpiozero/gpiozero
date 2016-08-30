@@ -22,6 +22,9 @@ class BadWaitTime(GPIOZeroError, ValueError):
 class BadQueueLen(GPIOZeroError, ValueError):
     "Error raised when non-positive queue length is specified"
 
+class BadPinFactory(GPIOZeroError, ImportError):
+    "Error raised when an unknown pin factory name is specified"
+
 class CompositeDeviceError(GPIOZeroError):
     "Base class for errors specific to the CompositeDevice hierarchy"
 

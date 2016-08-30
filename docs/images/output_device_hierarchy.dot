@@ -21,5 +21,6 @@ digraph classes {
     PWMOutputDevice->OutputDevice;
     PWMLED->PWMOutputDevice;
     RGBLED->Device;
+    LedBorg->RGBLED;
 }
 

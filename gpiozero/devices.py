@@ -7,6 +7,7 @@ from __future__ import (
 nstr = str
 str = type('')
 
+import os
 import atexit
 import weakref
 from collections import namedtuple
@@ -14,12 +15,16 @@ from itertools import chain
 from types import FunctionType
 from threading import RLock
 
+import pkg_resources
+
 from .threads import _threads_shutdown
+from .pins import _pins_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
     )
 from .exc import (
+    BadPinFactory,
     DeviceClosed,
     CompositeDeviceBadName,
     CompositeDeviceBadOrder,
@@ -28,26 +33,34 @@ from .exc import (
     GPIOPinInUse,
     GPIODeviceClosed,
     )
+from .compat import frozendict
 
-# Get a pin implementation to use as the default; we prefer RPi.GPIO's here
-# as it supports PWM, and all Pi revisions. If no third-party libraries are
-# available, however, we fall back to a pure Python implementation which
-# supports platforms like PyPy
-from .pins import _pins_shutdown
-try:
-    from .pins.rpigpio import RPiGPIOPin
-    DefaultPin = RPiGPIOPin
-except ImportError:
-    try:
-        from .pins.rpio import RPIOPin
-        DefaultPin = RPIOPin
-    except ImportError:
-        try:
-            from .pins.pigipod import PiGPIOPin
-            DefaultPin = PiGPIOPin
-        except ImportError:
-            from .pins.native import NativePin
-            DefaultPin = NativePin
+
+def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+    group = 'gpiozero_pin_factories'
+    if name is None:
+        # If no factory is explicitly specified, try various names in
+        # "preferred" order. Note that in this case we only select from
+        # gpiozero distribution so without explicitly specifying a name (via
+        # the environment) it's impossible to auto-select a factory from
+        # outside the base distribution
+        #
+        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
+        # no third-party libraries are available, however, we fall back to a
+        # pure Python implementation which supports platforms like PyPy
+        dist = pkg_resources.get_distribution('gpiozero')
+        for name in ('RPiGPIOPin', 'RPIOPin', 'PiGPIOPin', 'NativePin'):
+            try:
+                return pkg_resources.load_entry_point(dist, group, name)
+            except ImportError:
+                pass
+        raise BadPinFactory('Unable to locate any default pin factory!')
+    else:
+        for factory in pkg_resources.iter_entry_points(group, name):
+            return factory.load()
+        raise BadPinFactory('Unable to locate pin factory "%s"' % name)
+
+pin_factory = _default_pin_factory()
 
 
 _PINS = set()
@@ -263,14 +276,15 @@ class CompositeDevice(Device):
     """
     def __init__(self, *args, **kwargs):
         self._all = ()
-        self._named = {}
+        self._named = frozendict({})
         self._namedtuple = None
         self._order = kwargs.pop('_order', None)
         if self._order is None:
             self._order = sorted(kwargs.keys())
+        else:
+            for missing_name in set(kwargs.keys()) - set(self._order):
+                raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         self._order = tuple(self._order)
-        for missing_name in set(kwargs.keys()) - set(self._order):
-            raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         super(CompositeDevice, self).__init__()
         for name in set(self._order) & set(dir(self)):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
@@ -278,7 +292,7 @@ class CompositeDevice(Device):
         for dev in self._all:
             if not isinstance(dev, Device):
                 raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
-        self._named = kwargs
+        self._named = frozendict(kwargs)
         self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             (str(i) for i in range(len(args))), self._order),
             rename=True)
@@ -286,7 +300,7 @@ class CompositeDevice(Device):
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
         if name == '_named':
-            return {}
+            return frozendict({})
         try:
             return self._named[name]
         except KeyError:
@@ -303,7 +317,7 @@ class CompositeDevice(Device):
             self._check_open()
             return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
                     self.__class__.__name__,
-                    len(self), ','.join(self._named),
+                    len(self), ','.join(self._order),
                     len(self) - len(self._named)
                     )
         except DeviceClosed:
@@ -365,7 +379,7 @@ class GPIODevice(Device):
         if pin is None:
             raise GPIOPinMissing('No pin given')
         if isinstance(pin, int):
-            pin = DefaultPin(pin)
+            pin = pin_factory(pin)
         with _PINS_LOCK:
             if pin in _PINS:
                 raise GPIOPinInUse(
@@ -376,9 +390,12 @@ class GPIODevice(Device):
         self._active_state = True
         self._inactive_state = False
 
+    def _state_to_value(self, state):
+        return bool(state == self._active_state)
+
     def _read(self):
         try:
-            return self.pin.state == self._active_state
+            return self._state_to_value(self.pin.state)
         except (AttributeError, TypeError):
             self._check_open()
             raise

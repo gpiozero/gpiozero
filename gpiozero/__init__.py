@@ -7,6 +7,7 @@ from __future__ import (
 
 from .pins import (
     Pin,
+    LocalPin,
 )
 from .pins.data import (
     PiBoardInfo,
@@ -99,13 +100,17 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    Servo,
+    AngularServo,
     RGBLED,
 )
 from .boards import (
     CompositeOutputDevice,
+    ButtonBoard,
     LEDCollection,
     LEDBoard,
     LEDBarGraph,
+    LedBorg,
     PiLiter,
     PiLiterBarGraph,
     TrafficLights,
@@ -122,5 +127,6 @@ from .boards import (
 from .other_devices import (
     InternalDevice,
     PingServer,
+    CPUTemperature,
     TimeOfDay,
 )

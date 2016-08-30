@@ -46,7 +46,12 @@ sys.modules['spidev'] = Mock()
 
 # -- General configuration ------------------------------------------------
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx.ext.intersphinx']
+extensions = [
+    'sphinx.ext.autodoc',     # support for automethod, autoclass, etc.
+    'sphinx.ext.viewcode',    # support for "Source" links in output
+    'sphinx.ext.intersphinx', # support links to Python library docs etc.
+    'sphinx.ext.ifconfig',    # support for ifconfig conditional includes
+    ]
 templates_path = ['_templates']
 source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
@@ -74,6 +79,7 @@ autodoc_member_order = 'groupwise'
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3.4', None),
+    'picamera': ('http://picamera.readthedocs.io/en/latest', None),
     }
 
 # -- Options for HTML output ----------------------------------------------

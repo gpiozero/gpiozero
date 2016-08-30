@@ -2,13 +2,19 @@
 gpiozero
 ========
 
-.. image:: https://badge.fury.io/py/gpiozero.svg
-    :target: https://badge.fury.io/py/gpiozero
-    :alt: Latest Version
+.. ifconfig:: html_theme == 'sphinx_rtd_theme'
 
-.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
-    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
-    :alt: Build Tests
+    .. image:: https://badge.fury.io/py/gpiozero.svg
+        :target: https://badge.fury.io/py/gpiozero
+        :alt: Latest Version
+
+    .. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+        :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+        :alt: Build Tests
+
+    .. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+        :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+        :alt: Code Coverage
 
 A simple interface to everyday GPIO components used with Raspberry Pi.
 
@@ -69,7 +75,7 @@ or::
 Documentation
 =============
 
-Comprehensive documentation is available at https://gpiozero.readthedocs.org/.
+Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
 
 Development
 ===========
@@ -95,8 +101,8 @@ Contributors
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: http://gpiozero.readthedocs.org/en/latest/recipes.html
-.. _Contribute: CONTRIBUTING.md
+.. _recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
+.. _contribute: http://gpiozero.readthedocs.io/en/latest/contributing.html
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Martin O'Hanlon: https://github.com/martinohanlon

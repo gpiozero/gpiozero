@@ -163,7 +163,7 @@ class SPISoftwareBus(SharedMixin, Device):
         return self.lock is None
 
     @classmethod
-    def _shared_key(self, clock_pin, mosi_pin, miso_pin):
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin):
         return (clock_pin, mosi_pin, miso_pin)
 
     def read(self, n):
@@ -396,24 +396,30 @@ def SPI(**spi_args):
         raise SPIBadArgs(
             'unrecognized keyword argument %s' % kwargs.popitem()[0])
     if all((
-            SpiDev is not None,
             spi_args['clock_pin'] == 11,
             spi_args['mosi_pin'] == 10,
             spi_args['miso_pin'] == 9,
             spi_args['select_pin'] in (7, 8),
             )):
-        try:
-            if shared:
-                return SharedSPIHardwareInterface(
-                        port=0, device={8: 0, 7: 1}[spi_args['select_pin']])
-            else:
-                return SPIHardwareInterface(
-                        port=0, device={8: 0, 7: 1}[spi_args['select_pin']])
-        except Exception as e:
+        if SpiDev is None:
             warnings.warn(
                 SPISoftwareFallback(
-                    'failed to initialize hardware SPI, falling back to '
-                    'software (error was: %s)' % str(e)))
+                    'failed to import spidev, falling back to software SPI'))
+        else:
+            try:
+                hardware_spi_args = {
+                    port: 0,
+                    device: {8: 0, 7: 1}[spi_args['select_pin']],
+                    }
+                if shared:
+                    return SharedSPIHardwareInterface(**hardware_spi_args)
+                else:
+                    return SPIHardwareInterface(**hardware_spi_args)
+            except Exception as e:
+                warnings.warn(
+                    SPISoftwareFallback(
+                        'failed to initialize hardware SPI, falling back to '
+                        'software (error was: %s)' % str(e)))
     if shared:
         return SharedSPISoftwareInterface(**spi_args)
     else:

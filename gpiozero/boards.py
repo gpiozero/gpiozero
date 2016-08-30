@@ -12,18 +12,27 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
+from collections import OrderedDict
 
 from .exc import (
     DeviceClosed,
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
+    OutputDeviceBadValue,
     )
 from .input_devices import Button
-from .output_devices import OutputDevice, LED, PWMLED, Buzzer, Motor
+from .output_devices import (
+    OutputDevice,
+    LED,
+    PWMLED,
+    RGBLED,
+    Buzzer,
+    Motor,
+    )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
-from .mixins import SharedMixin, SourceMixin
+from .mixins import SharedMixin, SourceMixin, HoldMixin
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
@@ -44,7 +53,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         """
         Turn all the output devices on.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.on()
 
@@ -52,7 +61,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         """
         Turn all the output devices off.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.off()
 
@@ -61,7 +70,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Toggle all the output devices. For each device, if it's on, turn it
         off; if it's off, turn it on.
         """
-        for device in self.all:
+        for device in self:
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.toggle()
 
@@ -75,10 +84,119 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
 
     @value.setter
     def value(self, value):
-        for device, v in zip(self.all, value):
+        for device, v in zip(self, value):
             if isinstance(device, (OutputDevice, CompositeOutputDevice)):
                 device.value = v
             # Simply ignore values for non-output devices
+
+
+class ButtonBoard(HoldMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a generic button board or
+    collection of buttons.
+
+    :param int \*pins:
+        Specify the GPIO pins that the buttons of the board are attached to.
+        You can designate as many pins as necessary.
+
+    :param bool pull_up:
+        If ``True`` (the default), the GPIO pins will be pulled high by
+        default. In this case, connect the other side of the buttons to
+        ground. If ``False``, the GPIO pins will be pulled low by default. In
+        this case, connect the other side of the buttons to 3V3. This
+        parameter can only be specified as a keyword parameter.
+
+    :param float bounce_time:
+        If ``None`` (the default), no software bounce compensation will be
+        performed. Otherwise, this is the length of time (in seconds) that the
+        buttons will ignore changes in state after an initial change. This
+        parameter can only be specified as a keyword parameter.
+
+    :param float hold_time:
+        The length of time (in seconds) to wait after any button is pushed,
+        until executing the :attr:`when_held` handler. Defaults to ``1``. This
+        parameter can only be specified as a keyword parameter.
+
+    :param bool hold_repeat:
+        If ``True``, the :attr:`when_held` handler will be repeatedly executed
+        as long as any buttons remain held, every *hold_time* seconds. If
+        ``False`` (the default) the :attr:`when_held` handler will be only be
+        executed once per hold. This parameter can only be specified as a
+        keyword parameter.
+
+    :param \*\*named_pins:
+        Specify GPIO pins that buttons of the board are attached to,
+        associating each button with a property name. You can designate as
+        many pins as necessary and use any names, provided they're not already
+        in use by something else.
+    """
+    def __init__(self, *args, **kwargs):
+        pull_up = kwargs.pop('pull_up', True)
+        bounce_time = kwargs.pop('bounce_time', None)
+        hold_time = kwargs.pop('hold_time', 1)
+        hold_repeat = kwargs.pop('hold_repeat', False)
+        order = kwargs.pop('_order', None)
+        super(ButtonBoard, self).__init__(
+            *(
+                Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                for pin in args
+                ),
+            _order=order,
+            **{
+                name: Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                for name, pin in kwargs.items()
+                })
+        def get_new_handler(device):
+            def fire_both_events():
+                device._fire_events()
+                self._fire_events()
+            return fire_both_events
+        for button in self:
+            button.pin.when_changed = get_new_handler(button)
+        self._when_changed = None
+        self._last_value = None
+        # Call _fire_events once to set initial state of events
+        self._fire_events()
+        self.hold_time = hold_time
+        self.hold_repeat = hold_repeat
+
+    @property
+    def pull_up(self):
+        """
+        If ``True``, the device uses a pull-up resistor to set the GPIO pin
+        "high" by default.
+        """
+        return self[0].pull_up
+
+    @property
+    def when_changed(self):
+        return self._when_changed
+
+    @when_changed.setter
+    def when_changed(self, value):
+        self._when_changed = self._wrap_callback(value)
+
+    def _fire_changed(self):
+        if self.when_changed:
+            self.when_changed()
+
+    def _fire_events(self):
+        super(ButtonBoard, self)._fire_events()
+        old_value = self._last_value
+        new_value = self._last_value = self.value
+        if old_value is None:
+            # Initial "indeterminate" value; don't do anything
+            pass
+        elif old_value != new_value:
+            self._fire_changed()
+
+
+ButtonBoard.is_pressed = ButtonBoard.is_active
+ButtonBoard.pressed_time = ButtonBoard.active_time
+ButtonBoard.when_pressed = ButtonBoard.when_activated
+ButtonBoard.when_released = ButtonBoard.when_deactivated
+ButtonBoard.wait_for_press = ButtonBoard.wait_for_active
+ButtonBoard.wait_for_release = ButtonBoard.wait_for_inactive
 
 
 class LEDCollection(CompositeOutputDevice):
@@ -86,7 +204,6 @@ class LEDCollection(CompositeOutputDevice):
     Extends :class:`CompositeOutputDevice`. Abstract base class for
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
-
     def __init__(self, *args, **kwargs):
         self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
@@ -108,19 +225,26 @@ class LEDCollection(CompositeOutputDevice):
                 LEDClass(pin_or_collection, active_high, initial_value)
                 for name, pin_or_collection in kwargs.items()
                 })
+        leds = []
+        for item in self:
+            if isinstance(item, LEDCollection):
+                for subitem in item.leds:
+                    leds.append(subitem)
+            else:
+                leds.append(item)
+        self._leds = tuple(leds)
 
     @property
     def leds(self):
         """
-        A flat iterator over all LEDs contained in this collection (and all
+        A flat tuple of all LEDs contained in this collection (and all
         sub-collections).
         """
-        for item in self:
-            if isinstance(item, LEDCollection):
-                for subitem in item.leds:
-                    yield subitem
-            else:
-                yield item
+        return self._leds
+
+    @property
+    def active_high(self):
+        return self[0].active_high
 
 
 class LEDBoard(LEDCollection):
@@ -148,21 +272,23 @@ class LEDBoard(LEDCollection):
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set all the
-        associates pins to HIGH. If ``False``, the :meth:`on` method will set
-        all pins to LOW (the :meth:`off` method always does the opposite).
+        associated pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite). This
+        parameter can only be specified as a keyword parameter.
 
     :param bool initial_value:
         If ``False`` (the default), all LEDs will be off initially. If
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+        the device will be switched on initially. This parameter can only be
+        specified as a keyword parameter.
 
     :param \*\*named_pins:
-        Sepcify GPIO pins that LEDs of the board are attached to, associated
+        Specify GPIO pins that LEDs of the board are attached to, associating
         each LED with a property name. You can designate as many pins as
-        necessary and any name provided it's not already in use by something
-        else. You can also specify :class:`LEDBoard` instances to create
-        trees of LEDs.
+        necessary and use any names, provided they're not already in use by
+        something else. You can also specify :class:`LEDBoard` instances to
+        create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
         self._blink_leds = []
@@ -345,15 +471,21 @@ class LEDBarGraph(LEDCollection):
         Specify the GPIO pins that the LEDs of the bar graph are attached to.
         You can designate as many pins as necessary.
 
-    :param float initial_value:
-        The initial :attr:`value` of the graph given as a float between -1 and
-        +1.  Defaults to 0.0. This parameter can only be specified as a keyword
-        parameter.
-
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances for each pin. If
         ``False`` (the default), construct regular :class:`LED` instances. This
         parameter can only be specified as a keyword parameter.
+
+    :param bool active_high:
+        If ``True`` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If ``False``, the :meth:`on` method will set
+        all pins to LOW (the :meth:`off` method always does the opposite). This
+        parameter can only be specified as a keyword parameter.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1.  Defaults to ``0.0``. This parameter can only be specified as a
+        keyword parameter.
     """
 
     def __init__(self, *pins, **kwargs):
@@ -361,10 +493,11 @@ class LEDBarGraph(LEDCollection):
         for pin in pins:
             assert not isinstance(pin, LEDCollection)
         pwm = kwargs.pop('pwm', False)
-        initial_value = kwargs.pop('initial_value', 0)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', 0.0)
         if kwargs:
             raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
-        super(LEDBarGraph, self).__init__(*pins, pwm=pwm)
+        super(LEDBarGraph, self).__init__(*pins, pwm=pwm, active_high=active_high)
         try:
             self.value = initial_value
         except:
@@ -402,6 +535,8 @@ class LEDBarGraph(LEDCollection):
 
     @value.setter
     def value(self, value):
+        if not -1 <= value <= 1:
+            raise OutputDeviceBadValue('LEDBarGraph value must be between -1 and 1')
         count = len(self)
         leds = self
         if value < 0:
@@ -413,6 +548,36 @@ class LEDBarGraph(LEDCollection):
             calc_value = lambda index: value >= ((index + 1) / count)
         for index, led in enumerate(leds):
             led.value = calc_value(index)
+
+
+class LedBorg(RGBLED):
+    """
+    Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board
+    containing a very bright RGB LED.
+
+    The LedBorg pins are fixed and therefore there's no need to specify them
+    when constructing this class. The following example turns the LedBorg
+    purple::
+
+        from gpiozero import LedBorg
+
+        led = LedBorg()
+        led.color = (1, 0, 1)
+
+    :param tuple initial_value:
+        The initial color for the LedBorg. Defaults to black ``(0, 0, 0)``.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMLED` instances for
+        each component of the LedBorg. If ``False``, construct regular
+        :class:`LED` instances, which prevents smooth color graduations.
+
+    .. _PiBorg LedBorg: https://www.piborg.org/ledborg
+    """
+
+    def __init__(self, initial_value=(0, 0, 0), pwm=True):
+        super(LedBorg, self).__init__(red=17, green=27, blue=22,
+                                      pwm=pwm, initial_value=initial_value)
 
 
 class PiLiter(LEDBoard):
@@ -431,14 +596,20 @@ class PiLiter(LEDBoard):
 
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances. This
-        parameter can only be specified as a keyword parameter.
+        ``False`` (the default), construct regular :class:`LED` instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False):
-        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25, pwm=pwm)
+    def __init__(self, pwm=False, initial_value=False):
+        super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25,
+                                      pwm=pwm, initial_value=initial_value)
 
 
 class PiLiterBarGraph(LEDBarGraph):
@@ -455,25 +626,30 @@ class PiLiterBarGraph(LEDBarGraph):
         graph = PiLiterBarGraph()
         graph.value = 0.5
 
-    :param bool initial_value:
-        The initial value of the graph given as a float between -1 and +1.
-        Defaults to 0.0.
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances.
+
+    :param float initial_value:
+        The initial :attr:`value` of the graph given as a float between -1 and
+        +1. Defaults to ``0.0``.
 
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, initial_value=0):
-        super(PiLiterBarGraph, self).__init__(
-                4, 17, 27, 18, 22, 23, 24, 25, initial_value=initial_value)
+    def __init__(self, pwm=False, initial_value=0.0):
+        pins = (4, 17, 27, 18, 22, 23, 24, 25)
+        super(PiLiterBarGraph, self).__init__(*pins,
+                pwm=pwm, initial_value=initial_value)
 
 
 class TrafficLights(LEDBoard):
     """
-    Extends :class:`LEDBoard` for devices containing red, amber, and green
+    Extends :class:`LEDBoard` for devices containing red, yellow, and green
     LEDs.
 
     The following example initializes a device connected to GPIO pins 2, 3,
-    and 4, then lights the amber LED attached to GPIO 3::
+    and 4, then lights the amber (yellow) LED attached to GPIO 3::
 
         from gpiozero import TrafficLights
 
@@ -493,15 +669,53 @@ class TrafficLights(LEDBoard):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    :param int yellow:
+        The GPIO pin that the yellow LED is attached to. This is merely an
+        alias for the ``amber`` parameter - you can't specify both ``amber``
+        and ``yellow``.
     """
-    def __init__(self, red=None, amber=None, green=None, pwm=False):
-        if not all([red, amber, green]):
+    def __init__(self, red=None, amber=None, green=None,
+                 pwm=False, initial_value=False, yellow=None):
+        if amber is not None and yellow is not None:
+            raise OutputDeviceBadValue(
+                'Only one of amber or yellow can be specified'
+            )
+        devices = OrderedDict((('red', red), ))
+        self._display_yellow = amber is None and yellow is not None
+        if self._display_yellow:
+            devices['yellow'] = yellow
+        else:
+            devices['amber'] = amber
+        devices['green'] = green
+        if not all(p is not None for p in devices.values()):
             raise GPIOPinMissing(
-                'red, amber and green pins must be provided'
+                ', '.join(devices.keys())+' pins must be provided'
             )
         super(TrafficLights, self).__init__(
-            red=red, amber=amber, green=green, pwm=pwm,
-            _order=('red', 'amber', 'green'))
+            pwm=pwm, initial_value=initial_value,
+            _order=devices.keys(),
+            **devices)
+
+    def __getattr__(self, name):
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
+            name = 'amber'
+        return super(TrafficLights, self).__getattr__(name)
+
+    def __setattr__(self, name, value):
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
+            name = 'amber'
+        return super(TrafficLights, self).__setattr__(name, value)
 
 
 class PiTraffic(TrafficLights):
@@ -521,11 +735,22 @@ class PiTraffic(TrafficLights):
     To use the PI-TRAFFIC board when attached to a non-standard set of pins,
     simply use the parent class, :class:`TrafficLights`.
 
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
     .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
-
-    def __init__(self):
-        super(PiTraffic, self).__init__(9, 10, 11)
+    def __init__(self, pwm=False, initial_value=False):
+        super(PiTraffic, self).__init__(9, 10, 11,
+                                        pwm=pwm, initial_value=initial_value)
 
 
 class SnowPi(LEDBoard):
@@ -548,31 +773,41 @@ class SnowPi(LEDBoard):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
 
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
     .. _Ryanteck SnowPi: https://ryanteck.uk/raspberry-pi/114-snowpi-the-gpio-snowman-for-raspberry-pi-0635648608303.html
     """
-    def __init__(self, pwm=False):
+    def __init__(self, pwm=False, initial_value=False):
         super(SnowPi, self).__init__(
             arms=LEDBoard(
                 left=LEDBoard(
-                    top=17, middle=18, bottom=22, pwm=pwm,
+                    top=17, middle=18, bottom=22,
+                    pwm=pwm, initial_value=initial_value,
                     _order=('top', 'middle', 'bottom')),
                 right=LEDBoard(
-                    top=7, middle=8, bottom=9, pwm=pwm,
+                    top=7, middle=8, bottom=9,
+                    pwm=pwm, initial_value=initial_value,
                     _order=('top', 'middle', 'bottom')),
                 _order=('left', 'right')
                 ),
             eyes=LEDBoard(
-                left=23, right=24, pwm=pwm,
+                left=23, right=24,
+                pwm=pwm, initial_value=initial_value,
                 _order=('left', 'right')
                 ),
-            nose=25, pwm=pwm,
+            nose=25,
+            pwm=pwm, initial_value=initial_value,
             _order=('eyes', 'nose', 'arms')
             )
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):
     """
-    Extends :class:`CompositeDevice` and is a generic class for HATs with
+    Extends :class:`CompositeOutputDevice` and is a generic class for HATs with
     traffic lights, a button and a buzzer.
 
     :param TrafficLights lights:
@@ -594,7 +829,7 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
 
 class FishDish(TrafficLightsBuzzer):
     """
-    Extends :class:`TrafficLightsBuzzer` for the Pi Supply FishDish: traffic
+    Extends :class:`TrafficLightsBuzzer` for the `Pi Supply FishDish`_: traffic
     light LEDs, a button and a buzzer.
 
     The FishDish pins are fixed and therefore there's no need to specify them
@@ -611,6 +846,8 @@ class FishDish(TrafficLightsBuzzer):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
 
     def __init__(self, pwm=False):
@@ -623,7 +860,7 @@ class FishDish(TrafficLightsBuzzer):
 
 class TrafficHat(TrafficLightsBuzzer):
     """
-    Extends :class:`TrafficLightsBuzzer` for the Ryanteck Traffic HAT: traffic
+    Extends :class:`TrafficLightsBuzzer` for the `Ryanteck Traffic HAT`_: traffic
     light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
@@ -640,6 +877,8 @@ class TrafficHat(TrafficLightsBuzzer):
         If ``True``, construct :class:`PWMLED` instances to represent each
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
+
+    .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
     """
 
     def __init__(self, pwm=False):
@@ -658,12 +897,12 @@ class Robot(SourceMixin, CompositeDevice):
     backward pins of the left and right controllers respectively. For example,
     if the left motor's controller is connected to GPIOs 4 and 14, while the
     right motor's controller is connected to GPIOs 17 and 18 then the following
-    example will turn the robot left::
+    example will drive the robot forward::
 
         from gpiozero import Robot
 
         robot = Robot(left=(4, 14), right=(17, 18))
-        robot.left()
+        robot.forward()
 
     :param tuple left:
         A tuple of two GPIO pins representing the forward and backward inputs
@@ -679,6 +918,20 @@ class Robot(SourceMixin, CompositeDevice):
                 left_motor=Motor(*left),
                 right_motor=Motor(*right),
                 _order=('left_motor', 'right_motor'))
+
+    @property
+    def value(self):
+        """
+        Represents the motion of the robot as a tuple of (left_motor_speed,
+        right_motor_speed) with ``(-1, -1)`` representing full speed backwards,
+        ``(1, 1)`` representing full speed forwards, and ``(0, 0)``
+        representing stopped.
+        """
+        return super(Robot, self).value
+
+    @value.setter
+    def value(self, value):
+        self.left_motor.value, self.right_motor.value = value
 
     def forward(self, speed=1):
         """
@@ -746,16 +999,18 @@ class Robot(SourceMixin, CompositeDevice):
 
 class RyanteckRobot(Robot):
     """
-    Extends :class:`Robot` for the Ryanteck MCB robot.
+    Extends :class:`Robot` for the `Ryanteck MCB`_ robot.
 
     The Ryanteck MCB pins are fixed and therefore there's no need to specify
-    them when constructing this class. The following example turns the robot
-    left::
+    them when constructing this class. The following example drives the robot
+    forward::
 
         from gpiozero import RyanteckRobot
 
         robot = RyanteckRobot()
-        robot.left()
+        robot.forward()
+
+    .. _Ryanteck MCB: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
 
     def __init__(self):
@@ -767,13 +1022,13 @@ class CamJamKitRobot(Robot):
     Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
 
     The CamJam robot controller pins are fixed and therefore there's no need
-    to specify them when constructing this class. The following example turns
-    the robot left::
+    to specify them when constructing this class. The following example drives
+    the robot forward::
 
         from gpiozero import CamJamKitRobot
 
         robot = CamJamKitRobot()
-        robot.left()
+        robot.forward()
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
@@ -805,7 +1060,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         with self._lock:
             try:
                 code = (8 * bool(enable)) + (8 - socket)
-                for bit in self.all[:4]:
+                for bit in self[:4]:
                     bit.value = (code & 1)
                     code >>= 1
                 sleep(0.1)
@@ -846,6 +1101,7 @@ class Energenie(SourceMixin, Device):
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
+        self._value = None
         super(Energenie, self).__init__()
         self._socket = socket
         self._master = _EnergenieMaster()
@@ -877,8 +1133,9 @@ class Energenie(SourceMixin, Device):
 
     @value.setter
     def value(self, value):
-        self._master.transmit(self._socket, bool(value))
-        self._value = bool(value)
+        value = bool(value)
+        self._master.transmit(self._socket, value)
+        self._value = value
 
     def on(self):
         self.value = True

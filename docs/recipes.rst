@@ -9,6 +9,8 @@ library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
 
 
+.. _pin_numbering:
+
 Pin Numbering
 =============
 
@@ -18,39 +20,25 @@ configurable.
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 
-Any pin marked ``GPIO`` in the diagram below can be used for generic
-components:
+Any pin marked "GPIO" in the diagram below can be used as a pin number.  For
+example, if an LED was attached to "GPIO17" you would specify the pin number as
+17 rather than 11:
 
 .. image:: images/pin_layout.*
+
 
 LED
 ===
 
 .. image:: images/led.*
 
-Turn an :class:`LED` on and off repeatedly::
+Turn an :class:`LED` on and off repeatedly:
 
-    from gpiozero import LED
-    from time import sleep
+.. literalinclude:: examples/led_1.py
 
-    red = LED(17)
+Alternatively:
 
-    while True:
-        red.on()
-        sleep(1)
-        red.off()
-        sleep(1)
-
-Alternatively::
-
-    from gpiozero import LED
-    from signal import pause
-
-    red = LED(17)
-
-    red.blink()
-
-    pause()
+.. literalinclude:: examples/led_2.py
 
 .. note::
 
@@ -59,45 +47,51 @@ Alternatively::
     :ref:`keep-your-script-running` for more information.
 
 
+LED with variable brightness
+============================
+
+Any regular LED can have its brightness value set using PWM
+(pulse-width-modulation). In GPIO Zero, this can be achieved using
+:class:`PWMLED` using values between 0 and 1:
+
+.. literalinclude:: examples/led_variable_brightness.py
+
+Similarly to blinking on and off continuously, a PWMLED can pulse (fade in and
+out continuously):
+
+.. literalinclude:: examples/led_pulse.py
+
+
 Button
 ======
 
 .. image:: images/button.*
 
-Check if a :class:`Button` is pressed::
+Check if a :class:`Button` is pressed:
 
-    from gpiozero import Button
+.. literalinclude:: examples/button_1.py
 
-    button = Button(2)
+Wait for a button to be pressed before continuing:
 
-    while True:
-        if button.is_pressed:
-            print("Button is pressed")
-        else:
-            print("Button is not pressed")
+.. literalinclude:: examples/button_2.py
 
-Wait for a button to be pressed before continuing::
+Run a function every time the button is pressed:
 
-    from gpiozero import Button
+.. literalinclude:: examples/button_3.py
+    :emphasize-lines: 9
 
-    button = Button(2)
+.. note::
 
-    button.wait_for_press()
-    print("Button was pressed")
+    Note that the line ``button.when_pressed = say_hello`` does not run the
+    function ``say_hello``, rather it creates a reference to the function to
+    be called when the button is pressed. Accidental use of
+    ``button.when_pressed = say_hello()`` would set the ``when_pressed`` action
+    to ``None`` (the return value of this function) which would mean nothing
+    happens when the button is pressed.
 
-Run a function every time the button is pressed::
+Similarly, functions can be attached to button releases:
 
-    from gpiozero import Button
-    from signal import pause
-
-    def say_hello():
-        print("Hello!")
-
-    button = Button(2)
-
-    button.when_pressed = say_hello
-
-    pause()
+.. literalinclude:: examples/button_4.py
 
 
 Button controlled LED
@@ -105,30 +99,71 @@ Button controlled LED
 
 .. image:: images/led_button_bb.*
 
-Turn on an :class:`LED` when a :class:`Button` is pressed::
+Turn on an :class:`LED` when a :class:`Button` is pressed:
 
-    from gpiozero import LED, Button
-    from signal import pause
+.. literalinclude:: examples/button_led_1.py
 
-    led = LED(17)
-    button = Button(2)
+Alternatively:
 
-    button.when_pressed = led.on
-    button.when_released = led.off
+.. literalinclude:: examples/button_led_2.py
 
-    pause()
 
-Alternatively::
+Button controlled camera
+========================
 
-    from gpiozero import LED, Button
-    from signal import pause
+Using the button press to trigger :class:`~picamera.PiCamera` to take a picture
+using ``button.when_pressed = camera.capture`` would not work because the
+:meth:`~picamera.PiCamera.capture` method requires an ``output`` parameter.
+However, this can be achieved using a custom function which requires no
+parameters:
 
-    led = LED(17)
-    button = Button(2)
+.. literalinclude:: examples/button_camera_1.py
+    :emphasize-lines: 9-11
 
-    led.source = button.values
+Another example could use one button to start and stop the camera preview, and
+another to capture:
 
-    pause()
+.. literalinclude:: examples/button_camera_2.py
+
+
+Shutdown button
+===============
+
+The :class:`Button` class also provides the ability to run a function when the
+button has been held for a given length of time. This example will shut down
+the Raspberry Pi when the button is held for 2 seconds:
+
+.. literalinclude:: examples/button_shutdown.py
+
+
+LEDBoard
+========
+
+A collection of LEDs can be accessed using :class:`LEDBoard`:
+
+.. literalinclude:: examples/led_board_1.py
+
+Using :class:`LEDBoard` with ``pwm=True`` allows each LED's brightness to be
+controlled:
+
+.. literalinclude:: examples/led_board_2.py
+
+
+LEDBarGraph
+===========
+
+A collection of LEDs can be treated like a bar graph using
+:class:`LEDBarGraph`:
+
+.. literalinclude:: examples/led_bargraph_2.py
+
+Note values are essentially rounded to account for the fact LEDs can only be on
+or off when ``pwm=False`` (the default).
+
+However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
+values using LED brightness:
+
+.. literalinclude:: examples/led_bargraph_2.py
 
 
 Traffic Lights
@@ -138,97 +173,37 @@ Traffic Lights
 
 A full traffic lights system.
 
-Using a :class:`TrafficLights` kit like Pi-Stop::
+Using a :class:`TrafficLights` kit like Pi-Stop:
 
-    from gpiozero import TrafficLights
-    from time import sleep
+.. literalinclude:: examples/traffic_lights_1.py
 
-    lights = TrafficLights(2, 3, 4)
+Alternatively:
 
-    lights.green.on()
+.. literalinclude:: examples/traffic_lights_2.py
 
-    while True:
-        sleep(10)
-        lights.green.off()
-        lights.amber.on()
-        sleep(1)
-        lights.amber.off()
-        lights.red.on()
-        sleep(10)
-        lights.amber.on()
-        sleep(1)
-        lights.green.on()
-        lights.amber.off()
-        lights.red.off()
+Using :class:`LED` components:
 
-Alternatively::
+.. literalinclude:: examples/traffic_lights_3.py
 
-    from gpiozero import TrafficLights
-    from time import sleep
-    from signal import pause
 
-    lights = TrafficLights(2, 3, 4)
+Travis build LED indicator
+==========================
 
-    def traffic_light_sequence():
-        while True:
-            yield (0, 0, 1) # green
-            sleep(10)
-            yield (0, 1, 0) # amber
-            sleep(1)
-            yield (1, 0, 0) # red
-            sleep(10)
-            yield (1, 1, 0) # red+amber
-            sleep(1)
+Use LEDs to indicate the status of a Travis build. A green light means the
+tests are passing, a red light means the build is broken:
 
-    lights.source = traffic_light_sequence()
+.. literalinclude:: examples/led_travis.py
 
-    pause()
-
-Using :class:`LED` components::
-
-    from gpiozero import LED
-    from time import sleep
-
-    red = LED(2)
-    amber = LED(3)
-    green = LED(4)
-
-    green.on()
-    amber.off()
-    red.off()
-
-    while True:
-        sleep(10)
-        green.off()
-        amber.on()
-        sleep(1)
-        amber.off()
-        red.on()
-        sleep(10)
-        amber.on()
-        sleep(1)
-        green.on()
-        amber.off()
-        red.off()
+Note this recipe requires `travispy`_. Install with ``sudo pip3 install
+travispy``.
 
 
 Push button stop motion
 =======================
 
-Capture a picture with the camera module every time a button is pressed::
+Capture a picture with the camera module every time a button is pressed:
 
-    from gpiozero import Button
-    from picamera import PiCamera
-
-    button = Button(2)
-
-    with PiCamera() as camera:
-        camera.start_preview()
-        frame = 1
-        while True:
-            button.wait_for_press()
-            camera.capture('/home/pi/frame%03d.jpg' % frame)
-            frame += 1
+.. literalinclude:: examples/button_stop_motion.py
 
 See `Push Button Stop Motion`_ for a full resource.
 
@@ -240,30 +215,7 @@ Reaction Game
 
 When you see the light come on, the first person to press their button wins!
 
-::
-
-    from gpiozero import Button, LED
-    from time import sleep
-    import random
-
-    led = LED(17)
-
-    player_1 = Button(2)
-    player_2 = Button(3)
-
-    time = random.uniform(5, 10)
-    sleep(time)
-    led.on()
-
-    while True:
-        if player_1.is_pressed:
-            print("Player 1 wins!")
-            break
-        if player_2.is_pressed:
-            print("Player 2 wins!")
-            break
-
-    led.off()
+.. literalinclude:: examples/reaction_game.py
 
 See `Quick Reaction Game`_ for a full resource.
 
@@ -273,26 +225,7 @@ GPIO Music Box
 
 Each button plays a different sound!
 
-::
-
-    from gpiozero import Button
-    import pygame.mixer
-    from pygame.mixer import Sound
-    from signal import pause
-
-    pygame.mixer.init()
-
-    sound_pins = {
-        2: Sound("samples/drum_tom_mid_hard.wav"),
-        3: Sound("samples/drum_cymbal_open.wav"),
-    }
-
-    buttons = [Button(pin) for pin in sound_pins]
-    for button in buttons:
-        sound = sound_pins[button.pin.number]
-        button.when_pressed = sound.play
-
-    pause()
+.. literalinclude:: examples/music_box.py
 
 See `GPIO Music Box`_ for a full resource.
 
@@ -302,92 +235,27 @@ All on when pressed
 
 While the button is pressed down, the buzzer and all the lights come on.
 
-:class:`FishDish`::
+:class:`FishDish`:
 
-    from gpiozero import FishDish
-    from signal import pause
+.. literalinclude:: examples/all_on_1.py
 
-    fish = FishDish()
+Ryanteck :class:`TrafficHat`:
 
-    fish.button.when_pressed = fish.on
-    fish.button.when_released = fish.off
+.. literalinclude:: examples/all_on_2.py
 
-    pause()
+Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components:
 
-Ryanteck :class:`TrafficHat`::
-
-    from gpiozero import TrafficHat
-    from signal import pause
-
-    th = TrafficHat()
-
-    th.button.when_pressed = th.on
-    th.button.when_released = th.off
-
-    pause()
-
-Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components::
-
-    from gpiozero import LED, Buzzer, Button
-    from signal import pause
-
-    button = Button(2)
-    buzzer = Buzzer(3)
-    red = LED(4)
-    amber = LED(5)
-    green = LED(6)
-
-    things = [red, amber, green, buzzer]
-
-    def things_on():
-        for thing in things:
-            thing.on()
-
-    def things_off():
-        for thing in things:
-            thing.off()
-
-    button.when_pressed = things_on
-    button.when_released = things_off
-
-    pause()
+.. literalinclude:: examples/all_on_3.py
 
 
-RGB LED
-=======
+Full color LED
+==============
 
 .. image:: images/rgb_led_bb.*
 
-Making colours with an :class:`RGBLED`::
+Making colours with an :class:`RGBLED`:
 
-    from gpiozero import RGBLED
-    from time import sleep
-
-    led = RGBLED(red=9, green=10, blue=11)
-
-    led.red = 1  # full red
-    sleep(1)
-    led.red = 0.5  # half red
-    sleep(1)
-
-    led.color = (0, 1, 0)  # full green
-    sleep(1)
-    led.color = (1, 0, 1)  # magenta
-    sleep(1)
-    led.color = (1, 1, 0)  # yellow
-    sleep(1)
-    led.color = (0, 1, 1)  # cyan
-    sleep(1)
-    led.color = (1, 1, 1)  # white
-    sleep(1)
-
-    led.color = (0, 0, 0)  # off
-    sleep(1)
-
-    # slowly increase intensity of blue
-    for n in range(100):
-        led.blue = n/100
-        sleep(0.1)
+.. literalinclude:: examples/rgbled.py
 
 
 Motion sensor
@@ -395,18 +263,9 @@ Motion sensor
 
 .. image:: images/motion_sensor_bb.*
 
-Light an :class:`LED` when a :class:`MotionSensor` detects motion::
+Light an :class:`LED` when a :class:`MotionSensor` detects motion:
 
-    from gpiozero import MotionSensor, LED
-    from signal import pause
-
-    pir = MotionSensor(4)
-    led = LED(16)
-
-    pir.when_motion = led.on
-    pir.when_no_motion = led.off
-
-    pause()
+.. literalinclude:: examples/motion_sensor.py
 
 
 Light sensor
@@ -414,43 +273,18 @@ Light sensor
 
 .. image:: images/light_sensor_bb.*
 
-Have a :class:`LightSensor` detect light and dark::
+Have a :class:`LightSensor` detect light and dark:
 
-    from gpiozero import LightSensor
+.. literalinclude:: examples/light_sensor_1.py
 
-    sensor = LightSensor(18)
+Run a function when the light changes:
 
-    while True:
-        sensor.wait_for_light()
-        print("It's light! :)")
-        sensor.wait_for_dark()
-        print("It's dark :(")
-
-Run a function when the light changes::
-
-    from gpiozero import LightSensor, LED
-    from signal import pause
-
-    sensor = LightSensor(18)
-    led = LED(16)
-
-    sensor.when_dark = led.on
-    sensor.when_light = led.off
-
-    pause()
+.. literalinclude:: examples/light_sensor_2.py
 
 Or make a :class:`PWMLED` change brightness according to the detected light
-level::
+level:
 
-    from gpiozero import LightSensor, LED
-    from signal import pause
-
-    sensor = LightSensor(18)
-    led = PWMLED(16)
-
-    led.source = sensor.values
-
-    pause()
+.. literalinclude:: examples/light_sensor_3.py
 
 
 Distance sensor
@@ -458,29 +292,13 @@ Distance sensor
 
 .. IMAGE TBD
 
-Have a :class:`DistanceSensor` detect the distance to the nearest object::
+Have a :class:`DistanceSensor` detect the distance to the nearest object:
 
-    from gpiozero import DistanceSensor
-    from time import sleep
+.. literalinclude:: examples/distance_sensor_1.py
 
-    sensor = DistanceSensor(23, 24)
+Run a function when something gets near the sensor:
 
-    while True:
-        print('Distance to nearest object is', sensor.distance, 'm')
-        sleep(1)
-
-Run a function when something gets near the sensor::
-
-    from gpiozero import DistanceSensor, LED
-    from signal import pause
-
-    sensor = DistanceSensor(23, 24, max_distance=1, threshold_distance=0.2)
-    led = LED(16)
-
-    sensor.when_in_range = led.on
-    sensor.when_out_of_range = led.off
-
-    pause()
+.. literalinclude:: examples/distance_sensor_2.py
 
 
 Motors
@@ -488,18 +306,9 @@ Motors
 
 .. image:: images/motor_bb.*
 
-Spin a :class:`Motor` around forwards and backwards::
+Spin a :class:`Motor` around forwards and backwards:
 
-    from gpiozero import Motor
-    from time import sleep
-
-    motor = Motor(forward=4, back=14)
-
-    while True:
-        motor.forward()
-        sleep(5)
-        motor.backward()
-        sleep(5)
+.. literalinclude:: examples/motor.py
 
 
 Robot
@@ -507,163 +316,59 @@ Robot
 
 .. IMAGE TBD
 
-Make a :class:`Robot` drive around in (roughly) a square::
+Make a :class:`Robot` drive around in (roughly) a square:
 
-    from gpiozero import Robot
-    from time import sleep
-
-    robot = Robot(left=(4, 14), right=(17, 18))
-
-    for i in range(4):
-        robot.forward()
-        sleep(10)
-        robot.right()
-        sleep(1)
+.. literalinclude:: examples/robot_1.py
 
 Make a robot with a distance sensor that runs away when things get within
-20cm of it::
+20cm of it:
 
-    from gpiozero import Robot, DistanceSensor
-    from signal import pause
-
-    sensor = DistanceSensor(23, 24, max_distance=1, threshold_distance=0.2)
-    robot = Robot(left=(4, 14), right=(17, 18))
-
-    sensor.when_in_range = robot.backward
-    sensor.when_out_of_range = robot.stop
-    pause()
+.. literalinclude:: examples/robot_2.py
 
 
 Button controlled robot
 =======================
 
-Use four GPIO buttons as forward/back/left/right controls for a robot::
+Use four GPIO buttons as forward/back/left/right controls for a robot:
 
-    from gpiozero import RyanteckRobot, Button
-    from signal import pause
-
-    robot = RyanteckRobot()
-
-    left = Button(26)
-    right = Button(16)
-    fw = Button(21)
-    bw = Button(20)
-
-    fw.when_pressed = robot.forward
-    fw.when_released = robot.stop
-
-    left.when_pressed = robot.left
-    left.when_released = robot.stop
-
-    right.when_pressed = robot.right
-    right.when_released = robot.stop
-
-    bw.when_pressed = robot.backward
-    bw.when_released = robot.stop
-
-    pause()
+.. literalinclude:: examples/robot_buttons.py
 
 
 Keyboard controlled robot
 =========================
 
-Use up/down/left/right keys to control a robot::
+Use up/down/left/right keys to control a robot:
 
-    import curses
-    from gpiozero import RyanteckRobot
-
-    robot = RyanteckRobot()
-
-    actions = {
-        curses.KEY_UP:    robot.forward,
-        curses.KEY_DOWN:  robot.backward,
-        curses.KEY_LEFT:  robot.left,
-        curses.KEY_RIGHT: robot.right,
-        }
-
-    def main(window):
-        next_key = None
-        while True:
-            curses.halfdelay(1)
-            if next_key is None:
-                key = window.getch()
-            else:
-                key = next_key
-                next_key = None
-            if key != -1:
-                # KEY DOWN
-                curses.halfdelay(3)
-                action = actions.get(key)
-                if action is not None:
-                    action()
-                next_key = key
-                while next_key == key:
-                    next_key = window.getch()
-                # KEY UP
-                robot.stop()
-
-    curses.wrapper(main)
+.. literalinclude:: examples/robot_keyboard_1.py
 
 .. note::
 
-    This recipe uses the ``curses`` module. This module requires that Python is
-    running in a terminal in order to work correctly, hence this recipe will
-    *not* work in environments like IDLE.
+    This recipe uses the standard :mod:`curses` module. This module requires
+    that Python is running in a terminal in order to work correctly, hence this
+    recipe will *not* work in environments like IDLE.
 
 If you prefer a version that works under IDLE, the following recipe should
-suffice, but will require that you install the evdev library with ``sudo pip
-install evdev`` first::
+suffice:
 
-    from gpiozero import RyanteckRobot
-    from evdev import InputDevice, list_devices, ecodes
+.. literalinclude:: examples/robot_keyboard_2.py
 
-    robot = RyanteckRobot()
+.. note::
 
-    devices = [InputDevice(device) for device in list_devices()]
-    keyboard = devices[0]  # this may vary
-
-    keypress_actions = {
-        ecodes.KEY_UP: robot.forward,
-        ecodes.KEY_DOWN: robot.backward,
-        ecodes.KEY_LEFT: robot.left,
-        ecodes.KEY_RIGHT: robot.right,
-    }
-
-    for event in keyboard.read_loop():
-        if event.type == ecodes.EV_KEY:
-            if event.value == 1:  # key down
-                keypress_actions[event.code]()
-            if event.value == 0:  # key up
-                robot.stop()
+    This recipe uses the third-party ``evdev`` module. Install this library
+    with ``sudo pip3 install evdev`` first. Be aware that ``evdev`` will only
+    work with local input devices; this recipe will *not* work over SSH.
 
 
 Motion sensor robot
 ===================
 
-Make a robot drive forward when it detects motion::
+Make a robot drive forward when it detects motion:
 
-    from gpiozero import Robot, MotionSensor
-    from signal import pause
+.. literalinclude:: examples/robot_motion_1.py
 
-    robot = Robot(left=(4, 14), right=(17, 18))
-    pir = MotionSensor(5)
+Alternatively:
 
-    pir.when_motion = robot.forward
-    pir.when_no_motion = robot.stop
-
-    pause()
-
-Alternatively::
-
-    from gpiozero import Robot, MotionSensor
-    from signal import pause
-
-    robot = Robot(left=(4, 14), right=(17, 18))
-    pir = MotionSensor(5)
-
-    robot.source = zip(pir.values, pir.values)
-
-    pause()
+.. literalinclude:: examples/robot_motion_2.py
 
 
 Potentiometer
@@ -672,24 +377,14 @@ Potentiometer
 .. image:: images/potentiometer_bb.*
 
 Continually print the value of a potentiometer (values between 0 and 1)
-connected to a :class:`MCP3008` analog to digital converter::
+connected to a :class:`MCP3008` analog to digital converter:
 
-    from gpiozero import MCP3008
-
-    while True:
-        with MCP3008(channel=0) as pot:
-            print(pot.value)
+.. literalinclude:: examples/pot_1.py
 
 Present the value of a potentiometer on an LED bar graph using PWM to represent
-states that won't "fill" an LED::
+states that won't "fill" an LED:
 
-    from gpiozero import LEDBarGraph, MCP3008
-    from signal import pause
-
-    graph = LEDBarGraph(5, 6, 13, 19, 26, pwm=True)
-    pot = MCP3008(channel=0)
-    graph.source = pot.values
-    pause()
+.. literalinclude:: examples/pot_2.py
 
 
 Measure temperature with an ADC
@@ -698,54 +393,24 @@ Measure temperature with an ADC
 .. IMAGE TBD
 
 Wire a TMP36 temperature sensor to the first channel of an :class:`MCP3008`
-analog to digital converter::
+analog to digital converter:
 
-    from gpiozero import MCP3008
-    from time import sleep
-
-    def convert_temp(gen):
-        for value in gen:
-            yield (value * 3.3 - 0.5) * 100
-
-    adc = MCP3008(channel=0)
-
-    for temp in convert_temp(adc.values):
-        print('The temperature is', temp, 'C')
-        sleep(1)
+.. literalinclude:: examples/thermometer.py
 
 
 Full color LED controlled by 3 potentiometers
 =============================================
 
 Wire up three potentiometers (for red, green and blue) and use each of their
-values to make up the colour of the LED::
+values to make up the colour of the LED:
 
-    from gpiozero import RGBLED, MCP3008
-
-    led = RGBLED(red=2, green=3, blue=4)
-    red_pot = MCP3008(channel=0)
-    green_pot = MCP3008(channel=1)
-    blue_pot = MCP3008(channel=2)
-
-    while True:
-        led.red = red_pot.value
-        led.green = green_pot.value
-        led.blue = blue_pot.value
+.. literalinclude:: examples/rgbled_pot_1.py
 
 Alternatively, the following example is identical, but uses the
-:attr:`~SourceMixin.source` property rather than a :keyword:`while` loop::
+:attr:`~SourceMixin.source` property rather than a :keyword:`while` loop:
 
-    from gpiozero import RGBLED, MCP3008
-    from signal import pause
-
-    led = RGBLED(2, 3, 4)
-    red_pot = MCP3008(0)
-    green_pot = MCP3008(1)
-    blue_pot = MCP3008(2)
-
-    led.source = zip(red_pot.values, green_pot.values, blue_pot.values)
-
-    pause()
+.. literalinclude:: examples/rgbled_pot_2.py
+    :emphasize-lines: 8
 
 Please note the example above requires Python 3. In Python 2, :func:`zip`
 doesn't support lazy evaluation so the script will simply hang.
@@ -765,17 +430,9 @@ be done from the terminal with the following commands::
     $ echo none | sudo tee /sys/class/leds/led0/trigger
     $ echo gpio | sudo tee /sys/class/leds/led1/trigger
 
-Now you can control the LEDs with gpiozero like so::
+Now you can control the LEDs with gpiozero like so:
 
-    from gpiozero import LED
-    from signal import pause
-
-    power = LED(35)
-    activity = LED(47)
-
-    activity.blink()
-    power.blink()
-    pause()
+.. literalinclude:: examples/led_builtin.py
 
 To revert the LEDs to their usual purpose you can either reboot your Pi or
 run the following commands::
@@ -788,7 +445,7 @@ run the following commands::
     On the Pi Zero you can control the activity LED with this recipe, but
     there's no separate power LED to control (it's also worth noting the
     activity LED is active low, so set ``active_high=False`` when constructing
-    your LED component.
+    your LED component).
 
     On the original Pi 1 (model A or B), the activity LED can be controlled
     with GPIO16 (after disabling its trigger as above) but the power LED is
@@ -798,6 +455,7 @@ run the following commands::
     accessible from gpiozero (yet).
 
 
+.. _travispy: https://travispy.readthedocs.io/
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/

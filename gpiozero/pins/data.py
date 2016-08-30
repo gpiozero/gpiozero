@@ -243,29 +243,29 @@ CM_SODIMM = {
 
 PI_REVISIONS = {
     # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers
-    'beta':   ('B',    '?',   '2012Q1', 'BCM2835', '?',         256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0002':   ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0003':   ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    '0004':   ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0005':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0006':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0007':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0008':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0009':   ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000d':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000e':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '000f':   ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    '0010':   ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0011':   ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    '0012':   ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0013':   ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '0014':   ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    0,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    '0015':   ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    'a01041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    'a21041': ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    '900092': ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
-    'a02082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
-    'a22082': ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
+    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
+    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x11:     ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
+    0x12:     ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0xa01041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0xa21041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x900092: ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
+    0xa02082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0xa22082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
+    0x900093: ('Zero', '1.3', '2016Q2', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  0,  {'P1': PLUS_P1},               ),
     }
 
 
@@ -323,6 +323,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     represent information about a particular model of Raspberry Pi. While it is
     a tuple, it is strongly recommended that you use the following named
     attributes to access the data contained within.
+
+    .. automethod:: physical_pin
+
+    .. automethod:: physical_pins
+
+    .. automethod:: pulled_up
 
     .. attribute:: revision
 
@@ -389,10 +395,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         .. note::
 
             This does *not* include the micro-USB port used to power the Pi.
-            On the Compute Module this is listed as 0 as the compute module
-            itself doesn't have any physical USB headers, despite providing one
-            on the I/O development board and having the pins for one on the
-            module itself.
 
     .. attribute:: ethernet
 
@@ -430,7 +432,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
 
     def physical_pins(self, function):
         """
-        Return the physical pins supporting the specified *function* as a tuple
+        Return the physical pins supporting the specified *function* as tuples
         of ``(header, pin_number)`` where *header* is a string specifying the
         header containing the *pin_number*. Note that the return value is a
         :class:`set` which is not indexable. Use :func:`physical_pin` if you
@@ -487,19 +489,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             return self.headers[header][number].pull_up
 
 
-_PI_REVISION = None
-def _get_pi_revision():
-    with io.open('/proc/cpuinfo', 'r') as f:
-        for line in f:
-            if line.startswith('Revision'):
-                revision = line.split(':')[1].strip().lower()
-                overvolted = revision.startswith('1000')
-                if overvolted:
-                    revision = revision[4:]
-                return revision
-        raise IOError('unable to locate Pi revision in /proc/cpuinfo')
-
-
 def _parse_pi_revision(revision):
     # For new-style revisions the value's bit pattern is as follows:
     #
@@ -512,10 +501,9 @@ def _parse_pi_revision(revision):
     # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
     # PPPP     - Processor (0=2835, 1=2836, 2=2837)
     # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
-    # RRR      - Revision (0, 1, or 2)
-    i = int(revision, base=16)
-    if not (i & 0x800000):
-        raise ValueError('cannot parse "%s"; this is not a new-style revision' % revision)
+    # RRRR     - Revision (0, 1, or 2)
+    if not (revision & 0x800000):
+        raise PinUnknownPi('cannot parse "%x"; this is not a new-style revision' % revision)
     try:
         model = {
             0: 'A',
@@ -526,15 +514,15 @@ def _parse_pi_revision(revision):
             6: 'CM',
             8: '3B',
             9: 'Zero',
-            }[(i & 0xff0) >> 4]
+            }[(revision & 0xff0) >> 4]
         if model in ('A', 'B'):
             pcb_revision = {
                 0: '1.0', # is this right?
                 1: '1.0',
                 2: '2.0',
-                }[i & 0x0f]
+                }[revision & 0x0f]
         else:
-            pcb_revision = '1.%d' % (i & 0x0f)
+            pcb_revision = '1.%d' % (revision & 0x0f)
         released = {
             'A':    '2013Q1',
             'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
@@ -543,23 +531,23 @@ def _parse_pi_revision(revision):
             '2B':   '2015Q1',
             'CM':   '2014Q2',
             '3B':   '2016Q1',
-            'Zero': '2015Q4',
+            'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
             }[model]
         soc = {
             0: 'BCM2835',
             1: 'BCM2836',
             2: 'BCM2837',
-            }[(i & 0xf000) >> 12]
+            }[(revision & 0xf000) >> 12]
         manufacturer = {
             0: 'Sony',
             1: 'Egoman',
             2: 'Embest',
-            }[(i & 0xf0000) >> 16]
+            }[(revision & 0xf0000) >> 16]
         memory = {
             0: 256,
             1: 512,
             2: 1024,
-            }[(i & 0x700000) >> 20]
+            }[(revision & 0x700000) >> 20]
         storage = {
             'A': 'SD',
             'B': 'SD',
@@ -585,17 +573,19 @@ def _parse_pi_revision(revision):
             '3B': True,
             }.get(model, False)
         csi = {
-            'Zero': 0,
+            'Zero': 0 if pcb_revision == '1.0' else 1,
             'CM':   2,
             }.get(model, 1)
-        dsi = csi
+        dsi = {
+            'Zero': 0,
+            }.get(model, csi)
         headers = {
             'A':  {'P1': REV2_P1, 'P5': REV2_P5},
             'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
             'CM': {'SODIMM': CM_SODIMM},
             }.get(model, {'P1': PLUS_P1})
     except KeyError:
-        raise ValueError('unable to parse new-style revision "%s"' % revision)
+        raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
     else:
         return (
             model,
@@ -625,16 +615,26 @@ def pi_info(revision=None):
         or ``None`` (the default), then the library will attempt to determine
         the model of Pi it is running on and return information about that.
     """
-    # cache the result as we can reasonably assume the revision of the Pi isn't
-    # going to change at runtime...
     if revision is None:
-        global _PI_REVISION
-        if _PI_REVISION is None:
-            try:
-                _PI_REVISION = _get_pi_revision()
-            except IOError:
-                _PI_REVISION = 'unknown'
-        revision = _PI_REVISION
+        # NOTE: This import is declared locally for two reasons. Firstly it
+        # avoids a circular dependency (devices->pins->pins.data->devices).
+        # Secondly, pin_factory is one global which might potentially be
+        # re-written by a user's script at runtime hence we should re-import
+        # here in case it's changed since initialization
+        from ..devices import pin_factory
+        result = pin_factory.pi_info()
+        if result is None:
+            raise PinUnknownPi('The default pin_factory is not attached to a Pi')
+        else:
+            return result
+    else:
+        if isinstance(revision, bytes):
+            revision = revision.decode('ascii')
+        if isinstance(revision, str):
+            revision = int(revision, base=16)
+        else:
+            # be nice to people passing an int (or something numeric anyway)
+            revision = int(revision)
     try:
         (
             model,
@@ -653,25 +653,22 @@ def pi_info(revision=None):
             headers,
             ) = PI_REVISIONS[revision]
     except KeyError:
-        try:
-            (
-                model,
-                pcb_revision,
-                released,
-                soc,
-                manufacturer,
-                memory,
-                storage,
-                usb,
-                ethernet,
-                wifi,
-                bluetooth,
-                csi,
-                dsi,
-                headers,
-                ) = _parse_pi_revision(revision)
-        except ValueError:
-            raise PinUnknownPi('unknown RPi revision "%s"' % revision)
+        (
+            model,
+            pcb_revision,
+            released,
+            soc,
+            manufacturer,
+            memory,
+            storage,
+            usb,
+            ethernet,
+            wifi,
+            bluetooth,
+            csi,
+            dsi,
+            headers,
+            ) = _parse_pi_revision(revision)
     headers = {
         header: {
             number: PinInfo(number, function, pull_up)
@@ -680,7 +677,7 @@ def pi_info(revision=None):
         for header, header_data in headers.items()
         }
     return PiBoardInfo(
-        revision,
+        '%04x' % revision,
         model,
         pcb_revision,
         released,

@@ -10,7 +10,7 @@ the :attr:`~gpiozero.SourceMixin.source` and
 library. These utility routines are in the ``tools`` module of GPIO Zero and
 are typically imported as follows::
 
-    from gpiozero.tools import scaled, negated, conjunction
+    from gpiozero.tools import scaled, negated, all_values
 
 Given that :attr:`~gpiozero.SourceMixin.source` and
 :attr:`~gpiozero.ValuesMixin.values` deal with infinite iterators, another
@@ -29,6 +29,8 @@ Single source conversions
 
 .. autofunction:: absoluted
 
+.. autofunction:: booleanized
+
 .. autofunction:: clamped
 
 .. autofunction:: inverted
@@ -37,11 +39,17 @@ Single source conversions
 
 .. autofunction:: post_delayed
 
+.. autofunction:: post_periodic_filtered
+
 .. autofunction:: pre_delayed
+
+.. autofunction:: pre_periodic_filtered
 
 .. autofunction:: quantized
 
 .. autofunction:: queued
+
+.. autofunction:: smoothed
 
 .. autofunction:: scaled
 
@@ -54,8 +62,12 @@ Combining sources
 
 .. autofunction:: averaged
 
-Artifical sources
-=================
+.. autofunction:: multiplied
+
+.. autofunction:: summed
+
+Artificial sources
+==================
 
 .. autofunction:: cos_values
 

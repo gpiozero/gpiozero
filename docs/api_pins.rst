@@ -25,34 +25,38 @@ integer number instead, it uses one of the following classes to provide the
 4. :class:`gpiozero.pins.native.NativePin`
 
 You can change the default pin implementation by over-writing the
-``DefaultPin`` global in the ``devices`` module like so::
+``pin_factory`` global in the ``devices`` module like so::
 
     from gpiozero.pins.native import NativePin
     import gpiozero.devices
     # Force the default pin implementation to be NativePin
-    gpiozero.devices.DefaultPin = NativePin
+    gpiozero.devices.pin_factory = NativePin
 
     from gpiozero import LED
 
     # This will now use NativePin instead of RPiGPIOPin
     led = LED(16)
 
-Alternatively, instead of passing an integer to the device constructor, you
-can pass a :class:`Pin` object itself::
+``pin_factory`` is a concrete descendent of the abstract :class:`Pin` class.
+The descendent may take additional parameters in its constructor provided they
+are optional; GPIO Zero will expect to be able to construct instances with
+nothing more than an integer pin number.
+
+However, the descendent may take default information from additional sources.
+For example, to default to creating pins with
+:class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``
+you can set the :envvar:`PIGPIO_ADDR` environment variable when running your
+script::
+
+    $ PIGPIO_ADDR=remote-pi python my_script.py
+
+It is worth noting that instead of passing an integer to device constructors,
+you can pass an object derived from :class:`Pin` itself::
 
     from gpiozero.pins.native import NativePin
     from gpiozero import LED
 
     led = LED(NativePin(16))
-
-This is particularly useful with implementations that can take extra parameters
-such as :class:`~gpiozero.pins.pigpiod.PiGPIOPin` which can address pins on
-remote machines::
-
-    from gpiozero.pins.pigpiod import PiGPIOPin
-    from gpiozero import LED
-
-    led = LED(PiGPIOPin(16, host='my_other_pi'))
 
 In future, this separation of pins and devices should also permit the library
 to utilize pins that are part of IO extender chips. For example::
@@ -107,6 +111,13 @@ Abstract Pin
 ============
 
 .. autoclass:: Pin
+    :members:
+
+
+Local Pin
+=========
+
+.. autoclass:: LocalPin
     :members:
 
 

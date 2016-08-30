@@ -43,16 +43,15 @@ class OutputDevice(SourceMixin, GPIODevice):
         self.active_high = active_high
         if initial_value is None:
             self.pin.function = 'output'
-        elif initial_value:
-            self.pin.output_with_state(self._active_state)
         else:
-            self.pin.output_with_state(self._inactive_state)
+            self.pin.output_with_state(self._value_to_state(initial_value))
+
+    def _value_to_state(self, value):
+        return bool(self._active_state if value else self._inactive_state)
 
     def _write(self, value):
-        if not self.active_high:
-            value = not value
         try:
-            self.pin.state = bool(value)
+            self.pin.state = self._value_to_state(value)
         except AttributeError:
             self._check_open()
             raise
@@ -218,8 +217,8 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for valid
-        pin numbers.
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the LED will operate normally with the
@@ -253,8 +252,8 @@ class Buzzer(DigitalOutputDevice):
         bz.on()
 
     :param int pin:
-        The GPIO pin which the buzzer is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the buzzer is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the buzzer will operate normally with the
@@ -277,15 +276,15 @@ class PWMOutputDevice(OutputDevice):
     Generic output device configured for pulse-width modulation (PWM).
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set the GPIO to
         HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
         :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
+    :param float initial_value:
         If ``0`` (the default), the device's duty cycle will be 0 initially.
         Other values between 0 and 1 can be specified as an initial duty cycle.
         Note that ``None`` cannot be specified (unlike the parent class) as
@@ -300,7 +299,7 @@ class PWMOutputDevice(OutputDevice):
         self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
-        super(PWMOutputDevice, self).__init__(pin, active_high)
+        super(PWMOutputDevice, self).__init__(pin, active_high, initial_value=None)
         try:
             # XXX need a way of setting these together
             self.pin.frequency = frequency
@@ -318,23 +317,16 @@ class PWMOutputDevice(OutputDevice):
             pass
         super(PWMOutputDevice, self).close()
 
-    def _read(self):
-        self._check_open()
-        if self.active_high:
-            return self.pin.state
-        else:
-            return 1 - self.pin.state
+    def _state_to_value(self, state):
+        return float(state if self.active_high else 1 - state)
+
+    def _value_to_state(self, value):
+        return float(value if self.active_high else 1 - value)
 
     def _write(self, value):
-        if not self.active_high:
-            value = 1 - value
         if not 0 <= value <= 1:
             raise OutputDeviceBadValue("PWM value must be between 0 and 1")
-        try:
-            self.pin.state = value
-        except AttributeError:
-            self._check_open()
-            raise
+        super(PWMOutputDevice, self)._write(value)
 
     @property
     def value(self):
@@ -435,12 +427,12 @@ class PWMOutputDevice(OutputDevice):
             Number of seconds to spend fading out. Defaults to 1.
 
         :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+            Number of times to pulse; ``None`` (the default) means forever.
 
         :param bool background:
             If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
+            pulsing and return immediately. If ``False``, only return when the
+            pulse is finished (warning: the default value of *n* will result in
             this method never returning).
         """
         on_time = off_time = 0
@@ -491,7 +483,7 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -499,7 +491,7 @@ class PWMLED(PWMOutputDevice):
         HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
         :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
+    :param float initial_value:
         If ``0`` (the default), the LED will be off initially. Other values
         between 0 and 1 can be specified as an initial brightness for the LED.
         Note that ``None`` cannot be specified (unlike the parent class) as
@@ -553,18 +545,24 @@ class RGBLED(SourceMixin, Device):
         Set to ``True`` (the default) for common cathode RGB LEDs. If you are
         using a common anode RGB LED, set this to ``False``.
 
-    :param bool initial_value:
-        The initial color for the LED. Defaults to black ``(0, 0, 0)``.
+    :param tuple initial_value:
+        The initial color for the RGB LED. Defaults to black ``(0, 0, 0)``.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMLED` instances for
+        each component of the RGBLED. If ``False``, construct regular
+        :class:`LED` instances, which prevents smooth color graduations.
     """
     def __init__(
             self, red=None, green=None, blue=None, active_high=True,
-            initial_value=(0, 0, 0)):
+            initial_value=(0, 0, 0), pwm=True):
         self._leds = ()
         self._blink_thread = None
-        if not all([red, green, blue]):
+        if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
+        LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__()
-        self._leds = tuple(PWMLED(pin, active_high) for pin in (red, green, blue))
+        self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
         self.value = initial_value
 
     red = _led_property(0)
@@ -581,13 +579,14 @@ class RGBLED(SourceMixin, Device):
 
     @property
     def closed(self):
-        return bool(self._leds)
+        return len(self._leds) == 0
 
     @property
     def value(self):
         """
         Represents the color of the LED as an RGB 3-tuple of ``(red, green,
-        blue)`` where each value is between 0 and 1.
+        blue)`` where each value is between 0 and 1 if ``pwm`` was ``True``
+        when the class was constructed (and only 0 or 1 if not).
 
         For example, purple would be ``(1, 0, 1)`` and yellow would be ``(1, 1,
         0)``, while orange would be ``(1, 0.5, 0)``.
@@ -596,6 +595,12 @@ class RGBLED(SourceMixin, Device):
 
     @value.setter
     def value(self, value):
+        for component in value:
+            if not 0 <= component <= 1:
+                raise OutputDeviceBadValue('each RGB color component must be between 0 and 1')
+            if isinstance(self._leds[0], LED):
+                if component not in (0, 1):
+                    raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
         self._stop_blink()
         self.red, self.green, self.blue = value
 
@@ -647,10 +652,14 @@ class RGBLED(SourceMixin, Device):
             Number of seconds off. Defaults to 1 second.
 
         :param float fade_in_time:
-            Number of seconds to spend fading in. Defaults to 0.
+            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param float fade_out_time:
-            Number of seconds to spend fading out. Defaults to 0.
+            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
 
         :param tuple on_color:
             The color to use when the LED is "on". Defaults to white.
@@ -667,15 +676,56 @@ class RGBLED(SourceMixin, Device):
             blink is finished (warning: the default value of *n* will result in
             this method never returning).
         """
+        if isinstance(self._leds[0], LED):
+            if fade_in_time:
+                raise ValueError('fade_in_time must be 0 with non-PWM RGBLEDs')
+            if fade_out_time:
+                raise ValueError('fade_out_time must be 0 with non-PWM RGBLEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, on_color, off_color, n)
+            args=(
+                on_time, off_time, fade_in_time, fade_out_time,
+                on_color, off_color, n
+            )
         )
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
+
+    def pulse(
+            self, fade_in_time=1, fade_out_time=1,
+            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+        """
+        Make the device fade in and out repeatedly.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 1.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 1.
+
+        :param tuple on_color:
+            The color to use when the LED is "on". Defaults to white.
+
+        :param tuple off_color:
+            The color to use when the LED is "off". Defaults to black.
+
+        :param int n:
+            Number of times to pulse; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            pulsing and return immediately. If ``False``, only return when the
+            pulse is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        on_time = off_time = 0
+        self.blink(
+            on_time, off_time, fade_in_time, fade_out_time,
+            on_color, off_color, n, background
+        )
 
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway
@@ -746,22 +796,31 @@ class Motor(SourceMixin, CompositeDevice):
     :param int backward:
         The GPIO pin that the backward input of the motor driver chip is
         connected to.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
     """
-    def __init__(self, forward=None, backward=None):
-        if not all([forward, backward]):
+    def __init__(self, forward=None, backward=None, pwm=True):
+        if not all(p is not None for p in [forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
+        PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super(Motor, self).__init__(
-                forward_device=PWMOutputDevice(forward),
-                backward_device=PWMOutputDevice(backward),
+                forward_device=PinClass(forward),
+                backward_device=PinClass(backward),
                 _order=('forward_device', 'backward_device'))
 
     @property
     def value(self):
         """
         Represents the speed of the motor as a floating point value between -1
-        (full speed backward) and 1 (full speed forward).
+        (full speed backward) and 1 (full speed forward), with 0 representing
+        stopped.
         """
         return self.forward_device.value - self.backward_device.value
 
@@ -770,9 +829,15 @@ class Motor(SourceMixin, CompositeDevice):
         if not -1 <= value <= 1:
             raise OutputDeviceBadValue("Motor value must be between -1 and 1")
         if value > 0:
-            self.forward(value)
+            try:
+                self.forward(value)
+            except ValueError as e:
+                raise OutputDeviceBadValue(e)
         elif value < 0:
-            self.backward(-value)
+            try:
+               self.backward(-value)
+            except ValueError as e:
+                raise OutputDeviceBadValue(e)
         else:
             self.stop()
 
@@ -790,8 +855,14 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
+            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
+            ``True`` when the class was constructed (and only 0 or 1 if not).
         """
+        if not 0 <= speed <= 1:
+            raise ValueError('forward speed must be between 0 and 1')
+        if isinstance(self.forward_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
         self.backward_device.off()
         self.forward_device.value = speed
 
@@ -801,8 +872,14 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
+            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
+            ``True`` when the class was constructed (and only 0 or 1 if not).
         """
+        if not 0 <= speed <= 1:
+            raise ValueError('backward speed must be between 0 and 1')
+        if isinstance(self.backward_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
         self.forward_device.off()
         self.backward_device.value = speed
 
@@ -820,3 +897,314 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
+
+
+class Servo(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a PWM-controlled servo
+    motor connected to a GPIO pin.
+
+    Connect a power source (e.g. a battery pack or the 5V pin) to the power
+    cable of the servo (this is typically colored red); connect the ground
+    cable of the servo (typically colored black or brown) to the negative of
+    your battery pack, or a GND pin; connect the final cable (typically colored
+    white or orange) to the GPIO pin you wish to use for controlling the servo.
+
+    The following code will make the servo move between its minimum, maximum,
+    and mid-point positions with a pause between each::
+
+        from gpiozero import Servo
+        from time import sleep
+
+        servo = Servo(17)
+        while True:
+            servo.min()
+            sleep(1)
+            servo.mid()
+            sleep(1)
+            servo.max()
+            sleep(1)
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
+
+    :param float initial_value:
+        If ``0`` (the default), the device's mid-point will be set
+        initially.  Other values between -1 and +1 can be specified as an
+        initial position. ``None`` means to start the servo un-controlled (see
+        :attr:`value`).
+
+    :param float min_pulse_width:
+        The pulse width corresponding to the servo's minimum position. This
+        defaults to 1ms.
+
+    :param float max_pulse_width:
+        The pulse width corresponding to the servo's maximum position. This
+        defaults to 2ms.
+
+    :param float frame_width:
+        The length of time between servo control pulses measured in seconds.
+        This defaults to 20ms which is a common value for servos.
+    """
+    def __init__(
+            self, pin=None, initial_value=0.0,
+            min_pulse_width=1/1000, max_pulse_width=2/1000,
+            frame_width=20/1000):
+        if min_pulse_width >= max_pulse_width:
+            raise ValueError('min_pulse_width must be less than max_pulse_width')
+        if max_pulse_width >= frame_width:
+            raise ValueError('max_pulse_width must be less than frame_width')
+        self._frame_width = frame_width
+        self._min_dc = min_pulse_width / frame_width
+        self._dc_range = (max_pulse_width - min_pulse_width) / frame_width
+        self._min_value = -1
+        self._value_range = 2
+        super(Servo, self).__init__(
+            pwm_device=PWMOutputDevice(pin, frequency=int(1 / frame_width)))
+        try:
+            self.value = initial_value
+        except:
+            self.close()
+            raise
+
+    @property
+    def frame_width(self):
+        """
+        The time between control pulses, measured in seconds.
+        """
+        return self._frame_width
+
+    @property
+    def min_pulse_width(self):
+        """
+        The control pulse width corresponding to the servo's minimum position,
+        measured in seconds.
+        """
+        return self._min_dc * self.frame_width
+
+    @property
+    def max_pulse_width(self):
+        """
+        The control pulse width corresponding to the servo's maximum position,
+        measured in seconds.
+        """
+        return (self._dc_range * self.frame_width) + self.min_pulse_width
+
+    @property
+    def pulse_width(self):
+        """
+        Returns the current pulse width controlling the servo.
+        """
+        if self.pwm_device.pin.frequency is None:
+            return None
+        else:
+            return self.pwm_device.pin.state * self.frame_width
+
+    def min(self):
+        """
+        Set the servo to its minimum position.
+        """
+        self.value = -1
+
+    def mid(self):
+        """
+        Set the servo to its mid-point position.
+        """
+        self.value = 0
+
+    def max(self):
+        """
+        Set the servo to its maximum position.
+        """
+        self.value = 1
+
+    def detach(self):
+        """
+        Temporarily disable control of the servo. This is equivalent to
+        setting :attr:`value` to ``None``.
+        """
+        self.value = None
+
+    def _get_value(self):
+        if self.pwm_device.pin.frequency is None:
+            return None
+        else:
+            return (
+                ((self.pwm_device.pin.state - self._min_dc) / self._dc_range) *
+                self._value_range + self._min_value)
+
+    @property
+    def value(self):
+        """
+        Represents the position of the servo as a value between -1 (the minimum
+        position) and +1 (the maximum position). This can also be the special
+        value ``None`` indicating that the servo is currently "uncontrolled",
+        i.e. that no control signal is being sent. Typically this means the
+        servo's position remains unchanged, but that it can be moved by hand.
+        """
+        result = self._get_value()
+        if result is None:
+            return result
+        else:
+            # NOTE: This round() only exists to ensure we don't confuse people
+            # by returning 2.220446049250313e-16 as the default initial value
+            # instead of 0. The reason _get_value and _set_value are split
+            # out is for descendents that require the un-rounded values for
+            # accuracy
+            return round(result, 14)
+
+    @value.setter
+    def value(self, value):
+        if value is None:
+            self.pwm_device.pin.frequency = None
+        elif -1 <= value <= 1:
+            self.pwm_device.pin.frequency = int(1 / self.frame_width)
+            self.pwm_device.pin.state = (
+                self._min_dc + self._dc_range *
+                ((value - self._min_value) / self._value_range)
+                )
+        else:
+            raise OutputDeviceBadValue(
+                "Servo value must be between -1 and 1, or None")
+
+    @property
+    def is_active(self):
+        return self.value is not None
+
+
+class AngularServo(Servo):
+    """
+    Extends :class:`Servo` and represents a rotational PWM-controlled servo
+    motor which can be set to particular angles (assuming valid minimum and
+    maximum angles are provided to the constructor).
+
+    Connect a power source (e.g. a battery pack or the 5V pin) to the power
+    cable of the servo (this is typically colored red); connect the ground
+    cable of the servo (typically colored black or brown) to the negative of
+    your battery pack, or a GND pin; connect the final cable (typically colored
+    white or orange) to the GPIO pin you wish to use for controlling the servo.
+
+    Next, calibrate the angles that the servo can rotate to. In an interactive
+    Python session, construct a :class:`Servo` instance. The servo should move
+    to its mid-point by default. Set the servo to its minimum value, and
+    measure the angle from the mid-point. Set the servo to its maximum value,
+    and again measure the angle::
+
+        >>> from gpiozero import Servo
+        >>> s = Servo(17)
+        >>> s.min() # measure the angle
+        >>> s.max() # measure the angle
+
+    You should now be able to construct an :class:`AngularServo` instance
+    with the correct bounds::
+
+        >>> from gpiozero import AngularServo
+        >>> s = AngularServo(17, min_angle=-42, max_angle=44)
+        >>> s.angle = 0.0
+        >>> s.angle
+        0.0
+        >>> s.angle = 15
+        >>> s.angle
+        15.0
+
+    .. note::
+
+        You can set *min_angle* greater than *max_angle* if you wish to reverse
+        the sense of the angles (e.g. ``min_angle=45, max_angle=-45``). This
+        can be useful with servos that rotate in the opposite direction to your
+        expectations of minimum and maximum.
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
+
+    :param float initial_angle:
+        Sets the servo's initial angle to the specified value. The default is
+        0. The value specified must be between *min_angle* and *max_angle*
+        inclusive. ``None`` means to start the servo un-controlled (see
+        :attr:`value`).
+
+    :param float min_angle:
+        Sets the minimum angle that the servo can rotate to. This defaults to
+        -90, but should be set to whatever you measure from your servo during
+        calibration.
+
+    :param float max_angle:
+        Sets the maximum angle that the servo can rotate to. This defaults to
+        90, but should be set to whatever you measure from your servo during
+        calibration.
+
+    :param float min_pulse_width:
+        The pulse width corresponding to the servo's minimum position. This
+        defaults to 1ms.
+
+    :param float max_pulse_width:
+        The pulse width corresponding to the servo's maximum position. This
+        defaults to 2ms.
+
+    :param float frame_width:
+        The length of time between servo control pulses measured in seconds.
+        This defaults to 20ms which is a common value for servos.
+    """
+    def __init__(
+            self, pin=None, initial_angle=0.0,
+            min_angle=-90, max_angle=90,
+            min_pulse_width=1/1000, max_pulse_width=2/1000,
+            frame_width=20/1000):
+        self._min_angle = min_angle
+        self._angular_range = max_angle - min_angle
+        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        super(AngularServo, self).__init__(
+            pin, initial_value, min_pulse_width, max_pulse_width, frame_width)
+
+    @property
+    def min_angle(self):
+        """
+        The minimum angle that the servo will rotate to when :meth:`min` is
+        called.
+        """
+        return self._min_angle
+
+    @property
+    def max_angle(self):
+        """
+        The maximum angle that the servo will rotate to when :meth:`max` is
+        called.
+        """
+        return self._min_angle + self._angular_range
+
+    @property
+    def angle(self):
+        """
+        The position of the servo as an angle measured in degrees. This will
+        only be accurate if *min_angle* and *max_angle* have been set
+        appropriately in the constructor.
+
+        This can also be the special value ``None`` indicating that the servo
+        is currently "uncontrolled", i.e. that no control signal is being sent.
+        Typically this means the servo's position remains unchanged, but that
+        it can be moved by hand.
+        """
+        result = self._get_value()
+        if result is None:
+            return None
+        else:
+            # NOTE: Why round(n, 12) here instead of 14? Angle ranges can be
+            # much larger than -1..1 so we need a little more rounding to
+            # smooth off the rough corners!
+            return round(
+                self._angular_range *
+                ((result - self._min_value) / self._value_range) +
+                self._min_angle, 12)
+
+    @angle.setter
+    def angle(self, value):
+        if value is None:
+            self.value = None
+        else:
+            self.value = (
+                self._value_range *
+                ((value - self._min_angle) / self._angular_range) +
+                self._min_value)
+

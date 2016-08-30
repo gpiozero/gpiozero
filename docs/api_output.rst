@@ -23,13 +23,13 @@ PWMLED
 ======
 
 .. autoclass:: PWMLED(pin, active_high=True, initial_value=0, frequency=100)
-    :members: on, off, toggle, blink, pin, is_lit, value
+    :members: on, off, toggle, blink, pulse, pin, is_lit, value
 
 RGBLED
 ======
 
-.. autoclass:: RGBLED(red, green, blue, active_high=True, initial_value=(0, 0, 0))
-    :members: on, off, toggle, blink, red, green, blue, is_lit, color
+.. autoclass:: RGBLED(red, green, blue, active_high=True, initial_value=(0, 0, 0), pwm=True)
+    :members: on, off, toggle, blink, pulse, red, green, blue, is_lit, color
 
 Buzzer
 ======
@@ -40,8 +40,22 @@ Buzzer
 Motor
 =====
 
-.. autoclass:: Motor(forward, backward)
+.. autoclass:: Motor(forward, backward, pwm=True)
     :members: forward, backward, stop
+
+Servo
+=====
+
+.. autoclass:: Servo(pin, initial_value=0, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000)
+    :inherited-members:
+    :members:
+
+AngularServo
+============
+
+.. autoclass:: AngularServo(pin, initial_angle=0, min_angle=-90, max_angle=90, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000)
+    :inherited-members:
+    :members:
 
 Base Classes
 ============

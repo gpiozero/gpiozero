@@ -120,6 +120,7 @@ def test_mean():
         values = list(values)
         random.shuffle(values)
         assert mean(values) == result
+        assert mean(iter(values)) == result
 
 def test_mean_big_data():
     c = 1e9

@@ -29,10 +29,24 @@ LEDBarGraph
     :inherited-members:
     :members:
 
+ButtonBoard
+===========
+
+.. autoclass:: ButtonBoard(\*pins, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False, \*\*named_pins)
+    :inherited-members:
+    :members:
+
 TrafficLights
 =============
 
 .. autoclass:: TrafficLights
+    :inherited-members:
+    :members:
+
+LedBorg
+=======
+
+.. autoclass:: LedBorg
     :inherited-members:
     :members:
 
@@ -103,6 +117,13 @@ Energenie
 =========
 
 .. autoclass:: Energenie
+    :inherited-members:
+    :members:
+
+SnowPi
+======
+
+.. autoclass:: SnowPi
     :inherited-members:
     :members:
 
