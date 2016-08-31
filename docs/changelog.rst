@@ -5,6 +5,12 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.3.1 (2016-08-31 ... later)
+====================================
+
+* Fixed hardware SPI support which Dave broke in 1.3.0. Sorry!
+* Some minor docs changes
+
 Release 1.3.0 (2016-08-31)
 ==========================
 
