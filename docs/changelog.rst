@@ -12,7 +12,7 @@ Release 1.3.0 (2016-08-31)
   class (`#340`_)
 * Added :class:`Servo` and :class:`AngularServo` classes for controlling
   simple servo motors (`#248`_)
-* Lots of work on supporting easier use of internal and third-part pin
+* Lots of work on supporting easier use of internal and third-party pin
   implementations (`#359`_)
 * :class:`Robot` now has a proper :attr:`~Robot.value` attribute (`#305`_)
 * Added :class:`CPUTemperature` as another demo of "internal" devices (`#294`_)
