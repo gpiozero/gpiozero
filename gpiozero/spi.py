@@ -408,8 +408,8 @@ def SPI(**spi_args):
         else:
             try:
                 hardware_spi_args = {
-                    port: 0,
-                    device: {8: 0, 7: 1}[spi_args['select_pin']],
+                    'port': 0,
+                    'device': {8: 0, 7: 1}[spi_args['select_pin']],
                     }
                 if shared:
                     return SharedSPIHardwareInterface(**hardware_spi_args)
