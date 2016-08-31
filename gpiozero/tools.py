@@ -383,7 +383,7 @@ def smoothed(values, qsize, average=mean):
 
         with MCP3008(channel=0) as adc:
             for value in smoothed(adc.values, 5):
-                print value
+                print(value)
     """
     if qsize < 1:
         raise ValueError("qsize must be 1 or larger")
@@ -432,7 +432,7 @@ def pre_periodic_filtered(values, block, repeat_after):
 
         with MCP3008(channel=0) as adc:
             for value in pre_periodic_filtered(adc.values, 50, 0):
-                print value
+                print(value)
 
     Or to only display every even item read from an ADC::
 
@@ -441,7 +441,7 @@ def pre_periodic_filtered(values, block, repeat_after):
 
         with MCP3008(channel=0) as adc:
             for value in pre_periodic_filtered(adc.values, 1, 1):
-                print value
+                print(value)
     """
     if block < 1:
         raise ValueError("block must be 1 or larger")
@@ -472,7 +472,7 @@ def post_periodic_filtered(values, repeat_after, block):
 
         with MCP3008(channel=0) as adc:
             for value in post_periodic_filtered(adc.values, 9, 1):
-                print value
+                print(value)
     """
     if repeat_after < 1:
         raise ValueError("repeat_after must be 1 or larger")
