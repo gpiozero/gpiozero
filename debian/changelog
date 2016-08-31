@@ -1,3 +1,10 @@
+gpiozero (1.3.1) stable; urgency=low
+
+  * Fixed hardware SPI support which Dave broke in 1.3.0. Sorry!
+  * Some minor docs changes
+
+ -- Dave Jones <dave@waveform.org.uk>  Wed, 31 Aug 2016 23:40:33 +0100
+
 gpiozero (1.3.0) stable; urgency=low
 
   * Added "ButtonBoard" for reading multiple buttons in a single class (#340)
