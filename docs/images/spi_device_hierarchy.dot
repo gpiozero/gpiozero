@@ -11,6 +11,7 @@ digraph classes {
     MCP3xxx;
     MCP30xx;
     MCP32xx;
+    MCP3xx2;
     MCP33xx;
 
     /* Concrete classes */
@@ -21,6 +22,8 @@ digraph classes {
     MCP30xx->MCP3xxx;
     MCP32xx->MCP3xxx;
     MCP33xx->MCP3xxx;
+    MCP3xx2->MCP3xxx;
+
     MCP3001->MCP30xx;
     MCP3002->MCP30xx;
     MCP3004->MCP30xx;
@@ -29,6 +32,8 @@ digraph classes {
     MCP3202->MCP32xx;
     MCP3204->MCP32xx;
     MCP3208->MCP32xx;
+    MCP3002->MCP3xx2;
+    MCP3202->MCP3xx2;
     MCP3301->MCP33xx;
     MCP3302->MCP33xx;
     MCP3304->MCP33xx;
