@@ -9,6 +9,8 @@ digraph classes {
     SPIDevice;
     AnalogInputDevice;
     MCP3xxx;
+    MCP30xx;
+    MCP32xx;
     MCP33xx;
 
     /* Concrete classes */
@@ -16,11 +18,17 @@ digraph classes {
     SPIDevice->Device;
     AnalogInputDevice->SPIDevice;
     MCP3xxx->AnalogInputDevice;
+    MCP30xx->MCP3xxx;
+    MCP32xx->MCP3xxx;
     MCP33xx->MCP3xxx;
-    MCP3004->MCP3xxx;
-    MCP3008->MCP3xxx;
-    MCP3204->MCP3xxx;
-    MCP3208->MCP3xxx;
+    MCP3001->MCP30xx;
+    MCP3002->MCP30xx;
+    MCP3004->MCP30xx;
+    MCP3008->MCP30xx;
+    MCP3201->MCP32xx;
+    MCP3202->MCP32xx;
+    MCP3204->MCP32xx;
+    MCP3208->MCP32xx;
     MCP3301->MCP33xx;
     MCP3302->MCP33xx;
     MCP3304->MCP33xx;
