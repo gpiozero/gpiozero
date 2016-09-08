@@ -49,6 +49,9 @@ class SPIError(GPIOZeroError):
 class SPIBadArgs(SPIError, ValueError):
     "Error raised when invalid arguments are given while constructing :class:`SPIDevice`"
 
+class SPIBadChannel(SPIError, ValueError):
+    "Error raised when an invalid channel is given to an :class:`AnalogInputDevice`"
+
 class GPIODeviceError(GPIOZeroError):
     "Base class for errors specific to the GPIODevice hierarchy"
 

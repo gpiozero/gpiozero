@@ -85,16 +85,16 @@ class SPIHardwareInterface(Device):
         self._device.mode = value
 
     def _get_clock_polarity(self):
-        return bool(self.mode & 2)
+        return bool(self.clock_mode & 2)
 
     def _set_clock_polarity(self, value):
-        self.mode = self.mode & (~2) | (bool(value) << 1)
+        self.clock_mode = self.clock_mode & (~2) | (bool(value) << 1)
 
     def _get_clock_phase(self):
-        return bool(self.mode & 1)
+        return bool(self.clock_mode & 1)
 
     def _set_clock_phase(self, value):
-        self.mode = self.mode & (~1) | bool(value)
+        self.clock_mode = self.clock_mode & (~1) | bool(value)
 
     def _get_lsb_first(self):
         return self._device.lsbfirst
@@ -130,9 +130,6 @@ class SPISoftwareBus(SharedMixin, Device):
         self.miso = None
         super(SPISoftwareBus, self).__init__()
         self.lock = RLock()
-        self.clock_phase = False
-        self.lsb_first = False
-        self.bits_per_word = 8
         try:
             self.clock = OutputDevice(clock_pin, active_high=True)
             if mosi_pin is not None:
@@ -166,13 +163,7 @@ class SPISoftwareBus(SharedMixin, Device):
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin):
         return (clock_pin, mosi_pin, miso_pin)
 
-    def read(self, n):
-        return self.transfer((0,) * n)
-
-    def write(self, data):
-        return len(self.transfer(data))
-
-    def transfer(self, data):
+    def transfer(self, data, clock_phase=False, lsb_first=False, bits_per_word=8):
         """
         Writes data (a list of integer words where each word is assumed to have
         :attr:`bits_per_word` bits or less) to the SPI interface, and reads an
@@ -180,19 +171,19 @@ class SPISoftwareBus(SharedMixin, Device):
         """
         result = []
         with self.lock:
-            shift = operator.lshift if self.lsb_first else operator.rshift
+            shift = operator.lshift if lsb_first else operator.rshift
             for write_word in data:
-                mask = 1 if self.lsb_first else 1 << (self.bits_per_word - 1)
+                mask = 1 if lsb_first else 1 << (bits_per_word - 1)
                 read_word = 0
-                for _ in range(self.bits_per_word):
+                for _ in range(bits_per_word):
                     if self.mosi is not None:
                         self.mosi.value = bool(write_word & mask)
                     self.clock.on()
-                    if self.miso is not None and not self.clock_phase:
+                    if self.miso is not None and not clock_phase:
                         if self.miso.value:
                             read_word |= mask
                     self.clock.off()
-                    if self.miso is not None and self.clock_phase:
+                    if self.miso is not None and clock_phase:
                         if self.miso.value:
                             read_word |= mask
                     mask = shift(mask, 1)
@@ -205,6 +196,9 @@ class SPISoftwareInterface(OutputDevice):
         self._bus = None
         super(SPISoftwareInterface, self).__init__(select_pin, active_high=False)
         try:
+            self._clock_phase = False
+            self._lsb_first = False
+            self._bits_per_word = 8
             self._bus = SPISoftwareBus(clock_pin, mosi_pin, miso_pin)
         except:
             self.close()
@@ -230,16 +224,17 @@ class SPISoftwareInterface(OutputDevice):
             return "software SPI closed"
 
     def read(self, n):
-        return self._bus.read(n)
+        return self.transfer((0,) * n)
 
     def write(self, data):
-        return self._bus.write(data)
+        return len(self.transfer(data))
 
     def transfer(self, data):
         with self._bus.lock:
             self.on()
             try:
-                return self._bus.transfer(data)
+                return self._bus.transfer(
+                    data, self._clock_phase, self._lsb_first, self._bits_per_word)
             finally:
                 self.off()
 
@@ -250,40 +245,37 @@ class SPISoftwareInterface(OutputDevice):
         value = int(value)
         if not 0 <= value <= 3:
             raise ValueError('clock_mode must be a value between 0 and 3 inclusive')
-        with self._bus.lock:
-            self._bus.clock.active_high = not (value & 2)
-            self._bus.clock.off()
-            self._bus.clock_phase = bool(value & 1)
+        self.clock_polarity = bool(value & 2)
+        self.clock_phase = bool(value & 1)
 
     def _get_clock_polarity(self):
-        return not self._bus.clock.active_high
+        with self._bus.lock:
+            return not self._bus.clock.active_high
 
     def _set_clock_polarity(self, value):
         with self._bus.lock:
             self._bus.clock.active_high = not value
+            self._bus.clock.off()
 
     def _get_clock_phase(self):
-        return self._bus.clock_phase
+        return self._clock_phase
 
     def _set_clock_phase(self, value):
-        with self._bus.lock:
-            self._bus.clock_phase = bool(value)
+        self._clock_phase = bool(value)
 
     def _get_lsb_first(self):
-        return self._bus.lsb_first
+        return self._lsb_first
 
     def _set_lsb_first(self, value):
-        with self._bus.lock:
-            self._bus.lsb_first = bool(value)
+        self._lsb_first = bool(value)
 
     def _get_bits_per_word(self):
-        return self._bus.bits_per_word
+        return self._bits_per_word
 
     def _set_bits_per_word(self, value):
         if value < 1:
             raise ValueError('bits_per_word must be positive')
-        with self._bus.lock:
-            self._bus.bits_per_word = int(value)
+        self._bits_per_word = int(value)
 
     def _get_select_high(self):
         return self.active_high

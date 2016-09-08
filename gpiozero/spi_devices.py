@@ -7,7 +7,14 @@ from __future__ import (
 str = type('')
 
 
-from .exc import DeviceClosed, InputDeviceError
+from math import log, ceil
+from operator import or_
+try:
+    from functools import reduce
+except ImportError:
+    pass # py2's reduce is built-in
+
+from .exc import DeviceClosed, SPIBadChannel
 from .devices import Device
 from .spi import SPI
 
@@ -33,6 +40,38 @@ class SPIDevice(Device):
     @property
     def closed(self):
         return self._spi is None
+
+    def _int_to_words(self, pattern):
+        """
+        Given a bit-pattern expressed an integer number, return a sequence of
+        the individual words that make up the pattern. The number of bits per
+        word will be obtained from the internal SPI interface.
+        """
+        try:
+            bits_required = int(ceil(log(pattern, 2))) + 1
+        except ValueError:
+            # pattern == 0 (technically speaking, no bits are required to
+            # transmit the value zero ;)
+            bits_required = 1
+        shifts = range(0, bits_required, self._spi.bits_per_word)[::-1]
+        mask = 2 ** self._spi.bits_per_word - 1
+        return [(pattern >> shift) & mask for shift in shifts]
+
+    def _words_to_int(self, words, expected_bits=None):
+        """
+        Given a sequence of words which each fit in the internal SPI
+        interface's number of bits per word, returns the value obtained by
+        concatenating each word into a single bit-string.
+
+        If *expected_bits* is specified, it limits the size of the output to
+        the specified number of bits (by masking off bits above the expected
+        number). If unspecified, no limit will be applied.
+        """
+        if expected_bits is None:
+            expected_bits = len(words) * self._spi.bits_per_word
+        shifts = range(0, expected_bits, self._spi.bits_per_word)[::-1]
+        mask = 2 ** expected_bits - 1
+        return reduce(or_, (word << shift for word, shift in zip(words, shifts))) & mask
 
     def __repr__(self):
         try:
@@ -72,10 +111,10 @@ class AnalogInputDevice(SPIDevice):
     .. _analog to digital converters: https://en.wikipedia.org/wiki/Analog-to-digital_converter
     """
 
-    def __init__(self, bits=None, **spi_args):
-        if bits is None:
-            raise InputDeviceError('you must specify the bit resolution of the device')
+    def __init__(self, bits, **spi_args):
         self._bits = bits
+        self._min_value = -(2 ** bits)
+        self._range = 2 ** (bits + 1) - 1
         super(AnalogInputDevice, self).__init__(shared=True, **spi_args)
 
     @property
@@ -92,9 +131,9 @@ class AnalogInputDevice(SPIDevice):
     def value(self):
         """
         The current value read from the device, scaled to a value between 0 and
-        1.
+        1 (or -1 to +1 for certain devices operating in differential mode).
         """
-        return self._read() / (2**self.bits - 1)
+        return (2 * (self._read() - self._min_value) / self._range) - 1
 
     @property
     def raw_value(self):
@@ -128,10 +167,9 @@ class MCP3xxx(AnalogInputDevice):
     @property
     def differential(self):
         """
-        If ``True``, the device is operated in pseudo-differential mode. In
-        this mode one channel (specified by the channel attribute) is read
-        relative to the value of a second channel (implied by the chip's
-        design).
+        If ``True``, the device is operated in differential mode. In this mode
+        one channel (specified by the channel attribute) is read relative to
+        the value of a second channel (implied by the chip's design).
 
         Please refer to the device data-sheet to determine which channel is
         used as the relative base value (for example, when using an
@@ -141,28 +179,73 @@ class MCP3xxx(AnalogInputDevice):
         return self._differential
 
     def _read(self):
-        # MCP3008/04 or MCP3208/04 protocol looks like the following:
+        return self._words_to_int(
+            self._spi.transfer(self._send())[-2:], self.bits
+            )
+
+    def _send(self):
+        # MCP3004/08 protocol looks like the following:
         #
         #     Byte        0        1        2
         #     ==== ======== ======== ========
-        #     Tx   0001MCCC xxxxxxxx xxxxxxxx
-        #     Rx   xxxxxxxx x0RRRRRR RRRRxxxx for the 3004/08
-        #     Rx   xxxxxxxx x0RRRRRR RRRRRRxx for the 3204/08
+        #     Tx   00000001 MCCCxxxx xxxxxxxx
+        #     Rx   xxxxxxxx xxxxx0RR RRRRRRRR
         #
-        # The transmit bits start with 3 preamble bits "000" (to warm up), a
-        # start bit "1" followed by the single/differential bit (M) which is 1
-        # for single-ended read, and 0 for differential read, followed by
-        # 3-bits for the channel (C). The remainder of the transmission are
-        # "don't care" bits (x).
+        # MCP3204/08 protocol looks like the following:
         #
-        # The first byte received and the top 1 bit of the second byte are
-        # don't care bits (x). These are followed by a null bit (0), and then
-        # the result bits (R). 10 bits for the MCP300x, 12 bits for the
-        # MCP320x.
+        #     Byte        0        1        2
+        #     ==== ======== ======== ========
+        #     Tx   000001MC CCxxxxxx xxxxxxxx
+        #     Rx   xxxxxxxx xxx0RRRR RRRRRRRR
         #
-        # XXX Differential mode still requires testing
-        data = self._spi.transfer([16 + [8, 0][self.differential] + self.channel, 0, 0])
-        return ((data[1] & 63) << (self.bits - 6)) | (data[2] >> (14 - self.bits))
+        # The transmit bits start with several preamble "0" bits, the number
+        # of which is determined by the amount required to align the last byte
+        # of the result with the final byte of output. A start "1" bit is then
+        # transmitted, followed by the single/differential bit (M); 1 for
+        # single-ended read, 0 for differential read. Next comes three bits for
+        # channel (C).
+        #
+        # Read-out begins with a don't care bit (x), then a null bit (0)
+        # followed by the result bits (R). All other bits are don't care (x).
+        #
+        # The 3x01 variant of the chips always operates in differential mode
+        # and effectively only has one channel (composed of an IN+ and IN-). As
+        # such it requires no input, just output.
+        return self._int_to_words(
+            (0b10000 | (not self.differential) << 3 | self.channel) << (self.bits + 2)
+            )
+
+
+class MCP3xx2(MCP3xxx):
+    def _send(self):
+        # MCP3002 protocol looks like the following:
+        #
+        #     Byte        0        1
+        #     ==== ======== ========
+        #     Tx   01MCLxxx xxxxxxxx
+        #     Rx   xxxxx0RR RRRRRRRR for the 3002
+        #
+        # MCP3202 protocol looks like the following:
+        #
+        #     Byte        0        1        2
+        #     ==== ======== ======== ========
+        #     Tx   00000001 MCLxxxxx xxxxxxxx
+        #     Rx   xxxxxxxx xxx0RRRR RRRRRRRR
+        #
+        # The transmit bits start with several preamble "0" bits, the number of
+        # which is determined by the amount required to align the last byte of
+        # the result with the final byte of output. A start "1" bit is then
+        # transmitted, followed by the single/differential bit (M); 1 for
+        # single-ended read, 0 for differential read. Next comes a single bit
+        # for channel (M) then the MSBF bit (L) which selects whether the data
+        # will be read out in MSB form only (1) or whether LSB read-out will
+        # occur after MSB read-out (0).
+        #
+        # Read-out begins with a null bit (0) followed by the result bits (R).
+        # All other bits are don't care (x).
+        return self._int_to_words(
+            (0b1001 | (not self.differential) << 2 | self.channel << 1) << (self.bits + 1)
+            )
 
 
 class MCP30xx(MCP3xxx):
@@ -196,20 +279,32 @@ class MCP33xx(MCP3xxx):
         super(MCP33xx, self).__init__(channel, 12, differential, **spi_args)
 
     def _read(self):
-        # MCP3304/02 protocol looks like the following:
+        if self.differential:
+            result = self._words_to_int(
+                self._spi.transfer(self._send())[-2:], self.bits + 1)
+            # Account for the sign bit
+            if result > 4095:
+                return -(8192 - result)
+            else:
+                return result
+        else:
+            return super(MCP33xx, self)._read()
+
+    def _send(self):
+        # MCP3302/04 protocol looks like the following:
         #
         #     Byte        0        1        2
         #     ==== ======== ======== ========
-        #     Tx   0001MCCC xxxxxxxx xxxxxxxx
-        #     Rx   xxxxxxxx x0SRRRRR RRRRRRRx
+        #     Tx   00001MCC Cxxxxxxx xxxxxxxx
+        #     Rx   xxxxxxxx xx0SRRRR RRRRRRRR
         #
-        # The transmit bits start with 3 preamble bits "000" (to warm up), a
-        # start bit "1" followed by the single/differential bit (M) which is 1
-        # for single-ended read, and 0 for differential read, followed by
-        # 3-bits for the channel (C). The remainder of the transmission are
-        # "don't care" bits (x).
+        # The transmit bits start with 4 preamble bits "0000", a start bit "1"
+        # followed by the single/differential bit (M) which is 1 for
+        # single-ended read, and 0 for differential read, followed by 3-bits
+        # for the channel (C). The remainder of the transmission are "don't
+        # care" bits (x).
         #
-        # The first byte received and the top 1 bit of the second byte are
+        # The first byte received and the top 2 bits of the second byte are
         # don't care bits (x). These are followed by a null bit (0), then the
         # sign bit (S), and then the 12 result bits (R).
         #
@@ -217,22 +312,11 @@ class MCP33xx(MCP3xxx):
         # result is effectively 12-bits. In differential mode, the sign bit is
         # significant and the result is a two's-complement 13-bit value.
         #
-        # The MCP3301 variant of the chip always operates in differential
-        # mode and effectively only has one channel (composed of an IN+ and
-        # IN-). As such it requires no input, just output. This is the reason
-        # we split out _send() below; so that MCP3301 can override it.
-        data = self._spi.transfer(self._send())
-        # Extract the last two bytes (again, for MCP3301)
-        data = data[-2:]
-        result = ((data[0] & 63) << 7) | (data[1] >> 1)
-        # Account for the sign bit
-        if self.differential and result > 4095:
-            result = -(8192 - result)
-        assert -4096 <= result < 4096
-        return result
-
-    def _send(self):
-        return [16 + [8, 0][self.differential] + self.channel, 0, 0]
+        # The MCP3301 variant operates similarly to the other MCP3x01 variants;
+        # no input, just output and always differential.
+        return self._int_to_words(
+            (0b10000 | (not self.differential) << 3 | self.channel) << (self.bits + 3)
+            )
 
     @property
     def differential(self):
@@ -259,15 +343,25 @@ class MCP33xx(MCP3xxx):
 
 class MCP3001(MCP30xx):
     """
-    The `MCP3001`_ is a 10-bit analog to digital converter with 1 channel
+    The `MCP3001`_ is a 10-bit analog to digital converter with 1 channel.
+    Please note that the MCP3001 always operates in differential mode,
+    measuring the value of IN+ relative to IN-.
 
     .. _MCP3001: http://www.farnell.com/datasheets/630400.pdf
     """
     def __init__(self, **spi_args):
         super(MCP3001, self).__init__(0, differential=True, **spi_args)
 
+    def _read(self):
+        # MCP3001 protocol looks like the following:
+        #
+        #     Byte        0        1
+        #     ==== ======== ========
+        #     Rx   xx0RRRRR RRRRRxxx
+        return self._words_to_int(self._spi.read(2), 13) >> 3
 
-class MCP3002(MCP30xx):
+
+class MCP3002(MCP30xx, MCP3xx2):
     """
     The `MCP3002`_ is a 10-bit analog to digital converter with 2 channels
     (0-1).
@@ -276,7 +370,7 @@ class MCP3002(MCP30xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 2:
-            raise InputDeviceError('channel must be 0 or 1')
+            raise SPIBadChannel('channel must be 0 or 1')
         super(MCP3002, self).__init__(channel, differential, **spi_args)
 
 
@@ -289,7 +383,7 @@ class MCP3004(MCP30xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 4:
-            raise InputDeviceError('channel must be between 0 and 3')
+            raise SPIBadChannel('channel must be between 0 and 3')
         super(MCP3004, self).__init__(channel, differential, **spi_args)
 
 
@@ -302,21 +396,31 @@ class MCP3008(MCP30xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 8:
-            raise InputDeviceError('channel must be between 0 and 7')
+            raise SPIBadChannel('channel must be between 0 and 7')
         super(MCP3008, self).__init__(channel, differential, **spi_args)
 
 
 class MCP3201(MCP32xx):
     """
-    The `MCP3201`_ is a 12-bit analog to digital converter with 1 channel
+    The `MCP3201`_ is a 12-bit analog to digital converter with 1 channel.
+    Please note that the MCP3201 always operates in differential mode,
+    measuring the value of IN+ relative to IN-.
 
     .. _MCP3201: http://www.farnell.com/datasheets/1669366.pdf
     """
     def __init__(self, **spi_args):
         super(MCP3201, self).__init__(0, differential=True, **spi_args)
 
+    def _read(self):
+        # MCP3201 protocol looks like the following:
+        #
+        #     Byte        0        1
+        #     ==== ======== ========
+        #     Rx   xx0RRRRR RRRRRRRx
+        return self._words_to_int(self._spi.read(2), 13) >> 1
 
-class MCP3202(MCP32xx):
+
+class MCP3202(MCP32xx, MCP3xx2):
     """
     The `MCP3202`_ is a 12-bit analog to digital converter with 2 channels
     (0-1).
@@ -325,7 +429,7 @@ class MCP3202(MCP32xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 2:
-            raise InputDeviceError('channel must be 0 or 1')
+            raise SPIBadChannel('channel must be 0 or 1')
         super(MCP3202, self).__init__(channel, differential, **spi_args)
 
 
@@ -338,7 +442,7 @@ class MCP3204(MCP32xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 4:
-            raise InputDeviceError('channel must be between 0 and 3')
+            raise SPIBadChannel('channel must be between 0 and 3')
         super(MCP3204, self).__init__(channel, differential, **spi_args)
 
 
@@ -351,23 +455,33 @@ class MCP3208(MCP32xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 8:
-            raise InputDeviceError('channel must be between 0 and 7')
+            raise SPIBadChannel('channel must be between 0 and 7')
         super(MCP3208, self).__init__(channel, differential, **spi_args)
 
 
 class MCP3301(MCP33xx):
     """
     The `MCP3301`_ is a signed 13-bit analog to digital converter.  Please note
-    that the MCP3301 always operates in differential mode between its two
-    channels and the output value is scaled from -1 to +1.
+    that the MCP3301 always operates in differential mode measuring the
+    difference between IN+ and IN-. Its output value is scaled from -1 to +1.
 
     .. _MCP3301: http://www.farnell.com/datasheets/1669397.pdf
     """
     def __init__(self, **spi_args):
         super(MCP3301, self).__init__(0, differential=True, **spi_args)
 
-    def _send(self):
-        return [0, 0]
+    def _read(self):
+        # MCP3301 protocol looks like the following:
+        #
+        #     Byte        0        1
+        #     ==== ======== ========
+        #     Rx   xx0SRRRR RRRRRRRR
+        result = self._words_to_int(self._spi.read(2), 13)
+        # Account for the sign bit
+        if result > 4095:
+            return -(8192 - result)
+        else:
+            return result
 
 
 class MCP3302(MCP33xx):
@@ -382,7 +496,7 @@ class MCP3302(MCP33xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 4:
-            raise InputDeviceError('channel must be between 0 and 4')
+            raise SPIBadChannel('channel must be between 0 and 4')
         super(MCP3302, self).__init__(channel, differential, **spi_args)
 
 
@@ -398,6 +512,6 @@ class MCP3304(MCP33xx):
     """
     def __init__(self, channel=0, differential=False, **spi_args):
         if not 0 <= channel < 8:
-            raise InputDeviceError('channel must be between 0 and 7')
+            raise SPIBadChannel('channel must be between 0 and 7')
         super(MCP3304, self).__init__(channel, differential, **spi_args)
 
