@@ -11,6 +11,7 @@ from .pins import (
 )
 from .pins.data import (
     PiBoardInfo,
+    HeaderInfo,
     PinInfo,
     pi_info,
 )

@@ -134,5 +134,7 @@ functions and classes can be used to query this database:
 
 .. autoclass:: PiBoardInfo
 
+.. autoclass:: HeaderInfo
+
 .. autoclass:: PinInfo
 
