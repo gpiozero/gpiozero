@@ -7,6 +7,11 @@ from __future__ import (
 str = type('')
 
 import io
+import os
+import sys
+from textwrap import dedent
+from itertools import cycle
+from operator import attrgetter
 from collections import namedtuple
 
 from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins
@@ -65,6 +70,110 @@ GPIO42 = 'GPIO42'
 GPIO43 = 'GPIO43'
 GPIO44 = 'GPIO44'
 GPIO45 = 'GPIO45'
+
+# Board layout ASCII art
+
+REV1_BOARD = """\
+{style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|                                |{style:reset}
+{style:white on green}|                {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
+{style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
+{style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
+{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+
+REV2_BOARD = """\
+{style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|    {P5:{style} col1}{style:white on green}                        |{style:reset}
+{style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
+{style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
+{style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
+{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+
+A_BOARD = """\
+{style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|    {P5:{style} col1}{style:white on green}                        |{style:reset}
+{style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:on green}     |{style:reset}
+{style:white on green}|                        {style:on black}|S|{style:on green}     |{style:reset}
+{style:white on green}|                        {style:on black}|I|{style:on green}     |{style:reset}
+{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+
+BPLUS_BOARD = """\
+{style:white on green},--------------------------------.{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1     {style:black on white}+===={style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
+{style:white on green}|                             {style:black on white}+===={style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}          |{style:reset}
+{style:white on green}|      {style:on black}+----+{style:on green}                 {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}                 {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}                 {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}  {style:on black}+----+{style:on green}                    |{style:reset}
+{style:white on green}|                   {style:on black}|C|{style:on green}     {style:black on white}+======{style:reset}
+{style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+
+APLUS_BOARD = """\
+{style:white on green},--------------------------.{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1  |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}     |{style:reset}
+{style:white on green}|                          |{style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}    |{style:reset}
+{style:white on green}|      {style:on black}+----+{style:on green}           {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}           {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}           {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}  {style:on black}+----+{style:on green}              |{style:reset}
+{style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
+{style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-'{style:reset}"""
+
+ZERO12_BOARD = """\
+{style:white on green},-------------------------.{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    |{style:reset}
+{style:black on white}---+{style:white on green}       {style:on black}+----+{style:on green} {style:bold}PiZero{style:normal}  |{style:reset}
+{style:black on white} sd|{style:white on green}       {style:on black}|SoC |{style:on green}  {style:bold}V{pcb_revision:3s}{style:normal}   |{style:reset}
+{style:black on white}---+|hdmi|{style:white on green} {style:on black}+----+{style:on green} {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
+{style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
+
+ZERO13_BOARD = """\
+{style:white on green}.-------------------------.{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}   {style:black on white}|c{style:reset}
+{style:black on white}---+{style:white on green}       {style:on black}+----+{style:on green} {style:bold}PiZero{style:normal} {style:black on white}|s{style:reset}
+{style:black on white} sd|{style:white on green}       {style:on black}|SoC |{style:on green}  {style:bold}V{pcb_revision:3s}{style:normal}  {style:black on white}|i{style:reset}
+{style:black on white}---+|hdmi|{style:white on green} {style:on black}+----+{style:on green} {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
+{style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
+
+CM_BOARD = """\
+{style:white on green}+-----------------------------------------------------------------------------------------------------------------------+{style:reset}
+{style:white on green}| Raspberry Pi Compute Module                                                                                           |{style:reset}
+{style:white on green}|                                                                                                                       |{style:reset}
+{style:white on green}| You were expecting more detail? Sorry, the Compute Module's a bit hard to do right now!                               |{style:reset}
+{style:white on green}|                                                                                                                       |{style:reset}
+{style:white on green}|                                                                                                                       |{style:reset}
+{style:white on green}||||||||||||||||||||-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||{style:reset}"""
 
 # Pin maps for various board revisions and headers
 
@@ -242,37 +351,113 @@ CM_SODIMM = {
 # https://git.drogon.net/?p=wiringPi;a=blob;f=wiringPi/wiringPi.c#l807
 
 PI_REVISIONS = {
-    # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers
-    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},               ),
-    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5},),
-    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0x11:     ('CM',   '1.2', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    0x12:     ('A+',   '1.2', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},         ),
-    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0xa01041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Sony',      1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0xa21041: ('2B',   '1.1', '2015Q1', 'BCM2836', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
-    0x900092: ('Zero', '1.2', '2015Q4', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 0,  0,  {'P1': PLUS_P1},               ),
-    0xa02082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
-    0xa22082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
-    0x900093: ('Zero', '1.3', '2016Q2', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  0,  {'P1': PLUS_P1},               ),
+    # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                         board
+    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},                REV1_BOARD,   ),
+    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},                REV1_BOARD,   ),
+    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
+    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
+    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
+    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
+    0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
+    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
     }
+
+
+# ANSI color codes, for the pretty printers (nothing comprehensive, just enough
+# for our purposes)
+
+class Style(object):
+    def __init__(self, color=None):
+        self.color = self._term_supports_color() if color is None else bool(color)
+        self.effects = {
+            'reset':  0,
+            'bold':   1,
+            'normal': 22,
+            }
+        self.colors = {
+            'black':   0,
+            'red':     1,
+            'green':   2,
+            'yellow':  3,
+            'blue':    4,
+            'magenta': 5,
+            'cyan':    6,
+            'white':   7,
+            'default': 9,
+            }
+
+    @staticmethod
+    def _term_supports_color():
+        try:
+            stdout_fd = sys.stdout.fileno()
+        except IOError:
+            return False
+        else:
+            is_a_tty = os.isatty(stdout_fd)
+            is_windows = sys.platform.startswith('win')
+            return is_a_tty and not is_windows
+
+    @classmethod
+    def from_style_content(cls, format_spec):
+        specs = set(format_spec.split())
+        style = specs & {'mono', 'color'}
+        content = specs - style
+        if len(style) > 1:
+            raise ValueError('cannot specify both mono and color styles')
+        try:
+            style = style.pop()
+        except KeyError:
+            style = 'color' if cls._term_supports_color() else 'mono'
+        if len(content) > 1:
+            raise ValueError('cannot specify more than one content element')
+        content = content.pop()
+        return cls(style == 'color'), content
+
+    def __call__(self, format_spec):
+        specs = format_spec.split()
+        codes = []
+        fore = True
+        for spec in specs:
+            if spec == 'on':
+                fore = False
+            else:
+                try:
+                    codes.append(self.effects[spec])
+                except KeyError:
+                    try:
+                        if fore:
+                            codes.append(30 + self.colors[spec])
+                        else:
+                            codes.append(40 + self.colors[spec])
+                    except KeyError:
+                        raise ValueError('invalid format specification "%s"' % spec)
+        if self.color:
+            return '\x1b[%sm' % (';'.join(str(code) for code in codes))
+        else:
+            return ''
+
+    def __format__(self, format_spec):
+        if format_spec == '':
+            return 'color' if self.color else 'mono'
+        else:
+            return self(format_spec)
 
 
 class PinInfo(namedtuple('PinInfo', (
     'number',
     'function',
     'pull_up',
+    'row',
+    'col',
     ))):
     """
     This class is a :func:`~collections.namedtuple` derivative used to
@@ -298,7 +483,162 @@ class PinInfo(namedtuple('PinInfo', (
         are *usually* ``True``). This is used internally by gpiozero to raise
         errors when pull-down is requested on a pin with a physical pull-up
         resistor.
+
+    .. attribute:: row
+
+        An integer indicating on which row the pin is physically located in
+        the header (1-based)
+
+    .. attribute:: col
+
+        An integer indicating in which column the pin is physically located
+        in the header (1-based)
     """
+    __slots__ = () # workaround python issue #24931
+
+
+class HeaderInfo(namedtuple('HeaderInfo', (
+    'name',
+    'rows',
+    'columns',
+    'pins',
+    ))):
+    """
+    This class is a :func:`~collections.namedtuple` derivative used to
+    represent information about a pin header on a board. The object can be used
+    in a format string with various custom specifications::
+
+        from gpiozero import *
+
+        print('{0:full}'.format(pi_info().headers['P1']))
+        print('{0:col2}'.format(pi_info().headers['P1']))
+        print('{0:row1}'.format(pi_info().headers['P1']))
+
+    `'color'` and `'mono'` can be prefixed to format specifications to force
+    the use of `ANSI color codes`_. If neither is specified, ANSI codes will
+    only be used if stdout is detected to be a tty::
+
+        print('{0:color row2}'.format(pi_info().headers['P1'])) # force use of ANSI codes
+        print('{0:mono row2}'.format(pi_info().headers['P1'])) # force plain ASCII
+
+    .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
+    The following attributes are defined:
+
+    .. automethod:: pprint
+
+    .. attribute:: name
+
+        The name of the header, typically as it appears silk-screened on the
+        board (e.g. "P1").
+
+    .. attribute:: rows
+
+        The number of rows on the header.
+
+    .. attribute:: columns
+
+        The number of columns on the header.
+
+    .. attribute:: pins
+
+        A dictionary mapping physical pin numbers to :class:`PinInfo` tuples.
+    """
+    __slots__ = () # workaround python issue #24931
+
+    def _func_style(self, function, style):
+        if function == V5:
+            return style('bold red')
+        elif function in (V3_3, V1_8):
+            return style('bold cyan')
+        elif function in (GND, NC):
+            return style('bold black')
+        elif function.startswith('GPIO') and function[4:].isdigit():
+            return style('bold green')
+        else:
+            return style('yellow')
+
+    def _format_full(self, style):
+        Cell = namedtuple('Cell', ('content', 'align', 'style'))
+
+        pin_digits = len(str(self.rows * self.columns))
+        lines = []
+        for row in range(self.rows):
+            line = []
+            for col in range(self.columns):
+                pin = (row * self.columns) + col + 1
+                try:
+                    pin = self.pins[pin]
+                    cells = [
+                        Cell(pin.function, '><'[col % 2], self._func_style(pin.function, style)),
+                        Cell('(%d)' % pin.number, '><'[col % 2], ''),
+                        ]
+                    if col % 2:
+                        cells = reversed(cells)
+                    line.extend(cells)
+                except KeyError:
+                    line.append(Cell('', '<', ''))
+            lines.append(line)
+        cols = list(zip(*lines))
+        col_lens = [max(len(cell.content) for cell in col) for col in cols]
+        lines = [
+            ' '.join(
+                '{cell.style}{cell.content:{cell.align}{width}s}{style:reset}'.format(
+                    cell=cell, width=width, style=style)
+                for cell, width, align in zip(line, col_lens, cycle('><')))
+            for line in lines
+            ]
+        return '\n'.join(lines)
+
+    def _format_pin(self, pin, style):
+        return ''.join((
+            style('on black'),
+            (
+                ' ' if pin is None else
+                self._func_style(pin.function, style) +
+                ('1' if pin.number == 1 else 'o')
+                ),
+            style('reset')
+            ))
+
+    def _format_row(self, row, style):
+        if row > self.rows:
+            raise ValueError('invalid row %d for header %s' % (row, self.name))
+        start_pin = (row - 1) * self.columns + 1
+        return ''.join(
+            self._format_pin(pin, style)
+            for n in range(start_pin, start_pin + self.columns)
+            for pin in (self.pins.get(n),)
+            )
+
+    def _format_col(self, col, style):
+        if col > self.columns:
+            raise ValueError('invalid col %d for header %s' % (col, self.name))
+        return ''.join(
+            self._format_pin(pin, style)
+            for n in range(col, self.rows * self.columns + 1, self.columns)
+            for pin in (self.pins.get(n),)
+            )
+
+    def __format__(self, format_spec):
+        style, content = Style.from_style_content(format_spec)
+        if content == 'full':
+            return self._format_full(style)
+        elif content.startswith('row') and content[3:].isdigit():
+            return self._format_row(int(content[3:]), style)
+        elif content.startswith('col') and content[3:].isdigit():
+            return self._format_col(int(content[3:]), style)
+
+    def pprint(self, color=None):
+        """
+        Pretty-print a diagram of the header pins.
+
+        If *color* is ``None`` (the default, the diagram will include ANSI
+        color codes if stdout is a color-capable terminal). Otherwise *color*
+        can be set to ``True`` or ``False`` to force color or monochrome
+        output.
+        """
+        print('{0:{style} full}'.format(self, style=Style(color)))
+
 
 
 class PiBoardInfo(namedtuple('PiBoardInfo', (
@@ -317,16 +657,36 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     'csi',
     'dsi',
     'headers',
+    'board',
     ))):
     """
     This class is a :func:`~collections.namedtuple` derivative used to
     represent information about a particular model of Raspberry Pi. While it is
     a tuple, it is strongly recommended that you use the following named
-    attributes to access the data contained within.
+    attributes to access the data contained within. The object can be used
+    in format strings with various custom format specifications::
+
+        from gpiozero import *
+
+        print('{0:full}'.format(pi_info()))
+        print('{0:board}'.format(pi_info()))
+        print('{0:specs}'.format(pi_info()))
+        print('{0:headers}'.format(pi_info()))
+
+    `'color'` and `'mono'` can be prefixed to format specifications to force
+    the use of `ANSI color codes`_. If neither is specified, ANSI codes will
+    only be used if stdout is detected to be a tty::
+
+        print('{0:color board}'.format(pi_info())) # force use of ANSI codes
+        print('{0:mono board}'.format(pi_info())) # force plain ASCII
+
+    .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
     .. automethod:: physical_pin
 
     .. automethod:: physical_pins
+
+    .. automethod:: pprint
 
     .. automethod:: pulled_up
 
@@ -422,13 +782,185 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
 
     .. attribute:: headers
 
-        A dictionary which maps header labels to dictionaries which map
-        physical pin numbers to :class:`PinInfo` tuples. For example, to obtain
-        information about pin 12 on header P1 you would query
-        ``headers['P1'][12]``.
+        A dictionary which maps header labels to :class:`HeaderInfo` tuples.
+        For example, to obtain information about header P1 you would query
+        ``headers['P1']``. To obtain information about pin 12 on header P1 you
+        would query ``headers['P1'].pins[12]``.
+
+        A rendered version of this data can be obtained by using the
+        :class:`PiBoardInfo` object in a format string::
+
+            from gpiozero import *
+            print('{0:headers}'.format(pi_info()))
+
+    .. attribute:: board
+
+        An ASCII art rendition of the board, primarily intended for console
+        pretty-print usage. A more usefully rendered version of this data can
+        be obtained by using the :class:`PiBoardInfo` object in a format
+        string. For example::
+
+            from gpiozero import *
+            print('{0:board}'.format(pi_info()))
 
     .. _system on a chip: https://en.wikipedia.org/wiki/System_on_a_chip
     """
+    __slots__ = () # workaround python issue #24931
+
+    @classmethod
+    def from_revision(cls, revision):
+        if revision & 0x800000:
+            # New-style revision, parse information from bit-pattern:
+            #
+            # MSB -----------------------> LSB
+            # uuuuuuuuFMMMCCCCPPPPTTTTTTTTRRRR
+            #
+            # uuuuuuuu - Unused
+            # F        - New flag (1=valid new-style revision, 0=old-style)
+            # MMM      - Memory size (0=256, 1=512, 2=1024)
+            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
+            # PPPP     - Processor (0=2835, 1=2836, 2=2837)
+            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
+            # RRRR     - Revision (0, 1, 2, etc.)
+            try:
+                model = {
+                    0: 'A',
+                    1: 'B',
+                    2: 'A+',
+                    3: 'B+',
+                    4: '2B',
+                    6: 'CM',
+                    8: '3B',
+                    9: 'Zero',
+                    }[(revision & 0xff0) >> 4]
+                if model in ('A', 'B'):
+                    pcb_revision = {
+                        0: '1.0', # is this right?
+                        1: '1.0',
+                        2: '2.0',
+                        }[revision & 0x0f]
+                else:
+                    pcb_revision = '1.%d' % (revision & 0x0f)
+                released = {
+                    'A':    '2013Q1',
+                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                    'A+':   '2014Q4',
+                    'B+':   '2014Q3',
+                    '2B':   '2015Q1',
+                    'CM':   '2014Q2',
+                    '3B':   '2016Q1',
+                    'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                    }[model]
+                soc = {
+                    0: 'BCM2835',
+                    1: 'BCM2836',
+                    2: 'BCM2837',
+                    }[(revision & 0xf000) >> 12]
+                manufacturer = {
+                    0: 'Sony',
+                    1: 'Egoman',
+                    2: 'Embest',
+                    }[(revision & 0xf0000) >> 16]
+                memory = {
+                    0: 256,
+                    1: 512,
+                    2: 1024,
+                    }[(revision & 0x700000) >> 20]
+                storage = {
+                    'A': 'SD',
+                    'B': 'SD',
+                    'CM': 'eMMC',
+                    }.get(model, 'MicroSD')
+                usb = {
+                    'A':    1,
+                    'A+':   1,
+                    'Zero': 1,
+                    'B':    2,
+                    'CM':   1,
+                    }.get(model, 4)
+                ethernet = {
+                    'A':    0,
+                    'A+':   0,
+                    'Zero': 0,
+                    'CM':   0,
+                    }.get(model, 1)
+                wifi = {
+                    '3B': True,
+                    }.get(model, False)
+                bluetooth = {
+                    '3B': True,
+                    }.get(model, False)
+                csi = {
+                    'Zero': 0 if pcb_revision == '1.2' else 1,
+                    'CM':   2,
+                    }.get(model, 1)
+                dsi = {
+                    'Zero': 0,
+                    }.get(model, csi)
+                headers = {
+                    'A':  {'P1': REV2_P1, 'P5': REV2_P5},
+                    'B':  {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                    'CM': {'SODIMM': CM_SODIMM},
+                    }.get(model, {'P1': PLUS_P1})
+                board = {
+                    'A':    A_BOARD,
+                    'B':    REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
+                    'A+':   APLUS_BOARD,
+                    'CM':   CM_BOARD,
+                    'Zero': ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                    }.get(model, BPLUS_BOARD)
+            except KeyError:
+                raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
+        else:
+            # Old-style revision, use the lookup table
+            try:
+                (
+                    model,
+                    pcb_revision,
+                    released,
+                    soc,
+                    manufacturer,
+                    memory,
+                    storage,
+                    usb,
+                    ethernet,
+                    wifi,
+                    bluetooth,
+                    csi,
+                    dsi,
+                    headers,
+                    board,
+                    ) = PI_REVISIONS[revision]
+            except KeyError:
+                raise PinUnknownPi('unknown old-style revision "%x"' % revision)
+        headers = {
+            header: HeaderInfo(name=header, rows=max(header_data) // 2, columns=2, pins={
+                number: PinInfo(
+                    number=number, function=function, pull_up=pull_up,
+                    row=row + 1, col=col + 1)
+                for number, (function, pull_up) in header_data.items()
+                for row, col in (divmod(number, 2),)
+                })
+            for header, header_data in headers.items()
+            }
+        return cls(
+            '%04x' % revision,
+            model,
+            pcb_revision,
+            released,
+            soc,
+            manufacturer,
+            memory,
+            storage,
+            usb,
+            ethernet,
+            wifi,
+            bluetooth,
+            csi,
+            dsi,
+            headers,
+            board,
+            )
 
     def physical_pins(self, function):
         """
@@ -445,8 +977,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         """
         return {
             (header, pin.number)
-            for (header, pins) in self.headers.items()
-            for pin in pins.values()
+            for (header, info) in self.headers.items()
+            for pin in info.pins.values()
             if pin.function == function
             }
 
@@ -486,123 +1018,68 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         except PinNoPins:
             return False
         else:
-            return self.headers[header][number].pull_up
+            return self.headers[header].pins[number].pull_up
 
-
-def _parse_pi_revision(revision):
-    # For new-style revisions the value's bit pattern is as follows:
-    #
-    # MSB -----------------------> LSB
-    # uuuuuuuuFMMMCCCCPPPPTTTTTTTTRRRR
-    #
-    # uuuuuuuu - Unused
-    # F        - New flag (1=valid new-style revision, 0=old-style)
-    # MMM      - Memory size (0=256, 1=512, 2=1024)
-    # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
-    # PPPP     - Processor (0=2835, 1=2836, 2=2837)
-    # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
-    # RRRR     - Revision (0, 1, or 2)
-    if not (revision & 0x800000):
-        raise PinUnknownPi('cannot parse "%x"; this is not a new-style revision' % revision)
-    try:
-        model = {
-            0: 'A',
-            1: 'B',
-            2: 'A+',
-            3: 'B+',
-            4: '2B',
-            6: 'CM',
-            8: '3B',
-            9: 'Zero',
-            }[(revision & 0xff0) >> 4]
-        if model in ('A', 'B'):
-            pcb_revision = {
-                0: '1.0', # is this right?
-                1: '1.0',
-                2: '2.0',
-                }[revision & 0x0f]
-        else:
-            pcb_revision = '1.%d' % (revision & 0x0f)
-        released = {
-            'A':    '2013Q1',
-            'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-            'A+':   '2014Q4',
-            'B+':   '2014Q3',
-            '2B':   '2015Q1',
-            'CM':   '2014Q2',
-            '3B':   '2016Q1',
-            'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
-            }[model]
-        soc = {
-            0: 'BCM2835',
-            1: 'BCM2836',
-            2: 'BCM2837',
-            }[(revision & 0xf000) >> 12]
-        manufacturer = {
-            0: 'Sony',
-            1: 'Egoman',
-            2: 'Embest',
-            }[(revision & 0xf0000) >> 16]
-        memory = {
-            0: 256,
-            1: 512,
-            2: 1024,
-            }[(revision & 0x700000) >> 20]
-        storage = {
-            'A': 'SD',
-            'B': 'SD',
-            'CM': 'eMMC',
-            }.get(model, 'MicroSD')
-        usb = {
-            'A':    1,
-            'A+':   1,
-            'Zero': 1,
-            'B':    2,
-            'CM':   0,
-            }.get(model, 4)
-        ethernet = {
-            'A':    0,
-            'A+':   0,
-            'Zero': 0,
-            'CM':   0,
-            }.get(model, 1)
-        wifi = {
-            '3B': True,
-            }.get(model, False)
-        bluetooth = {
-            '3B': True,
-            }.get(model, False)
-        csi = {
-            'Zero': 0 if pcb_revision == '1.0' else 1,
-            'CM':   2,
-            }.get(model, 1)
-        dsi = {
-            'Zero': 0,
-            }.get(model, csi)
-        headers = {
-            'A':  {'P1': REV2_P1, 'P5': REV2_P5},
-            'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
-            'CM': {'SODIMM': CM_SODIMM},
-            }.get(model, {'P1': PLUS_P1})
-    except KeyError:
-        raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
-    else:
-        return (
-            model,
-            pcb_revision,
-            released,
-            soc,
-            manufacturer,
-            memory,
-            storage,
-            usb,
-            ethernet,
-            wifi,
-            bluetooth,
-            csi,
-            dsi,
-            headers,
+    def __repr__(self):
+        return '{cls}({fields})'.format(
+            cls=self.__class__.__name__,
+            fields=', '.join(
+                (
+                    '{name}=...' if name in ('headers', 'board') else
+                    '{name}={value!r}').format(name=name, value=value)
+                for name, value in zip(self._fields, self)
+                )
             )
+
+    def __format__(self, format_spec):
+        style, content = Style.from_style_content(format_spec)
+        if content == 'full':
+            return dedent("""\
+                {self:{style} board}
+
+                {self:{style} specs}
+
+                {self:{style} headers}"""
+                ).format(self=self, style=style)
+        elif content == 'board':
+            kw = self._asdict()
+            kw.update({
+                name: header
+                for name, header in self.headers.items()
+                })
+            return self.board.format(style=style, **kw)
+        elif content == 'specs':
+            return dedent("""\
+                {style:bold}Revision           {style:reset}: {revision}
+                {style:bold}SoC                {style:reset}: {soc}
+                {style:bold}RAM                {style:reset}: {memory}Mb
+                {style:bold}Storage            {style:reset}: {storage}
+                {style:bold}USB ports          {style:reset}: {usb} {style:yellow}(excluding power){style:reset}
+                {style:bold}Ethernet ports     {style:reset}: {ethernet}
+                {style:bold}Wi-fi              {style:reset}: {wifi}
+                {style:bold}Bluetooth          {style:reset}: {bluetooth}
+                {style:bold}Camera ports (CSI) {style:reset}: {csi}
+                {style:bold}Display ports (DSI){style:reset}: {dsi}"""
+                ).format(style=style, **self._asdict())
+        elif content == 'headers':
+            return '\n\n'.join(
+                dedent("""\
+                {style:bold}{header.name}{style:reset}:
+                {header:{style} full}"""
+                ).format(header=header, style=style)
+                for header in sorted(self.headers.values(), key=attrgetter('name'))
+                )
+
+    def pprint(self, color=None):
+        """
+        Pretty-print a representation of the board along with header diagrams.
+
+        If *color* is ``None`` (the default, the diagram will include ANSI
+        color codes if stdout is a color-capable terminal). Otherwise *color*
+        can be set to ``True`` or ``False`` to force color or monochrome
+        output.
+        """
+        print('{0:{style} full}'.format(self, style=Style(color)))
 
 
 def pi_info(revision=None):
@@ -635,63 +1112,5 @@ def pi_info(revision=None):
         else:
             # be nice to people passing an int (or something numeric anyway)
             revision = int(revision)
-    try:
-        (
-            model,
-            pcb_revision,
-            released,
-            soc,
-            manufacturer,
-            memory,
-            storage,
-            usb,
-            ethernet,
-            wifi,
-            bluetooth,
-            csi,
-            dsi,
-            headers,
-            ) = PI_REVISIONS[revision]
-    except KeyError:
-        (
-            model,
-            pcb_revision,
-            released,
-            soc,
-            manufacturer,
-            memory,
-            storage,
-            usb,
-            ethernet,
-            wifi,
-            bluetooth,
-            csi,
-            dsi,
-            headers,
-            ) = _parse_pi_revision(revision)
-    headers = {
-        header: {
-            number: PinInfo(number, function, pull_up)
-            for number, (function, pull_up) in header_data.items()
-            }
-        for header, header_data in headers.items()
-        }
-    return PiBoardInfo(
-        '%04x' % revision,
-        model,
-        pcb_revision,
-        released,
-        soc,
-        manufacturer,
-        memory,
-        storage,
-        usb,
-        ethernet,
-        wifi,
-        bluetooth,
-        csi,
-        dsi,
-        headers,
-        )
-
+        return PiBoardInfo.from_revision(revision)
 
