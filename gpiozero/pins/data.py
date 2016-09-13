@@ -419,7 +419,10 @@ class Style(object):
             style = 'color' if cls._term_supports_color() else 'mono'
         if len(content) > 1:
             raise ValueError('cannot specify more than one content element')
-        content = content.pop()
+        try:
+            content = content.pop()
+        except KeyError:
+            content = 'full'
         return cls(style == 'color'), content
 
     def __call__(self, format_spec):
