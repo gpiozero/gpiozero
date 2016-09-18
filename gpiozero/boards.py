@@ -753,6 +753,55 @@ class PiTraffic(TrafficLights):
                                         pwm=pwm, initial_value=initial_value)
 
 
+class PiStop(TrafficLights):
+    """
+    Extends :class:`TrafficLights` for the `PiHardware Pi-Stop`_: a vertical
+    traffic lights board.
+
+    The following example turns on the amber LED on a Pi-Stop
+    connected to location ``A+``::
+
+        from gpiozero import PiStop
+
+        traffic = PiStop('A+')
+        traffic.amber.on()
+
+    :param str location:
+        The `location`_ on the GPIO header to which the Pi-Stop is connected.
+        Must be one of: ``A``, ``A+``, ``B``, ``B+``, ``C``, ``D``.
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    .. _PiHardware Pi-Stop: https://pihw.wordpress.com/meltwaters-pi-hardware-kits/pi-stop/
+    .. _location: https://github.com/PiHw/Pi-Stop/blob/master/markdown_source/markdown/Discover-PiStop.md
+    """
+    LOCATIONS = {
+        'A': (7, 8, 25),
+        'A+': (21, 20, 16),
+        'B': (10, 9, 11),
+        'B+': (13, 19, 26),
+        'C': (18, 15, 14),
+        'D': (2, 3, 4),
+    }
+
+    def __init__(self, location=None, pwm=False, initial_value=False):
+        gpios = self.LOCATIONS.get(location, None)
+        if gpios is None:
+            raise ValueError('location must be one of: %s' %
+                             ', '.join(sorted(self.LOCATIONS.keys())))
+        super(PiStop, self).__init__(*gpios,
+                                        pwm=pwm, initial_value=initial_value)
+
+
 class SnowPi(LEDBoard):
     """
     Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.

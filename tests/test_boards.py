@@ -580,6 +580,30 @@ def test_pi_traffic():
     with PiTraffic() as board:
         assert [device.pin for device in board] == pins
 
+def test_pi_stop():
+    with pytest.raises(ValueError):
+        PiStop()
+    with pytest.raises(ValueError):
+        PiStop('E')
+    pins_a = [MockPin(n) for n in (7, 8, 25)]
+    with PiStop('A') as board:
+        assert [device.pin for device in board] == pins_a
+    pins_aplus = [MockPin(n) for n in (21, 20, 16)]
+    with PiStop('A+') as board:
+        assert [device.pin for device in board] == pins_aplus
+    pins_b = [MockPin(n) for n in (10, 9, 11)]
+    with PiStop('B') as board:
+        assert [device.pin for device in board] == pins_b
+    pins_bplus = [MockPin(n) for n in (13, 19, 26)]
+    with PiStop('B+') as board:
+        assert [device.pin for device in board] == pins_bplus
+    pins_c = [MockPin(n) for n in (18, 15, 14)]
+    with PiStop('C') as board:
+        assert [device.pin for device in board] == pins_c
+    pins_d = [MockPin(n) for n in (2, 3, 4)]
+    with PiStop('D') as board:
+        assert [device.pin for device in board] == pins_d
+
 def test_snow_pi():
     pins = [MockPin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi() as board:

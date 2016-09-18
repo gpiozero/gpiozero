@@ -71,6 +71,13 @@ PI-TRAFFIC
     :inherited-members:
     :members:
 
+Pi-Stop
+=======
+
+.. autoclass:: PiStop
+    :inherited-members:
+    :members:
+
 TrafficLightsBuzzer
 ===================
 
