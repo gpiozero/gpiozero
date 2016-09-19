@@ -53,7 +53,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 master_doc = 'index'
 project = _setup.__project__.title()
-copyright = '2015-{0} {1}'.format(datetime.now().year, _setup.__author__)
+copyright = '2015-%s %s' % (datetime.now().year, _setup.__author__)
 version = _setup.__version__
 release = _setup.__version__
 #language = None
@@ -75,7 +75,7 @@ autodoc_member_order = 'groupwise'
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.4', None),
+    'python': ('https://docs.python.org/3.5', None),
     'picamera': ('https://picamera.readthedocs.io/en/latest', None),
     }
 
