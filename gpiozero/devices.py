@@ -321,7 +321,7 @@ class CompositeDevice(Device):
                     len(self) - len(self._named)
                     )
         except DeviceClosed:
-            return "<gpiozero.%s object closed>"
+            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
 
     def __len__(self):
         return len(self._all)
