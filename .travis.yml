@@ -7,11 +7,10 @@ python:
     - "2.7"
     - "pypy"
     - "pypy3"
-install: "pip install -e .[test]"
+install: 
+    - pip install tox-travis
 script: make test
 before_install:
-    # Coverage 4.0 no longer supports py3.2 and codecov depends on latest coverage
-    - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install "coverage<4.0dev"; fi
     - pip install codecov
 after_success:
     - codecov
