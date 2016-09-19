@@ -185,8 +185,7 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_source(self):
-        if self.source is not None:
-            self.source = None
+        self.source = None
 
     def _stop_blink(self):
         if self._controller:
