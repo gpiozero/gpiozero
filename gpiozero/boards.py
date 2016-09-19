@@ -710,13 +710,6 @@ class TrafficLights(LEDBoard):
             name = 'amber'
         return super(TrafficLights, self).__getattr__(name)
 
-    def __setattr__(self, name, value):
-        if name == 'amber' and self._display_yellow:
-            name = 'yellow'
-        elif name == 'yellow' and not self._display_yellow:
-            name = 'amber'
-        return super(TrafficLights, self).__setattr__(name, value)
-
 
 class PiTraffic(TrafficLights):
     """

@@ -555,6 +555,10 @@ def test_traffic_lights():
         assert red_pin.state
         assert not amber_pin.state
         assert not green_pin.state
+        board.amber.on()
+        assert amber_pin.state
+        board.yellow.off()
+        assert not amber_pin.state
     with TrafficLights(red=red_pin, yellow=amber_pin, green=green_pin) as board:
         board.yellow.on()
         assert not board.red.value
@@ -564,6 +568,8 @@ def test_traffic_lights():
         assert not red_pin.state
         assert amber_pin.state
         assert not green_pin.state
+        board.amber.off()
+        assert not amber_pin.state
 
 def test_traffic_lights_bad_init():
     with pytest.raises(ValueError):
