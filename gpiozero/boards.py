@@ -720,7 +720,7 @@ class TrafficLights(LEDBoard):
 
 class PiTraffic(TrafficLights):
     """
-    Extends :class:`TrafficLights` for the `Low Voltage Labs PI-TRAFFIC`_:
+    Extends :class:`TrafficLights` for the `Low Voltage Labs PI-TRAFFIC`_
     vertical traffic lights board when attached to GPIO pins 9, 10, and 11.
 
     There's no need to specify the pins if the PI-TRAFFIC is connected to the
