@@ -84,7 +84,7 @@ This project is being developed on `GitHub`_. Join in:
 * Provide examples we can use as `recipes`_
 * `Contribute`_ to the code
 
-Alternatively, email suggestions and feedback to mailto:ben@raspberrypi.org
+Alternatively, email suggestions and feedback to ben@raspberrypi.org
 
 Contributors
 ============
