@@ -9,7 +9,7 @@ str = type('')
 
 import inspect
 import weakref
-from functools import wraps
+from functools import wraps, partial
 from threading import Event
 from collections import deque
 from time import time
@@ -255,7 +255,16 @@ class EventsMixin(object):
             return None
         elif not callable(fn):
             raise BadEventHandler('value must be None or a callable')
-        elif inspect.isbuiltin(fn):
+        # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
+        # has been used to produce it) we need to dig out the "real" function
+        # that's been wrapped along with all the mandatory positional args
+        # used in the wrapper so we can test the binding
+        args = ()
+        wrapped_fn = fn
+        while isinstance(wrapped_fn, partial):
+            args = wrapped_fn.args + args
+            wrapped_fn = wrapped_fn.func
+        if inspect.isbuiltin(wrapped_fn):
             # We can't introspect the prototype of builtins. In this case we
             # assume that the builtin has no (mandatory) parameters; this is
             # the most reasonable assumption on the basis that pre-existing
@@ -267,13 +276,13 @@ class EventsMixin(object):
             # If this works, assume the function is capable of accepting no
             # parameters
             try:
-                inspect.getcallargs(fn)
+                inspect.getcallargs(wrapped_fn, *args)
                 return fn
             except TypeError:
                 try:
                     # If the above fails, try binding with a single parameter
                     # (ourselves). If this works, wrap the specified callback
-                    inspect.getcallargs(fn, self)
+                    inspect.getcallargs(wrapped_fn, *(args + (self,)))
                     @wraps(fn)
                     def wrapper():
                         return fn(self)
