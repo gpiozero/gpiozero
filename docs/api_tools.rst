@@ -69,6 +69,8 @@ Combining sources
 Artificial sources
 ==================
 
+.. autofunction:: alternating_values
+
 .. autofunction:: cos_values
 
 .. autofunction:: random_values

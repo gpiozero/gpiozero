@@ -576,3 +576,26 @@ def cos_values(period=360):
     angles = (2 * pi * i / period for i in range(period))
     for a in cycle(angles):
         yield cos(a)
+
+
+def alternating_values(initial_value=False):
+    """
+    Provides an infinite source of values alternating between ``True`` and
+    ``False``, starting wth *initial_value* (which defaults to ``False``). For
+    example, to produce a flashing LED::
+
+        from gpiozero import LED
+        from gpiozero.tools import alternating_values
+        from signal import pause
+
+        red = LED(2)
+
+        red.source_delay = 0.5
+        red.source = alternating_values()
+
+        pause()
+    """
+    value = initial_value
+    while True:
+        yield value
+        value = not value
