@@ -493,15 +493,11 @@ class GPIOQueue(GPIOThread):
 
     def fill(self):
         try:
-            while (not self.stopping.wait(self.sample_wait) and
-                    len(self.queue) < self.queue.maxlen):
-                self.queue.append(self.parent._read())
-                if self.partial and isinstance(self.parent, EventsMixin):
-                    self.parent._fire_events()
-            self.full.set()
             while not self.stopping.wait(self.sample_wait):
                 self.queue.append(self.parent._read())
-                if isinstance(self.parent, EventsMixin):
+                if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
+                    self.full.set()
+                if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
                     self.parent._fire_events()
         except ReferenceError:
             # Parent is dead; time to die!
