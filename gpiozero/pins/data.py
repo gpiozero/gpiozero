@@ -849,7 +849,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
                     'A+':   '2014Q4',
                     'B+':   '2014Q3',
-                    '2B':   '2015Q1',
+                    '2B':   '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
                     'CM':   '2014Q2',
                     '3B':   '2016Q1',
                     'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
