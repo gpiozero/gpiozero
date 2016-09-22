@@ -21,6 +21,10 @@ try:
     from statistics import mean
 except ImportError:
     from .compat import mean
+try:
+    from math import isclose
+except ImportError:
+    from .compat import isclose
 
 
 def negated(values):
@@ -599,3 +603,39 @@ def alternating_values(initial_value=False):
     while True:
         yield value
         value = not value
+
+
+def ramping_values(period=360):
+    """
+    Provides an infinite source of values representing a triangle wave (from 0
+    to 1 and back again) which repeats every *period* values. For example, to
+    pulse an LED once a second::
+
+        from gpiozero import PWMLED
+        from gpiozero.tools import ramping_values
+        from signal import pause
+
+        red = PWMLED(2)
+
+        red.source_delay = 0.01
+        red.source = ramping_values(100)
+
+        pause()
+
+    If you require a wider range than 0 to 1, see :func:`scaled`.
+    """
+def ramping_values(period=360):
+    step = 2 / period
+    value = 0
+    while True:
+        yield value
+        value += step
+        if isclose(value, 1, abs_tol=1e-9):
+            value = 1
+            step *= -1
+        elif isclose(value, 0, abs_tol=1e-9):
+            value = 0
+            step *= -1
+        elif value > 1 or value < 0:
+            step *= -1
+            value += step
