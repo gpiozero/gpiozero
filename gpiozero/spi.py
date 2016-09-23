@@ -22,6 +22,15 @@ from .output_devices import OutputDevice
 from .exc import SPIBadArgs, SPISoftwareFallback, GPIOPinInUse, DeviceClosed
 
 
+SPI_HW = {
+    0: {
+        'clock': 11,
+        'mosi': 10,
+        'miso': 9,
+        'chip_selects': (8, 7)
+    },
+}
+
 class SPIHardwareInterface(Device):
     def __init__(self, port, device):
         self._device = None
@@ -30,7 +39,13 @@ class SPIHardwareInterface(Device):
         # isn't ideal ... in fact, it's downright crap and doesn't guard
         # against conflicts created *after* this instance, but it's all I can
         # come up with right now ...
-        conflicts = (11, 10, 9, (8, 7)[device])
+        selected_SPI_HW = SPI_HW[port]
+        conflicts = (
+            selected_SPI_HW['clock'],
+            selected_SPI_HW['mosi'],
+            selected_SPI_HW['miso'],
+            selected_SPI_HW['chip_selects'][device]
+        )
         with _PINS_LOCK:
             for pin in _PINS:
                 if pin.number in conflicts:
@@ -38,6 +53,7 @@ class SPIHardwareInterface(Device):
                         'pin %r is already in use by another gpiozero object' % pin
                     )
         self._device_num = device
+        self._port_num = port
         self._device = SpiDev()
         self._device.open(port, device)
         self._device.max_speed_hz = 500000
@@ -57,10 +73,16 @@ class SPIHardwareInterface(Device):
     def __repr__(self):
         try:
             self._check_open()
+            selected_SPI_HW = SPI_HW[self._port_num]
             return (
-                "hardware SPI on clock_pin=11, mosi_pin=10, miso_pin=9, "
+                "hardware SPI on clock_pin=%d, mosi_pin=%d, miso_pin=%d, "
                 "select_pin=%d" % (
-                    8 if self._device_num == 0 else 7))
+                    selected_SPI_HW['clock'],
+                    selected_SPI_HW['mosi'],
+                    selected_SPI_HW['miso'],
+                    selected_SPI_HW['chip_selects'][self._device_num]
+                )
+            )
         except DeviceClosed:
             return "hardware SPI closed"
 
@@ -314,15 +336,16 @@ def extract_spi_args(**kwargs):
 
     Returns a tuple of ``(spi_args, other_args)``.
     """
-    pin_defaults = {
-        'clock_pin': 11,
-        'mosi_pin': 10,
-        'miso_pin': 9,
-        'select_pin': 8,
-        }
     dev_defaults = {
         'port': 0,
         'device': 0,
+        }
+    default_SPI_HW = SPI_HW[dev_defaults['port']]
+    pin_defaults = {
+        'clock_pin': default_SPI_HW['clock'],
+        'mosi_pin': default_SPI_HW['mosi'],
+        'miso_pin': default_SPI_HW['miso'],
+        'select_pin': default_SPI_HW['chip_selects'][dev_defaults['device']],
         }
     spi_args = {
         key: value for (key, value) in kwargs.items()
@@ -346,10 +369,12 @@ def extract_spi_args(**kwargs):
             }
         if spi_args['port'] != 0:
             raise SPIBadArgs('port 0 is the only valid SPI port')
-        if spi_args['device'] not in (0, 1):
-            raise SPIBadArgs('device must be 0 or 1')
+        selected_SPI_HW = SPI_HW[spi_args['port']]
+        valid_devices = range(len(selected_SPI_HW['chip_selects']))
+        if spi_args['device'] not in valid_devices:
+            raise SPIBadArgs('device must be %s' % ' or '.join(str(d) for d in valid_devices))
         spi_args = {
-            key: value if key != 'select_pin' else (8, 7)[spi_args['device']]
+            key: value if key != 'select_pin' else selected_SPI_HW['chip_selects'][spi_args['device']]
             for key, value in pin_defaults.items()
             }
     else:
@@ -387,11 +412,13 @@ def SPI(**spi_args):
     if kwargs:
         raise SPIBadArgs(
             'unrecognized keyword argument %s' % kwargs.popitem()[0])
+    port = 0
+    selected_SPI_HW = SPI_HW[port]
     if all((
-            spi_args['clock_pin'] == 11,
-            spi_args['mosi_pin'] == 10,
-            spi_args['miso_pin'] == 9,
-            spi_args['select_pin'] in (7, 8),
+            spi_args['clock_pin'] == selected_SPI_HW['clock'],
+            spi_args['mosi_pin'] == selected_SPI_HW['mosi'],
+            spi_args['miso_pin'] == selected_SPI_HW['miso'],
+            spi_args['select_pin'] in selected_SPI_HW['chip_selects'],
             )):
         if SpiDev is None:
             warnings.warn(
@@ -399,9 +426,12 @@ def SPI(**spi_args):
                     'failed to import spidev, falling back to software SPI'))
         else:
             try:
+                for device in range(len(selected_SPI_HW['chip_selects'])):
+                    if selected_SPI_HW['chip_selects'][device] == spi_args['select_pin']:
+                        break
                 hardware_spi_args = {
-                    'port': 0,
-                    'device': {8: 0, 7: 1}[spi_args['select_pin']],
+                    'port': port,
+                    'device': device,
                     }
                 if shared:
                     return SharedSPIHardwareInterface(**hardware_spi_args)
