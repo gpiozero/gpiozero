@@ -24,10 +24,22 @@ def test_device_bad_pin():
         device = GPIODevice()
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(60)
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice(b'BCM60')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice('WPI32')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice(b'P2:2')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice('J8:42')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice('J8:1')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice('foo')
 
 def test_device_non_physical():
     with warnings.catch_warnings(record=True) as w:
-        device = GPIODevice(37)
+        device = GPIODevice('GPIO37')
         assert len(w) == 1
         assert w[0].category == PinNonPhysical
 
@@ -63,6 +75,22 @@ def test_device_reopen_same_pin():
         assert device2.pin is pin
         assert device.closed
         assert device.pin is None
+
+def test_device_pin_parsing():
+    # MockFactory defaults to a Pi 2B layout
+    pin = Device._pin_factory.pin(2)
+    with GPIODevice('GPIO2') as device:
+        assert device.pin is pin
+    with GPIODevice('BCM2') as device:
+        assert device.pin is pin
+    with GPIODevice('WIPI8') as device:
+        assert device.pin is pin
+    with GPIODevice('WPI8') as device:
+        assert device.pin is pin
+    with GPIODevice('PHYS3') as device:
+        assert device.pin is pin
+    with GPIODevice('J8:3') as device:
+        assert device.pin is pin
 
 def test_device_repr():
     with GPIODevice(4) as device:

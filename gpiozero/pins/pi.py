@@ -76,11 +76,19 @@ class PiFactory(Factory):
 
     def _to_gpio(self, spec):
         """
-        Converts the pin *spec* to a GPIO port number.
+        Converts the pin *spec* to a GPIO port number. If the *spec* is a
+        string, calls :meth:`PiBoardInfo.find_gpio` to convert the string.
+        Otherwise, returns *spec* verbatim (this assumes it is an integer port
+        number).
         """
-        if not 0 <= spec < 54:
-            raise PinInvalidPin('invalid GPIO port %d specified (range 0..53) ' % spec)
-        return spec
+        if isinstance(spec, bytes):
+            spec = spec.decode('ascii')
+        if isinstance(spec, str):
+            return self.pi_info.find_gpio(spec)
+        else:
+            if not 0 <= spec < 54:
+                raise PinInvalidPin('invalid GPIO port %d specified (range 0..53) ' % spec)
+            return spec
 
     def _get_revision(self):
         raise NotImplementedError
