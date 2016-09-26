@@ -13,7 +13,7 @@ from itertools import cycle
 from operator import attrgetter
 from collections import namedtuple
 
-from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins
+from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins, PinInvalidPin
 
 
 # Some useful constants for describing pins
@@ -119,8 +119,8 @@ A_BOARD = """\
 
 BPLUS_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1     {style:black on white}+===={style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
 {style:white on green}|                             {style:black on white}+===={style:reset}
 {style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}          |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}                 {style:black on white}+===={style:reset}
@@ -134,8 +134,8 @@ BPLUS_BOARD = """\
 
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1  |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}     |{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
 {style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}    |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}           {style:black on white}+===={style:reset}
@@ -149,8 +149,8 @@ APLUS_BOARD = """\
 
 ZERO12_BOARD = """\
 {style:white on green},-------------------------.{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}    |{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8 |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}    |{style:reset}
 {style:black on white}---+{style:white on green}       {style:on black}+---+{style:on green}  {style:bold}PiZero{style:normal}  |{style:reset}
 {style:black on white} sd|{style:white on green}       {style:on black}|SoC|{style:on green}   {style:bold}V{pcb_revision:3s}{style:normal}   |{style:reset}
 {style:black on white}---+|hdmi|{style:white on green} {style:on black}+---+{style:on green}  {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
@@ -158,8 +158,8 @@ ZERO12_BOARD = """\
 
 ZERO13_BOARD = """\
 {style:white on green}.-------------------------.{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}   {style:black on white}|c{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8 |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}   {style:black on white}|c{style:reset}
 {style:black on white}---+{style:white on green}       {style:on black}+---+{style:on green} {style:bold}Pi{model:6s}{style:normal}{style:black on white}|s{style:reset}
 {style:black on white} sd|{style:white on green}       {style:on black}|SoC|{style:on green}   {style:bold}V{pcb_revision:3s}{style:normal}  {style:black on white}|i{style:reset}
 {style:black on white}---+|hdmi|{style:white on green} {style:on black}+---+{style:on green}  {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
@@ -216,7 +216,7 @@ REV2_P5 = {
     7:  (GND,    False), 8:  (GND,    False),
     }
 
-PLUS_P1 = {
+PLUS_J8 = {
     1:  (V3_3,   False), 2:  (V5,     False),
     3:  (GPIO2,  True),  4:  (V5,     False),
     5:  (GPIO3,  True),  6:  (GND,    False),
@@ -379,12 +379,12 @@ PI_REVISIONS = {
     0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
     0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
     0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                BPLUS_BOARD,  ),
     0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
-    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
-    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
+    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                APLUS_BOARD,  ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                BPLUS_BOARD,  ),
     0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
-    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                APLUS_BOARD,  ),
     }
 
 
@@ -529,7 +529,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
 
         from gpiozero import *
 
-        print('{0:full}'.format(pi_info().headers['P1']))
+        print('{0}'.format(pi_info().headers['J8']))
+        print('{0:full}'.format(pi_info().headers['J8']))
         print('{0:col2}'.format(pi_info().headers['P1']))
         print('{0:row1}'.format(pi_info().headers['P1']))
 
@@ -537,10 +538,9 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     the use of `ANSI color codes`_. If neither is specified, ANSI codes will
     only be used if stdout is detected to be a tty::
 
-        print('{0:color row2}'.format(pi_info().headers['P1'])) # force use of ANSI codes
+        print('{0:color row2}'.format(pi_info().headers['J8'])) # force use of ANSI codes
         print('{0:mono row2}'.format(pi_info().headers['P1'])) # force plain ASCII
 
-    .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
     The following attributes are defined:
 
     .. automethod:: pprint
@@ -548,7 +548,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     .. attribute:: name
 
         The name of the header, typically as it appears silk-screened on the
-        board (e.g. "P1").
+        board (e.g. "P1" or "J8").
 
     .. attribute:: rows
 
@@ -561,6 +561,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     .. attribute:: pins
 
         A dictionary mapping physical pin numbers to :class:`PinInfo` tuples.
+
+    .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
     """
     __slots__ = () # workaround python issue #24931
 
@@ -685,6 +687,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
 
         from gpiozero import *
 
+        print('{0}'.format(pi_info()))
         print('{0:full}'.format(pi_info()))
         print('{0:board}'.format(pi_info()))
         print('{0:specs}'.format(pi_info()))
@@ -801,8 +804,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
 
         A dictionary which maps header labels to :class:`HeaderInfo` tuples.
         For example, to obtain information about header P1 you would query
-        ``headers['P1']``. To obtain information about pin 12 on header P1 you
-        would query ``headers['P1'].pins[12]``.
+        ``headers['P1']``. To obtain information about pin 12 on header J8 you
+        would query ``headers['J8'].pins[12]``.
 
         A rendered version of this data can be obtained by using the
         :class:`PiBoardInfo` object in a format string::
@@ -937,10 +940,10 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     }.get(model, csi)
                 headers = {
                     'A':   {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':   {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
+                    'B':   {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
                     'CM':  {'SODIMM': CM_SODIMM},
                     'CM3': {'SODIMM': CM3_SODIMM},
-                    }.get(model, {'P1': PLUS_P1})
+                    }.get(model, {'J8': PLUS_J8})
                 board = {
                     'A':      A_BOARD,
                     'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
@@ -1115,8 +1118,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         """
         Pretty-print a representation of the board along with header diagrams.
 
-        If *color* is ``None`` (the default, the diagram will include ANSI
-        color codes if stdout is a color-capable terminal). Otherwise *color*
+        If *color* is ``None`` (the default), the diagram will include ANSI
+        color codes if stdout is a color-capable terminal. Otherwise *color*
         can be set to ``True`` or ``False`` to force color or monochrome
         output.
         """
@@ -1134,13 +1137,10 @@ def pi_info(revision=None):
         the model of Pi it is running on and return information about that.
     """
     if revision is None:
-        # NOTE: This import is declared locally for two reasons. Firstly it
-        # avoids a circular dependency (devices->pins->pins.data->devices).
-        # Secondly, pin_factory is one global which might potentially be
-        # re-written by a user's script at runtime hence we should re-import
-        # here in case it's changed since initialization
-        from ..devices import pin_factory
-        result = pin_factory.pi_info()
+        # The reason this import is located here is to avoid a circular
+        # dependency; devices->pins.local->pins.data->devices
+        from ..devices import Device
+        result = Device._pin_factory.pi_info
         if result is None:
             raise PinUnknownPi('The default pin_factory is not attached to a Pi')
         else:

@@ -165,7 +165,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             if self.partial or self._queue.full.is_set():
                 return super(SmoothedInputDevice, self).__repr__()
             else:
-                return "<gpiozero.%s object on pin=%r, pull_up=%s>" % (
+                return "<gpiozero.%s object on pin %r, pull_up=%s>" % (
                     self.__class__.__name__, self.pin, self.pull_up)
 
     @property
@@ -240,7 +240,7 @@ class Button(HoldMixin, DigitalInputDevice):
         print("The button was pressed!")
 
     :param int pin:
-        The GPIO pin which the button is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the button is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param bool pull_up:
@@ -302,7 +302,7 @@ class LineSensor(SmoothedInputDevice):
         pause()
 
     :param int pin:
-        The GPIO pin which the sensor is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param int queue_len:
@@ -371,7 +371,7 @@ class MotionSensor(SmoothedInputDevice):
         print("Motion detected!")
 
     :param int pin:
-        The GPIO pin which the sensor is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param int queue_len:
@@ -435,7 +435,7 @@ class LightSensor(SmoothedInputDevice):
         print("Light detected!")
 
     :param int pin:
-        The GPIO pin which the sensor is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param int queue_len:
@@ -543,11 +543,11 @@ class DistanceSensor(SmoothedInputDevice):
 
     :param int echo:
         The GPIO pin which the ECHO pin is attached to. See
-        :ref:`pin_numbering` for valid pin numbers.
+        :ref:`pin-numbering` for valid pin numbers.
 
     :param int trigger:
         The GPIO pin which the TRIG pin is attached to. See
-        :ref:`pin_numbering` for valid pin numbers.
+        :ref:`pin-numbering` for valid pin numbers.
 
     :param int queue_len:
         The length of the queue used to store values read from the sensor.

@@ -6,12 +6,15 @@ from __future__ import (
     )
 str = type('')
 
-import warnings
+import weakref
 import pigpio
 import os
 
-from . import Pin
+from . import SPI
+from .pi import PiPin, PiFactory
 from .data import pi_info
+from ..devices import Device
+from ..mixins import SharedMixin
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
@@ -19,12 +22,12 @@ from ..exc import (
     PinInvalidPull,
     PinInvalidBounce,
     PinInvalidState,
-    PinNonPhysical,
-    PinNoPins,
+    SPIBadArgs,
+    SPIInvalidClockMode,
     )
 
 
-class PiGPIOPin(Pin):
+class PiGPIOFactory(PiFactory):
     """
     Uses the `pigpio`_ library to interface to the Pi's GPIO pins. The pigpio
     library relies on a daemon (``pigpiod``) to be running as root to provide
@@ -68,10 +71,65 @@ class PiGPIOPin(Pin):
 
     .. _pigpio: http://abyz.co.uk/rpi/pigpio/
     """
+    def __init__(
+            self, host=os.getenv('PIGPIO_ADDR', 'localhost'),
+            port=int(os.getenv('PIGPIO_PORT', 8888))):
+        super(PiGPIOFactory, self).__init__()
+        self.pin_class = PiGPIOPin
+        self.spi_hardware_class = PiGPIOHardwareSPI
+        self.spi_software_class = PiGPIOSoftwareSPI
+        self.shared_spi_hardware_class = PiGPIOHardwareSPIShared
+        self.shared_spi_software_class = PiGPIOSoftwareSPIShared
+        self._connection = pigpio.pi(host, port)
+        self._host = host
+        self._port = port
+        self._spis = []
 
+    def close(self):
+        super(PiGPIOFactory, self).close()
+        # We *have* to keep track of SPI interfaces constructed with pigpio;
+        # if we fail to close them they prevent future interfaces from using
+        # the same pins
+        if self.connection:
+            while self._spis:
+                self._spis[0].close()
+            self.connection.stop()
+            self._connection = None
+
+    @property
+    def connection(self):
+        # If we're shutting down, the connection may have disconnected itself
+        # already. Unfortunately, the connection's "connected" property is
+        # rather buggy - disconnecting doesn't set it to False! So we're
+        # naughty and check an internal variable instead...
+        try:
+            if self._connection.sl.s is not None:
+                return self._connection
+        except AttributeError:
+            pass
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    def _get_revision(self):
+        return self.connection.get_hardware_revision()
+
+    def _get_address(self):
+        return ("%s:%d" % (self.host, self.port),)
+
+    def spi(self, **spi_args):
+        intf = super(PiGPIOFactory, self).spi(**spi_args)
+        self._spis.append(intf)
+        return intf
+
+
+class PiGPIOPin(PiPin):
     _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
-    _PINS = {}
-
     GPIO_FUNCTIONS = {
         'input':   pigpio.INPUT,
         'output':  pigpio.OUTPUT,
@@ -99,101 +157,64 @@ class PiGPIOPin(Pin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    def __new__(
-            cls, number, host=os.getenv('PIGPIO_ADDR', 'localhost'),
-            port=int(os.getenv('PIGPIO_PORT', 8888))):
+    def __init__(self, factory, number):
+        super(PiGPIOPin, self).__init__(factory, number)
+        self._pull = 'up' if factory.pi_info.pulled_up('GPIO%d' % number) else 'floating'
+        self._pwm = False
+        self._bounce = None
+        self._when_changed = None
+        self._callback = None
+        self._edges = pigpio.EITHER_EDGE
         try:
-            return cls._PINS[(host, port, number)]
-        except KeyError:
-            self = super(PiGPIOPin, cls).__new__(cls)
-            cls.pi_info(host, port) # implicitly creates connection
-            self._connection, self._pi_info = cls._CONNECTIONS[(host, port)]
-            try:
-                self._pi_info.physical_pin('GPIO%d' % number)
-            except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
-            self._host = host
-            self._port = port
-            self._number = number
-            self._pull = 'up' if self._pi_info.pulled_up('GPIO%d' % number) else 'floating'
-            self._pwm = False
-            self._bounce = None
-            self._when_changed = None
-            self._callback = None
-            self._edges = pigpio.EITHER_EDGE
-            try:
-                self._connection.set_mode(self._number, pigpio.INPUT)
-            except pigpio.error as e:
-                raise ValueError(e)
-            self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[self._pull])
-            self._connection.set_glitch_filter(self._number, 0)
-            cls._PINS[(host, port, number)] = self
-            return self
-
-    def __repr__(self):
-        if self._host == 'localhost':
-            return "GPIO%d" % self._number
-        else:
-            return "GPIO%d on %s:%d" % (self._number, self._host, self._port)
-
-    @property
-    def host(self):
-        return self._host
-
-    @property
-    def port(self):
-        return self._port
-
-    @property
-    def number(self):
-        return self._number
+            self.factory.connection.set_mode(self.number, pigpio.INPUT)
+        except pigpio.error as e:
+            raise ValueError(e)
+        self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[self._pull])
+        self.factory.connection.set_glitch_filter(self.number, 0)
 
     def close(self):
-        # If we're shutting down, the connection may have disconnected itself
-        # already. Unfortunately, the connection's "connected" property is
-        # rather buggy - disconnecting doesn't set it to False! So we're
-        # naughty and check an internal variable instead...
-        if self._connection.sl.s is not None:
+        if self.factory.connection:
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self._pi_info.pulled_up('GPIO%d' % self.number) else 'floating'
+            self.pull = 'up' if self.factory.pi_info.pulled_up('GPIO%d' % self.number) else 'floating'
+
+    def _get_address(self):
+        return self.factory.address + ('GPIO%d' % self.number,)
 
     def _get_function(self):
-        return self.GPIO_FUNCTION_NAMES[self._connection.get_mode(self._number)]
+        return self.GPIO_FUNCTION_NAMES[self.factory.connection.get_mode(self.number)]
 
     def _set_function(self, value):
         if value != 'input':
             self._pull = 'floating'
         try:
-            self._connection.set_mode(self._number, self.GPIO_FUNCTIONS[value])
+            self.factory.connection.set_mode(self.number, self.GPIO_FUNCTIONS[value])
         except KeyError:
             raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
 
     def _get_state(self):
         if self._pwm:
             return (
-                self._connection.get_PWM_dutycycle(self._number) /
-                self._connection.get_PWM_range(self._number)
+                self.factory.connection.get_PWM_dutycycle(self.number) /
+                self.factory.connection.get_PWM_range(self.number)
                 )
         else:
-            return bool(self._connection.read(self._number))
+            return bool(self.factory.connection.read(self.number))
 
     def _set_state(self, value):
         if self._pwm:
             try:
-                value = int(value * self._connection.get_PWM_range(self._number))
-                if value != self._connection.get_PWM_dutycycle(self._number):
-                    self._connection.set_PWM_dutycycle(self._number, value)
+                value = int(value * self.factory.connection.get_PWM_range(self.number))
+                if value != self.factory.connection.get_PWM_dutycycle(self.number):
+                    self.factory.connection.set_PWM_dutycycle(self.number, value)
             except pigpio.error:
                 raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         elif self.function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
         else:
             # write forces pin to OUTPUT, hence the check above
-            self._connection.write(self._number, bool(value))
+            self.factory.connection.write(self.number, bool(value))
 
     def _get_pull(self):
         return self._pull
@@ -201,31 +222,31 @@ class PiGPIOPin(Pin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self._pi_info.pulled_up('GPIO%d' % self._number):
+        if value != 'up' and self.factory.pi_info.pulled_up('GPIO%d' % self.number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
-            self._connection.set_pull_up_down(self._number, self.GPIO_PULL_UPS[value])
+            self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
             raise PinInvalidPull('invalid pull "%s" for pin %r' % (value, self))
 
     def _get_frequency(self):
         if self._pwm:
-            return self._connection.get_PWM_frequency(self._number)
+            return self.factory.connection.get_PWM_frequency(self.number)
         return None
 
     def _set_frequency(self, value):
         if not self._pwm and value is not None:
-            self._connection.set_PWM_frequency(self._number, value)
-            self._connection.set_PWM_range(self._number, 10000)
-            self._connection.set_PWM_dutycycle(self._number, 0)
+            self.factory.connection.set_PWM_frequency(self.number, value)
+            self.factory.connection.set_PWM_range(self.number, 10000)
+            self.factory.connection.set_PWM_dutycycle(self.number, 0)
             self._pwm = True
         elif self._pwm and value is not None:
-            if value != self._connection.get_PWM_frequency(self._number):
-                self._connection.set_PWM_frequency(self._number, value)
-                self._connection.set_PWM_range(self._number, 10000)
+            if value != self.factory.connection.get_PWM_frequency(self.number):
+                self.factory.connection.set_PWM_frequency(self.number, value)
+                self.factory.connection.set_PWM_range(self.number, 10000)
         elif self._pwm and value is None:
-            self._connection.write(self._number, 0)
+            self.factory.connection.write(self.number, 0)
             self._pwm = False
 
     def _get_bounce(self):
@@ -236,7 +257,7 @@ class PiGPIOPin(Pin):
             value = 0
         elif value < 0:
             raise PinInvalidBounce('bounce must be 0 or greater')
-        self._connection.set_glitch_filter(self._number, int(value * 1000000))
+        self.factory.connection.set_glitch_filter(self.number, int(value * 1000000))
 
     def _get_edges(self):
         return self.GPIO_EDGES_NAMES[self._edges]
@@ -259,20 +280,224 @@ class PiGPIOPin(Pin):
             self._callback.cancel()
             self._callback = None
         if value is not None:
-            self._callback = self._connection.callback(
-                    self._number, self._edges,
+            self._callback = self.factory.connection.callback(
+                    self.number, self._edges,
                     lambda gpio, level, tick: value())
 
-    @classmethod
-    def pi_info(
-            cls, host=os.getenv('PIGPIO_ADDR', 'localhost'),
-            port=int(os.getenv('PIGPIO_PORT', 8888))):
+
+class PiGPIOHardwareSPI(SPI, Device):
+    def __init__(self, factory, port, device):
+        self._port = port
+        self._device = device
+        self._factory = weakref.proxy(factory)
+        super(PiGPIOHardwareSPI, self).__init__()
+        self._reserve_pins(*(
+            factory.address + ('GPIO%d' % pin,)
+            for pin in (11, 10, 9, (8, 7)[device])
+            ))
+        self._mode = 0
+        self._select_high = False
+        self._bits_per_word = 8
+        self._baud = 500000
+        self._handle = self._factory.connection.spi_open(
+            device, self._baud, self._spi_flags())
+
+    def close(self):
         try:
-            connection, info = cls._CONNECTIONS[(host, port)]
-        except KeyError:
-            connection = pigpio.pi(host, port)
-            revision = '%04x' % connection.get_hardware_revision()
-            info = pi_info(revision)
-            cls._CONNECTIONS[(host, port)] = (connection, info)
-        return info
+            self._factory._spis.remove(self)
+        except (ReferenceError, ValueError):
+            # If the factory has died already or we're not present in its
+            # internal list, ignore the error
+            pass
+        if not self.closed:
+            self._factory.connection.spi_close(self._handle)
+        self._handle = None
+        self._release_all()
+        super(PiGPIOHardwareSPI, self).close()
+
+    @property
+    def closed(self):
+        return self._handle is None or self._factory.connection is None
+
+    @property
+    def factory(self):
+        return self._factory
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return 'SPI(port=%d, device=%d)' % (self._port, self._device)
+        except DeviceClosed:
+            return 'SPI(closed)'
+
+    def _spi_flags(self):
+        return (
+            self._mode          << 0                  |
+            self._select_high   << (2 + self._device) |
+            self._bits_per_word << 16
+            )
+
+    def _get_clock_mode(self):
+        return self._clock_mode
+
+    def _set_clock_mode(self, value):
+        self._check_open()
+        if not 0 <= value < 4:
+            raise SPIInvalidClockmode("%d is not a valid SPI clock mode" % value)
+        self._factory.connection.spi_close(self._handle)
+        self._clock_mode = value
+        self._handle = self._factory.connection.spi_open(
+            self._device, self._baud, self._spi_flags())
+
+    def _get_select_high(self):
+        return self._select_high
+
+    def _set_select_high(self, value):
+        self._check_open()
+        self._factory.connection.spi_close(self._handle)
+        self._select_high = bool(value)
+        self._handle = self._factory.connection.spi_open(
+            self._device, self._baud, self._spi_flags())
+
+    def _get_bits_per_word(self):
+        return self._bits_per_word
+
+    def _set_bits_per_word(self, value):
+        self._check_open()
+        self._factory.connection.spi_close(self._handle)
+        self._bits_per_word = value
+        self._handle = self._factory.connection.spi_open(
+            self._device, self._baud, self._spi_flags())
+
+    def transfer(self, data):
+        self._check_open()
+        count, data = self._factory.connection.spi_xfer(self._handle, data)
+        if count < 0:
+            raise IOError('SPI transfer error %d' % count)
+        # Convert returned bytearray to list of ints. XXX Not sure how non-byte
+        # sized words (aux intf only) are returned ... padded to 16/32-bits?
+        return [int(b) for b in data]
+
+
+class PiGPIOSoftwareSPI(SPI, Device):
+    def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
+        self._select_pin = None
+        self._factory = weakref.proxy(factory)
+        self._address = factory.address + (
+            )
+        super(PiGPIOSoftwareSPI, self).__init__()
+        self._reserve_pins(
+            factory.pin_address(clock_pin),
+            factory.pin_address(mosi_pin),
+            factory.pin_address(miso_pin),
+            factory.pin_address(select_pin),
+            )
+        self._mode = 0
+        self._select_high = False
+        self._lsb_first = False
+        self._baud = 100000
+        try:
+            self._factory.connection.bb_spi_open(
+                select_pin, miso_pin, mosi_pin, clock_pin,
+                self._baud, self._spi_flags())
+            # Only set after opening bb_spi; if that fails then close() will
+            # also fail if bb_spi_close is attempted on an un-open interface
+            self._select_pin = select_pin
+            self._clock_pin = clock_pin
+            self._mosi_pin = mosi_pin
+            self._miso_pin = miso_pin
+        except:
+            self.close()
+            raise
+
+    def close(self):
+        try:
+            self._factory._spis.remove(self)
+        except (ReferenceError, ValueError):
+            # If the factory has died already or we're not present in its
+            # internal list, ignore the error
+            pass
+        if not self.closed:
+            self._factory.connection.bb_spi_close(self._select_pin)
+        self._select_pin = None
+        self._release_all()
+        super(PiGPIOSoftwareSPI, self).close()
+
+    @property
+    def closed(self):
+        return self._select_pin is None or self._factory.connection is None
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return (
+                'SPI(clock_pin=%d, mosi_pin=%d, miso_pin=%d, select_pin=%d)' % (
+                self._clock_pin, self._mosi_pin, self._miso_pin, self._select_pin
+                ))
+        except DeviceClosed:
+            return 'SPI(closed)'
+
+    def _spi_flags(self):
+        return (
+            self._mode          << 0  |
+            self._select_high   << 2  |
+            self._lsb_first     << 14 |
+            self._lsb_first     << 15
+            )
+
+    def _get_clock_mode(self):
+        return self._clock_mode
+
+    def _set_clock_mode(self, value):
+        self._check_open()
+        if not 0 <= value < 4:
+            raise SPIInvalidClockmode("%d is not a valid SPI clock mode" % value)
+        self._factory.connection.bb_spi_close(self._select_pin)
+        self._clock_mode = value
+        self._factory.connection.bb_spi_open(
+            self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
+            self._baud, self._spi_flags())
+
+    def _get_select_high(self):
+        return self._select_high
+
+    def _set_select_high(self, value):
+        self._check_open()
+        self._factory.connection.bb_spi_close(self._select_pin)
+        self._select_high = bool(value)
+        self._factory.connection.bb_spi_open(
+            self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
+            self._baud, self._spi_flags())
+
+    def _get_lsb_first(self):
+        return self._lsb_first
+
+    def _set_lsb_first(self, value):
+        self._check_open()
+        self._factory.connection.bb_spi_close(self._select_pin)
+        self._lsb_first = bool(value)
+        self._factory.connection.bb_spi_open(
+            self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
+            self._baud, self._spi_flags())
+
+    def transfer(self, data):
+        self._check_open()
+        count, data = self._factory.connection.bb_spi_xfer(self._select_pin, data)
+        if count < 0:
+            raise IOError('SPI transfer error %d' % count)
+        # Convert returned bytearray to list of ints. bb_spi only supports
+        # byte-sized words so no issues here
+        return [int(b) for b in data]
+
+
+class PiGPIOHardwareSPIShared(SharedMixin, PiGPIOHardwareSPI):
+    @classmethod
+    def _shared_key(cls, factory, port, device):
+        return (factory, port, device)
+
+
+class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
+    @classmethod
+    def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
+        return (factory, select_pin)
 

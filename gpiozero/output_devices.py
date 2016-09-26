@@ -128,8 +128,8 @@ class DigitalOutputDevice(OutputDevice):
     """
     def __init__(self, pin=None, active_high=True, initial_value=False):
         self._blink_thread = None
-        super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
         self._controller = None
+        super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
 
     @property
     def value(self):
@@ -217,7 +217,7 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -252,7 +252,7 @@ class Buzzer(DigitalOutputDevice):
         bz.on()
 
     :param int pin:
-        The GPIO pin which the buzzer is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the buzzer is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param bool active_high:
@@ -276,7 +276,7 @@ class PWMOutputDevice(OutputDevice):
     Generic output device configured for pulse-width modulation (PWM).
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param bool active_high:
@@ -483,7 +483,7 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -562,8 +562,12 @@ class RGBLED(SourceMixin, Device):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__()
-        self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
-        self.value = initial_value
+        try:
+            self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
+            self.value = initial_value
+        except:
+            self.close()
+            raise
 
     red = _led_property(0)
     green = _led_property(1)
@@ -926,7 +930,7 @@ class Servo(SourceMixin, CompositeDevice):
             sleep(1)
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param float initial_value:
@@ -1116,7 +1120,7 @@ class AngularServo(Servo):
         expectations of minimum and maximum.
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param float initial_angle:

@@ -8,11 +8,12 @@ str = type('')
 
 
 import warnings
+import weakref
 import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException
 
-from . import LocalPin, PINS_CLEANUP
+from .local import LocalPiPin, LocalPiFactory
 from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
@@ -22,12 +23,10 @@ from ..exc import (
     PinInvalidBounce,
     PinInvalidState,
     PinPWMError,
-    PinNonPhysical,
-    PinNoPins,
     )
 
 
-class RPIOPin(LocalPin):
+class RPIOFactory(LocalPiFactory):
     """
     Uses the `RPIO`_ library to interface to the Pi's GPIO pins. This is
     the default pin implementation if the RPi.GPIO library is not installed,
@@ -48,9 +47,22 @@ class RPIOPin(LocalPin):
 
     .. _RPIO: https://pythonhosted.org/RPIO/
     """
+    def __init__(self):
+        super(RPIOFactory, self).__init__()
+        RPIO.setmode(RPIO.BCM)
+        RPIO.setwarnings(False)
+        RPIO.wait_for_interrupts(threaded=True)
+        RPIO.PWM.setup()
+        RPIO.PWM.init_channel(0, 10000)
+        self.pin_class = RPIOPin
 
-    _PINS = {}
+    def close(self):
+        RPIO.PWM.cleanup()
+        RPIO.stop_waiting_for_interrupts()
+        RPIO.cleanup()
 
+
+class RPIOPin(LocalPiPin):
     GPIO_FUNCTIONS = {
         'input':   RPIO.IN,
         'output':  RPIO.OUT,
@@ -66,64 +78,32 @@ class RPIOPin(LocalPin):
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
-    PI_INFO = None
-
-    def __new__(cls, number):
-        if not cls._PINS:
-            RPIO.setmode(RPIO.BCM)
-            RPIO.setwarnings(False)
-            RPIO.wait_for_interrupts(threaded=True)
-            RPIO.PWM.setup()
-            RPIO.PWM.init_channel(0, 10000)
-            PINS_CLEANUP.append(RPIO.PWM.cleanup)
-            PINS_CLEANUP.append(RPIO.stop_waiting_for_interrupts)
-            PINS_CLEANUP.append(RPIO.cleanup)
-        if cls.PI_INFO is None:
-            cls.PI_INFO = pi_info()
+    def __init__(self, factory, number):
+        super(RPIOPin, self).__init__(factory, number)
+        self._pull = 'up' if factory.pi_info.pulled_up('GPIO%d' % number) else 'floating'
+        self._pwm = False
+        self._duty_cycle = None
+        self._bounce = None
+        self._when_changed = None
+        self._edges = 'both'
         try:
-            return cls._PINS[number]
-        except KeyError:
-            self = super(RPIOPin, cls).__new__(cls)
-            try:
-                cls.PI_INFO.physical_pin('GPIO%d' % number)
-            except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
-            self._number = number
-            self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
-            self._pwm = False
-            self._duty_cycle = None
-            self._bounce = None
-            self._when_changed = None
-            self._edges = 'both'
-            try:
-                RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
-            except InvalidChannelException as e:
-                raise ValueError(e)
-            cls._PINS[number] = self
-            return self
-
-    def __repr__(self):
-        return "GPIO%d" % self._number
-
-    @property
-    def number(self):
-        return self._number
+            RPIO.setup(self.number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])
+        except InvalidChannelException as e:
+            raise ValueError(e)
 
     def close(self):
         self.frequency = None
         self.when_changed = None
-        RPIO.setup(self._number, RPIO.IN, RPIO.PUD_OFF)
+        RPIO.setup(self.number, RPIO.IN, RPIO.PUD_OFF)
 
     def _get_function(self):
-        return self.GPIO_FUNCTION_NAMES[RPIO.gpio_function(self._number)]
+        return self.GPIO_FUNCTION_NAMES[RPIO.gpio_function(self.number)]
 
     def _set_function(self, value):
         if value != 'input':
             self._pull = 'floating'
         try:
-            RPIO.setup(self._number, self.GPIO_FUNCTIONS[value], self.GPIO_PULL_UPS[self._pull])
+            RPIO.setup(self.number, self.GPIO_FUNCTIONS[value], self.GPIO_PULL_UPS[self._pull])
         except KeyError:
             raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
 
@@ -131,23 +111,23 @@ class RPIOPin(LocalPin):
         if self._pwm:
             return self._duty_cycle
         else:
-            return RPIO.input(self._number)
+            return RPIO.input(self.number)
 
     def _set_state(self, value):
         if not 0 <= value <= 1:
             raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         if self._pwm:
-            RPIO.PWM.clear_channel_gpio(0, self._number)
+            RPIO.PWM.clear_channel_gpio(0, self.number)
             if value == 0:
-                RPIO.output(self._number, False)
+                RPIO.output(self.number, False)
             elif value == 1:
-                RPIO.output(self._number, True)
+                RPIO.output(self.number, True)
             else:
-                RPIO.PWM.add_channel_pulse(0, self._number, start=0, width=int(1000 * value))
+                RPIO.PWM.add_channel_pulse(0, self.number, start=0, width=int(1000 * value))
             self._duty_cycle = value
         else:
             try:
-                RPIO.output(self._number, value)
+                RPIO.output(self.number, value)
             except ValueError:
                 raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
             except RuntimeError:
@@ -159,10 +139,10 @@ class RPIOPin(LocalPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
+        if value != 'up' and self.factory.pi_info.pulled_up('GPIO%d' % self.number):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
-            RPIO.setup(self._number, RPIO.IN, self.GPIO_PULL_UPS[value])
+            RPIO.setup(self.number, RPIO.IN, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
             raise PinInvalidPull('invalid pull "%s" for pin %r' % (value, self))
@@ -182,10 +162,10 @@ class RPIOPin(LocalPin):
             self._pwm = True
             # Dirty hack to get RPIO's PWM support to setup, but do nothing,
             # for a given GPIO pin
-            RPIO.PWM.add_channel_pulse(0, self._number, start=0, width=0)
-            RPIO.PWM.clear_channel_gpio(0, self._number)
+            RPIO.PWM.add_channel_pulse(0, self.number, start=0, width=0)
+            RPIO.PWM.clear_channel_gpio(0, self.number)
         elif self._pwm and value is None:
-            RPIO.PWM.clear_channel_gpio(0, self._number)
+            RPIO.PWM.clear_channel_gpio(0, self.number)
             self._pwm = False
 
     def _get_bounce(self):
@@ -219,12 +199,12 @@ class RPIOPin(LocalPin):
         if self._when_changed is None and value is not None:
             self._when_changed = value
             RPIO.add_interrupt_callback(
-                self._number,
+                self.number,
                 lambda channel, value: self._when_changed(),
                 self._edges, self.GPIO_PULL_UPS[self._pull], self._bounce)
         elif self._when_changed is not None and value is None:
             try:
-                RPIO.del_interrupt_callback(self._number)
+                RPIO.del_interrupt_callback(self.number)
             except KeyError:
                 # Ignore this exception which occurs during shutdown; this
                 # simply means RPIO's built-in cleanup has already run and

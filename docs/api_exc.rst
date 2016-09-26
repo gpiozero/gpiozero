@@ -59,6 +59,20 @@ Errors
 
 .. autoexception:: SPIBadArgs
 
+.. autoexception:: SPIBadChannel
+
+.. autoexception:: SPIFixedClockMode
+
+.. autoexception:: SPIInvalidClockMode
+
+.. autoexception:: SPIFixedBitOrder
+
+.. autoexception:: SPIFixedSelect
+
+.. autoexception:: SPIFixedWordSize
+
+.. autoexception:: SPIInvalidWordSize
+
 .. autoexception:: GPIODeviceError
 
 .. autoexception:: GPIODeviceClosed
@@ -83,11 +97,17 @@ Errors
 
 .. autoexception:: PinInvalidEdges
 
+.. autoexception:: PinInvalidBounce
+
 .. autoexception:: PinSetInput
 
 .. autoexception:: PinFixedPull
 
 .. autoexception:: PinEdgeDetectUnsupported
+
+.. autoexception:: PinGPIOUnsupported
+
+.. autoexception:: PinSPIUnsupported
 
 .. autoexception:: PinPWMError
 
@@ -95,11 +115,13 @@ Errors
 
 .. autoexception:: PinPWMFixedValue
 
+.. autoexception:: PinUnknownPi
+
 .. autoexception:: PinMultiplePins
 
 .. autoexception:: PinNoPins
 
-.. autoexception:: PinUnknownPi
+.. autoexception:: PinInvalidPin
 
 Warnings
 ========
@@ -109,4 +131,8 @@ Warnings
 .. autoexception:: SPIWarning
 
 .. autoexception:: SPISoftwareFallback
+
+.. autoexception:: PinFactoryFallback
+
+.. autoexception:: PinNonPhysical
 

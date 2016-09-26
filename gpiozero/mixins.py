@@ -127,7 +127,7 @@ class SharedMixin(object):
     When :meth:`close` is called, an internal reference counter will be
     decremented and the instance will only close when it reaches zero.
     """
-    _INSTANCES = {}
+    _instances = {}
 
     def __del__(self):
         self._refs = 0

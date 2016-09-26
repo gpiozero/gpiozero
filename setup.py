@@ -68,12 +68,12 @@ if sys.version_info[:2] == (3, 2):
 
 __entry_points__ = {
     'gpiozero_pin_factories': [
-        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOPin',
-        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOPin',
-        'RPIOPin    = gpiozero.pins.rpio:RPIOPin',
-        'NativePin  = gpiozero.pins.native:NativePin',
-        'MockPin    = gpiozero.pins.mock:MockPin',
-        'MockPWMPin = gpiozero.pins.mock:MockPWMPin',
+        'pigpio  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'rpigpio = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'rpio    = gpiozero.pins.rpio:RPIOFactory',
+        'native  = gpiozero.pins.native:NativeFactory',
+        'mock    = gpiozero.pins.mock:MockFactory',
+        'mockpwm = gpiozero.pins.mock:MockPWMFactory',
     ],
     'console_scripts': [
         'pinout = gpiozero.cli.pinout:main',

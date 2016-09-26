@@ -16,7 +16,6 @@ except ImportError:
 
 from .exc import DeviceClosed, SPIBadChannel
 from .devices import Device
-from .spi import SPI
 
 
 class SPIDevice(Device):
@@ -28,13 +27,12 @@ class SPIDevice(Device):
     specified with the constructor.
     """
     def __init__(self, **spi_args):
-        self._spi = SPI(**spi_args)
+        self._spi = self._pin_factory.spi(**spi_args)
 
     def close(self):
         if self._spi:
-            s = self._spi
+            self._spi.close()
             self._spi = None
-            s.close()
         super(SPIDevice, self).close()
 
     @property
