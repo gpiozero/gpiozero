@@ -144,14 +144,14 @@ class LocalPiPin(PiPin):
             self.state if state is None else state)
 
 
-class LocalPiHardwareSPI(SPI, Device):
-    def __init__(self, factory, port, device):
+class LocalPiHardwareSPI(SPI):
+    def __init__(self, port, device, pin_factory):
         self._port = port
         self._device = device
         self._interface = None
         if SpiDev is None:
             raise ImportError('failed to import spidev')
-        super(LocalPiHardwareSPI, self).__init__()
+        super(LocalPiHardwareSPI, self).__init__(pin_factory=pin_factory)
         pins = SPI_HARDWARE_PINS[port]
         self.pin_factory.reserve_pins(
             self,
@@ -215,15 +215,18 @@ class LocalPiHardwareSPI(SPI, Device):
         self._interface.bits_per_word = value
 
 
-class LocalPiSoftwareSPI(SPI, OutputDevice):
-    def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
+class LocalPiSoftwareSPI(SPI):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         self._bus = None
-        super(LocalPiSoftwareSPI, self).__init__(select_pin, active_high=False)
+        self._select = None
+        super(LocalPiSoftwareSPI, self).__init__(pin_factory=pin_factory)
         try:
             self._clock_phase = False
             self._lsb_first = False
             self._bits_per_word = 8
             self._bus = SPISoftwareBus(clock_pin, mosi_pin, miso_pin)
+            self._select = DigitalOutputDevice(
+                select_pin, active_high=False, pin_factory=pin_factory)
         except:
             self.close()
             raise
@@ -232,10 +235,13 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
         # XXX Need to refine this
         return not (
             isinstance(other, LocalPiSoftwareSPI) and
-            (self.pin.number != other.pin.number)
+            (self._select.pin.number != other._select.pin.number)
             )
 
     def close(self):
+        if self._select:
+            self._select.close()
+        self._select = None
         if self._bus is not None:
             self._bus.close()
         self._bus = None
@@ -252,18 +258,18 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
                 self._bus.clock.pin.number,
                 self._bus.mosi.pin.number,
                 self._bus.miso.pin.number,
-                self.pin.number)
+                self._select.pin.number)
         except DeviceClosed:
             return 'SPI(closed)'
 
     def transfer(self, data):
         with self._bus.lock:
-            self.on()
+            self._select.on()
             try:
                 return self._bus.transfer(
                     data, self._clock_phase, self._lsb_first, self._bits_per_word)
             finally:
-                self.off()
+                self._select.off()
 
     def _get_clock_mode(self):
         with self._bus.lock:
@@ -291,11 +297,11 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
         self._bits_per_word = int(value)
 
     def _get_select_high(self):
-        return self.active_high
+        return self._select.active_high
 
     def _set_select_high(self, value):
         with self._bus.lock:
-            self.active_high = value
+            self._select.active_high = value
             self.off()
 
 

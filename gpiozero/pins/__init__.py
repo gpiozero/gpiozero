@@ -43,6 +43,7 @@ from weakref import ref
 from collections import defaultdict
 from threading import Lock
 
+from ..devices import Device
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
@@ -471,7 +472,7 @@ class Pin(object):
         """)
 
 
-class SPI(object):
+class SPI(Device):
     """
     Abstract interface for `Serial Peripheral Interface`_ (SPI)
     implementations. Descendents *must* override the following methods:
