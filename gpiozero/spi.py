@@ -17,12 +17,74 @@ except ImportError:
     SpiDev = None
 
 from .devices import Device, SharedMixin, _PINS, _PINS_LOCK
-from .input_devices import InputDevice
-from .output_devices import OutputDevice
+from .input_devices import DigitalInputDevice
+from .output_devices import DigitalOutputDevice
 from .exc import SPIBadArgs, SPISoftwareFallback, GPIOPinInUse, DeviceClosed
 
 
-class SPIHardwareInterface(Device):
+class SPIInterface(Device):
+    def __init__(self, *args, **kwargs):
+        super(SPIInterface, self).__init__()
+
+    def read(self, n):
+        return self.transfer((0,) * n)
+
+    def write(self, data):
+        return len(self.transfer(data))
+
+    def transfer(self, data):
+        raise NotImplementedError
+
+    @property
+    def clock_mode(self):
+        raise NotImplementedError
+
+    @clock_mode.setter
+    def clock_mode(self, value):
+        raise NotImplementedError
+
+    @property
+    def clock_polarity(self):
+        raise NotImplementedError
+
+    @clock_polarity.setter
+    def clock_polarity(self, value):
+        raise NotImplementedError
+
+    @property
+    def clock_phase(self):
+        raise NotImplementedError
+
+    @clock_phase.setter
+    def clock_phase(self, value):
+        raise NotImplementedError
+
+    @property
+    def lsb_first(self):
+        raise NotImplementedError
+
+    @lsb_first.setter
+    def lsb_first(self, value):
+        raise NotImplementedError
+
+    @property
+    def select_high(self):
+        raise NotImplementedError
+
+    @select_high.setter
+    def select_high(self, value):
+        raise NotImplementedError
+
+    @property
+    def bits_per_word(self):
+        raise NotImplementedError
+
+    @bits_per_word.setter
+    def bits_per_word(self, value):
+        raise NotImplementedError
+
+
+class SPIHardwareInterface(SPIInterface):
     def __init__(self, port, device):
         self._device = None
         super(SPIHardwareInterface, self).__init__()
@@ -64,12 +126,6 @@ class SPIHardwareInterface(Device):
         except DeviceClosed:
             return "hardware SPI closed"
 
-    def read(self, n):
-        return self.transfer((0,) * n)
-
-    def write(self, data):
-        return len(self.transfer(data))
-
     def transfer(self, data):
         """
         Writes data (a list of integer words where each word is assumed to have
@@ -78,48 +134,53 @@ class SPIHardwareInterface(Device):
         """
         return self._device.xfer2(data)
 
-    def _get_clock_mode(self):
+    @property
+    def clock_mode(self):
         return self._device.mode
 
-    def _set_clock_mode(self, value):
+    @clock_mode.setter
+    def clock_mode(self, value):
         self._device.mode = value
 
-    def _get_clock_polarity(self):
+    @property
+    def clock_polarity(self):
         return bool(self.clock_mode & 2)
 
-    def _set_clock_polarity(self, value):
+    @clock_polarity.setter
+    def clock_polarity(self, value):
         self.clock_mode = self.clock_mode & (~2) | (bool(value) << 1)
 
-    def _get_clock_phase(self):
+    @property
+    def clock_phase(self):
         return bool(self.clock_mode & 1)
 
-    def _set_clock_phase(self, value):
+    @clock_phase.setter
+    def clock_phase(self, value):
         self.clock_mode = self.clock_mode & (~1) | bool(value)
 
-    def _get_lsb_first(self):
+    @property
+    def lsb_first(self):
         return self._device.lsbfirst
 
-    def _set_lsb_first(self, value):
+    @lsb_first.setter
+    def lsb_first(self, value):
         self._device.lsbfirst = bool(value)
 
-    def _get_select_high(self):
+    @property
+    def select_high(self):
         return self._device.cshigh
 
-    def _set_select_high(self, value):
+    @select_high.setter
+    def select_high(self, value):
         self._device.cshigh = bool(value)
 
-    def _get_bits_per_word(self):
+    @property
+    def bits_per_word(self):
         return self._device.bits_per_word
 
-    def _set_bits_per_word(self, value):
+    @bits_per_word.setter
+    def bits_per_word(self, value):
         self._device.bits_per_word = value
-
-    clock_polarity = property(_get_clock_polarity, _set_clock_polarity)
-    clock_phase = property(_get_clock_phase, _set_clock_phase)
-    clock_mode = property(_get_clock_mode, _set_clock_mode)
-    lsb_first = property(_get_lsb_first, _set_lsb_first)
-    select_high = property(_get_select_high, _set_select_high)
-    bits_per_word = property(_get_bits_per_word, _set_bits_per_word)
 
 
 class SPISoftwareBus(SharedMixin, Device):
@@ -131,11 +192,11 @@ class SPISoftwareBus(SharedMixin, Device):
         super(SPISoftwareBus, self).__init__()
         self.lock = RLock()
         try:
-            self.clock = OutputDevice(clock_pin, active_high=True)
+            self.clock = DigitalOutputDevice(clock_pin, active_high=True)
             if mosi_pin is not None:
-                self.mosi = OutputDevice(mosi_pin)
+                self.mosi = DigitalOutputDevice(mosi_pin)
             if miso_pin is not None:
-                self.miso = InputDevice(miso_pin)
+                self.miso = DigitalInputDevice(miso_pin)
         except:
             self.close()
             raise
@@ -191,15 +252,17 @@ class SPISoftwareBus(SharedMixin, Device):
         return result
 
 
-class SPISoftwareInterface(OutputDevice):
+class SPISoftwareInterface(SPIInterface):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin):
         self._bus = None
-        super(SPISoftwareInterface, self).__init__(select_pin, active_high=False)
+        self._select = None
+        super(SPISoftwareInterface, self).__init__()
         try:
             self._clock_phase = False
             self._lsb_first = False
             self._bits_per_word = 8
             self._bus = SPISoftwareBus(clock_pin, mosi_pin, miso_pin)
+            self._select = DigitalOutputDevice(select_pin, active_high=False)
         except:
             self.close()
             raise
@@ -208,6 +271,9 @@ class SPISoftwareInterface(OutputDevice):
         if self._bus:
             self._bus.close()
             self._bus = None
+        if self._select:
+            self._select.close()
+            self._select = None
         super(SPISoftwareInterface, self).close()
 
     def __repr__(self):
@@ -219,78 +285,77 @@ class SPISoftwareInterface(OutputDevice):
                     self._bus.clock.pin.number,
                     self._bus.mosi.pin.number,
                     self._bus.miso.pin.number,
-                    self.pin.number))
+                    self._select.pin.number))
         except DeviceClosed:
             return "software SPI closed"
 
-    def read(self, n):
-        return self.transfer((0,) * n)
-
-    def write(self, data):
-        return len(self.transfer(data))
-
     def transfer(self, data):
         with self._bus.lock:
-            self.on()
+            self._select.on()
             try:
                 return self._bus.transfer(
                     data, self._clock_phase, self._lsb_first, self._bits_per_word)
             finally:
-                self.off()
+                self._select.off()
 
-    def _get_clock_mode(self):
+    @property
+    def clock_mode(self):
         return (self.clock_polarity << 1) | self.clock_phase
 
-    def _set_clock_mode(self, value):
+    @clock_mode.setter
+    def clock_mode(self, value):
         value = int(value)
         if not 0 <= value <= 3:
             raise ValueError('clock_mode must be a value between 0 and 3 inclusive')
         self.clock_polarity = bool(value & 2)
         self.clock_phase = bool(value & 1)
 
-    def _get_clock_polarity(self):
+    @property
+    def clock_polarity(self):
         with self._bus.lock:
             return not self._bus.clock.active_high
 
-    def _set_clock_polarity(self, value):
+    @clock_polarity.setter
+    def clock_polarity(self, value):
         with self._bus.lock:
             self._bus.clock.active_high = not value
             self._bus.clock.off()
 
-    def _get_clock_phase(self):
+    @property
+    def clock_phase(self):
         return self._clock_phase
 
-    def _set_clock_phase(self, value):
+    @clock_phase.setter
+    def clock_phase(self, value):
         self._clock_phase = bool(value)
 
-    def _get_lsb_first(self):
+    @property
+    def lsb_first(self):
         return self._lsb_first
 
-    def _set_lsb_first(self, value):
+    @lsb_first.setter
+    def lsb_first(self, value):
         self._lsb_first = bool(value)
 
-    def _get_bits_per_word(self):
+    @property
+    def select_high(self):
+        return self._select.active_high
+
+    @select_high.setter
+    def select_high(self, value):
+        with self._bus.lock:
+            self._select.active_high = value
+            self._select.off()
+
+    @property
+    def bits_per_word(self):
         return self._bits_per_word
 
-    def _set_bits_per_word(self, value):
+    @bits_per_word.setter
+    def bits_per_word(self, value):
         if value < 1:
             raise ValueError('bits_per_word must be positive')
         self._bits_per_word = int(value)
-
-    def _get_select_high(self):
-        return self.active_high
-
-    def _set_select_high(self, value):
-        with self._bus.lock:
-            self.active_high = value
-            self.off()
-
-    clock_polarity = property(_get_clock_polarity, _set_clock_polarity)
-    clock_phase = property(_get_clock_phase, _set_clock_phase)
-    clock_mode = property(_get_clock_mode, _set_clock_mode)
-    lsb_first = property(_get_lsb_first, _set_lsb_first)
-    bits_per_word = property(_get_bits_per_word, _set_bits_per_word)
-    select_high = property(_get_select_high, _set_select_high)
 
 
 class SharedSPIHardwareInterface(SharedMixin, SPIHardwareInterface):
