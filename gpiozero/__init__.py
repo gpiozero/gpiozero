@@ -132,3 +132,7 @@ from .other_devices import (
     CPUTemperature,
     TimeOfDay,
 )
+from .rotary_encoder import (
+    RotaryEncoder,
+    RotaryEncoderWithButton,
+)
