@@ -1156,6 +1156,8 @@ class Energenie(SourceMixin, Device):
         if self._master:
             m = self._master
             self._master = None
+            self._socket = None
+            self._value = None
             m.close()
 
     @property
@@ -1168,6 +1170,10 @@ class Energenie(SourceMixin, Device):
             return "<gpiozero.Energenie object on socket %d>" % self._socket
         except DeviceClosed:
             return "<gpiozero.Energenie object closed>"
+
+    @property
+    def socket(self):
+        return self._socket
 
     @property
     def value(self):
