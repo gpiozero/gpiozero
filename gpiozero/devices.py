@@ -230,7 +230,7 @@ class Device(ValuesMixin, GPIOBase):
     """
     Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
     etc. This is the base class of the device hierarchy. It defines the
-    basic services applicable to all devices (specifically thhe :attr:`is_active`
+    basic services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
     """
     def __repr__(self):
