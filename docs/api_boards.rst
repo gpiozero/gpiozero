@@ -25,7 +25,7 @@ LEDBoard
 LEDBarGraph
 ===========
 
-.. autoclass:: LEDBarGraph(\*pins, initial_value=0)
+.. autoclass:: LEDBarGraph(\*pins, pwm=False, active_high=True, initial_value=0)
     :inherited-members:
     :members:
 
