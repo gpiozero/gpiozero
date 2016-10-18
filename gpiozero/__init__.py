@@ -139,6 +139,7 @@ from .boards import (
     PumpkinPi,
     JamHat,
     Pibrella,
+    SevenSegmentDisplay,
 )
 from .internal_devices import (
     InternalDevice,
