@@ -2422,7 +2422,7 @@ class Pibrella(CompositeOutputDevice):
         super(Pibrella, self).off()
 
 
-class SevenSegmentDisplay(LEDCollection):
+class SevenSegmentDisplay(LEDBoard):
     layouts = {
         '1': (False, True, True, False, False, False, False),
         '2': (True, True, False, True, True, False, True),
