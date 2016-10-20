@@ -81,12 +81,12 @@ def test_rotary_encoder_repr():
         assert repr(encoder) == '<gpiozero.RotaryEncoder object on pin_a MOCK2, pin_b MOCK3, pull_up=True, is_active=True>'
 
 def test_rotary_encoder_table_values():
-    assert TableValues.calcule_index(True, False, False, False) == 8
-    assert TableValues.calcule_index(False, True, False, False) == 4
-    assert TableValues.calcule_index(False, False, True, False) == 2
-    assert TableValues.calcule_index(False, False, False, True) == 1
+    assert TableValues.calculate_index(True, False, False, False) == 8
+    assert TableValues.calculate_index(False, True, False, False) == 4
+    assert TableValues.calculate_index(False, False, True, False) == 2
+    assert TableValues.calculate_index(False, False, False, True) == 1
 
-    assert TableValues.calcule_index(True, True, True, True) == 15
+    assert TableValues.calculate_index(True, True, True, True) == 15
 
 def test_rotary_encoder_rotate_clockwise():
     pin_a = MockPin(2)
@@ -123,12 +123,12 @@ def test_rotary_encoder_value_not_defined():
     with RotaryEncoder(pin_a, pin_b) as encoder:
         assert encoder.value is None
 
-def test_rotary_encoder_with_button():
+def test_rotary_encoder_clickable():
     pin_a = MockPin(2)
     pin_b = MockPin(3)
     pin_button = MockPin(4)
 
-    with RotaryEncoderWithButton(pin_a, pin_b, pin_button, encoder_pull_up=True, button_pull_up=True) as encoder:
+    with RotaryEncoderClickable(pin_a, pin_b, pin_button, encoder_pull_up=True, button_pull_up=True) as encoder:
         assert not encoder.closed
         assert encoder.is_active
 
@@ -143,7 +143,7 @@ def test_rotary_encoder_with_button():
     assert encoder.closed
     assert not encoder.is_active
 
-    with RotaryEncoderWithButton(pin_a, pin_b, pin_button, encoder_pull_up=False, button_pull_up=False) as encoder:
+    with RotaryEncoderClickable(pin_a, pin_b, pin_button, encoder_pull_up=False, button_pull_up=False) as encoder:
         assert not encoder.closed
         assert encoder.is_active
 
@@ -158,12 +158,12 @@ def test_rotary_encoder_with_button():
     assert encoder.closed
     assert not encoder.is_active
 
-def test_rotary_encoder_with_button_value():
+def test_rotary_encoder_clickable_value():
     pin_a = MockPin(2)
     pin_b = MockPin(3)
     pin_button = MockPin(4)
 
-    with RotaryEncoderWithButton(pin_a, pin_b, pin_button) as encoder:
+    with RotaryEncoderClickable(pin_a, pin_b, pin_button) as encoder:
         pin_button.drive_low()
         assert encoder.value is None
 
@@ -175,6 +175,6 @@ def test_rotary_encoder_repr():
     pin_b = MockPin(3)
     pin_button = MockPin(4)
 
-    with RotaryEncoderWithButton(pin_a, pin_b, pin_button) as encoder:
-        assert repr(encoder) == '<gpiozero.RotaryEncoderWithButton object on pin_a MOCK2, pin_b MOCK3, button_pin MOCK4, encoder_pull_up=True, button_pull_up=True, is_active=True>'
+    with RotaryEncoderClickable(pin_a, pin_b, pin_button) as encoder:
+        assert repr(encoder) == '<gpiozero.RotaryEncoderClickable object on pin_a MOCK2, pin_b MOCK3, button_pin MOCK4, encoder_pull_up=True, button_pull_up=True, is_active=True>'
 

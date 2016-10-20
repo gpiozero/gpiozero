@@ -17,7 +17,6 @@ class RotaryEncoder(Device):
         def change(value):
             if value > 0:
                 print("clockwise")
-
             else:
                 print("counterclockwise")
 
@@ -42,9 +41,9 @@ class RotaryEncoder(Device):
         connect the middle pin of the RotaryEncoder to 3V3.
     """
 
-    when_rotated = lambda *args: None
-
     def __init__(self, pin_a, pin_b, pull_up=True):
+        self.when_rotated = lambda *args: None
+
         self.pin_a = DigitalInputDevice(pin=pin_a, pull_up=pull_up)
         self.pin_b = DigitalInputDevice(pin=pin_b, pull_up=pull_up)
 
@@ -113,7 +112,7 @@ class TableValues:
     """
 
     # The commented values are middle changes
-    values = {
+    _values = {
         0: +0,
         1: +1,
         2: -1,
@@ -134,14 +133,14 @@ class TableValues:
 
     @staticmethod
     def value(new_b_value, new_a_value, old_b_value, old_a_value):
-        index = TableValues.calcule_index(new_b_value, new_a_value, old_b_value, old_a_value)
+        index = TableValues.calculate_index(new_b_value, new_a_value, old_b_value, old_a_value)
         try:
-            return TableValues.values[index]
+            return TableValues._values[index]
         except KeyError:
             return 0
 
     @staticmethod
-    def calcule_index(new_b_value, new_a_value, old_b_value, old_a_value):
+    def calculate_index(new_b_value, new_a_value, old_b_value, old_a_value):
         value = 0
         if new_b_value:
             value += 8
@@ -155,27 +154,25 @@ class TableValues:
         return value
 
 
-class RotaryEncoderWithButton(CompositeDevice):
+class RotaryEncoderClickable(CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a :class:`RotaryEncoder` with a
     :class:`Button`.
 
     The following example will print a Rotary Encoder change direction and Button pressed::
 
-        from gpiozero import RotaryEncoderWithButton
+        from gpiozero import RotaryEncoderClickable
 
         def change(value):
             if value > 0:
                 print("clockwise")
-
             else:
                 print("counterclockwise")
 
         def pressed():
             print("pressed")
 
-        rotary = RotaryEncoderWithButton(pin_a=13, pin_b=19, button_pin=15)
-        rotary.when_rotated = change
+        rotary = RotaryEncoderClickable(pin_a=13, pin_b=19, button_pin=15)
         rotary.when_rotated = change
 
 

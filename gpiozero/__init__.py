@@ -134,5 +134,5 @@ from .other_devices import (
 )
 from .rotary_encoder import (
     RotaryEncoder,
-    RotaryEncoderWithButton,
+    RotaryEncoderClickable,
 )
