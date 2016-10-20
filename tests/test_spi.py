@@ -29,6 +29,8 @@ def test_spi_hardware_params():
     with mock.patch('gpiozero.spi.SpiDev') as spidev:
         with SPI() as device:
             assert isinstance(device, SPIHardwareInterface)
+            device.close()
+            assert device.closed
         with SPI(port=0, device=0) as device:
             assert isinstance(device, SPIHardwareInterface)
         with SPI(port=0, device=1) as device:
@@ -54,8 +56,14 @@ def test_spi_software_params():
     with mock.patch('gpiozero.spi.SpiDev') as spidev:
         with SPI(select_pin=6) as device:
             assert isinstance(device, SPISoftwareInterface)
+            device.close()
+            assert device.closed
         with SPI(clock_pin=11, mosi_pin=9, miso_pin=10) as device:
             assert isinstance(device, SPISoftwareInterface)
+            device._bus.close()
+            assert device._bus.closed
+            device.close()
+            assert device.closed
         with SPI(select_pin=6, shared=True) as device:
             assert isinstance(device, SharedSPISoftwareInterface)
     # Ensure software fallback works when SpiDev isn't present

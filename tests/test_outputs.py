@@ -622,7 +622,9 @@ def test_rgbled_fade_background_nonpwm():
     r, g, b = (MockPin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
-            device.blink(0, 0, 0.2, 0.2, n=2)
+            device.blink(0, 0, 0.2, 0, n=2)
+        with pytest.raises(ValueError):
+            device.blink(0, 0, 0, 0.2, n=2)
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
@@ -879,6 +881,14 @@ def test_motor_bad_value():
             device.value = -2
         with pytest.raises(ValueError):
             device.value = 2
+        with pytest.raises(ValueError):
+            device.forward(2)
+        with pytest.raises(ValueError):
+            device.forward(-1)
+        with pytest.raises(ValueError):
+            device.backward(2)
+        with pytest.raises(ValueError):
+            device.backward(-1)
 
 def test_motor_bad_value_nonpwm():
     f = MockPin(1)
@@ -892,6 +902,10 @@ def test_motor_bad_value_nonpwm():
             device.value = 0.5
         with pytest.raises(ValueError):
             device.value = -0.5
+        with pytest.raises(ValueError):
+            device.forward(0.5)
+        with pytest.raises(ValueError):
+            device.backward(0.5)
 
 def test_motor_reverse():
     f = MockPWMPin(1)
