@@ -964,6 +964,19 @@ def test_servo_pulse_width():
         device.value = None
         assert device.pulse_width is None
 
+def test_servo_initial_values():
+    p = MockPWMPin(1)
+    with Servo(p) as device:
+        assert device.value == 0
+    with Servo(p, initial_value=-1) as device:
+        assert device.value == -1
+    with Servo(p, initial_value=0) as device:
+        assert device.value == 0
+    with Servo(p, initial_value=1) as device:
+        assert device.value == 1
+    with Servo(p, initial_value=None) as device:
+        assert device.value is None
+
 def test_servo_values():
     p = MockPWMPin(1)
     with Servo(p) as device:
@@ -996,6 +1009,19 @@ def test_angular_servo_range():
     with AngularServo(p, initial_angle=15, min_angle=0, max_angle=90) as device:
         assert device.min_angle == 0
         assert device.max_angle == 90
+
+def test_angular_servo_initial_angles():
+    p = MockPWMPin(1)
+    with AngularServo(p) as device:
+        assert device.angle == 0
+    with AngularServo(p, initial_angle=-90) as device:
+        assert device.angle == -90
+    with AngularServo(p, initial_angle=0) as device:
+        assert device.angle == 0
+    with AngularServo(p, initial_angle=90) as device:
+        assert device.angle == 90
+    with AngularServo(p, initial_angle=None) as device:
+        assert device.angle is None
 
 def test_angular_servo_angles():
     p = MockPWMPin(1)

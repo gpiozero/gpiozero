@@ -1154,7 +1154,10 @@ class AngularServo(Servo):
             frame_width=20/1000):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        if initial_angle is None:
+            initial_value = None
+        else:
+            initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
         super(AngularServo, self).__init__(
             pin, initial_value, min_pulse_width, max_pulse_width, frame_width)
 
