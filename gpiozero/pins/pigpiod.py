@@ -294,12 +294,16 @@ class PiGPIOHardwareSPI(SPI, Device):
             factory.address + ('GPIO%d' % pin,)
             for pin in (11, 10, 9, (8, 7)[device])
             ))
-        self._mode = 0
-        self._select_high = False
-        self._bits_per_word = 8
+        self._spi_flags = 8 << 16
         self._baud = 500000
         self._handle = self._factory.connection.spi_open(
             device, self._baud, self._spi_flags())
+
+    def _conflicts_with(self, other):
+        return not (
+            isinstance(other, PiGPIOHardwareSPI) and
+            (self._port, self._device) != (other._port, other._device)
+            )
 
     def close(self):
         try:
@@ -329,44 +333,37 @@ class PiGPIOHardwareSPI(SPI, Device):
         except DeviceClosed:
             return 'SPI(closed)'
 
-    def _spi_flags(self):
-        return (
-            self._mode          << 0                  |
-            self._select_high   << (2 + self._device) |
-            self._bits_per_word << 16
-            )
-
     def _get_clock_mode(self):
-        return self._clock_mode
+        return self._spi_flags & 0x3
 
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
-            raise SPIInvalidClockmode("%d is not a valid SPI clock mode" % value)
+            raise SPIInvalidClockMode("%d is not a valid SPI clock mode" % value)
         self._factory.connection.spi_close(self._handle)
-        self._clock_mode = value
+        self._spi_flags = (self._spi_flags & ~0x3) | value
         self._handle = self._factory.connection.spi_open(
-            self._device, self._baud, self._spi_flags())
+            self._device, self._baud, self._spi_flags)
 
     def _get_select_high(self):
-        return self._select_high
+        return bool((self._spi_flags >> (2 + self._device)) & 0x1)
 
     def _set_select_high(self, value):
         self._check_open()
         self._factory.connection.spi_close(self._handle)
-        self._select_high = bool(value)
+        self._spi_flags = (self._spi_flags & ~0x1c) | (bool(value) << (2 + self._device))
         self._handle = self._factory.connection.spi_open(
-            self._device, self._baud, self._spi_flags())
+            self._device, self._baud, self._spi_flags)
 
     def _get_bits_per_word(self):
-        return self._bits_per_word
+        return (self._spi_flags >> 16) & 0x3f
 
     def _set_bits_per_word(self, value):
         self._check_open()
         self._factory.connection.spi_close(self._handle)
-        self._bits_per_word = value
+        self._spi_flags = (self._spi_flags & ~0x3f0000) | ((value & 0x3f) << 16)
         self._handle = self._factory.connection.spi_open(
-            self._device, self._baud, self._spi_flags())
+            self._device, self._baud, self._spi_flags)
 
     def transfer(self, data):
         self._check_open()
@@ -380,10 +377,12 @@ class PiGPIOHardwareSPI(SPI, Device):
 
 class PiGPIOSoftwareSPI(SPI, Device):
     def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
-        self._select_pin = None
+        self._closed = True
+        self._select_pin = select_pin
+        self._clock_pin = clock_pin
+        self._mosi_pin = mosi_pin
+        self._miso_pin = miso_pin
         self._factory = weakref.proxy(factory)
-        self._address = factory.address + (
-            )
         super(PiGPIOSoftwareSPI, self).__init__()
         self._reserve_pins(
             factory.pin_address(clock_pin),
@@ -391,23 +390,24 @@ class PiGPIOSoftwareSPI(SPI, Device):
             factory.pin_address(miso_pin),
             factory.pin_address(select_pin),
             )
-        self._mode = 0
-        self._select_high = False
-        self._lsb_first = False
+        self._spi_flags = 0
         self._baud = 100000
         try:
             self._factory.connection.bb_spi_open(
                 select_pin, miso_pin, mosi_pin, clock_pin,
-                self._baud, self._spi_flags())
+                self._baud, self._spi_flags)
             # Only set after opening bb_spi; if that fails then close() will
             # also fail if bb_spi_close is attempted on an un-open interface
-            self._select_pin = select_pin
-            self._clock_pin = clock_pin
-            self._mosi_pin = mosi_pin
-            self._miso_pin = miso_pin
+            self._closed = False
         except:
             self.close()
             raise
+
+    def _conflicts_with(self, other):
+        return not (
+            isinstance(other, PiGPIOHardwareSPI) and
+            (self._select_pin) != (other._select_pin)
+            )
 
     def close(self):
         try:
@@ -417,14 +417,14 @@ class PiGPIOSoftwareSPI(SPI, Device):
             # internal list, ignore the error
             pass
         if not self.closed:
+            self._closed = True
             self._factory.connection.bb_spi_close(self._select_pin)
-        self._select_pin = None
         self._release_all()
         super(PiGPIOSoftwareSPI, self).close()
 
     @property
     def closed(self):
-        return self._select_pin is None or self._factory.connection is None
+        return self._closed
 
     def __repr__(self):
         try:
@@ -445,39 +445,43 @@ class PiGPIOSoftwareSPI(SPI, Device):
             )
 
     def _get_clock_mode(self):
-        return self._clock_mode
+        return self._spi_flags & 0x3
 
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
             raise SPIInvalidClockmode("%d is not a valid SPI clock mode" % value)
         self._factory.connection.bb_spi_close(self._select_pin)
-        self._clock_mode = value
+        self._spi_flags = (self._spi_flags & ~0x3) | value
         self._factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
-            self._baud, self._spi_flags())
+            self._baud, self._spi_flags)
 
     def _get_select_high(self):
-        return self._select_high
+        return bool(self._spi_flags & 0x4)
 
     def _set_select_high(self, value):
         self._check_open()
         self._factory.connection.bb_spi_close(self._select_pin)
-        self._select_high = bool(value)
+        self._spi_flags = (self._spi_flags & ~0x4) | (bool(value) << 2)
         self._factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
-            self._baud, self._spi_flags())
+            self._baud, self._spi_flags)
 
     def _get_lsb_first(self):
-        return self._lsb_first
+        return bool(self._spi_flags & 0xc000)
 
     def _set_lsb_first(self, value):
         self._check_open()
         self._factory.connection.bb_spi_close(self._select_pin)
-        self._lsb_first = bool(value)
+        self._spi_flags = (
+            (self._spi_flags & ~0xc000)
+            | (bool(value) << 14)
+            | (bool(value) << 15)
+            )
         self._factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
-            self._baud, self._spi_flags())
+            self._baud, self._spi_flags)
 
     def transfer(self, data):
         self._check_open()

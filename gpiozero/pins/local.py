@@ -89,12 +89,6 @@ class LocalPiHardwareSPI(SPI, Device):
         self._interface.open(port, device)
         self._interface.max_speed_hz = 500000
 
-    def _conflicts_with(self, other):
-        return not (
-            isinstance(other, LocalPiHardwareSPI) and
-            (self._port, self._device) != (other._port, other._device)
-            )
-
     def close(self):
         if self._interface:
             try:
@@ -164,6 +158,12 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
         except:
             self.close()
             raise
+
+    def _conflicts_with(self, other):
+        return not (
+            isinstance(other, LocalPiSoftwareSPI) and
+            (self.pin.number != other.pin.number)
+            )
 
     def close(self):
         if self._bus:
