@@ -64,6 +64,11 @@ class SPISoftwareBus(SharedMixin, Device):
         """
         result = []
         with self.lock:
+            # See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
+            # (specifically the section "Example of bit-banging the master
+            # protocol") for a simpler C implementation of this which ignores
+            # clock polarity, phase, variable word-size, and multiple input
+            # words
             if lsb_first:
                 shift = operator.lshift
                 init_mask = 1
@@ -76,13 +81,15 @@ class SPISoftwareBus(SharedMixin, Device):
                 for _ in range(bits_per_word):
                     if self.mosi is not None:
                         self.mosi.value = bool(write_word & mask)
+                    # read bit on clock activation
                     self.clock.on()
-                    if self.miso is not None and not clock_phase:
-                        if self.miso.value:
+                    if not clock_phase:
+                        if self.miso is not None and self.miso.value:
                             read_word |= mask
+                    # read bit on clock deactivation
                     self.clock.off()
-                    if self.miso is not None and clock_phase:
-                        if self.miso.value:
+                    if clock_phase:
+                        if self.miso is not None and self.miso.value:
                             read_word |= mask
                     mask = shift(mask, 1)
                 result.append(read_word)
