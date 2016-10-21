@@ -159,7 +159,7 @@ class PiGPIOPin(PiPin):
 
     def __init__(self, factory, number):
         super(PiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up('GPIO%d' % number) else 'floating'
+        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = False
         self._bounce = None
         self._when_changed = None
@@ -177,7 +177,7 @@ class PiGPIOPin(PiPin):
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self.factory.pi_info.pulled_up('GPIO%d' % self.number) else 'floating'
+            self.pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self.factory.connection.get_mode(self.number)]
@@ -219,7 +219,7 @@ class PiGPIOPin(PiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up('GPIO%d' % self.number):
+        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[value])

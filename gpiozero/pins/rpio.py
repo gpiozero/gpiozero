@@ -79,7 +79,7 @@ class RPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up('GPIO%d' % number) else 'floating'
+        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = False
         self._duty_cycle = None
         self._bounce = None
@@ -138,7 +138,7 @@ class RPIOPin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up('GPIO%d' % self.number):
+        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             RPIO.setup(self.number, RPIO.IN, self.GPIO_PULL_UPS[value])

@@ -192,14 +192,14 @@ class PiPin(Pin):
     """
     def __init__(self, factory, number):
         super(PiPin, self).__init__()
+        self._factory = weakref.proxy(factory)
+        self._number = number
         try:
-            factory.pi_info.physical_pin('GPIO%d' % number)
+            factory.pi_info.physical_pin(self.address[-1])
         except PinNoPins:
             warnings.warn(
                 PinNonPhysical(
-                    'no physical pins exist for GPIO%d' % number))
-        self._factory = weakref.proxy(factory)
-        self._number = number
+                    'no physical pins exist for %s' % self.address[-1]))
 
     @property
     def number(self):
