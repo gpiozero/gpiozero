@@ -73,7 +73,13 @@ __entry_points__ = {
         'rpio    = gpiozero.pins.rpio:RPIOFactory',
         'native  = gpiozero.pins.native:NativeFactory',
         'mock    = gpiozero.pins.mock:MockFactory',
-        'mockpwm = gpiozero.pins.mock:MockPWMFactory',
+    ],
+    'gpiozero_mock_pin_classes': [
+        'mockpin          = gpiozero.pins.mock:MockPin',
+        'mockpwmpin       = gpiozero.pins.mock:MockPWMPin',
+        'mockpulleduppin  = gpiozero.pins.mock:MockPulledUpPin',
+        'mockchargingpin  = gpiozero.pins.mock:MockChargingPin',
+        'mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin',
     ],
     'console_scripts': [
         'pinout = gpiozero.cli.pinout:main',

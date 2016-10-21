@@ -32,6 +32,31 @@ The default pin factory can be replaced by specifying a value for the
     >>> gpiozero.Device._pin_factory
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
+To set the ``GPIOZERO_PIN_FACTORY`` for the rest of your session you can
+export this value:
+
+.. code-block:: console
+
+    pi@raspberrypi $ export GPIOZERO_PIN_FACTORY=native
+    pi@raspberrypi $ python
+    Python 3.4.2 (default, Oct 19 2014, 13:31:11)
+    [GCC 4.9.1] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import gpiozero
+    >>> gpiozero.Device._pin_factory
+    <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
+    >>> quit()
+    pi@raspberrypi $ python
+    Python 3.4.2 (default, Oct 19 2014, 13:31:11)
+    [GCC 4.9.1] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import gpiozero
+    >>> gpiozero.Device._pin_factory
+    <gpiozero.pins.native.NativeFactory object at 0x76401330>
+
+If you add the ``export`` command to your :file:`~/.bashrc` file, you'll set
+the default pin factory for all future sessions too.
+
 The following values, and the corresponding :class:`Factory` and :class:`Pin`
 classes are listed in the table below. Factories are listed in the order that
 they are tried by default.
@@ -71,8 +96,10 @@ script:
 
 .. code-block:: console
 
-    $ export GPIOZERO_PIN_FACTORY=pigpio
-    $ PIGPIO_ADDR=remote-pi python3 my_script.py
+    $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=remote-pi python3 my_script.py
+
+Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
+:file:`~/.bashrc` script too.
 
 .. warning::
 

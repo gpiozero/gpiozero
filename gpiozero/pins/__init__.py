@@ -26,12 +26,14 @@ from ..exc import (
 class Factory(object):
     """
     Generates pins, SPI, and I2C interfaces for devices. This is an abstract
-    base class for pin factories. Descendents must override:
+    base class for pin factories. Descendents *must* override the following
+    methods:
 
     * :meth:`_get_address`
     * :meth:`pin_address`
 
-    Descendents may override:
+    Descendents *may* additionally override the following methods, if
+    applicable:
 
     * :meth:`close`
     * :meth:`pin`
@@ -123,15 +125,16 @@ class Pin(object):
     be it GPIO, SPI, ADC, etc.
 
     Descendents should override property getters and setters to accurately
-    represent the capabilities of pins. The following functions *must* be
-    overridden:
+    represent the capabilities of pins. Descendents *must* override the
+    following methods:
 
     * :meth:`_get_address`
     * :meth:`_get_function`
     * :meth:`_set_function`
     * :meth:`_get_state`
 
-    The following functions *may* be overridden if applicable:
+    Descendents *may* additionally override the following methods, if
+    applicable:
 
     * :meth:`close`
     * :meth:`output_with_state`
@@ -389,13 +392,13 @@ class Pin(object):
 
 class SPI(object):
     """
-    Abstract interface for `Serial Peripheral Interface`_ (SPI) implementations.
-    Descendents *must* override the following:
+    Abstract interface for `Serial Peripheral Interface`_ (SPI)
+    implementations. Descendents *must* override the following methods:
 
     * :meth:`transfer`
     * :meth:`_get_clock_mode`
 
-    Descendents *may* override the following methods:
+    Descendents *may* override the following methods, if applicable:
 
     * :meth:`read`
     * :meth:`write`

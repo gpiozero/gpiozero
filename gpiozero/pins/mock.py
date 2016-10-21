@@ -7,6 +7,7 @@ from __future__ import (
 str = type('')
 
 
+import os
 from collections import namedtuple
 from time import time, sleep
 from threading import Thread, Event
@@ -14,6 +15,8 @@ try:
     from math import isclose
 except ImportError:
     from ..compat import isclose
+
+import pkg_resources
 
 from ..exc import PinPWMUnsupported, PinSetInput, PinFixedPull
 from ..devices import Device
@@ -387,9 +390,17 @@ class MockSPIDevice(object):
 
 
 class MockFactory(LocalPiFactory):
-    def __init__(self, revision='a21041', pin_class=MockPin):
+    def __init__(
+            self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a21041'),
+            pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
         super(MockFactory, self).__init__()
         self._revision = revision
+        if not issubclass(pin_class, MockPin):
+            if isinstance(pin_class, bytes):
+                pin_class = pin_class.decode('ascii')
+            dist = pkg_resources.get_distribution('gpiozero')
+            group = 'gpiozero_mock_pin_classes'
+            pin_class = pkg_resources.load_entry_point(dist, group, pin_class.lower())
         self.pin_class = pin_class
 
     def _get_address(self):
