@@ -49,28 +49,28 @@ def test_device_init_twice_different_pin():
 
 def test_device_close():
     device = GPIODevice(2)
+    # Don't use "with" here; we're testing close explicitly
     device.close()
     assert device.closed
     assert device.pin is None
 
 def test_device_reopen_same_pin():
     pin = Device._pin_factory.pin(2)
-    device = GPIODevice(pin)
-    device.close()
-    device2 = GPIODevice(pin)
-    assert not device2.closed
-    assert device2.pin is pin
-    assert device.closed
-    assert device.pin is None
-    device2.close()
+    with GPIODevice(pin) as device:
+        pass
+    with GPIODevice(pin) as device2:
+        assert not device2.closed
+        assert device2.pin is pin
+        assert device.closed
+        assert device.pin is None
 
 def test_device_repr():
     with GPIODevice(2) as device:
         assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % device.pin
 
 def test_device_repr_after_close():
-    device = GPIODevice(2)
-    device.close()
+    with GPIODevice(2) as device:
+        pass
     assert repr(device) == '<gpiozero.GPIODevice object closed>'
 
 def test_device_unknown_attr():
