@@ -35,10 +35,12 @@ class PiFactory(Factory):
         self._info = None
         self.pins = {}
         self.pin_class = None
-        self.spi_hardware_class = None
-        self.spi_software_class = None
-        self.shared_spi_hardware_class = None
-        self.shared_spi_software_class = None
+        self.spi_classes = {
+            ('hardware', 'exclusive'): None,
+            ('hardware', 'shared'):    None,
+            ('software', 'exclusive'): None,
+            ('software', 'shared'):    None,
+            }
 
     def close(self):
         for pin in self.pins.values():
@@ -93,7 +95,7 @@ class PiFactory(Factory):
         doesn't matter).
         """
         spi_args, kwargs = self._extract_spi_args(**spi_args)
-        shared = kwargs.pop('shared', False)
+        shared = 'shared' if kwargs.pop('shared', False) else 'exclusive'
         if kwargs:
             raise SPIBadArgs(
                 'unrecognized keyword argument %s' % kwargs.popitem()[0])
@@ -108,10 +110,7 @@ class PiFactory(Factory):
                     'port': 0,
                     'device': {8: 0, 7: 1}[spi_args['select_pin']],
                     }
-                if shared:
-                    return self.shared_spi_hardware_class(self, **hardware_spi_args)
-                else:
-                    return self.spi_hardware_class(self, **hardware_spi_args)
+                return self.spi_classes[('hardware', shared)](self, **hardware_spi_args)
             except Exception as e:
                 warnings.warn(
                     SPISoftwareFallback(
@@ -125,10 +124,7 @@ class PiFactory(Factory):
             key: pin.number if isinstance(pin, Pin) else pin
             for key, pin in spi_args.items()
             }
-        if shared:
-            return self.shared_spi_software_class(self, **spi_args)
-        else:
-            return self.spi_software_class(self, **spi_args)
+        return self.spi_classes[('software', shared)](self, **spi_args)
 
     def _extract_spi_args(self, **kwargs):
         """

@@ -11,7 +11,7 @@ import os
 import atexit
 import weakref
 import warnings
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from itertools import chain
 from types import FunctionType
 from threading import Lock
@@ -194,7 +194,7 @@ class Device(ValuesMixin, GPIOBase):
     property, the :attr:`value` property, and the :meth:`close` method).
     """
     _pin_factory = None # instance of a Factory sub-class
-    _reservations = {} # maps pin addresses to lists of devices
+    _reservations = defaultdict(list) # maps pin addresses to lists of devices
     _res_lock = Lock()
 
     def __repr__(self):
@@ -226,19 +226,14 @@ class Device(ValuesMixin, GPIOBase):
             )
         with self._res_lock:
             for address in addresses:
-                try:
-                    conflictors = self._reservations[address]
-                except KeyError:
-                    conflictors = []
-                    self._reservations[address] = conflictors
-                for device_ref in conflictors:
+                for device_ref in Device._reservations[address]:
                     device = device_ref()
                     if device is not None and self._conflicts_with(device):
                         raise GPIOPinInUse(
                             'pin %s is already in use by %r' % (
                                 '/'.join(address), device)
                         )
-                conflictors.append(weakref.ref(self))
+                Device._reservations[address].append(weakref.ref(self))
 
     def _release_pins(self, *pins_or_addresses):
         """
@@ -254,7 +249,7 @@ class Device(ValuesMixin, GPIOBase):
             )
         with self._res_lock:
             for address in addresses:
-                self._reservations[address] = [
+                Device._reservations[address] = [
                     ref for ref in self._reservations[address]
                     if ref() not in (self, None) # may as well clean up dead refs
                     ]
@@ -265,13 +260,13 @@ class Device(ValuesMixin, GPIOBase):
         :meth:`_release_pins` for further information).
         """
         with self._res_lock:
-            Device._reservations = {
+            Device._reservations = defaultdict(list, {
                 address: [
                     ref for ref in conflictors
                     if ref() not in (self, None)
                     ]
                 for address, conflictors in self._reservations.items()
-                }
+                })
 
     def _conflicts_with(self, other):
         """

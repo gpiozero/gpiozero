@@ -32,10 +32,12 @@ class LocalPiFactory(PiFactory):
 
     def __init__(self):
         super(LocalPiFactory, self).__init__()
-        self.spi_hardware_class = LocalPiHardwareSPI
-        self.spi_software_class = LocalPiSoftwareSPI
-        self.shared_spi_hardware_class = LocalPiHardwareSPIShared
-        self.shared_spi_software_class = LocalPiSoftwareSPIShared
+        self.spi_classes = {
+            ('hardware', 'exclusive'): LocalPiHardwareSPI,
+            ('hardware', 'shared'):    LocalPiHardwareSPIShared,
+            ('software', 'exclusive'): LocalPiSoftwareSPI,
+            ('software', 'shared'):    LocalPiSoftwareSPIShared,
+            }
         # Override the pins dict to be this class' pins dict. This is a bit of
         # a dirty hack, but ensures that anyone evil enough to mix pin
         # implementations doesn't try and control the same pin with different
@@ -74,7 +76,7 @@ class LocalPiHardwareSPI(SPI, Device):
             raise ImportError('failed to import spidev')
         self._port = port
         self._device = device
-        self._intf = None
+        self._interface = None
         self._address = factory.address + ('SPI(port=%d, device=%d)' % (port, device),)
         super(LocalPiHardwareSPI, self).__init__()
         self._reserve_pins(
@@ -83,9 +85,9 @@ class LocalPiHardwareSPI(SPI, Device):
             factory.pin_address(9),
             factory.pin_address((8, 7)[device])
             )
-        self._intf = SpiDev()
-        self._intf.open(port, device)
-        self._intf.max_speed_hz = 500000
+        self._interface = SpiDev()
+        self._interface.open(port, device)
+        self._interface.max_speed_hz = 500000
 
     def _conflicts_with(self, other):
         return not (
@@ -94,17 +96,17 @@ class LocalPiHardwareSPI(SPI, Device):
             )
 
     def close(self):
-        if self._intf:
+        if self._interface:
             try:
-                self._intf.close()
+                self._interface.close()
             finally:
-                self._intf = None
+                self._interface = None
         self._release_all()
         super(LocalPiHardwareSPI, self).close()
 
     @property
     def closed(self):
-        return self._intf is None
+        return self._interface is None
 
     def __repr__(self):
         try:
@@ -119,31 +121,31 @@ class LocalPiHardwareSPI(SPI, Device):
         :attr:`bits_per_word` bits or less) to the SPI interface, and reads an
         equivalent number of words, returning them as a list of integers.
         """
-        return self._intf.xfer2(data)
+        return self._interface.xfer2(data)
 
     def _get_clock_mode(self):
-        return self._intf.mode
+        return self._interface.mode
 
     def _set_clock_mode(self, value):
-        self._intf.mode = value
+        self._interface.mode = value
 
     def _get_lsb_first(self):
-        return self._intf.lsbfirst
+        return self._interface.lsbfirst
 
     def _set_lsb_first(self, value):
-        self._intf.lsbfirst = bool(value)
+        self._interface.lsbfirst = bool(value)
 
     def _get_select_high(self):
-        return self._intf.cshigh
+        return self._interface.cshigh
 
     def _set_select_high(self, value):
-        self._intf.cshigh = bool(value)
+        self._interface.cshigh = bool(value)
 
     def _get_bits_per_word(self):
-        return self._intf.bits_per_word
+        return self._interface.bits_per_word
 
     def _set_bits_per_word(self, value):
-        self._intf.bits_per_word = value
+        self._interface.bits_per_word = value
 
 
 class LocalPiSoftwareSPI(SPI, OutputDevice):

@@ -71,9 +71,9 @@ class SourceMixin(object):
     def close(self):
         try:
             super(SourceMixin, self).close()
+            self.source = None
         except AttributeError:
             pass
-        self.source = None
 
     def _copy_values(self, source):
         for v in source:

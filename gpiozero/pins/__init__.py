@@ -12,6 +12,7 @@ from ..exc import (
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
+    PinUnsupported,
     PinSPIUnsupported,
     PinPWMUnsupported,
     PinEdgeDetectUnsupported,
@@ -58,7 +59,7 @@ class Factory(object):
             :meth:`pin` for the same pin specification must return the same
             object.
         """
-        raise PinGPIOUnsupported("GPIO not supported by this pin factory")
+        raise PinUnsupported("Individual pins are not supported by this pin factory")
 
     def pin_address(self, spec):
         """

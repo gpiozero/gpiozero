@@ -76,10 +76,12 @@ class PiGPIOFactory(PiFactory):
             port=int(os.getenv('PIGPIO_PORT', 8888))):
         super(PiGPIOFactory, self).__init__()
         self.pin_class = PiGPIOPin
-        self.spi_hardware_class = PiGPIOHardwareSPI
-        self.spi_software_class = PiGPIOSoftwareSPI
-        self.shared_spi_hardware_class = PiGPIOHardwareSPIShared
-        self.shared_spi_software_class = PiGPIOSoftwareSPIShared
+        self.spi_classes = {
+            ('hardware', 'exclusive'): PiGPIOHardwareSPI,
+            ('hardware', 'shared'):    PiGPIOHardwareSPIShared,
+            ('software', 'exclusive'): PiGPIOSoftwareSPI,
+            ('software', 'shared'):    PiGPIOSoftwareSPIShared,
+            }
         self._connection = pigpio.pi(host, port)
         self._host = host
         self._port = port

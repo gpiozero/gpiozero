@@ -211,20 +211,24 @@ class LEDCollection(CompositeOutputDevice):
         initial_value = kwargs.pop('initial_value', False)
         order = kwargs.pop('_order', None)
         LEDClass = PWMLED if pwm else LED
-        super(LEDCollection, self).__init__(
-            *(
-                pin_or_collection
-                if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
-                for pin_or_collection in args
-                ),
-            _order=order,
-            **{
-                name: pin_or_collection
-                if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
-                for name, pin_or_collection in kwargs.items()
-                })
+        try:
+            super(LEDCollection, self).__init__(
+                *(
+                    pin_or_collection
+                    if isinstance(pin_or_collection, LEDCollection) else
+                    LEDClass(pin_or_collection, active_high, initial_value)
+                    for pin_or_collection in args
+                    ),
+                _order=order,
+                **{
+                    name: pin_or_collection
+                    if isinstance(pin_or_collection, LEDCollection) else
+                    LEDClass(pin_or_collection, active_high, initial_value)
+                    for name, pin_or_collection in kwargs.items()
+                    })
+        except:
+            self.close()
+            raise
         leds = []
         for item in self:
             if isinstance(item, LEDCollection):

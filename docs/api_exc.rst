@@ -105,7 +105,7 @@ Errors
 
 .. autoexception:: PinEdgeDetectUnsupported
 
-.. autoexception:: PinGPIOUnsupported
+.. autoexception:: PinUnsupported
 
 .. autoexception:: PinSPIUnsupported
 

@@ -118,8 +118,8 @@ class PinFixedPull(PinError, AttributeError):
 class PinEdgeDetectUnsupported(PinError, AttributeError):
     "Error raised when attempting to use edge detection on unsupported pins"
 
-class PinGPIOUnsupported(PinError, NotImplementedError):
-    "Error raised when attempting to obtain a GPIO interface on unsupported pins"
+class PinUnsupported(PinError, NotImplementedError):
+    "Error raised when attempting to obtain a pin interface on unsupported pins"
 
 class PinSPIUnsupported(PinError, NotImplementedError):
     "Error raised when attempting to obtain an SPI interface on unsupported pins"
