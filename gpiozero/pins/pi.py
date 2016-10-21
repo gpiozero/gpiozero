@@ -106,11 +106,9 @@ class PiFactory(Factory):
                 spi_args['select_pin'] in (7, 8),
                 )):
             try:
-                hardware_spi_args = {
-                    'port': 0,
-                    'device': {8: 0, 7: 1}[spi_args['select_pin']],
-                    }
-                return self.spi_classes[('hardware', shared)](self, **hardware_spi_args)
+                return self.spi_classes[('hardware', shared)](
+                    self, port=0, device=0 if spi_args['select_pin'] == 8 else 1
+                    )
             except Exception as e:
                 warnings.warn(
                     SPISoftwareFallback(
