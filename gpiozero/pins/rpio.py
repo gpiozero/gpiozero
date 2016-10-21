@@ -8,7 +8,6 @@ str = type('')
 
 
 import warnings
-import weakref
 import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException

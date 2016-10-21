@@ -13,7 +13,6 @@ import mmap
 import errno
 import struct
 import warnings
-import weakref
 from time import sleep
 from threading import Thread, Event, Lock
 from collections import Counter

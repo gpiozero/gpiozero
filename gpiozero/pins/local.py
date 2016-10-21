@@ -7,7 +7,6 @@ from __future__ import (
 str = type('')
 
 import io
-import weakref
 import warnings
 
 try:

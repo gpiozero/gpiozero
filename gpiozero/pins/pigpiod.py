@@ -179,9 +179,6 @@ class PiGPIOPin(PiPin):
             self.function = 'input'
             self.pull = 'up' if self.factory.pi_info.pulled_up('GPIO%d' % self.number) else 'floating'
 
-    def _get_address(self):
-        return self.factory.address + ('GPIO%d' % self.number,)
-
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self.factory.connection.get_mode(self.number)]
 

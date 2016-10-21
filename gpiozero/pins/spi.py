@@ -64,9 +64,14 @@ class SPISoftwareBus(SharedMixin, Device):
         """
         result = []
         with self.lock:
-            shift = operator.lshift if lsb_first else operator.rshift
+            if lsb_first:
+                shift = operator.lshift
+                init_mask = 1
+            else:
+                shift = operator.rshift
+                init_mask = 1 << (bits_per_word - 1)
             for write_word in data:
-                mask = 1 if lsb_first else 1 << (bits_per_word - 1)
+                mask = init_mask
                 read_word = 0
                 for _ in range(bits_per_word):
                     if self.mosi is not None:

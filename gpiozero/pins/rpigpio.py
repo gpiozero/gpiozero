@@ -7,7 +7,6 @@ from __future__ import (
 str = type('')
 
 import warnings
-import weakref
 from RPi import GPIO
 
 from .local import LocalPiFactory, LocalPiPin
