@@ -741,3 +741,38 @@ def test_energenie():
         pins[5].assert_states_and_times([(0.0, False), (0.1, True), (0.25, False)])
         device1.close()
         assert repr(device1) == '<gpiozero.Energenie object closed>'
+
+def test_seven_segment_display_display():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    pin4 = MockPin(5)
+    pin5 = MockPin(6)
+    pin6 = MockPin(7)
+    pin7 = MockPin(8)
+    pin8 = MockPin(9)
+    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
+        assert isinstance(seven_seg[0], LED)
+        assert isinstance(seven_seg[1], LED)
+        assert isinstance(seven_seg[2], LED)
+        assert isinstance(seven_seg[3], LED)
+        assert isinstance(seven_seg[4], LED)
+        assert isinstance(seven_seg[5], LED)
+        assert isinstance(seven_seg[6], LED)
+        assert isinstance(seven_seg[7], LED)
+        assert isinstance(seven_seg[8], LED)
+        assert seven_seg.active_high
+        assert seven_seg[0].active_high
+        assert seven_seg[1].active_high
+        assert seven_seg[2].active_high
+        assert seven_seg[3].active_high
+        assert seven_seg[4].active_high
+        assert seven_seg[5].active_high
+        assert seven_seg[6].active_high
+        assert seven_seg[7].active_high
+        assert seven_seg[8].active_high
+        seven_seg.display("8")
+        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value) 
+        seven_seg.decimal_point = True
+        assert seven_seg[7].value
+        assert seven_seg.decimal_point
