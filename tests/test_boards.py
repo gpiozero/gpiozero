@@ -760,7 +760,6 @@ def test_seven_segment_display_display():
         assert isinstance(seven_seg[5], LED)
         assert isinstance(seven_seg[6], LED)
         assert isinstance(seven_seg[7], LED)
-        assert isinstance(seven_seg[8], LED)
         assert seven_seg.active_high
         assert seven_seg[0].active_high
         assert seven_seg[1].active_high
