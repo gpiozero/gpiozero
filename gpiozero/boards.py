@@ -20,6 +20,7 @@ from .exc import (
     EnergenieSocketMissing,
     EnergenieBadSocket,
     OutputDeviceBadValue,
+    OutputDeviceError,
     )
 from .input_devices import Button
 from .output_devices import (
