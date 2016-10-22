@@ -34,6 +34,7 @@ def setup_function(function):
 
 def teardown_function(function):
     Device._pin_factory.reset()
+    Device._reservations.clear()
 
 def teardown_module(module):
     # make sure we reset the default

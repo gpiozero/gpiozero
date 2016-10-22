@@ -18,6 +18,7 @@ from gpiozero import *
 
 def teardown_function(function):
     Device._pin_factory.reset()
+    Device._reservations.clear()
 
 
 def test_input_initial_values():
