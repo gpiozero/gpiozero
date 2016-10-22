@@ -6,9 +6,15 @@ from __future__ import (
     )
 str = type('')
 
-import weakref
-import pigpio
 import os
+from weakref import proxy
+from threading import RLock
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from .compat import WeakMethod
+
+import pigpio
 
 from . import SPI
 from .pi import PiPin, PiFactory
@@ -164,6 +170,7 @@ class PiGPIOPin(PiPin):
         self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = False
         self._bounce = None
+        self._when_changed_lock = RLock()
         self._when_changed = None
         self._callback = None
         self._edges = pigpio.EITHER_EDGE
@@ -269,26 +276,24 @@ class PiGPIOPin(PiPin):
         finally:
             self.when_changed = f
 
-    def _get_when_changed(self):
-        if self._callback is None:
-            return None
-        return self._callback.callb.func
+    def _call_when_changed(self, gpio, level, tick):
+        super(PiGPIOPin, self)._call_when_changed()
 
-    def _set_when_changed(self, value):
+    def _enable_event_detect(self):
+        self._callback = self.factory.connection.callback(
+                self.number, self._edges, self._call_when_changed)
+
+    def _disable_event_detect(self):
         if self._callback is not None:
             self._callback.cancel()
             self._callback = None
-        if value is not None:
-            self._callback = self.factory.connection.callback(
-                    self.number, self._edges,
-                    lambda gpio, level, tick: value())
 
 
 class PiGPIOHardwareSPI(SPI, Device):
     def __init__(self, factory, port, device):
         self._port = port
         self._device = device
-        self._factory = weakref.proxy(factory)
+        self._factory = proxy(factory)
         super(PiGPIOHardwareSPI, self).__init__()
         self._reserve_pins(*(
             factory.address + ('GPIO%d' % pin,)
@@ -382,7 +387,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
         self._clock_pin = clock_pin
         self._mosi_pin = mosi_pin
         self._miso_pin = miso_pin
-        self._factory = weakref.proxy(factory)
+        self._factory = proxy(factory)
         super(PiGPIOSoftwareSPI, self).__init__()
         self._reserve_pins(
             factory.pin_address(clock_pin),

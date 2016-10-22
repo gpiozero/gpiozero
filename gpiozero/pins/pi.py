@@ -7,7 +7,12 @@ from __future__ import (
 str = type('')
 
 import io
-import weakref
+from threading import RLock
+from weakref import ref, proxy
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from .compat import WeakMethod
 import warnings
 
 try:
@@ -186,7 +191,9 @@ class PiPin(Pin):
     """
     def __init__(self, factory, number):
         super(PiPin, self).__init__()
-        self._factory = weakref.proxy(factory)
+        self._factory = proxy(factory)
+        self._when_changed_lock = RLock()
+        self._when_changed = None
         self._number = number
         try:
             factory.pi_info.physical_pin(self.address[-1])
@@ -205,4 +212,40 @@ class PiPin(Pin):
 
     def _get_address(self):
         return self.factory.address + ('GPIO%d' % self.number,)
+
+    def _call_when_changed(self):
+        method = self.when_changed()
+        if method is None:
+            self.when_changed = None
+        else:
+            method()
+
+    def _get_when_changed(self):
+        return self._when_changed
+
+    def _set_when_changed(self, value):
+        # Have to take care, if value is either a closure or a bound method,
+        # not to keep a strong reference to the containing object
+        with self._when_changed_lock:
+            if self._when_changed is None and value is not None:
+                if isinstance(value, MethodType):
+                    self._when_changed = WeakMethod(value)
+                else:
+                    self._when_changed = ref(value)
+                self._enable_event_detect()
+            elif self._when_changed is not None and value is None:
+                self._disable_event_detect()
+                self._when_changed = None
+            elif value is None:
+                self._when_changed = None
+            elif isinstance(value, MethodType):
+                self._when_changed = WeakMethod(value)
+            else:
+                self._when_changed = ref(value)
+
+    def _enable_event_detect(self):
+        raise NotImplementedError
+
+    def _disable_event_detect(self):
+        raise NotImplementedError
 

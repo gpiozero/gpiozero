@@ -7,6 +7,14 @@ from __future__ import (
 str = type('')
 
 import warnings
+from types import MethodType
+from threading import RLock
+from weakref import ref
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from .compat import WeakMethod
+
 from RPi import GPIO
 
 from .local import LocalPiFactory, LocalPiPin
@@ -89,6 +97,7 @@ class RPiGPIOPin(LocalPiPin):
         self._frequency = None
         self._duty_cycle = None
         self._bounce = -666
+        self._when_changed_lock = RLock()
         self._when_changed = None
         self._edges = GPIO.BOTH
         GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[self._pull])
@@ -202,19 +211,15 @@ class RPiGPIOPin(LocalPiPin):
         finally:
             self.when_changed = f
 
-    def _get_when_changed(self):
-        return self._when_changed
+    def _call_when_changed(self, channel):
+        super(RPiGPIOPin, self)._call_when_changed()
 
-    def _set_when_changed(self, value):
-        if self._when_changed is None and value is not None:
-            self._when_changed = value
-            GPIO.add_event_detect(
-                self.number, self._edges,
-                callback=lambda channel: self._when_changed(),
-                bouncetime=self._bounce)
-        elif self._when_changed is not None and value is None:
-            GPIO.remove_event_detect(self.number)
-            self._when_changed = None
-        else:
-            self._when_changed = value
+    def _enable_event_detect(self):
+        GPIO.add_event_detect(
+            self.number, self._edges,
+            callback=self._call_when_changed,
+            bouncetime=self._bounce)
+
+    def _disable_event_detect(self):
+        GPIO.remove_event_detect(self.number)
 

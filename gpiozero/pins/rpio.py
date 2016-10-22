@@ -8,6 +8,12 @@ str = type('')
 
 
 import warnings
+from threading import RLock
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from .compat import WeakMethod
+
 import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException
@@ -83,6 +89,7 @@ class RPIOPin(LocalPiPin):
         self._pwm = False
         self._duty_cycle = None
         self._bounce = None
+        self._when_changed_lock = RLock()
         self._when_changed = None
         self._edges = 'both'
         try:
@@ -191,25 +198,20 @@ class RPIOPin(LocalPiPin):
         finally:
             self.when_changed = f
 
-    def _get_when_changed(self):
-        return self._when_changed
+    def _call_when_changed(self, channel, value):
+        super(RPIOPin, self)._call_when_changed()
 
-    def _set_when_changed(self, value):
-        if self._when_changed is None and value is not None:
-            self._when_changed = value
-            RPIO.add_interrupt_callback(
-                self.number,
-                lambda channel, value: self._when_changed(),
-                self._edges, self.GPIO_PULL_UPS[self._pull], self._bounce)
-        elif self._when_changed is not None and value is None:
-            try:
-                RPIO.del_interrupt_callback(self.number)
-            except KeyError:
-                # Ignore this exception which occurs during shutdown; this
-                # simply means RPIO's built-in cleanup has already run and
-                # removed the handler
-                pass
-            self._when_changed = None
-        else:
-            self._when_changed = value
+    def _enable_event_detect(self):
+        RPIO.add_interrupt_callback(
+            self.number, self._call_when_changed, self._edges,
+            self.GPIO_PULL_UPS[self._pull], self._bounce)
+
+    def _disable_event_detect(self):
+        try:
+            RPIO.del_interrupt_callback(self.number)
+        except KeyError:
+            # Ignore this exception which occurs during shutdown; this
+            # simply means RPIO's built-in cleanup has already run and
+            # removed the handler
+            pass
 

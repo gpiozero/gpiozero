@@ -438,23 +438,28 @@ class HoldThread(GPIOThread):
     device is active.
     """
     def __init__(self, parent):
-        super(HoldThread, self).__init__(target=self.held, args=(parent,))
+        super(HoldThread, self).__init__(
+            target=self.held, args=(weakref.proxy(parent),))
         self.holding = Event()
         self.start()
 
     def held(self, parent):
-        while not self.stopping.is_set():
-            if self.holding.wait(0.1):
-                self.holding.clear()
-                while not (
-                        self.stopping.is_set() or
-                        parent._inactive_event.wait(parent.hold_time)
-                        ):
-                    if parent._held_from is None:
-                        parent._held_from = time()
-                    parent._fire_held()
-                    if not parent.hold_repeat:
-                        break
+        try:
+            while not self.stopping.is_set():
+                if self.holding.wait(0.1):
+                    self.holding.clear()
+                    while not (
+                            self.stopping.is_set() or
+                            parent._inactive_event.wait(parent.hold_time)
+                            ):
+                        if parent._held_from is None:
+                            parent._held_from = time()
+                        parent._fire_held()
+                        if not parent.hold_repeat:
+                            break
+        except ReferenceError:
+            # Parent is dead; time to die!
+            pass
 
 
 class GPIOQueue(GPIOThread):
