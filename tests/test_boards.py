@@ -818,7 +818,7 @@ def test_seven_segment_display_active_low():
         assert seven_seg[7].value
         assert seven_seg.decimal_point
         
-def test_seven_segment_display_bad_init()
+def test_seven_segment_display_bad_init():
     pin1 = MockPin(2)
     pin2 = MockPin(3)
     pin3 = MockPin(4)
