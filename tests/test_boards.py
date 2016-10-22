@@ -825,6 +825,18 @@ def test_seven_segment_display_active_low():
         seven_seg.decimal_point = True
         assert seven_seg[7].value
         assert seven_seg.decimal_point
+
+def test_seven_segment_initial_value():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    pin4 = MockPin(5)
+    pin5 = MockPin(6)
+    pin6 = MockPin(7)
+    pin7 = MockPin(8)
+    pin8 = MockPin(9)
+    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, initial_value=True) as seven_seg:
+        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
         
 def test_seven_segment_display_bad_init():
     pin1 = MockPin(2)
