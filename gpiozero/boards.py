@@ -60,6 +60,7 @@ from .exc import (
     EnergenieBadSocket,
     OutputDeviceBadValue,
     CompositeDeviceBadDevice,
+    OutputDeviceError,
     )
 from .input_devices import Button
 from .output_devices import (
