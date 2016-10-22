@@ -65,7 +65,7 @@ def test_device_reopen_same_pin():
         assert device.pin is None
 
 def test_device_repr():
-    with GPIODevice(2) as device:
+    with GPIODevice(4) as device:
         assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % device.pin
 
 def test_device_repr_after_close():
@@ -85,18 +85,18 @@ def test_device_context_manager():
 
 def test_composite_device_sequence():
     with CompositeDevice(
-            InputDevice(2),
-            InputDevice(3)
+            InputDevice(4),
+            InputDevice(5)
             ) as device:
         assert len(device) == 2
-        assert device[0].pin.number == 2
-        assert device[1].pin.number == 3
+        assert device[0].pin.number == 4
+        assert device[1].pin.number == 5
         assert device.namedtuple._fields == ('_0', '_1')
 
 def test_composite_device_values():
     with CompositeDevice(
-            InputDevice(2),
-            InputDevice(3)
+            InputDevice(4),
+            InputDevice(5)
             ) as device:
         assert device.value == (0, 0)
         assert not device.is_active
@@ -106,8 +106,8 @@ def test_composite_device_values():
 
 def test_composite_device_named():
     with CompositeDevice(
-            foo=InputDevice(2),
-            bar=InputDevice(3),
+            foo=InputDevice(4),
+            bar=InputDevice(5),
             _order=('foo', 'bar')
             ) as device:
         assert device.namedtuple._fields == ('foo', 'bar')
@@ -126,8 +126,8 @@ def test_composite_device_bad_init():
 
 def test_composite_device_read_only():
     with CompositeDevice(
-        foo=InputDevice(2),
-        bar=InputDevice(3)
+        foo=InputDevice(4),
+        bar=InputDevice(5)
         ) as device:
         with pytest.raises(AttributeError):
             device.foo = 1

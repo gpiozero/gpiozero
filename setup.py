@@ -77,7 +77,6 @@ __entry_points__ = {
     'gpiozero_mock_pin_classes': [
         'mockpin          = gpiozero.pins.mock:MockPin',
         'mockpwmpin       = gpiozero.pins.mock:MockPWMPin',
-        'mockpulleduppin  = gpiozero.pins.mock:MockPulledUpPin',
         'mockchargingpin  = gpiozero.pins.mock:MockChargingPin',
         'mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin',
     ],

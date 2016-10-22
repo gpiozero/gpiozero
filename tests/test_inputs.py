@@ -12,7 +12,7 @@ import pytest
 from threading import Event
 from functools import partial
 
-from gpiozero.pins.mock import MockPulledUpPin, MockChargingPin, MockTriggerPin
+from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
 from gpiozero import *
 
 
@@ -22,7 +22,7 @@ def teardown_function(function):
 
 
 def test_input_initial_values():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with InputDevice(pin, pull_up=True) as device:
         assert pin.function == 'input'
         assert pin.pull == 'up'
@@ -42,23 +42,23 @@ def test_input_is_active_low():
         assert repr(device) == '<gpiozero.InputDevice object on pin GPIO2, pull_up=True, is_active=True>'
 
 def test_input_is_active_high():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with InputDevice(pin, pull_up=False) as device:
         pin.drive_high()
         assert device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO2, pull_up=False, is_active=True>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=False, is_active=True>'
         pin.drive_low()
         assert not device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO2, pull_up=False, is_active=False>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=False, is_active=False>'
 
 def test_input_pulled_up():
-    pin = Device._pin_factory.pin(2, pin_class=MockPulledUpPin)
+    pin = Device._pin_factory.pin(2)
     with pytest.raises(PinFixedPull):
         InputDevice(pin, pull_up=False)
 
 def test_input_event_activated():
     event = Event()
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         device.when_activated = lambda: event.set()
         assert not event.is_set()
@@ -67,7 +67,7 @@ def test_input_event_activated():
 
 def test_input_event_deactivated():
     event = Event()
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         device.when_deactivated = lambda: event.set()
         assert not event.is_set()
@@ -78,7 +78,7 @@ def test_input_event_deactivated():
 
 def test_input_partial_callback():
     event = Event()
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     def foo(a, b):
         event.set()
         return a + b
@@ -91,22 +91,22 @@ def test_input_partial_callback():
         assert event.is_set()
 
 def test_input_wait_active():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         pin.drive_high()
         assert device.wait_for_active(1)
         assert not device.wait_for_inactive(0)
 
 def test_input_wait_inactive():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         assert device.wait_for_inactive(1)
         assert not device.wait_for_active(0)
 
 def test_input_smoothed_attrib():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with SmoothedInputDevice(pin, threshold=0.5, queue_len=5, partial=False) as device:
-        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin GPIO2, pull_up=False>'
+        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin GPIO4, pull_up=False>'
         assert device.threshold == 0.5
         assert device.queue_len == 5
         assert not device.partial
@@ -116,7 +116,7 @@ def test_input_smoothed_attrib():
             device.threshold = 1
 
 def test_input_smoothed_values():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with SmoothedInputDevice(pin) as device:
         device._queue.start()
         assert not device.is_active
@@ -138,7 +138,7 @@ def test_input_button():
         assert button.wait_for_release(1)
 
 def test_input_line_sensor():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with LineSensor(pin) as sensor:
         pin.drive_low() # logic is inverted for line sensor
         assert sensor.wait_for_line(1)
@@ -148,7 +148,7 @@ def test_input_line_sensor():
         assert not sensor.line_detected
 
 def test_input_motion_sensor():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     with MotionSensor(pin) as sensor:
         pin.drive_high()
         assert sensor.wait_for_motion(1)
@@ -160,7 +160,7 @@ def test_input_motion_sensor():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_input_light_sensor():
-    pin = Device._pin_factory.pin(2, pin_class=MockChargingPin)
+    pin = Device._pin_factory.pin(4, pin_class=MockChargingPin)
     with LightSensor(pin) as sensor:
         pin.charge_time = 0.1
         assert sensor.wait_for_dark(1)
@@ -170,8 +170,8 @@ def test_input_light_sensor():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_input_distance_sensor():
-    echo_pin = Device._pin_factory.pin(2)
-    trig_pin = Device._pin_factory.pin(3, pin_class=MockTriggerPin)
+    echo_pin = Device._pin_factory.pin(4)
+    trig_pin = Device._pin_factory.pin(5, pin_class=MockTriggerPin)
     trig_pin.echo_pin = echo_pin
     trig_pin.echo_time = 0.02
     with pytest.raises(ValueError):

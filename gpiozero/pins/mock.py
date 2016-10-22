@@ -18,7 +18,13 @@ except ImportError:
 
 import pkg_resources
 
-from ..exc import PinPWMUnsupported, PinSetInput, PinFixedPull
+from ..exc import (
+    PinPWMUnsupported,
+    PinSetInput,
+    PinFixedPull,
+    PinInvalidFunction,
+    PinInvalidPull,
+    )
 from ..devices import Device
 from .pi import PiPin
 from .local import LocalPiFactory
@@ -34,8 +40,8 @@ class MockPin(PiPin):
     def __init__(self, factory, number):
         super(MockPin, self).__init__(factory, number)
         self._function = 'input'
-        self._state = False
-        self._pull = 'floating'
+        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._state = self._pull == 'up'
         self._bounce = None
         self._edges = 'both'
         self._when_changed = None
@@ -49,7 +55,8 @@ class MockPin(PiPin):
         return self._function
 
     def _set_function(self, value):
-        assert value in ('input', 'output')
+        if value not in ('input', 'output'):
+            raise PinInvalidFunction('function must be input or output')
         self._function = value
         if value == 'input':
             # Drive the input to the pull
@@ -85,8 +92,12 @@ class MockPin(PiPin):
         return self._pull
 
     def _set_pull(self, value):
-        assert self._function == 'input'
-        assert value in ('floating', 'up', 'down')
+        if self.function != 'input':
+            raise PinFixedPull('cannot set pull on non-input pin %r' % self)
+        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+            raise PinFixedPull('%r has a physical pull-up resistor' % self)
+        if value not in ('floating', 'up', 'down'):
+            raise PinInvalidPull('pull must be floating, up, or down')
         self._pull = value
         if value == 'up':
             self.drive_high()
@@ -132,7 +143,12 @@ class MockPin(PiPin):
     def assert_states(self, expected_states):
         # Tests that the pin went through the expected states (a list of values)
         for actual, expected in zip(self.states, expected_states):
-            assert actual.state == expected
+            try:
+                assert actual.state == expected
+            except AssertionError:
+                print('Actual states', self.states)
+                print('Expected states', expected_states)
+                raise
 
     def assert_states_and_times(self, expected_states):
         # Tests that the pin went through the expected states at the expected
@@ -140,8 +156,32 @@ class MockPin(PiPin):
         # that's about all we can reasonably expect in a non-realtime
         # environment on a Pi 1)
         for actual, expected in zip(self.states, expected_states):
-            assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
-            assert isclose(actual.state, expected[1])
+            try:
+                assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
+                assert isclose(actual.state, expected[1])
+            except AssertionError:
+                print('Actual states', self.states)
+                print('Expected states', expected_states)
+                raise
+
+
+class MockConnectedPin(MockPin):
+    """
+    This derivative of :class:`MockPin` emulates a pin connected to another
+    mock pin. This is used in the "real pins" portion of the test suite to
+    check that one pin can influence another.
+    """
+    def __init__(self, factory, number):
+        super(MockConnectedPin, self).__init__(factory, number)
+        self.input_pin = None
+
+    def _change_state(self, value):
+        if self.input_pin:
+            if value:
+                self.input_pin.drive_high()
+            else:
+                self.input_pin.drive_low()
+        return super(MockConnectedPin, self)._change_state(value)
 
 
 class MockPulledUpPin(MockPin):

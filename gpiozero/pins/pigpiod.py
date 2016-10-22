@@ -236,6 +236,12 @@ class PiGPIOPin(PiPin):
 
     def _set_frequency(self, value):
         if not self._pwm and value is not None:
+            if self.function != 'output':
+                raise PinPWMFixedValue('cannot start PWM on pin %r' % self)
+            # NOTE: the pin's state *must* be set to zero; if it's currently
+            # high, starting PWM and setting a 0 duty-cycle *doesn't* bring
+            # the pin low; it stays high!
+            self.factory.connection.write(self.number, 0)
             self.factory.connection.set_PWM_frequency(self.number, value)
             self.factory.connection.set_PWM_range(self.number, 10000)
             self.factory.connection.set_PWM_dutycycle(self.number, 0)

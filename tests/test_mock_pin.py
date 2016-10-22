@@ -28,7 +28,7 @@ def test_mock_pin_init():
     assert Device._pin_factory.pin(2).number == 2
 
 def test_mock_pin_defaults():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     assert pin.bounce == None
     assert pin.edges == 'both'
     assert pin.frequency == None
@@ -36,6 +36,9 @@ def test_mock_pin_defaults():
     assert pin.pull == 'floating'
     assert pin.state == 0
     assert pin.when_changed == None
+    pin.close()
+    pin = Device._pin_factory.pin(2)
+    assert pin.pull == 'up'
 
 def test_mock_pin_open_close():
     pin = Device._pin_factory.pin(2)
@@ -54,7 +57,7 @@ def test_mock_pin_init_twice_different_pin():
     assert pin2.number == pin1.number+1
 
 def test_mock_pwm_pin_defaults():
-    pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
     assert pin.bounce == None
     assert pin.edges == 'both'
     assert pin.frequency == None
@@ -62,6 +65,9 @@ def test_mock_pwm_pin_defaults():
     assert pin.pull == 'floating'
     assert pin.state == 0
     assert pin.when_changed == None
+    pin.close()
+    pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    assert pin.pull == 'up'
 
 def test_mock_pwm_pin_open_close():
     pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
@@ -104,20 +110,25 @@ def test_mock_pin_frequency_supported():
     assert not pin.state
 
 def test_mock_pin_pull():
-    pin = Device._pin_factory.pin(2)
+    pin = Device._pin_factory.pin(4)
     pin.function = 'input'
     assert pin.pull == 'floating'
     pin.pull = 'up'
     assert pin.state
     pin.pull = 'down'
     assert not pin.state
+    pin.close()
+    pin = Device._pin_factory.pin(2)
+    pin.function = 'input'
+    assert pin.pull == 'up'
+    with pytest.raises(PinFixedPull):
+        pin.pull = 'floating'
 
 def test_mock_pin_state():
     pin = Device._pin_factory.pin(2)
     with pytest.raises(PinSetInput):
         pin.state = 1
     pin.function = 'output'
-    assert pin.state == 0
     pin.state = 1
     assert pin.state == 1
     pin.state = 0
@@ -130,7 +141,6 @@ def test_mock_pwm_pin_state():
     with pytest.raises(PinSetInput):
         pin.state = 1
     pin.function = 'output'
-    assert pin.state == 0
     pin.state = 1
     assert pin.state == 1
     pin.state = 0
