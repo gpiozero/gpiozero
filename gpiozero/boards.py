@@ -1175,11 +1175,7 @@ class Energenie(SourceMixin, Device):
 
     @property
     def value(self):
-        try:
-            self._check_open()
-            return self._value
-        except DeviceClosed:
-            return "<gpiozero.Energenie object closed>"
+        return self._value
 
     @value.setter
     def value(self, value):
