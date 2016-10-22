@@ -99,7 +99,7 @@ class WeakMethod(weakref.ref):
             func = meth.__func__
         except AttributeError:
             raise TypeError("argument should be a bound method, not {0}"
-                            .format(type(meth))) from None
+                            .format(type(meth)))
         def _cb(arg):
             # The self-weakref trick is needed to avoid creating a reference
             # cycle.
