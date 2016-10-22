@@ -852,10 +852,39 @@ def test_seven_segment_display_bad_display():
     pin6 = MockPin(7)
     pin7 = MockPin(8)
     pin8 = MockPin(9)
-    pin9 = MockPin(10)
     with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
         with pytest.raises(ValueError):
             seven_seg.display("AA")
         with pytest.raises(ValueError):
             seven_seg.display("%")
+
+def test_seven_segment_display_bad_no_decimal():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    pin4 = MockPin(5)
+    pin5 = MockPin(6)
+    pin6 = MockPin(7)
+    pin7 = MockPin(8)
+    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7) as seven_seg:
+        with pytest.raises(OutputDeviceError):
+            seven_seg.decimal_point = True
+        with pytest.raises(OutputDeviceError):
+            seven_seg.decimal_point
         
+def test_seven_segment_display_bad_no_decimal():
+    pin1 = MockPin(2)
+    pin2 = MockPin(3)
+    pin3 = MockPin(4)
+    pin4 = MockPin(5)
+    pin5 = MockPin(6)
+    pin6 = MockPin(7)
+    pin7 = MockPin(8)
+    pin8 = MockPin(9) 
+    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
+        with pytest.raises(ValueError):
+            seven_seg.set_char_layout("__", (False, False, False, True, False, False, False))
+        with pytest.raises(ValueError):
+            seven_seg.set_char_layout("_", (False, False, False, True, False, False))
+        with pytest.raises(ValueError):
+            seven_seg.set_char_layout("_", (False, False, False, True, False, False, False, False))
