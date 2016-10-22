@@ -770,7 +770,6 @@ def test_seven_segment_display_display():
         assert seven_seg[5].active_high
         assert seven_seg[6].active_high
         assert seven_seg[7].active_high
-        assert seven_seg[8].active_high
         seven_seg.display("8")
         assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value) 
         seven_seg.decimal_point = True
