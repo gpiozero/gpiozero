@@ -872,7 +872,7 @@ def test_seven_segment_display_bad_no_decimal():
         with pytest.raises(OutputDeviceError):
             seven_seg.decimal_point
         
-def test_seven_segment_display_bad_no_decimal():
+def test_seven_segment_display_bad_set_char_layout():
     pin1 = MockPin(2)
     pin2 = MockPin(3)
     pin3 = MockPin(4)
