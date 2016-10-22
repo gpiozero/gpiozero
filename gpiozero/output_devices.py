@@ -562,12 +562,8 @@ class RGBLED(SourceMixin, Device):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__()
-        try:
-            self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
-            self.value = initial_value
-        except:
-            self.close()
-            raise
+        self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
+        self.value = initial_value
 
     red = _led_property(0)
     green = _led_property(1)

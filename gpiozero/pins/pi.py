@@ -224,24 +224,22 @@ class PiPin(Pin):
         return self._when_changed
 
     def _set_when_changed(self, value):
-        # Have to take care, if value is either a closure or a bound method,
-        # not to keep a strong reference to the containing object
         with self._when_changed_lock:
-            if self._when_changed is None and value is not None:
+            if value is None:
+                if self._when_changed is not None:
+                    self._disable_event_detect()
+                self._when_changed = None
+            else:
+                enabled = self._when_changed is not None
+                # Have to take care, if value is either a closure or a bound
+                # method, not to keep a strong reference to the containing
+                # object
                 if isinstance(value, MethodType):
                     self._when_changed = WeakMethod(value)
                 else:
                     self._when_changed = ref(value)
-                self._enable_event_detect()
-            elif self._when_changed is not None and value is None:
-                self._disable_event_detect()
-                self._when_changed = None
-            elif value is None:
-                self._when_changed = None
-            elif isinstance(value, MethodType):
-                self._when_changed = WeakMethod(value)
-            else:
-                self._when_changed = ref(value)
+                if not enabled:
+                    self._enable_event_detect()
 
     def _enable_event_detect(self):
         raise NotImplementedError
