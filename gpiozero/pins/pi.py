@@ -12,7 +12,7 @@ from weakref import ref, proxy
 try:
     from weakref import WeakMethod
 except ImportError:
-    from .compat import WeakMethod
+    from ..compat import WeakMethod
 import warnings
 
 try:

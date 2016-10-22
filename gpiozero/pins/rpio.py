@@ -8,11 +8,6 @@ str = type('')
 
 
 import warnings
-from threading import RLock
-try:
-    from weakref import WeakMethod
-except ImportError:
-    from .compat import WeakMethod
 
 import RPIO
 import RPIO.PWM
@@ -89,8 +84,6 @@ class RPIOPin(LocalPiPin):
         self._pwm = False
         self._duty_cycle = None
         self._bounce = None
-        self._when_changed_lock = RLock()
-        self._when_changed = None
         self._edges = 'both'
         try:
             RPIO.setup(self.number, RPIO.IN, self.GPIO_PULL_UPS[self._pull])

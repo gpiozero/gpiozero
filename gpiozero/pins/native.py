@@ -309,23 +309,16 @@ class NativePin(LocalPiPin):
         finally:
             self.when_changed = f
 
-    def _get_when_changed(self):
-        return self._when_changed
+    def _enable_event_detect(self):
+        self._change_thread = Thread(target=self._change_watch)
+        self._change_thread.daemon = True
+        self._change_event.clear()
+        self._change_thread.start()
 
-    def _set_when_changed(self, value):
-        if self._when_changed is None and value is not None:
-            self._when_changed = value
-            self._change_thread = Thread(target=self._change_watch)
-            self._change_thread.daemon = True
-            self._change_event.clear()
-            self._change_thread.start()
-        elif self._when_changed is not None and value is None:
-            self._change_event.set()
-            self._change_thread.join()
-            self._change_thread = None
-            self._when_changed = None
-        else:
-            self._when_changed = value
+    def _disable_event_detect(self):
+        self._change_event.set()
+        self._change_thread.join()
+        self._change_thread = None
 
     def _change_watch(self):
         offset = self._edge_offset
@@ -334,5 +327,5 @@ class NativePin(LocalPiPin):
         while not self._change_event.wait(0.001):
             if self.factory.mem[offset] & mask:
                 self.factory.mem[offset] = mask
-                self._when_changed()
+                self._call_when_changed()
 

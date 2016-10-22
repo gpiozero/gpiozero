@@ -7,13 +7,6 @@ from __future__ import (
 str = type('')
 
 import warnings
-from types import MethodType
-from threading import RLock
-from weakref import ref
-try:
-    from weakref import WeakMethod
-except ImportError:
-    from .compat import WeakMethod
 
 from RPi import GPIO
 
@@ -97,8 +90,6 @@ class RPiGPIOPin(LocalPiPin):
         self._frequency = None
         self._duty_cycle = None
         self._bounce = -666
-        self._when_changed_lock = RLock()
-        self._when_changed = None
         self._edges = GPIO.BOTH
         GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[self._pull])
 

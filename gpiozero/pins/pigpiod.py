@@ -8,11 +8,6 @@ str = type('')
 
 import os
 from weakref import proxy
-from threading import RLock
-try:
-    from weakref import WeakMethod
-except ImportError:
-    from .compat import WeakMethod
 
 import pigpio
 
@@ -170,8 +165,6 @@ class PiGPIOPin(PiPin):
         self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = False
         self._bounce = None
-        self._when_changed_lock = RLock()
-        self._when_changed = None
         self._callback = None
         self._edges = pigpio.EITHER_EDGE
         try:
