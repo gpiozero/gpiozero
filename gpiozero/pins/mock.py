@@ -143,12 +143,7 @@ class MockPin(PiPin):
     def assert_states(self, expected_states):
         # Tests that the pin went through the expected states (a list of values)
         for actual, expected in zip(self.states, expected_states):
-            try:
-                assert actual.state == expected
-            except AssertionError:
-                print('Actual states', self.states)
-                print('Expected states', expected_states)
-                raise
+            assert actual.state == expected
 
     def assert_states_and_times(self, expected_states):
         # Tests that the pin went through the expected states at the expected
@@ -156,13 +151,8 @@ class MockPin(PiPin):
         # that's about all we can reasonably expect in a non-realtime
         # environment on a Pi 1)
         for actual, expected in zip(self.states, expected_states):
-            try:
-                assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
-                assert isclose(actual.state, expected[1])
-            except AssertionError:
-                print('Actual states', self.states)
-                print('Expected states', expected_states)
-                raise
+            assert isclose(actual.timestamp, expected[0], rel_tol=0.05, abs_tol=0.05)
+            assert isclose(actual.state, expected[1])
 
 
 class MockConnectedPin(MockPin):
@@ -182,16 +172,6 @@ class MockConnectedPin(MockPin):
             else:
                 self.input_pin.drive_low()
         return super(MockConnectedPin, self)._change_state(value)
-
-
-class MockPulledUpPin(MockPin):
-    """
-    This derivative of :class:`MockPin` emulates a pin with a physical pull-up
-    resistor.
-    """
-    def _set_pull(self, value):
-        if value != 'up':
-            raise PinFixedPull('pin has a physical pull-up resistor')
 
 
 class MockChargingPin(MockPin):
