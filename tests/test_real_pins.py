@@ -12,7 +12,6 @@ except NameError:
 
 import io
 import os
-import subprocess
 from time import sleep
 
 import pytest
@@ -37,20 +36,7 @@ except ImportError:
 # your testing rig requires different pins because the defaults interfere with
 # attached hardware).
 TEST_PIN = int(os.getenv('GPIOZERO_TEST_PIN', '22'))
-INPUT_PIN = int(os.getenv('GPIOZERO_INPUT_PIN', '27'))
-
-
-# Skip the entire module if we're not on a Pi
-def is_a_pi():
-    with io.open('/proc/cpuinfo', 'r') as cpuinfo:
-        for line in cpuinfo:
-            if line.startswith('Hardware'):
-                hardware, colon, soc = line.strip().split(None, 2)
-                return soc in ('BCM2708', 'BCM2709', 'BCM2835', 'BCM2836')
-        else:
-            return False
-pytestmark = pytest.mark.skipif(not is_a_pi(), reason='tests cannot run on non-Pi platforms')
-del is_a_pi
+INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
 
 
 @pytest.fixture(
@@ -58,24 +44,18 @@ del is_a_pi
     params=pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys())
 def pin_factory(request):
     # Constructs each pin factory in turn with some extra logic to ensure
-    # the pigpiod daemon gets started and stopped around the pigpio factory
+    # we skip tests if pigpio is set for remote operation
     if request.param == 'pigpio':
-        try:
-            subprocess.check_call(['sudo', 'systemctl', 'start', 'pigpiod'])
-        except subprocess.CalledProcessError:
-            pytest.skip("skipped factory pigpio: failed to start pigpiod")
+        if os.getenv('PIGPIO_ADDR', 'localhost') != 'localhost':
+            pytest.skip("skipped factory pigpio: remote host in PIGPIO_ADDR")
     try:
         factory = pkg_resources.load_entry_point('gpiozero', 'gpiozero_pin_factories', request.param)()
     except Exception as e:
-        if request.param == 'pigpio':
-            subprocess.check_call(['sudo', 'systemctl', 'stop', 'pigpiod'])
         pytest.skip("skipped factory %s: %s" % (request.param, str(e)))
     else:
         Device._set_pin_factory(factory)
         def fin():
             Device._set_pin_factory(MockFactory())
-            if request.param == 'pigpio':
-                subprocess.check_call(['sudo', 'systemctl', 'stop', 'pigpiod'])
         request.addfinalizer(fin)
         return factory
 

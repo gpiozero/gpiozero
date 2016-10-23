@@ -84,6 +84,10 @@ class PiGPIOFactory(PiFactory):
             ('software', 'shared'):    PiGPIOSoftwareSPIShared,
             }
         self._connection = pigpio.pi(host, port)
+        # Annoyingly, pigpio doesn't raise an exception when it fails to make a
+        # connection; it returns a valid (but disconnected) pi object
+        if self.connection is None:
+            raise IOError('failed to connect to %s:%s' % (host, port))
         self._host = host
         self._port = port
         self._spis = []
