@@ -836,7 +836,7 @@ def test_seven_segment_initial_value():
     pin7 = MockPin(8)
     pin8 = MockPin(9)
     with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, initial_value=True) as seven_seg:
-        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
+        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].valueand seven_seg[7].value)
         
 def test_seven_segment_display_bad_init():
     pin1 = MockPin(2)
