@@ -171,9 +171,7 @@ def test_input_light_sensor():
                     reason='timing is too random on pypy')
 def test_input_distance_sensor():
     echo_pin = Device._pin_factory.pin(4)
-    trig_pin = Device._pin_factory.pin(5, pin_class=MockTriggerPin)
-    trig_pin.echo_pin = echo_pin
-    trig_pin.echo_time = 0.02
+    trig_pin = Device._pin_factory.pin(5, pin_class=MockTriggerPin, echo_pin=echo_pin, echo_time=0.02)
     with pytest.raises(ValueError):
         DistanceSensor(echo_pin, trig_pin, max_distance=-1)
     # normal queue len is large (because the sensor is *really* jittery) but

@@ -85,15 +85,13 @@ def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
     # NativePin(27) and so on. This isn't supported, so we don't test it
-    if pin_factory.__class__.__name__ == 'MockFactory':
-        test_pin = pin_factory.pin(TEST_PIN, pin_class=MockConnectedPin)
-    else:
-        test_pin = pin_factory.pin(TEST_PIN)
     input_pin = pin_factory.pin(INPUT_PIN)
     input_pin.function = 'input'
     input_pin.pull = 'down'
     if pin_factory.__class__.__name__ == 'MockFactory':
-        test_pin.input_pin = input_pin
+        test_pin = pin_factory.pin(TEST_PIN, pin_class=MockConnectedPin, input_pin=input_pin)
+    else:
+        test_pin = pin_factory.pin(TEST_PIN)
     def fin():
         test_pin.close()
         input_pin.close()

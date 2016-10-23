@@ -154,6 +154,22 @@ Base classes
 .. autoclass:: SPI
     :members:
 
+.. currentmodule:: gpiozero.pins.pi
+
+.. autoclass:: PiFactory
+    :members:
+
+.. autoclass:: PiPin
+    :members:
+
+.. currentmodule:: gpiozero.pins.local
+
+.. autoclass:: LocalPiFactory
+    :members:
+
+.. autoclass:: LocalPiPin
+    :members:
+
 
 Utilities
 =========
@@ -163,6 +179,8 @@ revisions of Raspberry Pi. This is used internally to raise warnings when
 non-physical pins are used, or to raise exceptions when pull-downs are
 requested on pins with physical pull-up resistors attached. The following
 functions and classes can be used to query this database:
+
+.. currentmodule:: gpiozero
 
 .. autofunction:: pi_info
 

@@ -25,8 +25,10 @@ from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
 class LocalPiFactory(PiFactory):
     """
     Abstract base class representing pins attached locally to a Pi. This forms
-    the base class for local-only pin interfaces (:class:`RPiGPIOPin`,
-    :class:`RPIOPin`, and :class:`NativePin`).
+    the base class for local-only pin interfaces
+    (:class:`~gpiozero.pins.rpigpio.RPiGPIOPin`,
+    :class:`~gpiozero.pins.rpio.RPIOPin`, and
+    :class:`~gpiozero.pins.native.NativePin`).
     """
     pins = {}
 

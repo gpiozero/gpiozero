@@ -34,7 +34,7 @@ from ..exc import (
 class PiFactory(Factory):
     """
     Abstract base class representing hardware attached to a Raspberry Pi. This
-    forms the base of :class:`LocalPiFactory`.
+    forms the base of :class:`~gpiozero.pins.local.LocalPiFactory`.
     """
     def __init__(self):
         self._info = None
@@ -187,7 +187,31 @@ class PiFactory(Factory):
 class PiPin(Pin):
     """
     Abstract base class representing a multi-function GPIO pin attached to a
-    Raspberry Pi.
+    Raspberry Pi. This overrides several methods in the abstract base
+    :class:`~gpiozero.Pin`. Descendents must override the following methods:
+
+    * :meth:`_get_function`
+    * :meth:`_set_function`
+    * :meth:`_get_state`
+    * :meth:`_call_when_changed`
+    * :meth:`_enable_event_detect`
+    * :meth:`_disable_event_detect`
+
+    Descendents *may* additionally override the following methods, if
+    applicable:
+
+    * :meth:`close`
+    * :meth:`output_with_state`
+    * :meth:`input_with_pull`
+    * :meth:`_set_state`
+    * :meth:`_get_frequency`
+    * :meth:`_set_frequency`
+    * :meth:`_get_pull`
+    * :meth:`_set_pull`
+    * :meth:`_get_bounce`
+    * :meth:`_set_bounce`
+    * :meth:`_get_edges`
+    * :meth:`_set_edges`
     """
     def __init__(self, factory, number):
         super(PiPin, self).__init__()
@@ -214,6 +238,11 @@ class PiPin(Pin):
         return self.factory.address + ('GPIO%d' % self.number,)
 
     def _call_when_changed(self):
+        """
+        Called to fire the :attr:`when_changed` event handler; override this
+        in descendents if additional (currently redundant) parameters need
+        to be passed.
+        """
         method = self.when_changed()
         if method is None:
             self.when_changed = None
@@ -242,8 +271,17 @@ class PiPin(Pin):
                     self._enable_event_detect()
 
     def _enable_event_detect(self):
+        """
+        Enables event detection. This is called to activate event detection on
+        pin :attr:`number`, watching for the specified :attr:`edges`. In
+        response, :meth:`_call_when_changed` should be executed.
+        """
         raise NotImplementedError
 
     def _disable_event_detect(self):
+        """
+        Disables event detection. This is called to deactivate event detection
+        on pin :attr:`number`.
+        """
         raise NotImplementedError
 

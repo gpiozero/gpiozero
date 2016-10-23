@@ -161,9 +161,9 @@ class MockConnectedPin(MockPin):
     mock pin. This is used in the "real pins" portion of the test suite to
     check that one pin can influence another.
     """
-    def __init__(self, factory, number):
+    def __init__(self, factory, number, input_pin=None):
         super(MockConnectedPin, self).__init__(factory, number)
-        self.input_pin = None
+        self.input_pin = input_pin
 
     def _change_state(self, value):
         if self.input_pin:
@@ -181,9 +181,9 @@ class MockChargingPin(MockPin):
     (as if attached to, e.g. a typical circuit using an LDR and a capacitor
     to time the charging rate).
     """
-    def __init__(self, factory, number):
+    def __init__(self, factory, number, charge_time=0.01):
         super(MockChargingPin, self).__init__(factory, number)
-        self.charge_time = 0.01 # dark charging time
+        self.charge_time = charge_time # dark charging time
         self._charge_stop = Event()
         self._charge_thread = None
 
@@ -220,10 +220,10 @@ class MockTriggerPin(MockPin):
     corresponding pin instance. When this pin is driven high it will trigger
     the echo pin to drive high for the echo time.
     """
-    def __init__(self, factory, number):
+    def __init__(self, factory, number, echo_pin=None, echo_time=0.04):
         super(MockTriggerPin, self).__init__(factory, number)
-        self.echo_pin = None
-        self.echo_time = 0.04 # longest echo time
+        self.echo_pin = echo_pin
+        self.echo_time = echo_time # longest echo time
         self._echo_thread = None
 
     def _set_state(self, value):
@@ -432,14 +432,14 @@ class MockFactory(LocalPiFactory):
     def reset(self):
         self.pins.clear()
 
-    def pin(self, spec, pin_class=None):
+    def pin(self, spec, pin_class=None, **kwargs):
         if pin_class is None:
             pin_class = self.pin_class
         n = self._to_gpio(spec)
         try:
             pin = self.pins[n]
         except KeyError:
-            pin = pin_class(self, n)
+            pin = pin_class(self, n, **kwargs)
             self.pins[n] = pin
         else:
             # Ensure the pin class expected supports PWM (or not)
