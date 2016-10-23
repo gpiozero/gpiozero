@@ -55,8 +55,7 @@ del is_a_pi
 
 @pytest.fixture(
     scope='module',
-    params=('rpigpio',))
-    #params=pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys())
+    params=pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys())
 def pin_factory(request):
     # Constructs each pin factory in turn with some extra logic to ensure
     # the pigpiod daemon gets started and stopped around the pigpio factory
