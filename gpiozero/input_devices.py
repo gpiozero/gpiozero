@@ -573,9 +573,9 @@ class DistanceSensor(SmoothedInputDevice):
     def __init__(
             self, echo=None, trigger=None, queue_len=30, max_distance=1,
             threshold_distance=0.3, partial=False):
+        self._trigger = None
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
-        self._trigger = None
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
             queue_len=queue_len, sample_wait=0.0, partial=partial
@@ -611,7 +611,13 @@ class DistanceSensor(SmoothedInputDevice):
                 raise
         else:
             self._trigger = None
-        super(DistanceSensor, self).close()
+
+        # need to catch AttributeError here, in case exception is raised
+        # inside __init__ before the parent __init__ is called
+        try:
+            super(DistanceSensor, self).close()
+        except AttributeError:
+            pass
 
     @property
     def max_distance(self):

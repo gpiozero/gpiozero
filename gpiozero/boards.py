@@ -205,7 +205,6 @@ class LEDCollection(CompositeOutputDevice):
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
     def __init__(self, *args, **kwargs):
-        self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', False)
@@ -291,6 +290,7 @@ class LEDBoard(LEDCollection):
         create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
+        self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
         super(LEDBoard, self).__init__(*args, **kwargs)
@@ -1139,6 +1139,7 @@ class Energenie(SourceMixin, Device):
     """
 
     def __init__(self, socket=None, initial_value=False):
+        self._master = None
         if socket is None:
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
