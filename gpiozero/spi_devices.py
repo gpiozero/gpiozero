@@ -27,6 +27,8 @@ class SPIDevice(Device):
     specified with the constructor.
     """
     def __init__(self, **spi_args):
+        self._spi = None
+        super(SPIDevice, self).__init__()
         self._spi = self._pin_factory.spi(**spi_args)
 
     def close(self):

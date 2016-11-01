@@ -43,11 +43,6 @@ INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
     scope='module',
     params=pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys())
 def pin_factory(request):
-    # Constructs each pin factory in turn with some extra logic to ensure
-    # we skip tests if pigpio is set for remote operation
-    if request.param == 'pigpio':
-        if os.getenv('PIGPIO_ADDR', 'localhost') != 'localhost':
-            pytest.skip("skipped factory pigpio: remote host in PIGPIO_ADDR")
     try:
         factory = pkg_resources.load_entry_point('gpiozero', 'gpiozero_pin_factories', request.param)()
     except Exception as e:

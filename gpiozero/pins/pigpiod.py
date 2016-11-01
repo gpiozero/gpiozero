@@ -297,6 +297,7 @@ class PiGPIOHardwareSPI(SPI, Device):
         self._port = port
         self._device = device
         self._factory = proxy(factory)
+        self._handle = None
         super(PiGPIOHardwareSPI, self).__init__()
         self._reserve_pins(*(
             factory.address + ('GPIO%d' % pin,)
@@ -305,7 +306,7 @@ class PiGPIOHardwareSPI(SPI, Device):
         self._spi_flags = 8 << 16
         self._baud = 500000
         self._handle = self._factory.connection.spi_open(
-            device, self._baud, self._spi_flags())
+            device, self._baud, self._spi_flags)
 
     def _conflicts_with(self, other):
         return not (
@@ -413,7 +414,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
 
     def _conflicts_with(self, other):
         return not (
-            isinstance(other, PiGPIOHardwareSPI) and
+            isinstance(other, PiGPIOSoftwareSPI) and
             (self._select_pin) != (other._select_pin)
             )
 
