@@ -126,6 +126,7 @@ from .boards import (
     CamJamKitRobot,
     Energenie,
     SevenSegmentDisplay,
+    MultiSevenSegmentDisplay,
 )
 from .other_devices import (
     InternalDevice,
