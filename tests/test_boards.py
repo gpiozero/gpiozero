@@ -1783,3 +1783,33 @@ def test_seven_segment_display_bad_set_char_layout():
             seven_seg.set_char_layout("_", (False, False, False, True, False, False))
         with pytest.raises(ValueError):
             seven_seg.set_char_layout("_", (False, False, False, True, False, False, False, False))
+
+def test_multi_seven_segment_display():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4)) as multi_seven_seg:
+        assert multi_seven_seg.active_high
+        
+        multi_seven_seg.on()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
+        assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
+
+        multi_seven_seg.off()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (not led_values[0] and not led_values[1] and not led_values[2] and not led_values[3] and not led_values[4] and not led_values[5] and not led_values[6] and not led_values[7])
+        assert (not digit_values[0] and not digit_values[1] and not digit_values[2] and not digit_values[3])
