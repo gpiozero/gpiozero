@@ -924,9 +924,192 @@ def test_multi_seven_segment_display():
         assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
         assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
 
+        multi_seven_seg.display("8888")
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
+
+        multi_seven_seg.display("8.8.8.8.")
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
+
+        multi_seven_seg.value = ((True, False, True, False, True, False, True, False), (True, False, True, False))
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and not led_values[1] and led_values[2] and not led_values[3] and led_values[4] and not led_values[5] and led_values[6] and not led_values[7])
+        assert (digit_values[0] and not digit_values[1] and digit_values[2] and not digit_values[3])
+
         multi_seven_seg.off()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
         assert (not led_values[0] and not led_values[1] and not led_values[2] and not led_values[3] and not led_values[4] and not led_values[5] and not led_values[6] and not led_values[7])
         assert (not digit_values[0] and not digit_values[1] and not digit_values[2] and not digit_values[3])
+
+def test_multi_seven_segment_display_active_low():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), active_high=False) as multi_seven_seg:
+        assert not multi_seven_seg.active_high
+        
+        multi_seven_seg.on()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
+        assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
+
+        multi_seven_seg.display("8888")
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
+
+        multi_seven_seg.display("8.8.8.8.")
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
+
+        multi_seven_seg.value = ((True, False, True, False, True, False, True, False), (True, False, True, False))
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and not led_values[1] and led_values[2] and not led_values[3] and led_values[4] and not led_values[5] and led_values[6] and not led_values[7])
+        assert (digit_values[0] and not digit_values[1] and digit_values[2] and not digit_values[3])
+
+        multi_seven_seg.off()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (not led_values[0] and not led_values[1] and not led_values[2] and not led_values[3] and not led_values[4] and not led_values[5] and not led_values[6] and not led_values[7])
+        assert (not digit_values[0] and not digit_values[1] and not digit_values[2] and not digit_values[3])
+
+def test_multi_seven_segment_display_no_decimal_point():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), active_high=False) as multi_seven_seg:
+        assert not multi_seven_seg.active_high
+        
+        multi_seven_seg.on()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
+        assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
+
+        multi_seven_seg.display("8888")
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
+
+        multi_seven_seg.value = ((True, False, True, False, True, False, True), (True, False, True, False))
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and not led_values[1] and led_values[2] and not led_values[3] and led_values[4] and not led_values[5] and led_values[6])
+        assert (digit_values[0] and not digit_values[1] and digit_values[2] and not digit_values[3])
+
+        multi_seven_seg.off()
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (not led_values[0] and not led_values[1] and not led_values[2] and not led_values[3] and not led_values[4] and not led_values[5] and not led_values[6])
+        assert (not digit_values[0] and not digit_values[1] and not digit_values[2] and not digit_values[3])
+
+def test_multi_seven_segment_display_initial_value():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), initial_value=True) as multi_seven_seg:
+        values = multi_seven_seg.value
+        led_values = values[0]
+        digit_values = values[1]
+        assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6] and led_values[7])
+        assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
+
+def test_multi_seven_segment_display_bad_init():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with pytest.raises(TypeError):
+        MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), foo=1)
+    with pytest.raises(ValueError):
+        MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, ))
+
+def test_multi_seven_segment_display_bad_message():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), initial_value=True) as multi_seven_seg:
+        with pytest.raises(ValueError):
+            multi_seven_seg.display("toolong")
+
+def test_multi_seven_segment_display_bad_value():
+    pin1 = MockPin(4)
+    pin2 = MockPin(5)
+    pin3 = MockPin(6)
+    pin4 = MockPin(7)
+    pin5 = MockPin(8)
+    pin6 = MockPin(9)
+    pin7 = MockPin(10)
+    pin8 = MockPin(11)
+    digit_pin1 = MockPin(12)
+    digit_pin2 = MockPin(13)
+    digit_pin3 = MockPin(14)
+    digit_pin4 = MockPin(15)
+    with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), initial_value=True) as multi_seven_seg:
+        with pytest.raises(ValueError):
+            multi_seven_seg.value = ((True, False, True, False, True, False, True, False), (True, False, True))
+            
