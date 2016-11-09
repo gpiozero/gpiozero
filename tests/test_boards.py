@@ -925,12 +925,17 @@ def test_multi_seven_segment_display():
         assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
 
         multi_seven_seg.display("8888")
+        #wait until a digit 1 turns on, at which point we can test the display
+        while not multi_seven_seg.digits[0]:
+            sleep(0.001)
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
         assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
 
         multi_seven_seg.display("8.8.8.8.")
+        while not multi_seven_seg.digits[0]:
+            sleep(0.001)
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -974,12 +979,16 @@ def test_multi_seven_segment_display_active_low():
         assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
 
         multi_seven_seg.display("8888")
+        while not multi_seven_seg.digits[0]:
+            sleep(0.001)
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
         assert (led_values[0] and led_values[1] and led_values[2] and led_values[3] and led_values[4] and led_values[5] and led_values[6])
 
         multi_seven_seg.display("8.8.8.8.")
+        while not multi_seven_seg.digits[0]:
+            sleep(0.001)
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -1022,6 +1031,8 @@ def test_multi_seven_segment_display_no_decimal_point():
         assert (digit_values[0] and digit_values[1] and digit_values[2] and digit_values[3])
 
         multi_seven_seg.display("8888")
+        while not multi_seven_seg.digits[0]:
+            sleep(0.001)
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
