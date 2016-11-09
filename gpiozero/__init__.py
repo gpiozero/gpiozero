@@ -125,6 +125,8 @@ from .boards import (
     RyanteckRobot,
     CamJamKitRobot,
     Energenie,
+    RotaryEncoder,
+    RotaryEncoderClickable,
 )
 from .other_devices import (
     InternalDevice,
@@ -132,7 +134,4 @@ from .other_devices import (
     CPUTemperature,
     TimeOfDay,
 )
-from .rotary_encoder import (
-    RotaryEncoder,
-    RotaryEncoderClickable,
-)
+
