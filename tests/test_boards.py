@@ -928,6 +928,7 @@ def test_multi_seven_segment_display():
         #wait until a digit 1 turns on, at which point we can test the display
         while not multi_seven_seg.digits[0]:
             sleep(0.001)
+        multi_seven_seg._stop_display()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -936,6 +937,7 @@ def test_multi_seven_segment_display():
         multi_seven_seg.display("8.8.8.8.")
         while not multi_seven_seg.digits[0]:
             sleep(0.001)
+        multi_seven_seg._stop_display()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -981,6 +983,7 @@ def test_multi_seven_segment_display_active_low():
         multi_seven_seg.display("8888")
         while not multi_seven_seg.digits[0]:
             sleep(0.001)
+        multi_seven_seg._stop_display()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -989,6 +992,7 @@ def test_multi_seven_segment_display_active_low():
         multi_seven_seg.display("8.8.8.8.")
         while not multi_seven_seg.digits[0]:
             sleep(0.001)
+        multi_seven_seg._stop_display()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -1009,6 +1013,7 @@ def test_multi_seven_segment_display_active_low():
         assert (not digit_values[0] and not digit_values[1] and not digit_values[2] and not digit_values[3])
 
 def test_multi_seven_segment_display_no_decimal_point():
+    print("no dp")
     pin1 = MockPin(4)
     pin2 = MockPin(5)
     pin3 = MockPin(6)
@@ -1033,6 +1038,7 @@ def test_multi_seven_segment_display_no_decimal_point():
         multi_seven_seg.display("8888")
         while not multi_seven_seg.digits[0]:
             sleep(0.001)
+        multi_seven_seg._stop_display()
         values = multi_seven_seg.value
         led_values = values[0]
         digit_values = values[1]
@@ -1123,4 +1129,3 @@ def test_multi_seven_segment_display_bad_value():
     with MultiSevenSegmentDisplay((pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8), (digit_pin1, digit_pin2, digit_pin3, digit_pin4), initial_value=True) as multi_seven_seg:
         with pytest.raises(ValueError):
             multi_seven_seg.value = ((True, False, True, False, True, False, True, False), (True, False, True))
-            
