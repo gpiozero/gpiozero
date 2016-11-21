@@ -8,6 +8,7 @@ str = type('')
 
 import io
 from threading import RLock
+from types import MethodType
 from weakref import ref, proxy
 try:
     from weakref import WeakMethod
