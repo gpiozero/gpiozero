@@ -76,6 +76,7 @@ from .boards import (
     LEDBoard,
     LEDBarGraph,
     LedBorg,
+    XmasTree,
     PiLiter,
     PiLiterBarGraph,
     TrafficLights,

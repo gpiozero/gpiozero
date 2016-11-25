@@ -602,6 +602,69 @@ class LEDBarGraph(LEDCollection):
         self.value = value / len(self)
 
 
+class XmasTree(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a Christmas tree
+    board with 3 red LEDs on each of 8 faces, and a white LED as a star on
+    top.
+
+    The Xmas Tree board pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example turns all the LEDs
+    on one at a time, ending in the star::
+
+        from gpiozero import XmasTree
+        from time import sleep
+
+        tree = XmasTree()
+
+        for light in tree:
+            light.on()
+            sleep(1)
+
+    The following example turns the star LED on and sets all the red LEDs to
+    flicker randomly::
+
+        from gpiozero import XmasTree
+        from gpiozero.tools import random_values
+        from signal import pause
+
+        tree = XmasTree(pwm=True)
+
+        tree.star.on()
+
+        for bauble in tree.baubles:
+            bauble.source_delay = 0.1
+            bauble.source = random_values()
+
+        pause()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    .. _The Pi Hut's Xmas board: https://thepihut.com/xmas
+    """
+
+    def __init__(self, pwm=False, initial_value=False):
+        pins = (4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 2)
+        super(XmasTree, self).__init__(*pins, pwm=pwm, initial_value=initial_value)
+
+    @property
+    def star(self):
+        return self[-1]
+
+    @property
+    def baubles(self):
+        baubles = self[:-1]
+        return {i+1: led for i, led in enumerate(baubles)}
+
+
 class LedBorg(RGBLED):
     """
     Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board

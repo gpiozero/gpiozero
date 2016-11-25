@@ -45,6 +45,13 @@ TrafficLights
     :inherited-members:
     :members:
 
+Xmas Tree
+=========
+
+.. autoclass:: XmasTree
+    :inherited-members:
+    :members:
+
 LedBorg
 =======
 
