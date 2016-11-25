@@ -134,6 +134,13 @@ SnowPi
     :inherited-members:
     :members:
 
+STATUS Board
+============
+
+.. autoclass:: StatusBoard
+    :inherited-members:
+    :members:
+
 Base Classes
 ============
 
@@ -168,4 +175,3 @@ CompositeDevice
 
 .. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
     :members:
-

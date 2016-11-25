@@ -795,6 +795,75 @@ class PiStop(TrafficLights):
                                         pwm=pwm, initial_value=initial_value)
 
 
+class StatusBoard(TrafficLights):
+    """
+    Extends :class:`TrafficLights` for `The Pi Hut's STATUS Board`_:
+    a board with four traffic light indicators.
+
+    There's no need to specify the pin numbers used, just the index number of
+    the strip you wish to use (1, 2, 3 or 4)::
+
+        from gpiozero import StatusBoard
+
+        sb = StatusBoard(1)
+
+        sb.green.on()
+
+    An example use case is to use one of the STATUS Board strips to show green
+    or red according to the network connection::
+
+        from gpiozero import StatusBoard, PingServer
+        from gpiozero.tools import negated
+        from signal import pause
+
+        wifi = StatusBoard(1)
+        google = PingServer("google.com")
+
+        wifi.red.source = negated(wifi.green.values)
+        wifi.green.source_delay = 60
+        wifi.green.source = google.values
+
+        pause()
+
+    To utilise multiple STATUS Board strips, simply initialise multiple
+    :class:`StatusBoard` objects::
+
+        from gpiozero import StatusBoard
+
+        wifi = StatusBoard(1)
+        temperature = StatusBoard(2)
+
+    :param int index:
+        The index number of the STATUS Board strip (1, 2, 3 or 4).
+    .. _The Pi Hut's STATUS Board: https://thepihut.com/status
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+    """
+    def __init__(self, index=None, pwm=False, initial_value=False):
+        if index is None or index not in (1, 2, 3, 4):
+            raise OutputDeviceBadValue(
+                'You must provide an index number between 1 and 4'
+            )
+        red, amber, green = {
+            1: (4, 17, 27),
+            2: (22, 10, 9),
+            3: (11, 5, 6),
+            4: (13, 19, 26),
+        }[index]
+        super(StatusBoard, self).__init__(
+            red=red, amber=amber, green=green, pwm=pwm
+        )
+
+
 class SnowPi(LEDBoard):
     """
     Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.
@@ -1184,4 +1253,3 @@ class Energenie(SourceMixin, Device):
 
     def off(self):
         self.value = False
-
