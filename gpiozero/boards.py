@@ -632,7 +632,7 @@ class XmasTree(LEDBoard):
 
         tree.star.on()
 
-        for bauble in tree.baubles:
+        for bauble in tree.baubles.values():
             bauble.source_delay = 0.1
             bauble.source = random_values()
 
