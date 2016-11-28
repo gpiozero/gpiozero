@@ -652,7 +652,7 @@ class XmasTree(LEDBoard):
     """
 
     def __init__(self, pwm=False, initial_value=False):
-        pins = (4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 2)
+        pins = (4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26, 9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24, 2)
         super(XmasTree, self).__init__(*pins, pwm=pwm, initial_value=initial_value)
 
     @property
