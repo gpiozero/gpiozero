@@ -654,6 +654,8 @@ class XmasTree(LEDBoard):
     def __init__(self, pwm=False, initial_value=False):
         pins = (4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26, 9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24, 2)
         super(XmasTree, self).__init__(*pins, pwm=pwm, initial_value=initial_value)
+        baubles = self[:-1]
+        self._baubles = {i+1: led for i, led in enumerate(baubles)}
 
     @property
     def star(self):
@@ -661,8 +663,7 @@ class XmasTree(LEDBoard):
 
     @property
     def baubles(self):
-        baubles = self[:-1]
-        return {i+1: led for i, led in enumerate(baubles)}
+        return self._baubles
 
 
 class LedBorg(RGBLED):
