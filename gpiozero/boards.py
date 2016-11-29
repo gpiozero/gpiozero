@@ -819,9 +819,9 @@ class StatusBoard(TrafficLights):
         wifi = StatusBoard(1)
         google = PingServer("google.com")
 
-        wifi.red.source = negated(wifi.green.values)
-        wifi.green.source_delay = 60
         wifi.green.source = google.values
+        wifi.green.source_delay = 60
+        wifi.red.source = negated(wifi.green.values)
 
         pause()
 
