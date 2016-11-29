@@ -860,7 +860,8 @@ class StatusBoard(TrafficLights):
             4: (13, 19, 26),
         }[index]
         super(StatusBoard, self).__init__(
-            red=red, amber=amber, green=green, pwm=pwm
+            red=red, amber=amber, green=green,
+            pwm=pwm, initial_value=initial_value
         )
 
 
