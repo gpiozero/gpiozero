@@ -35,14 +35,8 @@ provided, setting the device's value to each element at a rate specified in the
 .. image:: images/source_values.*
 
 The most common use case for this is to set the source of an output device to
-the values of an input device, like the example above. It is also possible to
-set the source of an output device to the values of another output device (so
-they match):
-
-.. literalinclude:: examples/led_button.py
-
-A more interesting example would be a potentiometer controlling the brightness
-of an LED:
+the values of an input device, like the example above. A more interesting
+example would be a potentiometer controlling the brightness of an LED:
 
 .. literalinclude:: examples/pwmled_pot.py
 
@@ -58,7 +52,7 @@ The device's values can also be processed before they are passed to the
 
 For example:
 
-.. literalinclude:: examples/custom_generator.py
+.. literalinclude:: examples/source_value_processing.py
 
 Alternatively, a custom generator can be used to provide values from an
 artificial source:
@@ -81,11 +75,11 @@ Composite devices
 -----------------
 
 Most devices have a ``value`` range between 0 and 1. Some have a range between
--1 and 1 (e.g. ``Robot``). The ``value`` of a composite device is a namedtuple
-of such values. For example::
+-1 and 1 (e.g. ``Motor``). The ``value`` of a composite device is a namedtuple
+of such values. For example, the ``Robot`` class::
 
     >>> from gpiozero import Robot
-    >>> robot = Robot(left=(14, 15), right=(17, 18)
+    >>> robot = Robot(left=(14, 15), right=(17, 18))
     >>> robot.value
     RobotValue(left_motor=0.0, right_motor=0.0)
     >>> tuple(robot.value)
