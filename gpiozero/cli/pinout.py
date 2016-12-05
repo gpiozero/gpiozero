@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-pinout.py - gpiozero command-line pinout tool.
+pinout - gpiozero command-line pinout tool.
 
 Output Raspberry Pi GPIO pinout information.
 """
@@ -56,7 +56,7 @@ def main():
         try:
             pi_info().pprint(color=args.color)
         except IOError:
-            print('This device is not a Raspberry Pi?')
+            print('This device is not a Raspberry Pi')
             exit(2)
     else:
         pi_info(args.revision).pprint(color=args.color)

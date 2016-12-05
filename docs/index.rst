@@ -18,7 +18,7 @@ Table of Contents
     api_tools
     api_pins
     api_exc
-    cli_pinout
+    cli_tools
     changelog
     license
 
