@@ -9,7 +9,7 @@ str = type('')
 
 import pytest
 
-import gpiozero.cli.pinout as pinout
+from gpiozero.cli import pinout
 
 
 def test_args_incorrect():
