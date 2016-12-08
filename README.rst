@@ -124,7 +124,6 @@ Other contributors:
 .. _Dave Jones: https://github.com/waveform80
 .. _Andrew Scheller: https://github.com/lurch
 .. _Martin O'Hanlon: https://github.com/martinohanlon
-.. _Schelto vanDoorn: https://github.com/pcopa
 .. _Steve Amor: https://github.com/SteveAmor
 .. _David Glaude: https://github.com/dglaude
 .. _Edward Betts: https://github.com/edwardbetts
