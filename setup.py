@@ -2,7 +2,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-"A simple interface to everyday GPIO components used with Raspberry Pi"
+"A simple interface to GPIO devices with Raspberry Pi."
 
 if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):

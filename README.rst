@@ -14,7 +14,7 @@ gpiozero
     :target: https://codecov.io/github/RPi-Distro/python-gpiozero
     :alt: Code Coverage
 
-A simple interface to everyday GPIO components used with Raspberry Pi.
+A simple interface to GPIO devices with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
 other contributors.
@@ -93,20 +93,47 @@ Alternatively, email suggestions and feedback to ben@raspberrypi.org
 Contributors
 ============
 
-- `Ben Nuttall`_ (project maintainer)
+Core developers:
+
+- `Ben Nuttall`_
 - `Dave Jones`_
-- `Martin O'Hanlon`_
 - `Andrew Scheller`_
+
+Other contributors:
+
+- `Martin O'Hanlon`_
+- `Steve Amor`_
+- `David Glaude`_
+- `Edward Betts`_
+- `Alex Chan`_
+- `Thijs Triemstra`_
 - `Schelto vanDoorn`_
+- `Alex Eames`_
+- `Barry Byford`_
+- `Clare Macrae`_
+- `Tim Golden`_
+- `Phil Howard`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _contribute: https://gpiozero.readthedocs.io/en/latest/contributing.html
+.. _Contribute: https://gpiozero.readthedocs.io/en/latest/contributing.html
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
-.. _Martin O'Hanlon: https://github.com/martinohanlon
 .. _Andrew Scheller: https://github.com/lurch
+.. _Martin O'Hanlon: https://github.com/martinohanlon
 .. _Schelto vanDoorn: https://github.com/pcopa
+.. _Steve Amor: https://github.com/SteveAmor
+.. _David Glaude: https://github.com/dglaude
+.. _Edward Betts: https://github.com/edwardbetts
+.. _Alex Chan: https://github.com/alexwlchan
+.. _Thijs Triemstra: https://github.com/thijstriemstra
+.. _Schelto vanDoorn: https://github.com/goloplo
+.. _Alex Eames: https://github.com/raspitv
+.. _Barry Byford: https://github.com/ukBaz
+.. _Clare Macrae: https://github.com/claremacrae
+.. _Tim Golden: https://github.com/tjguk
+.. _Phil Howard: https://github.com/Gadgetoid
+
