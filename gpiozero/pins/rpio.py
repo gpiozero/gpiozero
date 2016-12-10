@@ -12,7 +12,7 @@ import RPIO
 import RPIO.PWM
 from RPIO.Exceptions import InvalidChannelException
 
-from . import Pin, PINS_CLEANUP
+from . import LocalPin, PINS_CLEANUP
 from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
@@ -27,7 +27,7 @@ from ..exc import (
     )
 
 
-class RPIOPin(Pin):
+class RPIOPin(LocalPin):
     """
     Uses the `RPIO`_ library to interface to the Pi's GPIO pins. This is
     the default pin implementation if the RPi.GPIO library is not installed,

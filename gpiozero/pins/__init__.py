@@ -6,6 +6,9 @@ from __future__ import (
     )
 str = type('')
 
+import io
+
+from .data import pi_info
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
@@ -47,6 +50,7 @@ class Pin(object):
     * :meth:`_set_edges`
     * :meth:`_get_when_changed`
     * :meth:`_set_when_changed`
+    * :meth:`pi_info`
     * :meth:`output_with_state`
     * :meth:`input_with_pull`
 
@@ -242,4 +246,49 @@ class Pin(object):
         If the pin does not support edge detection, attempts to set this
         property will raise :exc:`PinEdgeDetectUnsupported`.
         """)
+
+    @classmethod
+    def pi_info(cls):
+        """
+        Returns a :class:`PiBoardInfo` instance representing the Pi that
+        instances of this pin class will be attached to.
+
+        If the pins represented by this class are not *directly* attached to a
+        Pi (e.g. the pin is attached to a board attached to the Pi, or the pins
+        are not on a Pi at all), this may return ``None``.
+        """
+        return None
+
+
+class LocalPin(Pin):
+    """
+    Abstract base class representing pins attached locally to a Pi. This forms
+    the base class for local-only pin interfaces (:class:`RPiGPIOPin`,
+    :class:`RPIOPin`, and :class:`NativePin`).
+    """
+    _PI_REVISION = None
+
+    @classmethod
+    def pi_info(cls):
+        """
+        Returns a :class:`PiBoardInfo` instance representing the local Pi.
+        The Pi's revision is determined by reading :file:`/proc/cpuinfo`. If
+        no valid revision is found, returns ``None``.
+        """
+        # Cache the result as we can reasonably assume it won't change during
+        # runtime (this is LocalPin after all; descendents that deal with
+        # remote Pis should inherit from Pin instead)
+        if cls._PI_REVISION is None:
+            with io.open('/proc/cpuinfo', 'r') as f:
+                for line in f:
+                    if line.startswith('Revision'):
+                        revision = line.split(':')[1].strip().lower()
+                        overvolted = revision.startswith('100')
+                        if overvolted:
+                            revision = revision[-4:]
+                        cls._PI_REVISION = revision
+                        break
+                if cls._PI_REVISION is None:
+                    return None # something weird going on
+        return pi_info(cls._PI_REVISION)
 

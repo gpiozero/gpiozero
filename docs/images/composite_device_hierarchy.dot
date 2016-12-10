@@ -25,6 +25,7 @@ digraph classes {
     PiLiterBarGraph->LEDBarGraph;
     TrafficLights->LEDBoard;
     PiTraffic->TrafficLights;
+    PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
@@ -32,5 +33,8 @@ digraph classes {
     RyanteckRobot->Robot;
     CamJamKitRobot->Robot;
     Motor->CompositeDevice;
+    Servo->CompositeDevice;
+    AngularServo->Servo;
     Energenie->Device;
+    ButtonBoard->CompositeDevice;
 }

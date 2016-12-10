@@ -73,6 +73,81 @@ class PingServer(InternalDevice):
                 return True
 
 
+class CPUTemperature(InternalDevice):
+    """
+    Extends :class:`InternalDevice` to provide a device which is active when
+    the CPU temperature exceeds the *threshold* value.
+
+    The following example plots the CPU's temperature on an LED bar graph::
+
+        from gpiozero import LEDBarGraph, CPUTemperature
+        from signal import pause
+
+        # Use minimums and maximums that are closer to "normal" usage so the
+        # bar graph is a bit more "lively"
+        temp = CPUTemperature(min_temp=50, max_temp=90)
+        graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
+        graph.source = temp.values
+        pause()
+
+    :param str sensor_file:
+        The file from which to read the temperature. This defaults to the
+        sysfs file :file:`/sys/class/thermal/thermal_zone0/temp`. Whatever
+        file is specified is expected to contain a single line containing the
+        temperature in milli-degrees celsius.
+
+    :param float min_temp:
+        The temperature at which :attr:`value` will read 0.0. This defaults to
+        0.0.
+
+    :param float max_temp:
+        The temperature at which :attr:`value` will read 1.0. This defaults to
+        100.0.
+
+    :param float threshold:
+        The temperature above which the device will be considered "active".
+        This defaults to 80.0.
+    """
+    def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
+            min_temp=0.0, max_temp=100.0, threshold=80.0):
+        self.sensor_file = sensor_file
+        super(CPUTemperature, self).__init__()
+        self.min_temp = min_temp
+        self.max_temp = max_temp
+        self.threshold = threshold
+        self._fire_events()
+
+    def __repr__(self):
+        return '<gpiozero.CPUTemperature temperature=%.2f>' % self.temperature
+
+    @property
+    def temperature(self):
+        """
+        Returns the current CPU temperature in degrees celsius.
+        """
+        with io.open(self.sensor_file, 'r') as f:
+            return float(f.readline().strip()) / 1000
+
+    @property
+    def value(self):
+        """
+        Returns the current CPU temperature as a value between 0.0
+        (representing the *min_temp* value) and 1.0 (representing the
+        *max_temp* value). These default to 0.0 and 100.0 respectively, hence
+        :attr:`value` is :attr:`temperature` divided by 100 by default.
+        """
+        temp_range = self.max_temp - self.min_temp
+        return (self.temperature - self.min_temp) / temp_range
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` when the CPU :attr:`temperature` exceeds the
+        :attr:`threshold`.
+        """
+        return self.temperature > self.threshold
+
+
 class TimeOfDay(InternalDevice):
     """
     Extends :class:`InternalDevice` to provide a device which is active when

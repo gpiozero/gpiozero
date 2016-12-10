@@ -5,6 +5,42 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.3.1 (2016-08-31 ... later)
+====================================
+
+* Fixed hardware SPI support which Dave broke in 1.3.0. Sorry!
+* Some minor docs changes
+
+Release 1.3.0 (2016-08-31)
+==========================
+
+* Added :class:`ButtonBoard` for reading multiple buttons in a single
+  class (`#340`_)
+* Added :class:`Servo` and :class:`AngularServo` classes for controlling
+  simple servo motors (`#248`_)
+* Lots of work on supporting easier use of internal and third-party pin
+  implementations (`#359`_)
+* :class:`Robot` now has a proper :attr:`~Robot.value` attribute (`#305`_)
+* Added :class:`CPUTemperature` as another demo of "internal" devices (`#294`_)
+* A temporary work-around for an issue with :class:`DistanceSensor` was
+  included but a full fix is in the works (`#385`_)
+* More work on the documentation (`#320`_, `#295`_, `#289`_, etc.)
+
+Not quite as much as we'd hoped to get done this time, but we're rushing to
+make a Raspbian freeze. As always, thanks to the community - your suggestions
+and PRs have been brilliant and even if we don't take stuff exactly as is, it's
+always great to see your ideas. Onto 1.4!
+
+.. _#248: https://github.com/RPi-Distro/python-gpiozero/issues/248
+.. _#289: https://github.com/RPi-Distro/python-gpiozero/issues/289
+.. _#294: https://github.com/RPi-Distro/python-gpiozero/issues/294
+.. _#295: https://github.com/RPi-Distro/python-gpiozero/issues/295
+.. _#305: https://github.com/RPi-Distro/python-gpiozero/issues/305
+.. _#320: https://github.com/RPi-Distro/python-gpiozero/issues/320
+.. _#340: https://github.com/RPi-Distro/python-gpiozero/issues/340
+.. _#359: https://github.com/RPi-Distro/python-gpiozero/issues/359
+.. _#385: https://github.com/RPi-Distro/python-gpiozero/issues/385
+
 Release 1.2.0 (2016-04-10)
 ==========================
 

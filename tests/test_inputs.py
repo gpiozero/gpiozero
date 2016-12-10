@@ -10,6 +10,7 @@ str = type('')
 import sys
 import pytest
 from threading import Event
+from functools import partial
 
 from gpiozero.pins.mock import (
     MockPin,
@@ -77,6 +78,20 @@ def test_input_event_deactivated():
         pin.drive_high()
         assert not event.is_set()
         pin.drive_low()
+        assert event.is_set()
+
+def test_input_partial_callback():
+    event = Event()
+    pin = MockPin(2)
+    def foo(a, b):
+        event.set()
+        return a + b
+    bar = partial(foo, 1)
+    baz = partial(bar, 2)
+    with DigitalInputDevice(pin) as device:
+        device.when_activated = baz
+        assert not event.is_set()
+        pin.drive_high()
         assert event.is_set()
 
 def test_input_wait_active():

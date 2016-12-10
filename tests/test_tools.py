@@ -10,6 +10,7 @@ str = type('')
 import pytest
 from math import sin, cos, radians
 from time import time
+from itertools import islice
 
 from gpiozero.tools import *
 try:
@@ -226,6 +227,10 @@ def test_post_periodic_filtered():
     assert list(post_periodic_filtered((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 1, 1)) == [1, 3, 5, 7, 9]
     assert list(post_periodic_filtered((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 1, 2)) == [1, 4, 7, 10]
     assert list(post_periodic_filtered((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 2, 1)) == [1, 2, 4, 5, 7, 8, 10]
+
+def test_alternating_values():
+    assert list(islice(alternating_values(), 5)) == [False, True, False, True, False]
+    assert list(islice(alternating_values(True), 5)) == [True, False, True, False, True]
 
 def test_random_values():
     for _, v in zip(range(1000), random_values()):

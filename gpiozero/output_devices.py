@@ -217,8 +217,8 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for valid
-        pin numbers.
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the LED will operate normally with the
@@ -252,8 +252,8 @@ class Buzzer(DigitalOutputDevice):
         bz.on()
 
     :param int pin:
-        The GPIO pin which the buzzer is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the buzzer is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the buzzer will operate normally with the
@@ -276,8 +276,8 @@ class PWMOutputDevice(OutputDevice):
     Generic output device configured for pulse-width modulation (PWM).
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :doc:`notes` for
-        valid pin numbers.
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
 
     :param bool active_high:
         If ``True`` (the default), the :meth:`on` method will set the GPIO to
@@ -483,7 +483,7 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :doc:`notes` for
+        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -897,3 +897,314 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
+
+
+class Servo(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a PWM-controlled servo
+    motor connected to a GPIO pin.
+
+    Connect a power source (e.g. a battery pack or the 5V pin) to the power
+    cable of the servo (this is typically colored red); connect the ground
+    cable of the servo (typically colored black or brown) to the negative of
+    your battery pack, or a GND pin; connect the final cable (typically colored
+    white or orange) to the GPIO pin you wish to use for controlling the servo.
+
+    The following code will make the servo move between its minimum, maximum,
+    and mid-point positions with a pause between each::
+
+        from gpiozero import Servo
+        from time import sleep
+
+        servo = Servo(17)
+        while True:
+            servo.min()
+            sleep(1)
+            servo.mid()
+            sleep(1)
+            servo.max()
+            sleep(1)
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
+
+    :param float initial_value:
+        If ``0`` (the default), the device's mid-point will be set
+        initially.  Other values between -1 and +1 can be specified as an
+        initial position. ``None`` means to start the servo un-controlled (see
+        :attr:`value`).
+
+    :param float min_pulse_width:
+        The pulse width corresponding to the servo's minimum position. This
+        defaults to 1ms.
+
+    :param float max_pulse_width:
+        The pulse width corresponding to the servo's maximum position. This
+        defaults to 2ms.
+
+    :param float frame_width:
+        The length of time between servo control pulses measured in seconds.
+        This defaults to 20ms which is a common value for servos.
+    """
+    def __init__(
+            self, pin=None, initial_value=0.0,
+            min_pulse_width=1/1000, max_pulse_width=2/1000,
+            frame_width=20/1000):
+        if min_pulse_width >= max_pulse_width:
+            raise ValueError('min_pulse_width must be less than max_pulse_width')
+        if max_pulse_width >= frame_width:
+            raise ValueError('max_pulse_width must be less than frame_width')
+        self._frame_width = frame_width
+        self._min_dc = min_pulse_width / frame_width
+        self._dc_range = (max_pulse_width - min_pulse_width) / frame_width
+        self._min_value = -1
+        self._value_range = 2
+        super(Servo, self).__init__(
+            pwm_device=PWMOutputDevice(pin, frequency=int(1 / frame_width)))
+        try:
+            self.value = initial_value
+        except:
+            self.close()
+            raise
+
+    @property
+    def frame_width(self):
+        """
+        The time between control pulses, measured in seconds.
+        """
+        return self._frame_width
+
+    @property
+    def min_pulse_width(self):
+        """
+        The control pulse width corresponding to the servo's minimum position,
+        measured in seconds.
+        """
+        return self._min_dc * self.frame_width
+
+    @property
+    def max_pulse_width(self):
+        """
+        The control pulse width corresponding to the servo's maximum position,
+        measured in seconds.
+        """
+        return (self._dc_range * self.frame_width) + self.min_pulse_width
+
+    @property
+    def pulse_width(self):
+        """
+        Returns the current pulse width controlling the servo.
+        """
+        if self.pwm_device.pin.frequency is None:
+            return None
+        else:
+            return self.pwm_device.pin.state * self.frame_width
+
+    def min(self):
+        """
+        Set the servo to its minimum position.
+        """
+        self.value = -1
+
+    def mid(self):
+        """
+        Set the servo to its mid-point position.
+        """
+        self.value = 0
+
+    def max(self):
+        """
+        Set the servo to its maximum position.
+        """
+        self.value = 1
+
+    def detach(self):
+        """
+        Temporarily disable control of the servo. This is equivalent to
+        setting :attr:`value` to ``None``.
+        """
+        self.value = None
+
+    def _get_value(self):
+        if self.pwm_device.pin.frequency is None:
+            return None
+        else:
+            return (
+                ((self.pwm_device.pin.state - self._min_dc) / self._dc_range) *
+                self._value_range + self._min_value)
+
+    @property
+    def value(self):
+        """
+        Represents the position of the servo as a value between -1 (the minimum
+        position) and +1 (the maximum position). This can also be the special
+        value ``None`` indicating that the servo is currently "uncontrolled",
+        i.e. that no control signal is being sent. Typically this means the
+        servo's position remains unchanged, but that it can be moved by hand.
+        """
+        result = self._get_value()
+        if result is None:
+            return result
+        else:
+            # NOTE: This round() only exists to ensure we don't confuse people
+            # by returning 2.220446049250313e-16 as the default initial value
+            # instead of 0. The reason _get_value and _set_value are split
+            # out is for descendents that require the un-rounded values for
+            # accuracy
+            return round(result, 14)
+
+    @value.setter
+    def value(self, value):
+        if value is None:
+            self.pwm_device.pin.frequency = None
+        elif -1 <= value <= 1:
+            self.pwm_device.pin.frequency = int(1 / self.frame_width)
+            self.pwm_device.pin.state = (
+                self._min_dc + self._dc_range *
+                ((value - self._min_value) / self._value_range)
+                )
+        else:
+            raise OutputDeviceBadValue(
+                "Servo value must be between -1 and 1, or None")
+
+    @property
+    def is_active(self):
+        return self.value is not None
+
+
+class AngularServo(Servo):
+    """
+    Extends :class:`Servo` and represents a rotational PWM-controlled servo
+    motor which can be set to particular angles (assuming valid minimum and
+    maximum angles are provided to the constructor).
+
+    Connect a power source (e.g. a battery pack or the 5V pin) to the power
+    cable of the servo (this is typically colored red); connect the ground
+    cable of the servo (typically colored black or brown) to the negative of
+    your battery pack, or a GND pin; connect the final cable (typically colored
+    white or orange) to the GPIO pin you wish to use for controlling the servo.
+
+    Next, calibrate the angles that the servo can rotate to. In an interactive
+    Python session, construct a :class:`Servo` instance. The servo should move
+    to its mid-point by default. Set the servo to its minimum value, and
+    measure the angle from the mid-point. Set the servo to its maximum value,
+    and again measure the angle::
+
+        >>> from gpiozero import Servo
+        >>> s = Servo(17)
+        >>> s.min() # measure the angle
+        >>> s.max() # measure the angle
+
+    You should now be able to construct an :class:`AngularServo` instance
+    with the correct bounds::
+
+        >>> from gpiozero import AngularServo
+        >>> s = AngularServo(17, min_angle=-42, max_angle=44)
+        >>> s.angle = 0.0
+        >>> s.angle
+        0.0
+        >>> s.angle = 15
+        >>> s.angle
+        15.0
+
+    .. note::
+
+        You can set *min_angle* greater than *max_angle* if you wish to reverse
+        the sense of the angles (e.g. ``min_angle=45, max_angle=-45``). This
+        can be useful with servos that rotate in the opposite direction to your
+        expectations of minimum and maximum.
+
+    :param int pin:
+        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        for valid pin numbers.
+
+    :param float initial_angle:
+        Sets the servo's initial angle to the specified value. The default is
+        0. The value specified must be between *min_angle* and *max_angle*
+        inclusive. ``None`` means to start the servo un-controlled (see
+        :attr:`value`).
+
+    :param float min_angle:
+        Sets the minimum angle that the servo can rotate to. This defaults to
+        -90, but should be set to whatever you measure from your servo during
+        calibration.
+
+    :param float max_angle:
+        Sets the maximum angle that the servo can rotate to. This defaults to
+        90, but should be set to whatever you measure from your servo during
+        calibration.
+
+    :param float min_pulse_width:
+        The pulse width corresponding to the servo's minimum position. This
+        defaults to 1ms.
+
+    :param float max_pulse_width:
+        The pulse width corresponding to the servo's maximum position. This
+        defaults to 2ms.
+
+    :param float frame_width:
+        The length of time between servo control pulses measured in seconds.
+        This defaults to 20ms which is a common value for servos.
+    """
+    def __init__(
+            self, pin=None, initial_angle=0.0,
+            min_angle=-90, max_angle=90,
+            min_pulse_width=1/1000, max_pulse_width=2/1000,
+            frame_width=20/1000):
+        self._min_angle = min_angle
+        self._angular_range = max_angle - min_angle
+        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        super(AngularServo, self).__init__(
+            pin, initial_value, min_pulse_width, max_pulse_width, frame_width)
+
+    @property
+    def min_angle(self):
+        """
+        The minimum angle that the servo will rotate to when :meth:`min` is
+        called.
+        """
+        return self._min_angle
+
+    @property
+    def max_angle(self):
+        """
+        The maximum angle that the servo will rotate to when :meth:`max` is
+        called.
+        """
+        return self._min_angle + self._angular_range
+
+    @property
+    def angle(self):
+        """
+        The position of the servo as an angle measured in degrees. This will
+        only be accurate if *min_angle* and *max_angle* have been set
+        appropriately in the constructor.
+
+        This can also be the special value ``None`` indicating that the servo
+        is currently "uncontrolled", i.e. that no control signal is being sent.
+        Typically this means the servo's position remains unchanged, but that
+        it can be moved by hand.
+        """
+        result = self._get_value()
+        if result is None:
+            return None
+        else:
+            # NOTE: Why round(n, 12) here instead of 14? Angle ranges can be
+            # much larger than -1..1 so we need a little more rounding to
+            # smooth off the rough corners!
+            return round(
+                self._angular_range *
+                ((result - self._min_value) / self._value_range) +
+                self._min_angle, 12)
+
+    @angle.setter
+    def angle(self, value):
+        if value is None:
+            self.value = None
+        else:
+            self.value = (
+                self._value_range *
+                ((value - self._min_angle) / self._angular_range) +
+                self._min_value)
+

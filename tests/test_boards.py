@@ -548,18 +548,67 @@ def test_traffic_lights():
     green_pin = MockPin(4)
     with TrafficLights(red_pin, amber_pin, green_pin) as board:
         board.red.on()
+        assert board.red.value
+        assert not board.amber.value
+        assert not board.yellow.value
+        assert not board.green.value
         assert red_pin.state
         assert not amber_pin.state
         assert not green_pin.state
+        board.amber.on()
+        assert amber_pin.state
+        board.yellow.off()
+        assert not amber_pin.state
+    with TrafficLights(red=red_pin, yellow=amber_pin, green=green_pin) as board:
+        board.yellow.on()
+        assert not board.red.value
+        assert board.amber.value
+        assert board.yellow.value
+        assert not board.green.value
+        assert not red_pin.state
+        assert amber_pin.state
+        assert not green_pin.state
+        board.amber.off()
+        assert not amber_pin.state
 
 def test_traffic_lights_bad_init():
     with pytest.raises(ValueError):
         TrafficLights()
+    red_pin = MockPin(2)
+    amber_pin = MockPin(3)
+    green_pin = MockPin(4)
+    yellow_pin = MockPin(5)
+    with pytest.raises(ValueError):
+        TrafficLights(red=red_pin, amber=amber_pin, yellow=yellow_pin, green=green_pin)
 
 def test_pi_traffic():
     pins = [MockPin(n) for n in (9, 10, 11)]
     with PiTraffic() as board:
         assert [device.pin for device in board] == pins
+
+def test_pi_stop():
+    with pytest.raises(ValueError):
+        PiStop()
+    with pytest.raises(ValueError):
+        PiStop('E')
+    pins_a = [MockPin(n) for n in (7, 8, 25)]
+    with PiStop('A') as board:
+        assert [device.pin for device in board] == pins_a
+    pins_aplus = [MockPin(n) for n in (21, 20, 16)]
+    with PiStop('A+') as board:
+        assert [device.pin for device in board] == pins_aplus
+    pins_b = [MockPin(n) for n in (10, 9, 11)]
+    with PiStop('B') as board:
+        assert [device.pin for device in board] == pins_b
+    pins_bplus = [MockPin(n) for n in (13, 19, 26)]
+    with PiStop('B+') as board:
+        assert [device.pin for device in board] == pins_bplus
+    pins_c = [MockPin(n) for n in (18, 15, 14)]
+    with PiStop('C') as board:
+        assert [device.pin for device in board] == pins_c
+    pins_d = [MockPin(n) for n in (2, 3, 4)]
+    with PiStop('D') as board:
+        assert [device.pin for device in board] == pins_d
 
 def test_snow_pi():
     pins = [MockPin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]

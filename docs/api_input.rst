@@ -16,14 +16,14 @@ everyday components. Components must be wired up correctly before use in code.
 Button
 ======
 
-.. autoclass:: Button(pin, pull_up=True, bounce_time=None)
+.. autoclass:: Button(pin, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False)
     :members: wait_for_press, wait_for_release, pin, is_pressed, is_held, hold_time, held_time, hold_repeat, pull_up, when_pressed, when_released, when_held
 
 
 Line Sensor (TRCT5000)
 ======================
 
-.. autoclass:: LineSensor(pin)
+.. autoclass:: LineSensor(pin, queue_len=5, sample_rate=100, threshold=0.5, partial=False)
     :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line
 
 

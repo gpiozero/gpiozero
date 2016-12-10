@@ -2,7 +2,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-"A simple interface to everyday GPIO components used with Raspberry Pi"
+"A simple interface to GPIO devices with Raspberry Pi."
 
 if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):
@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.2.0'
+__version__      = '1.3.1'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
@@ -36,7 +36,13 @@ __classifiers__ = [
     "Topic :: System :: Hardware",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.2",
+    "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 __keywords__ = [
@@ -61,6 +67,14 @@ if sys.version_info[:2] == (3, 2):
     __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
+    'gpiozero_pin_factories': [
+        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOPin',
+        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOPin',
+        'RPIOPin    = gpiozero.pins.rpio:RPIOPin',
+        'NativePin  = gpiozero.pins.native:NativePin',
+        'MockPin    = gpiozero.pins.mock:MockPin',
+        'MockPWMPin = gpiozero.pins.mock:MockPWMPin',
+    ],
 }
 
 

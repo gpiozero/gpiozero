@@ -12,6 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
+from collections import OrderedDict
 
 from .exc import (
     DeviceClosed,
@@ -31,7 +32,7 @@ from .output_devices import (
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
-from .mixins import SharedMixin, SourceMixin
+from .mixins import SharedMixin, SourceMixin, HoldMixin
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
@@ -89,12 +90,120 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
             # Simply ignore values for non-output devices
 
 
+class ButtonBoard(HoldMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a generic button board or
+    collection of buttons.
+
+    :param int \*pins:
+        Specify the GPIO pins that the buttons of the board are attached to.
+        You can designate as many pins as necessary.
+
+    :param bool pull_up:
+        If ``True`` (the default), the GPIO pins will be pulled high by
+        default. In this case, connect the other side of the buttons to
+        ground. If ``False``, the GPIO pins will be pulled low by default. In
+        this case, connect the other side of the buttons to 3V3. This
+        parameter can only be specified as a keyword parameter.
+
+    :param float bounce_time:
+        If ``None`` (the default), no software bounce compensation will be
+        performed. Otherwise, this is the length of time (in seconds) that the
+        buttons will ignore changes in state after an initial change. This
+        parameter can only be specified as a keyword parameter.
+
+    :param float hold_time:
+        The length of time (in seconds) to wait after any button is pushed,
+        until executing the :attr:`when_held` handler. Defaults to ``1``. This
+        parameter can only be specified as a keyword parameter.
+
+    :param bool hold_repeat:
+        If ``True``, the :attr:`when_held` handler will be repeatedly executed
+        as long as any buttons remain held, every *hold_time* seconds. If
+        ``False`` (the default) the :attr:`when_held` handler will be only be
+        executed once per hold. This parameter can only be specified as a
+        keyword parameter.
+
+    :param \*\*named_pins:
+        Specify GPIO pins that buttons of the board are attached to,
+        associating each button with a property name. You can designate as
+        many pins as necessary and use any names, provided they're not already
+        in use by something else.
+    """
+    def __init__(self, *args, **kwargs):
+        pull_up = kwargs.pop('pull_up', True)
+        bounce_time = kwargs.pop('bounce_time', None)
+        hold_time = kwargs.pop('hold_time', 1)
+        hold_repeat = kwargs.pop('hold_repeat', False)
+        order = kwargs.pop('_order', None)
+        super(ButtonBoard, self).__init__(
+            *(
+                Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                for pin in args
+                ),
+            _order=order,
+            **{
+                name: Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                for name, pin in kwargs.items()
+                })
+        def get_new_handler(device):
+            def fire_both_events():
+                device._fire_events()
+                self._fire_events()
+            return fire_both_events
+        for button in self:
+            button.pin.when_changed = get_new_handler(button)
+        self._when_changed = None
+        self._last_value = None
+        # Call _fire_events once to set initial state of events
+        self._fire_events()
+        self.hold_time = hold_time
+        self.hold_repeat = hold_repeat
+
+    @property
+    def pull_up(self):
+        """
+        If ``True``, the device uses a pull-up resistor to set the GPIO pin
+        "high" by default.
+        """
+        return self[0].pull_up
+
+    @property
+    def when_changed(self):
+        return self._when_changed
+
+    @when_changed.setter
+    def when_changed(self, value):
+        self._when_changed = self._wrap_callback(value)
+
+    def _fire_changed(self):
+        if self.when_changed:
+            self.when_changed()
+
+    def _fire_events(self):
+        super(ButtonBoard, self)._fire_events()
+        old_value = self._last_value
+        new_value = self._last_value = self.value
+        if old_value is None:
+            # Initial "indeterminate" value; don't do anything
+            pass
+        elif old_value != new_value:
+            self._fire_changed()
+
+
+ButtonBoard.is_pressed = ButtonBoard.is_active
+ButtonBoard.pressed_time = ButtonBoard.active_time
+ButtonBoard.when_pressed = ButtonBoard.when_activated
+ButtonBoard.when_released = ButtonBoard.when_deactivated
+ButtonBoard.wait_for_press = ButtonBoard.wait_for_active
+ButtonBoard.wait_for_release = ButtonBoard.wait_for_inactive
+
+
 class LEDCollection(CompositeOutputDevice):
     """
     Extends :class:`CompositeOutputDevice`. Abstract base class for
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
-
     def __init__(self, *args, **kwargs):
         self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
@@ -536,11 +645,11 @@ class PiLiterBarGraph(LEDBarGraph):
 
 class TrafficLights(LEDBoard):
     """
-    Extends :class:`LEDBoard` for devices containing red, amber, and green
+    Extends :class:`LEDBoard` for devices containing red, yellow, and green
     LEDs.
 
     The following example initializes a device connected to GPIO pins 2, 3,
-    and 4, then lights the amber LED attached to GPIO 3::
+    and 4, then lights the amber (yellow) LED attached to GPIO 3::
 
         from gpiozero import TrafficLights
 
@@ -566,22 +675,45 @@ class TrafficLights(LEDBoard):
         ``None``, each device will be left in whatever state the pin is found
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
+
+    :param int yellow:
+        The GPIO pin that the yellow LED is attached to. This is merely an
+        alias for the ``amber`` parameter - you can't specify both ``amber``
+        and ``yellow``.
     """
     def __init__(self, red=None, amber=None, green=None,
-                 pwm=False, initial_value=False):
-        if not all(p is not None for p in [red, amber, green]):
+                 pwm=False, initial_value=False, yellow=None):
+        if amber is not None and yellow is not None:
+            raise OutputDeviceBadValue(
+                'Only one of amber or yellow can be specified'
+            )
+        devices = OrderedDict((('red', red), ))
+        self._display_yellow = amber is None and yellow is not None
+        if self._display_yellow:
+            devices['yellow'] = yellow
+        else:
+            devices['amber'] = amber
+        devices['green'] = green
+        if not all(p is not None for p in devices.values()):
             raise GPIOPinMissing(
-                'red, amber and green pins must be provided'
+                ', '.join(devices.keys())+' pins must be provided'
             )
         super(TrafficLights, self).__init__(
-            red=red, amber=amber, green=green,
             pwm=pwm, initial_value=initial_value,
-            _order=('red', 'amber', 'green'))
+            _order=devices.keys(),
+            **devices)
+
+    def __getattr__(self, name):
+        if name == 'amber' and self._display_yellow:
+            name = 'yellow'
+        elif name == 'yellow' and not self._display_yellow:
+            name = 'amber'
+        return super(TrafficLights, self).__getattr__(name)
 
 
 class PiTraffic(TrafficLights):
     """
-    Extends :class:`TrafficLights` for the `Low Voltage Labs PI-TRAFFIC`_:
+    Extends :class:`TrafficLights` for the `Low Voltage Labs PI-TRAFFIC`_
     vertical traffic lights board when attached to GPIO pins 9, 10, and 11.
 
     There's no need to specify the pins if the PI-TRAFFIC is connected to the
@@ -611,6 +743,55 @@ class PiTraffic(TrafficLights):
     """
     def __init__(self, pwm=False, initial_value=False):
         super(PiTraffic, self).__init__(9, 10, 11,
+                                        pwm=pwm, initial_value=initial_value)
+
+
+class PiStop(TrafficLights):
+    """
+    Extends :class:`TrafficLights` for the `PiHardware Pi-Stop`_: a vertical
+    traffic lights board.
+
+    The following example turns on the amber LED on a Pi-Stop
+    connected to location ``A+``::
+
+        from gpiozero import PiStop
+
+        traffic = PiStop('A+')
+        traffic.amber.on()
+
+    :param str location:
+        The `location`_ on the GPIO header to which the Pi-Stop is connected.
+        Must be one of: ``A``, ``A+``, ``B``, ``B+``, ``C``, ``D``.
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    .. _PiHardware Pi-Stop: https://pihw.wordpress.com/meltwaters-pi-hardware-kits/pi-stop/
+    .. _location: https://github.com/PiHw/Pi-Stop/blob/master/markdown_source/markdown/Discover-PiStop.md
+    """
+    LOCATIONS = {
+        'A': (7, 8, 25),
+        'A+': (21, 20, 16),
+        'B': (10, 9, 11),
+        'B+': (13, 19, 26),
+        'C': (18, 15, 14),
+        'D': (2, 3, 4),
+    }
+
+    def __init__(self, location=None, pwm=False, initial_value=False):
+        gpios = self.LOCATIONS.get(location, None)
+        if gpios is None:
+            raise ValueError('location must be one of: %s' %
+                             ', '.join(sorted(self.LOCATIONS.keys())))
+        super(PiStop, self).__init__(*gpios,
                                         pwm=pwm, initial_value=initial_value)
 
 

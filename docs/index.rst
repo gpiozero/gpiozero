@@ -8,6 +8,7 @@ Table of Contents
 
     recipes
     notes
+    contributing
     api_input
     api_output
     api_spi
@@ -19,3 +20,4 @@ Table of Contents
     api_exc
     changelog
     license
+

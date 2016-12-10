@@ -12,6 +12,8 @@ digraph classes {
     LEDBarGraph->LED;
     LEDBarGraph->PWMLED;
 
+    ButtonBoard->Button;
+
     TrafficLightsBuzzer->TrafficLights;
     TrafficLightsBuzzer->Buzzer;
     TrafficLightsBuzzer->Button;
@@ -19,4 +21,6 @@ digraph classes {
     Robot->Motor;
     Motor->DigitalOutputDevice;
     Motor->PWMOutputDevice;
+
+    Servo->PWMOutputDevice;
 }

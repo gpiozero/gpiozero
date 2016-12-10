@@ -37,28 +37,21 @@ You can change the default pin implementation by over-writing the
     # This will now use NativePin instead of RPiGPIOPin
     led = LED(16)
 
-``pin_factory`` is simply a callable that accepts a single argument: the number
-of the pin to be constructed (this prototype *may* be expanded in future). This
-means you can define it as a function that provides additional parameters to an
-underlying class. For example, to default to creating pins with
-:class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``::
+``pin_factory`` is a concrete descendent of the abstract :class:`Pin` class.
+The descendent may take additional parameters in its constructor provided they
+are optional; GPIO Zero will expect to be able to construct instances with
+nothing more than an integer pin number.
 
-    from gpiozero.pins.pigpiod import PiGPIOPin
-    import gpiozero.devices
+However, the descendent may take default information from additional sources.
+For example, to default to creating pins with
+:class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``
+you can set the :envvar:`PIGPIO_ADDR` environment variable when running your
+script::
 
-    def my_pin_factory(number):
-        return PiGPIOPin(number, host='remote-pi')
+    $ PIGPIO_ADDR=remote-pi python my_script.py
 
-    gpiozero.devices.pin_factory = my_pin_factory
-
-    from gpiozero import TrafficLights
-
-    # This will now use pins on remote-pi (assuming it has the
-    # pigpiod daemon installed and running)
-    tl = TrafficLights(13, 19, 26)
-
-Alternatively, instead of passing an integer to the device constructor, you
-can pass an object derived from :class:`Pin` itself::
+It is worth noting that instead of passing an integer to device constructors,
+you can pass an object derived from :class:`Pin` itself::
 
     from gpiozero.pins.native import NativePin
     from gpiozero import LED
@@ -121,6 +114,13 @@ Abstract Pin
     :members:
 
 
+Local Pin
+=========
+
+.. autoclass:: LocalPin
+    :members:
+
+
 Utilities
 =========
 
@@ -133,6 +133,8 @@ functions and classes can be used to query this database:
 .. autofunction:: pi_info
 
 .. autoclass:: PiBoardInfo
+
+.. autoclass:: HeaderInfo
 
 .. autoclass:: PinInfo
 

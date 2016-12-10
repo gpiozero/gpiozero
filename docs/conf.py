@@ -2,6 +2,7 @@
 
 import sys
 import os
+from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 import setup as _setup
@@ -52,12 +53,13 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 master_doc = 'index'
 project = _setup.__project__.title()
-copyright = '2015 %s' % _setup.__author__
+copyright = '2015-%s %s' % (datetime.now().year, _setup.__author__)
 version = _setup.__version__
 release = _setup.__version__
 #language = None
 #today_fmt = '%B %d, %Y'
 exclude_patterns = ['_build']
+highlight_language='python3'
 #default_role = None
 #add_function_parentheses = True
 #add_module_names = True
@@ -73,7 +75,8 @@ autodoc_member_order = 'groupwise'
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3.4', None),
+    'python': ('https://docs.python.org/3.5', None),
+    'picamera': ('https://picamera.readthedocs.io/en/latest', None),
     }
 
 # -- Options for HTML output ----------------------------------------------
