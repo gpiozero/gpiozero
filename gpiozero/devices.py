@@ -7,6 +7,7 @@ from __future__ import (
 nstr = str
 str = type('')
 
+import os
 import atexit
 import weakref
 from collections import namedtuple
@@ -14,12 +15,16 @@ from itertools import chain
 from types import FunctionType
 from threading import RLock
 
+import pkg_resources
+
 from .threads import _threads_shutdown
+from .pins import _pins_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
     )
 from .exc import (
+    BadPinFactory,
     DeviceClosed,
     CompositeDeviceBadName,
     CompositeDeviceBadOrder,
@@ -30,25 +35,32 @@ from .exc import (
     )
 from .compat import frozendict
 
-# Get a pin implementation to use as the default; we prefer RPi.GPIO's here
-# as it supports PWM, and all Pi revisions. If no third-party libraries are
-# available, however, we fall back to a pure Python implementation which
-# supports platforms like PyPy
-from .pins import _pins_shutdown
-try:
-    from .pins.rpigpio import RPiGPIOPin
-    pin_factory = RPiGPIOPin
-except ImportError:
-    try:
-        from .pins.rpio import RPIOPin
-        pin_factory = RPIOPin
-    except ImportError:
-        try:
-            from .pins.pigpiod import PiGPIOPin
-            pin_factory = PiGPIOPin
-        except ImportError:
-            from .pins.native import NativePin
-            pin_factory = NativePin
+
+def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+    group = 'gpiozero_pin_factories'
+    if name is None:
+        # If no factory is explicitly specified, try various names in
+        # "preferred" order. Note that in this case we only select from
+        # gpiozero distribution so without explicitly specifying a name (via
+        # the environment) it's impossible to auto-select a factory from
+        # outside the base distribution
+        #
+        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
+        # no third-party libraries are available, however, we fall back to a
+        # pure Python implementation which supports platforms like PyPy
+        dist = pkg_resources.get_distribution('gpiozero')
+        for name in ('RPiGPIOPin', 'RPIOPin', 'PiGPIOPin', 'NativePin'):
+            try:
+                return pkg_resources.load_entry_point(dist, group, name)
+            except ImportError:
+                pass
+        raise BadPinFactory('Unable to locate any default pin factory!')
+    else:
+        for factory in pkg_resources.iter_entry_points(group, name):
+            return factory.load()
+        raise BadPinFactory('Unable to locate pin factory "%s"' % name)
+
+pin_factory = _default_pin_factory()
 
 
 _PINS = set()
@@ -218,7 +230,7 @@ class Device(ValuesMixin, GPIOBase):
     """
     Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
     etc. This is the base class of the device hierarchy. It defines the
-    basic services applicable to all devices (specifically thhe :attr:`is_active`
+    basic services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
     """
     def __repr__(self):
@@ -309,7 +321,7 @@ class CompositeDevice(Device):
                     len(self) - len(self._named)
                     )
         except DeviceClosed:
-            return "<gpiozero.%s object closed>"
+            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
 
     def __len__(self):
         return len(self._all)

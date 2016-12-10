@@ -25,7 +25,14 @@ LEDBoard
 LEDBarGraph
 ===========
 
-.. autoclass:: LEDBarGraph(\*pins, initial_value=0)
+.. autoclass:: LEDBarGraph(\*pins, pwm=False, active_high=True, initial_value=0)
+    :inherited-members:
+    :members:
+
+ButtonBoard
+===========
+
+.. autoclass:: ButtonBoard(\*pins, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False, \*\*named_pins)
     :inherited-members:
     :members:
 
@@ -61,6 +68,13 @@ PI-TRAFFIC
 ==========
 
 .. autoclass:: PiTraffic
+    :inherited-members:
+    :members:
+
+Pi-Stop
+=======
+
+.. autoclass:: PiStop
     :inherited-members:
     :members:
 
