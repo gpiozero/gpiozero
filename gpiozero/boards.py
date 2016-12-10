@@ -29,6 +29,7 @@ from .output_devices import (
     RGBLED,
     Buzzer,
     Motor,
+    PhaseEnableMotor,
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
@@ -1077,6 +1078,106 @@ class CamJamKitRobot(Robot):
 
     def __init__(self):
         super(CamJamKitRobot, self).__init__((9, 10), (7, 8))
+
+
+class PhaseEnableRobot(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` to represent a dual-motor robot based
+    around a Pololu Phase/Enable motor board.
+
+    This class is constructed with two tuples representing the power and
+    direction pins of the left and right controllers respectively. By default,
+    the left motor's controller is connected to GPIOs 12 and 5, while the
+    right motor's controller is connected to GPIOs 13 and 6 so the following
+    example will drive the robot forward::
+
+        from gpiozero import PhaseEnableRobot
+
+        robot = PhaseEnableRobot()
+        robot.forward()
+
+    """
+    def __init__(self):
+        super(PhaseEnableRobot, self).__init__(
+            left_motor = PhaseEnableMotor(12, 5),
+            right_motor = PhaseEnableMotor(13, 6),
+            _order = ('left_motor', 'right_motor'))
+
+    @property
+    def value(self):
+        """
+        Returns a tuple of two floating point values (-1 to 1) representing the
+        speeds of the robot's two motors (left and right). This property can
+        also be set to alter the speed of both motors.
+        """
+        return super(PhaseEnableRobot, self).value
+
+    @value.setter
+    def value(self, value):
+        self.left_motor.value, self.right_motor.value = value
+
+    def forward(self, speed=1):
+        """
+        Drive the robot forward by running both motors forward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.forward(speed)
+        self.right_motor.forward(speed)
+
+    def backward(self, speed=1):
+        """
+        Drive the robot backward by running both motors backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.backward(speed)
+        self.right_motor.backward(speed)
+
+    def left(self, speed=1):
+        """
+        Make the robot turn left by running the right motor forward and left
+        motor backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.right_motor.forward(speed)
+        self.left_motor.backward(speed)
+
+    def right(self, speed=1):
+        """
+        Make the robot turn right by running the left motor forward and right
+        motor backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.forward(speed)
+        self.right_motor.backward(speed)
+
+    def reverse(self):
+        """
+        Reverse the robot's current motor directions. If the robot is currently
+        running full speed forward, it will run full speed backward. If the
+        robot is turning left at half-speed, it will turn right at half-speed.
+        If the robot is currently stopped it will remain stopped.
+        """
+        self.left_motor.value = -self.left_motor.value
+        self.right_motor.value = -self.right_motor.value
+
+    def stop(self):
+        """
+        Stop the robot.
+        """
+        self.left_motor.stop()
+        self.right_motor.stop()
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
