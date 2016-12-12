@@ -181,10 +181,10 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_blink(self):
-        if self._controller:
+        if getattr(self, '_controller', None):
             self._controller._stop_blink(self)
             self._controller = None
-        if self._blink_thread:
+        if getattr(self, '_blink_thread', None):
             self._blink_thread.stop()
             self._blink_thread = None
 
@@ -570,7 +570,7 @@ class RGBLED(SourceMixin, Device):
     blue = _led_property(2)
 
     def close(self):
-        if self._leds:
+        if getattr(self, '_leds', None):
             self._stop_blink()
             for led in self._leds:
                 led.close()

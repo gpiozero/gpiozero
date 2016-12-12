@@ -205,7 +205,6 @@ class LEDCollection(CompositeOutputDevice):
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
     def __init__(self, *args, **kwargs):
-        self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', False)
@@ -291,6 +290,7 @@ class LEDBoard(LEDCollection):
         create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
+        self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
         super(LEDBoard, self).__init__(*args, **kwargs)
@@ -372,12 +372,13 @@ class LEDBoard(LEDCollection):
 
     def _stop_blink(self, led=None):
         if led is None:
-            if self._blink_thread:
+            if getattr(self, '_blink_thread', None):
                 self._blink_thread.stop()
                 self._blink_thread = None
         else:
-            with self._blink_lock:
-                self._blink_leds.remove(led)
+            if hasattr(self, '_blink_lock') and hasattr(self, '_blink_leds'):
+                with self._blink_lock:
+                    self._blink_leds.remove(led)
 
     def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
         """
@@ -1088,7 +1089,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
                 _order=('mode', 'enable'))
 
     def close(self):
-        if self._lock:
+        if getattr(self, '_lock', None):
             with self._lock:
                 super(_EnergenieMaster, self).close()
             self._lock = None
@@ -1153,7 +1154,7 @@ class Energenie(SourceMixin, Device):
             self.off()
 
     def close(self):
-        if self._master:
+        if getattr(self, '_master', None):
             m = self._master
             self._master = None
             m.close()

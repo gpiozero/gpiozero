@@ -31,7 +31,7 @@ class SPIDevice(Device):
         self._spi = SPI(**spi_args)
 
     def close(self):
-        if self._spi:
+        if getattr(self, '_spi', None):
             s = self._spi
             self._spi = None
             s.close()

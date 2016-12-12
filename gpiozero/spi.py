@@ -43,7 +43,7 @@ class SPIHardwareInterface(Device):
         self._device.max_speed_hz = 500000
 
     def close(self):
-        if self._device:
+        if getattr(self, '_device', None):
             try:
                 self._device.close()
             finally:
@@ -142,7 +142,7 @@ class SPISoftwareBus(SharedMixin, Device):
 
     def close(self):
         super(SPISoftwareBus, self).close()
-        if self.lock:
+        if getattr(self, 'lock', None):
             with self.lock:
                 if self.miso is not None:
                     self.miso.close()
@@ -205,7 +205,7 @@ class SPISoftwareInterface(OutputDevice):
             raise
 
     def close(self):
-        if self._bus:
+        if getattr(self, '_bus', None):
             self._bus.close()
             self._bus = None
         super(SPISoftwareInterface, self).close()

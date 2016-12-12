@@ -142,7 +142,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
 
     def close(self):
         try:
-            self._queue.stop()
+            if hasattr(self, '_queue'):
+                self._queue.stop()
         except AttributeError:
             # If the queue isn't initialized (it's None) ignore the error
             # because we're trying to close anyway
@@ -605,7 +606,8 @@ class DistanceSensor(SmoothedInputDevice):
 
     def close(self):
         try:
-            self._trigger.close()
+            if hasattr(self, '_trigger'):
+                self._trigger.close()
         except AttributeError:
             if self._trigger is not None:
                 raise
