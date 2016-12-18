@@ -7,7 +7,7 @@ Pinout
 
 The gpiozero package contains a database of information about the various
 revisions of Raspberry Pi. This is queried by the ``pinout`` command-line
-tool to write details of the GPIO pins available.
+tool to output details of the GPIO pins available.
 
 Unless specified, the revision of the current device will be detected. A
 particular revision may be selected with the --revision command-line

@@ -45,7 +45,7 @@ def parse_args(args):
     except argparse.ArgumentError as ex:
         print('Error parsing arguments.')
         parser.error(str(ex.message))
-        exit(-1)
+        sys.exit(1)
     return args
 
 
@@ -57,7 +57,7 @@ def main():
             pi_info().pprint(color=args.color)
         except IOError:
             print('This device is not a Raspberry Pi')
-            exit(2)
+            sys.exit(1)
     else:
         pi_info(args.revision).pprint(color=args.color)
 
