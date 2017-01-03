@@ -219,9 +219,10 @@ class NativePin(LocalPin):
             try:
                 cls.PI_INFO.physical_pin('GPIO%d' % number)
             except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
+                if PinNonPhysical.printWarnings:
+                    warnings.warn(
+                        PinNonPhysical(
+                            'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._func_offset = self._MEM.GPFSEL_OFFSET + (number // 10)
             self._func_shift = (number % 10) * 3
