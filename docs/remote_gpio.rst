@@ -30,7 +30,7 @@ or another distribution, you'll need to install pigpio::
 Then you just need to enable **Remote GPIO** in the Raspberry Pi configuration
 tool:
 
-    IMAGE
+.. image:: images/raspi-config.png
 
 (Alternatively, use ``sudo raspi-config`` on the command line)
 
