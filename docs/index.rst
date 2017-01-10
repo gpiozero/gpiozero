@@ -7,7 +7,6 @@ Table of Contents
     :maxdepth: 2
 
     recipes
-    recipes_remote_gpio
     notes
     contributing
     api_input
@@ -19,7 +18,9 @@ Table of Contents
     api_tools
     api_pins
     api_exc
-    remote_gpio
     source_values
+    remote_gpio
+    recipes_advanced
+    recipes_remote_gpio
     changelog
     license
