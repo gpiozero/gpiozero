@@ -35,7 +35,6 @@ manually (e.g. by pressing Ctrl+C). Similarly, when setting up callbacks on
 button presses or other input devices, the script needs to be running for the
 events to be detected::
 
-
     from gpiozero import Button
     from signal import pause
 
@@ -93,3 +92,7 @@ the ``pip`` utility. This can be done with the following command in Raspbian::
 
     $ sudo apt-get install python-pip
 
+Alternatively, install pip with `get-pip`_.
+
+
+.. get_pip: https://pip.pypa.io/en/stable/installing/
