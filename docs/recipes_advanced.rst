@@ -64,3 +64,6 @@ run the following commands::
 
     On the Pi 3B the LEDs are controlled by a GPIO expander which is not
     accessible from gpiozero (yet).
+
+
+.. _travispy: https://travispy.readthedocs.io/

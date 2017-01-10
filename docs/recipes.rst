@@ -386,7 +386,6 @@ Continue to:
 * :doc:`recipes_remote_gpio`
 
 
-.. _travispy: https://travispy.readthedocs.io/
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
