@@ -2686,7 +2686,7 @@ class MultiSevenSegmentDisplay(SevenSegmentDisplay):
             value may need to be modified depending on the display.
         """
         self._stop_display()
-        message = self._format_message(message, align_left)
+        message = self._format_message(str(message), align_left)
         self._display_thread = GPIOThread(
             target=self._display, args=(message, align_left, refresh_delay)
         )
