@@ -838,7 +838,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # uuuuuuuu - Unused
             # F        - New flag (1=valid new-style revision, 0=old-style)
             # MMM      - Memory size (0=256, 1=512, 2=1024)
-            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
+            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
             # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero, 10=CM3)
             # RRRR     - Revision (0, 1, 2, etc.)
@@ -862,17 +862,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                         }[revision & 0x0f]
                 else:
                     pcb_revision = '1.%d' % (revision & 0x0f)
-                released = {
-                    'A':    '2013Q1',
-                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-                    'A+':   '2014Q4',
-                    'B+':   '2014Q3',
-                    '2B':   '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
-                    'CM':   '2014Q2',
-                    '3B':   '2016Q1',
-                    'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
-                    'CM3':   '2017Q1',
-                    }[model]
                 soc = {
                     0: 'BCM2835',
                     1: 'BCM2836',
@@ -882,12 +871,24 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'Sony',
                     1: 'Egoman',
                     2: 'Embest',
+                    3: 'Sony Japan',
                     }[(revision & 0xf0000) >> 16]
                 memory = {
                     0: 256,
                     1: 512,
                     2: 1024,
                     }[(revision & 0x700000) >> 20]
+                released = {
+                    'A':    '2013Q1',
+                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                    'A+':   '2014Q4',
+                    'B+':   '2014Q3',
+                    '2B':   '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
+                    'CM':   '2014Q2',
+                    '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2017Q4',
+                    'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                    'CM3':   '2017Q1',
+                    }[model]
                 storage = {
                     'A': 'SD',
                     'B': 'SD',
