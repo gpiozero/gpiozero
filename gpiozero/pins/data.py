@@ -846,7 +846,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                         0: '1.0', # is this right?
                         1: '1.0',
                         2: '2.0',
-                        }[revcode_revision]
+                        }.get(revcode_revision, 'Unknown')
                 else:
                     pcb_revision = '1.%d' % revcode_revision
                 released = {
@@ -868,12 +868,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'Sony',
                     1: 'Egoman',
                     2: 'Embest',
-                    }[revcode_manufacturer]
+                    }.get(revcode_manufacturer, 'Unknown')
                 memory = {
                     0: 256,
                     1: 512,
                     2: 1024,
-                    }[revcode_memory]
+                    }.get(revcode_memory, 0)
                 storage = {
                     'A': 'SD',
                     'B': 'SD',
