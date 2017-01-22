@@ -168,7 +168,7 @@ ZERO13_BOARD = """\
 
 CM_BOARD = """\
 {style:white on green}+-----------------------------------------------------------------------------------------------------------------------+{style:reset}
-{style:white on green}| Raspberry Pi Compute Module                                                                                           |{style:reset}
+{style:white on green}| Raspberry Pi Compute Module %d                                                                                         |{style:reset}
 {style:white on green}|                                                                                                                       |{style:reset}
 {style:white on green}| You were expecting more detail? Sorry, the Compute Module's a bit hard to do right now!                               |{style:reset}
 {style:white on green}|                                                                                                                       |{style:reset}
@@ -344,6 +344,23 @@ CM_SODIMM = {
     199: ('VBAT',           False), 200: ('VBAT',           False),
     }
 
+CM3_SODIMM = CM_SODIMM.copy()
+CM3_SODIMM.update({
+    4:  ('NC / SDX VREF',  False),
+    6:  ('NC / SDX VREF',  False),
+    8:  (GND,              False),
+    10: ('NC / SDX CLK',   False),
+    12: ('NC / SDX CMD',   False),
+    14: (GND,              False),
+    16: ('NC / SDX D0',    False),
+    18: ('NC / SDX D1',    False),
+    20: (GND,              False),
+    22: ('NC / SDX D2',    False),
+    24: ('NC / SDX D3',    False),
+    88: ('HDMI HPD N 1V8', False),
+    90: ('EMMC EN N 1V8',  False),
+    })
+
 # The following data is sourced from a combination of the following locations:
 #
 # http://elinux.org/RPi_HardwareHistory
@@ -364,10 +381,10 @@ PI_REVISIONS = {
     0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
     0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
     0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
-    0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
+    0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD % 1, ),
     0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
     0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},                BPLUS_BOARD,  ),
-    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD % 1  ),
     0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},                APLUS_BOARD,  ),
     }
 
@@ -703,7 +720,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     .. attribute:: model
 
         A string containing the model of the Pi (for example, "B", "B+", "A+",
-        "2B", "CM" (for the Compute Module), or "Zero").
+        "2B", "CM" (for the Compute Module), "CM3", or "Zero").
 
     .. attribute:: pcb_revision
 
@@ -823,7 +840,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # MMM      - Memory size (0=256, 1=512, 2=1024)
             # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
-            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
+            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero, 10=CM3)
             # RRRR     - Revision (0, 1, 2, etc.)
             try:
                 model = {
@@ -835,6 +852,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     6: 'CM',
                     8: '3B',
                     9: 'Zero',
+                    10: 'CM3',
                     }[(revision & 0xff0) >> 4]
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -853,6 +871,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':   '2014Q2',
                     '3B':   '2016Q1',
                     'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                    'CM3':   '2017Q1',
                     }[model]
                 soc = {
                     0: 'BCM2835',
@@ -873,6 +892,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'A': 'SD',
                     'B': 'SD',
                     'CM': 'eMMC',
+                    'CM3': 'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
                     'A':    1,
@@ -880,12 +900,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero': 1,
                     'B':    2,
                     'CM':   1,
+                    'CM3':   1,
                     }.get(model, 4)
                 ethernet = {
                     'A':    0,
                     'A+':   0,
                     'Zero': 0,
                     'CM':   0,
+                    'CM3':   0,
                     }.get(model, 1)
                 wifi = {
                     '3B': True,
@@ -896,6 +918,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 csi = {
                     'Zero': 0 if pcb_revision == '1.2' else 1,
                     'CM':   2,
+                    'CM3':   2,
                     }.get(model, 1)
                 dsi = {
                     'Zero': 0,
@@ -904,12 +927,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'A':  {'P1': REV2_P1, 'P5': REV2_P5},
                     'B':  {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
                     'CM': {'SODIMM': CM_SODIMM},
+                    'CM3': {'SODIMM': CM3_SODIMM},
                     }.get(model, {'P1': PLUS_P1})
                 board = {
                     'A':    A_BOARD,
                     'B':    REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
                     'A+':   APLUS_BOARD,
-                    'CM':   CM_BOARD,
+                    'CM':   CM_BOARD % 1,
+                    'CM3':   CM_BOARD % 3,
                     'Zero': ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
