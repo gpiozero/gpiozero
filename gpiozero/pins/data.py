@@ -825,6 +825,11 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
             # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
             # RRRR     - Revision (0, 1, 2, etc.)
+            revcode_memory = (revision & 0x700000) >> 20
+            revcode_manufacturer = (revision & 0xf0000) >> 16
+            revcode_processor = (revision & 0xf000) >> 12
+            revcode_type = (revision & 0xff0) >> 4
+            revcode_revision = (revision & 0x0f)
             try:
                 model = {
                     0: 'A',
@@ -835,15 +840,15 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     6: 'CM',
                     8: '3B',
                     9: 'Zero',
-                    }[(revision & 0xff0) >> 4]
+                    }[revcode_type]
                 if model in ('A', 'B'):
                     pcb_revision = {
                         0: '1.0', # is this right?
                         1: '1.0',
                         2: '2.0',
-                        }[revision & 0x0f]
+                        }[revcode_revision]
                 else:
-                    pcb_revision = '1.%d' % (revision & 0x0f)
+                    pcb_revision = '1.%d' % revcode_revision
                 released = {
                     'A':    '2013Q1',
                     'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
@@ -858,17 +863,17 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'BCM2835',
                     1: 'BCM2836',
                     2: 'BCM2837',
-                    }[(revision & 0xf000) >> 12]
+                    }[revcode_processor]
                 manufacturer = {
                     0: 'Sony',
                     1: 'Egoman',
                     2: 'Embest',
-                    }[(revision & 0xf0000) >> 16]
+                    }[revcode_manufacturer]
                 memory = {
                     0: 256,
                     1: 512,
                     2: 1024,
-                    }[(revision & 0x700000) >> 20]
+                    }[revcode_memory]
                 storage = {
                     'A': 'SD',
                     'B': 'SD',
