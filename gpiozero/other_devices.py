@@ -147,6 +147,92 @@ class CPUTemperature(InternalDevice):
         """
         return self.temperature > self.threshold
 
+class LoadAverage(InternalDevice):
+    """
+    Extends :class:`InternalDevice` to provide a device which is active when
+    the CPU load average exceeds the *threshold* value.
+
+    The following example plots the load average on an LED bar graph::
+
+        from gpiozero import LEDBarGraph, LoadAverage
+        from signal import pause
+
+        la = LoadAverage(min_load_average=0, max_load_average=2)
+        graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
+
+        graph.source = la.values
+
+        pause()
+
+    :param str load_average_file:
+        The file from which to read the load average. This defaults to the
+        proc file :file:`/proc/loadavg`. Whatever file is specified is expected
+        to contain three space-separated load averages at the beginning of the
+        file, representing 1 minute, 5 minute and 15 minute averages
+        respectively.
+
+    :param float min_load_average:
+        The load average at which :attr:`value` will read 0.0. This defaults to
+        0.0.
+
+    :param float max_load_average:
+        The load average at which :attr:`value` will read 1.0. This defaults to
+        1.0.
+
+    :param float threshold:
+        The load average above which the device will be considered "active".
+        This defaults to 0.8.
+
+    :param int minutes:
+        The number of minutes over which to average the load. Must be 1, 5 or
+        15.
+    """
+    def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
+        max_load_average=1.0, threshold=0.8, minutes=1):
+        self.load_average_file = load_average_file
+        super(InternalDevice, self).__init__()
+        self.min_load_average = min_load_average
+        self.max_load_average = max_load_average
+        self.threshold = threshold
+        if minutes not in (1, 5, 15):
+            raise ValueError('minutes must be 1, 5 or 15')
+        self._load_average_file_column = {
+            1: 0,
+            5: 1,
+            15: 2,
+        }[minutes]
+        self._fire_events()
+
+    def __repr__(self):
+        return '<gpiozero.LoadAverage load average=%.2f>' % self.load_average
+
+    @property
+    def load_average(self):
+        """
+        Returns the current load average
+        """
+        with io.open(self.load_average_file, 'r') as f:
+            file_contents = f.readline().strip().split()
+            return float(file_contents[self._load_average_file_column])
+
+    @property
+    def value(self):
+        """
+        Returns the current load average as a value between 0.0 (representing
+        the *min_load_average* value) and 1.0 (representing the
+        *max_load_average* value). These default to 0.0 and 1.0 respectively.
+        """
+        load_average_range = self.max_load_average - self.min_load_average
+        return (self.load_average - self.min_load_average) / load_average_range
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` when the :attr:`load_average` exceeds the
+        :attr:`threshold`.
+        """
+        return self.load_average > self.threshold
+
 
 class TimeOfDay(InternalDevice):
     """
@@ -240,4 +326,3 @@ class TimeOfDay(InternalDevice):
             return self.start_time <= datetime.utcnow().time() <= self.end_time
         else:
             return self.start_time <= datetime.now().time() <= self.end_time
-
