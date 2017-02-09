@@ -394,12 +394,18 @@ class MotionSensor(SmoothedInputDevice):
         :attr:`~SmoothedInputDevice.is_active` until the internal queue has
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
+
+    :param bool pull_up:
+        If ``False`` (the default), the GPIO pin will be pulled low by default.
+        In this case, connect the other side of the button to 3V3. If
+        ``True``, the GPIO pin will be pulled high by default. In this case,
+        connect the other side of the button to ground.
     """
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
-            partial=False):
+            partial=False, pull_up=False):
         super(MotionSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
+            pin, pull_up, threshold=threshold,
             queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
         )
         try:
