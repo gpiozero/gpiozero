@@ -397,15 +397,15 @@ class MotionSensor(SmoothedInputDevice):
 
     :param bool pull_up:
         If ``False`` (the default), the GPIO pin will be pulled low by default.
-        In this case, connect the other side of the button to 3V3. If
+        In this case, connect the other side of the sensor to 3V3. If
         ``True``, the GPIO pin will be pulled high by default. In this case,
-        connect the other side of the button to ground.
+        connect the other side of the sensor to ground.
     """
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
             partial=False, pull_up=False):
         super(MotionSensor, self).__init__(
-            pin, pull_up, threshold=threshold,
+            pin, pull_up=pull_up, threshold=threshold,
             queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
         )
         try:
