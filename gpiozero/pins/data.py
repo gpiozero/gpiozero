@@ -166,6 +166,15 @@ ZERO13_BOARD = """\
 {style:black on white}---+|hdmi|{style:white on green} {style:on black}+----+{style:on green} {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
+ZERO_W_BOARD = """\
+{style:white on green}.-------------------------.{style:reset}
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}   {style:black on white}|c{style:reset}
+{style:black on white}---+{style:white on green}      {style:on black}+----+{style:on green}{style:bold}PiZero W{style:normal} {style:black on white}|s{style:reset}
+{style:black on white} sd|{style:white on green}      {style:on black}|SoC |{style:on green} {style:bold}V{pcb_revision:3s}{style:normal}    {style:black on white}|i{style:reset}
+{style:black on white}---+|hdmi|{style:white on green}{style:on black}+----+{style:on green}  {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
+{style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
+
 CM_BOARD = """\
 {style:white on green}+-----------------------------------------------------------------------------------------------------------------------+{style:reset}
 {style:white on green}| Raspberry Pi Compute Module %d                                                                                         |{style:reset}
@@ -720,7 +729,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     .. attribute:: model
 
         A string containing the model of the Pi (for example, "B", "B+", "A+",
-        "2B", "CM" (for the Compute Module), "CM3", or "Zero").
+        "2B", "CM" (for the Compute Module), "CM3", "Zero" or "Zero W").
 
     .. attribute:: pcb_revision
 
@@ -840,7 +849,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # MMM      - Memory size (0=256, 1=512, 2=1024)
             # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
-            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero, 10=CM3)
+            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero, 10=CM3, 12=Zero W)
             # RRRR     - Revision (0, 1, 2, etc.)
             try:
                 model = {
@@ -853,6 +862,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     8: '3B',
                     9: 'Zero',
                     10: 'CM3',
+                    12: 'Zero W',
                     }[(revision & 0xff0) >> 4]
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -887,6 +897,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':   '2014Q2',
                     '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2017Q4',
                     'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                    'Zero W': '2017Q1',
                     'CM3':   '2017Q1',
                     }[model]
                 storage = {
@@ -899,6 +910,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'A':    1,
                     'A+':   1,
                     'Zero': 1,
+                    'Zero W': 1,
                     'B':    2,
                     'CM':   1,
                     'CM3':   1,
@@ -907,22 +919,27 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'A':    0,
                     'A+':   0,
                     'Zero': 0,
+                    'Zero W': 0,
                     'CM':   0,
                     'CM3':   0,
                     }.get(model, 1)
                 wifi = {
                     '3B': True,
+                    'Zero W': True,
                     }.get(model, False)
                 bluetooth = {
                     '3B': True,
+                    'Zero W': True,
                     }.get(model, False)
                 csi = {
                     'Zero': 0 if pcb_revision == '1.2' else 1,
+                    'Zero W': 1,
                     'CM':   2,
                     'CM3':   2,
                     }.get(model, 1)
                 dsi = {
                     'Zero': 0,
+                    'Zero W': 0,
                     }.get(model, csi)
                 headers = {
                     'A':  {'P1': REV2_P1, 'P5': REV2_P5},
@@ -937,6 +954,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':   CM_BOARD % 1,
                     'CM3':   CM_BOARD % 3,
                     'Zero': ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                    'Zero W': ZERO_W_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
