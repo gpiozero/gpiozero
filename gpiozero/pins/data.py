@@ -853,14 +853,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # RRRR     - Revision (0, 1, 2, etc.)
             try:
                 model = {
-                    0: 'A',
-                    1: 'B',
-                    2: 'A+',
-                    3: 'B+',
-                    4: '2B',
-                    6: 'CM',
-                    8: '3B',
-                    9: 'Zero',
+                    0:  'A',
+                    1:  'B',
+                    2:  'A+',
+                    3:  'B+',
+                    4:  '2B',
+                    6:  'CM',
+                    8:  '3B',
+                    9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
                     }[(revision & 0xff0) >> 4]
@@ -889,71 +889,71 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     2: 1024,
                     }[(revision & 0x700000) >> 20]
                 released = {
-                    'A':    '2013Q1',
-                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-                    'A+':   '2014Q4',
-                    'B+':   '2014Q3',
-                    '2B':   '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
-                    'CM':   '2014Q2',
-                    '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2017Q4',
-                    'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                    'A':      '2013Q1',
+                    'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                    'A+':     '2014Q4',
+                    'B+':     '2014Q3',
+                    '2B':     '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
+                    'CM':     '2014Q2',
+                    '3B':     '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2017Q4',
+                    'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
                     'Zero W': '2017Q1',
-                    'CM3':   '2017Q1',
+                    'CM3':    '2017Q1',
                     }[model]
                 storage = {
-                    'A': 'SD',
-                    'B': 'SD',
-                    'CM': 'eMMC',
+                    'A':   'SD',
+                    'B':   'SD',
+                    'CM':  'eMMC',
                     'CM3': 'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
-                    'A':    1,
-                    'A+':   1,
-                    'Zero': 1,
+                    'A':      1,
+                    'A+':     1,
+                    'Zero':   1,
                     'Zero W': 1,
-                    'B':    2,
-                    'CM':   1,
-                    'CM3':   1,
+                    'B':      2,
+                    'CM':     1,
+                    'CM3':    1,
                     }.get(model, 4)
                 ethernet = {
-                    'A':    0,
-                    'A+':   0,
-                    'Zero': 0,
+                    'A':      0,
+                    'A+':     0,
+                    'Zero':   0,
                     'Zero W': 0,
-                    'CM':   0,
-                    'CM3':   0,
+                    'CM':     0,
+                    'CM3':    0,
                     }.get(model, 1)
                 wifi = {
-                    '3B': True,
+                    '3B':     True,
                     'Zero W': True,
                     }.get(model, False)
                 bluetooth = {
-                    '3B': True,
+                    '3B':     True,
                     'Zero W': True,
                     }.get(model, False)
                 csi = {
-                    'Zero': 0 if pcb_revision == '1.2' else 1,
+                    'Zero':   0 if pcb_revision == '1.2' else 1,
                     'Zero W': 1,
-                    'CM':   2,
-                    'CM3':   2,
+                    'CM':     2,
+                    'CM3':    2,
                     }.get(model, 1)
                 dsi = {
-                    'Zero': 0,
+                    'Zero':   0,
                     'Zero W': 0,
                     }.get(model, csi)
                 headers = {
-                    'A':  {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':  {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
-                    'CM': {'SODIMM': CM_SODIMM},
+                    'A':   {'P1': REV2_P1, 'P5': REV2_P5},
+                    'B':   {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                    'CM':  {'SODIMM': CM_SODIMM},
                     'CM3': {'SODIMM': CM3_SODIMM},
                     }.get(model, {'P1': PLUS_P1})
                 board = {
-                    'A':    A_BOARD,
-                    'B':    REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
-                    'A+':   APLUS_BOARD,
-                    'CM':   CM_BOARD % 1,
-                    'CM3':   CM_BOARD % 3,
-                    'Zero': ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                    'A':      A_BOARD,
+                    'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
+                    'A+':     APLUS_BOARD,
+                    'CM':     CM_BOARD % 1,
+                    'CM3':    CM_BOARD % 3,
+                    'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     'Zero W': ZERO_W_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
