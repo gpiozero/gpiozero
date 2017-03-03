@@ -288,6 +288,7 @@ PI_REVISIONS = {
     0x9000c1: ('Zero W', '1.1', '2017Q1', 'BCM2835', 'Sony',    512,  'MicroSD', 1,  0,  True,  True,  1,  0,  {'P1': PLUS_P1},               ),
     0xa22042: ('2B',   '1.2', '2016Q3', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     0x900021: ('A+',   '1.1', '2016Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x920093: ('Zero', '1.3', '2016Q2', 'BCM2835', 'Embest',    512,  'MicroSD', 1,  0,  False, False, 1,  0,  {'P1': PLUS_P1},               ),
     }
 
 
