@@ -286,6 +286,7 @@ PI_REVISIONS = {
     0xa020a0: ('CM3',  '1.0', '2017Q1', 'BCM2837', 'Sony',      1024, 'eMMC / off-board', 1,  0,  False, False, 2,  2, {'SODIMM': CM3_SODIMM},),
     0xa32082: ('3B',   '1.2', '2016Q4', 'BCM2837', 'Sony Japan', 1024, 'MicroSD', 4, 1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
     0x9000c1: ('Zero W', '1.1', '2017Q1', 'BCM2835', 'Sony',    512,  'MicroSD', 1,  0,  True,  True,  1,  0,  {'P1': PLUS_P1},               ),
+    0xa22042: ('2B',   '1.2', '2016Q3', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     }
 
 
@@ -566,7 +567,7 @@ def _parse_pi_revision(revision):
             'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
             'A+':   '2014Q4',
             'B+':   '2014Q3',
-            '2B':   '2015Q1',
+            '2B':   '2015Q1' if pcb_revision == '1.1' else '2016Q3',
             'CM':   '2014Q2',
             '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2016Q4',
             'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
