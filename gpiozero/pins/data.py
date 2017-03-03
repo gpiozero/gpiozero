@@ -538,7 +538,7 @@ def _parse_pi_revision(revision):
             8: '3B',
             9: 'Zero',
             10: 'CM3',
-            12: 'Zero W,
+            12: 'Zero W',
             }[(revision & 0xff0) >> 4]
         if model in ('A', 'B'):
             pcb_revision = {
