@@ -235,6 +235,23 @@ CM_SODIMM = {
     199: ('VBAT',           False), 200: ('VBAT',           False),
     }
 
+CM3_SODIMM = CM_SODIMM.copy()
+CM3_SODIMM.update({
+    4:  ('NC / SDX VREF',  False),
+    6:  ('NC / SDX VREF',  False),
+    8:  (GND,              False),
+    10: ('NC / SDX CLK',   False),
+    12: ('NC / SDX CMD',   False),
+    14: (GND,              False),
+    16: ('NC / SDX D0',    False),
+    18: ('NC / SDX D1',    False),
+    20: (GND,              False),
+    22: ('NC / SDX D2',    False),
+    24: ('NC / SDX D3',    False),
+    88: ('HDMI HPD N 1V8', False),
+    90: ('EMMC EN N 1V8',  False),
+    })
+
 # The following data is sourced from a combination of the following locations:
 #
 # http://elinux.org/RPi_HardwareHistory
@@ -266,6 +283,7 @@ PI_REVISIONS = {
     0xa02082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Sony',      1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
     0xa22082: ('3B',   '1.2', '2016Q1', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
     0x900093: ('Zero', '1.3', '2016Q2', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  0,  {'P1': PLUS_P1},               ),
+    0xa020a0: ('CM3',  '1.0', '2017Q1', 'BCM2837', 'Sony',      1024, 'eMMC / off-board', 1,  0,  False, False, 2,  2, {'SODIMM': CM3_SODIMM},),
     }
 
 
@@ -500,7 +518,7 @@ def _parse_pi_revision(revision):
     # MMM      - Memory size (0=256, 1=512, 2=1024)
     # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
     # PPPP     - Processor (0=2835, 1=2836, 2=2837)
-    # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
+    # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero, 10=CM3)
     # RRRR     - Revision (0, 1, or 2)
     if not (revision & 0x800000):
         raise PinUnknownPi('cannot parse "%x"; this is not a new-style revision' % revision)
@@ -514,6 +532,7 @@ def _parse_pi_revision(revision):
             6: 'CM',
             8: '3B',
             9: 'Zero',
+            10: 'CM3',
             }[(revision & 0xff0) >> 4]
         if model in ('A', 'B'):
             pcb_revision = {
@@ -532,6 +551,7 @@ def _parse_pi_revision(revision):
             'CM':   '2014Q2',
             '3B':   '2016Q1',
             'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
+            'CM3':  '2017Q1',
             }[model]
         soc = {
             0: 'BCM2835',
@@ -552,6 +572,7 @@ def _parse_pi_revision(revision):
             'A': 'SD',
             'B': 'SD',
             'CM': 'eMMC',
+            'CM3': 'eMMC / off-board',
             }.get(model, 'MicroSD')
         usb = {
             'A':    1,
@@ -559,12 +580,14 @@ def _parse_pi_revision(revision):
             'Zero': 1,
             'B':    2,
             'CM':   0,
+            'CM3':  1,
             }.get(model, 4)
         ethernet = {
             'A':    0,
             'A+':   0,
             'Zero': 0,
             'CM':   0,
+            'CM3':  0,
             }.get(model, 1)
         wifi = {
             '3B': True,
@@ -575,6 +598,7 @@ def _parse_pi_revision(revision):
         csi = {
             'Zero': 0 if pcb_revision == '1.0' else 1,
             'CM':   2,
+            'CM3':  2,
             }.get(model, 1)
         dsi = {
             'Zero': 0,
@@ -583,6 +607,7 @@ def _parse_pi_revision(revision):
             'A':  {'P1': REV2_P1, 'P5': REV2_P5},
             'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
             'CM': {'SODIMM': CM_SODIMM},
+            'CM3': {'SODIMM': CM3_SODIMM},
             }.get(model, {'P1': PLUS_P1})
     except KeyError:
         raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
