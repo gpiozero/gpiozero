@@ -287,6 +287,7 @@ PI_REVISIONS = {
     0xa32082: ('3B',   '1.2', '2016Q4', 'BCM2837', 'Sony Japan', 1024, 'MicroSD', 4, 1,  True,  True,  1,  1,  {'P1': PLUS_P1},               ),
     0x9000c1: ('Zero W', '1.1', '2017Q1', 'BCM2835', 'Sony',    512,  'MicroSD', 1,  0,  True,  True,  1,  0,  {'P1': PLUS_P1},               ),
     0xa22042: ('2B',   '1.2', '2016Q3', 'BCM2837', 'Embest',    1024, 'MicroSD', 4,  1,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
+    0x900021: ('A+',   '1.1', '2016Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 1,  0,  False, False, 1,  1,  {'P1': PLUS_P1},               ),
     }
 
 
@@ -565,7 +566,7 @@ def _parse_pi_revision(revision):
         released = {
             'A':    '2013Q1',
             'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-            'A+':   '2014Q4',
+            'A+':   '2014Q4' if memory == 512 else '2016Q3',
             'B+':   '2014Q3',
             '2B':   '2015Q1' if pcb_revision == '1.1' else '2016Q3',
             'CM':   '2014Q2',
