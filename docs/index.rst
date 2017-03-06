@@ -19,6 +19,7 @@ Table of Contents
     api_pins
     api_exc
     cli_tools
+    source_values
     changelog
     license
 

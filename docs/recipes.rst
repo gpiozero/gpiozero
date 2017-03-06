@@ -331,8 +331,12 @@ Button controlled robot
 
 Use four GPIO buttons as forward/back/left/right controls for a robot:
 
-.. literalinclude:: examples/robot_buttons.py
+.. literalinclude:: examples/robot_buttons_1.py
 
+Alternatively, use four buttons to program the directions and add a fifth
+button to process them in turn, like a Bee-Bot or Turtle robot.
+
+.. literalinclude:: examples/robot_buttons_2.py
 
 Keyboard controlled robot
 =========================

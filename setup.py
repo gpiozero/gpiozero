@@ -2,7 +2,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-"A simple interface to everyday GPIO components used with Raspberry Pi"
+"A simple interface to GPIO devices with Raspberry Pi."
 
 if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):
@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.3.1'
+__version__      = '1.3.1.post1'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
