@@ -82,15 +82,15 @@ version of gpiozero is available in your Python environment like so::
     >>> require('gpiozero')[0].version
     '1.2.0'
 
-If you have multiple versions installed (e.g. from ``pip`` and ``apt-get``)
-they will not show up in the list returned by the ``require`` method. However,
-the first entry in the list will be the version that ``import gpiozero`` will
+If you have multiple versions installed (e.g. from ``pip`` and ``apt``) they
+will not show up in the list returned by the ``require`` method. However, the
+first entry in the list will be the version that ``import gpiozero`` will
 import.
 
 If you receive the error "No module named pkg_resources", you need to install
 the ``pip`` utility. This can be done with the following command in Raspbian::
 
-    $ sudo apt-get install python-pip
+    $ sudo apt install python-pip
 
 Alternatively, install pip with `get-pip`_.
 

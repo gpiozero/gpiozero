@@ -25,7 +25,7 @@ If you're using Raspbian Jessie (desktop - not Jessie Lite) then you have
 everything you need to use the remote GPIO feature. If you're using Jessie Lite,
 or another distribution, you'll need to install pigpio::
 
-    sudo apt-get install pigpio
+    sudo apt install pigpio
 
 Then you just need to enable **Remote GPIO** in the Raspberry Pi configuration
 tool:
@@ -38,6 +38,13 @@ Then launch the pigpio daemon::
 
     sudo pigpiod
 
+To only allow connections from a specific IP address, use the ``-n`` flag. For
+example:
+
+    sudo pigpiod -n localhost # allow localhost only
+    sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
+    sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
+
 You will need to launch the pigpio daemon every time you wish to use this
 feature. To automate running the daemon at boot time:
 
@@ -48,23 +55,23 @@ Preparing the host computer
 
 If the host computer is a Raspberry Pi running Raspbian Jessie (or a PC running
 x86 PIXEL), then you have everything you need. If you're using another Linux
-distribution, Mac OS or Windows then you'll need to install the pigpio Python
-library on the PC.
+distribution, Mac OS or Windows then you'll need to install the ``pigpio``
+Python library on the PC.
 
 Raspberry Pi
 ------------
 
 First, update your repositories list::
 
-    sudo apt-get update
+    sudo apt update
 
 Then install the pigpio library for Python 3::
 
-    sudo apt-get install python3-pigpio
+    sudo apt install python3-pigpio
 
 or Python 2::
 
-    sudo apt-get install python-pigpio
+    sudo apt install python-pigpio
 
 Alternatively, install with pip::
 
@@ -79,15 +86,15 @@ Linux
 
 First, update your distribution's repositories list. For example::
 
-    sudo apt-get update
+    sudo apt update
 
 Then install pip for Python 3::
 
-    sudo apt-get install python3-pip
+    sudo apt install python3-pip
 
 or Python 2::
 
-    sudo apt-get install python-pip
+    sudo apt install python-pip
 
 (Alternatively, install pip with `get-pip`_.)
 
@@ -224,6 +231,6 @@ Pi Zero
 
 ???
 
-.. RPi.GPIO_: https://pypi.python.org/pypi/RPi.GPIO
-.. pigpio_: http://abyz.co.uk/rpi/pigpio/python.html
-.. get-pip_: https://pip.pypa.io/en/stable/installing/
+.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+.. _pigpio: http://abyz.co.uk/rpi/pigpio/python.html
+.. _get-pip: https://pip.pypa.io/en/stable/installing/
