@@ -37,7 +37,7 @@ Multi-room doorbell
 ===================
 
 Install a Raspberry Pi with a buzzer attached in each room you want to hear the
-doorbell, and use a push button ad the doorbell::
+doorbell, and use a push button ad the doorbell:
 
 .. literalinclude:: examples/multi_room_doorbell.py
 

@@ -5,10 +5,9 @@ Source Tools
 .. currentmodule:: gpiozero.tools
 
 GPIO Zero includes several utility routines which are intended to be used with
-the :attr:`~gpiozero.SourceMixin.source` and
-:attr:`~gpiozero.ValuesMixin.values` attributes common to most devices in the
-library. These utility routines are in the ``tools`` module of GPIO Zero and
-are typically imported as follows::
+the :doc:`source_values` attributes common to most devices in the library. These
+utility routines are in the ``tools`` module of GPIO Zero and are typically
+imported as follows::
 
     from gpiozero.tools import scaled, negated, all_values
 
@@ -76,4 +75,3 @@ Artificial sources
 .. autofunction:: random_values
 
 .. autofunction:: sin_values
-

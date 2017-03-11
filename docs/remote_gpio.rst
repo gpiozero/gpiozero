@@ -39,14 +39,14 @@ Then launch the pigpio daemon::
     sudo pigpiod
 
 To only allow connections from a specific IP address, use the ``-n`` flag. For
-example:
+example::
 
     sudo pigpiod -n localhost # allow localhost only
     sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
     sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
 
 You will need to launch the pigpio daemon every time you wish to use this
-feature. To automate running the daemon at boot time:
+feature. To automate running the daemon at boot time::
 
     ???
 
@@ -77,7 +77,7 @@ Alternatively, install with pip::
 
     sudo pip3 install pigpio
 
-or:
+or::
 
     sudo pip install pigpio
 
