@@ -207,7 +207,7 @@ Note that these examples use the :class:`LED` class, which takes a ``pin``
 argument to initialise. Some classes, particularly those representing HATs and
 other add-on boards, do not require their pin numbers to be specified. However,
 it is still possible to use remote pins with these devices, either using
-environment variables, or by setting ``gpiozero.Device._pin_factory``:
+environment variables, or by setting :attr:~Device._pin_factory`:
 
 .. literalinclude:: examples/traffichat_remote_1.py
 
@@ -216,21 +216,55 @@ mutliple HATs connected to different Pis:
 
 .. literalinclude:: examples/traffichat_remote_2.py
 
-Energenie example???
-MCP3008 example???
+You could even use a HAT which is not supported by GPIO Zero (such as the
+`Sense HAT`_) on one Pi, and use remote pins to control another over the
+network:
+
+.. literalinclude:: examples/sense_hat_remote.py
+
+Note that in this case, the Sense HAT code must be run locally, and the GPIO
+remotely.
+
+Pi Zero USB OTG
+===============
+
+The `Raspberry Pi Zero`_ and `Pi Zero W`_ feature a USB OTG port, allowing users
+to configure the device as (amongst other things) an Ethernet device. In this
+mode, it is possible to control the Pi Zero's GPIO pins over USB from another
+computer using remote pins.
+
+First, configure the boot partition of the SD card:
+
+1. Edit ``config.txt`` and add ``dtoverlay=dwc2`` on a new line, then save the
+file.
+1. Create an empty file called ``ssh`` (no file extension) and save it in the
+boot partition.
+1. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
+``rootwait``.
+
+(See `blog.gbaman.info`_ for more information)
+
+Then connect the Pi Zero to your computer using a micro USB cable (connecting it
+to the USB port, not the power port). You'll see the indicator LED flashing as
+the Pi Zero boots. When it's ready, you will be able to ping and SSH into it
+using the hostname ``raspberrypi.local``. SSH into the Pi Zero, ensure Remote
+GPIO is enabled and the pigpio daemon is running, and you can use remote pins
+from the computer, referencing the host by its hostname, like so:
+
+.. literalinclude:: examples/pi_zero_remote.py
 
 .. note::
 
     When running code directly on a Raspberry Pi, any pin type can be used
     (assuming the relevant library is installed), but when a device is used
-    remotely, only :class:`PiGPIOPin` can be used, as ``pigpio`` is the only
-    pin library which supports remote GPIO.
+    remotely, only :class:`PiGPIOPin` can be used, as pigpio is the only pin
+    library which supports remote GPIO.
 
-Pi Zero
-=======
-
-???
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 .. _pigpio: http://abyz.co.uk/rpi/pigpio/python.html
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
+.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
+.. _Raspberry Pi Zero: https://www.raspberrypi.org/products/pi-zero/
+.. _Pi Zero W: https://www.raspberrypi.org/products/pi-zero-w/
+.. _blog.gbaman.info: http://blog.gbaman.info/?p=791

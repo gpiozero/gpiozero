@@ -43,3 +43,19 @@ doorbell, and use a push button as the doorbell:
 
 This could also be used as an internal doorbell (tell people it's time for
 dinner from the kitchen).
+
+Light sensor + Sense HAT
+=========================
+
+The `Sense HAT`_ (not supported by GPIO Zero) includes temperature, humidity and
+pressure sensors, but no light sensor. Remote pins allow an external light
+sensor to be used as well. The Sense HAT LED display can be used to show
+different colours according to the light levels:
+
+.. literalinclude:: examples/sense_hat_remote_2.py
+
+Note that in this case, the Sense HAT code must be run locally, and the GPIO
+remotely.
+
+
+.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
