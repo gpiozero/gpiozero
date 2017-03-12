@@ -207,7 +207,7 @@ Note that these examples use the :class:`LED` class, which takes a ``pin``
 argument to initialise. Some classes, particularly those representing HATs and
 other add-on boards, do not require their pin numbers to be specified. However,
 it is still possible to use remote pins with these devices, either using
-environment variables, or by setting :attr:~Device._pin_factory`:
+environment variables, or by using :meth:`~Device._set_pin_factory`:
 
 .. literalinclude:: examples/traffichat_remote_1.py
 
@@ -237,9 +237,9 @@ First, configure the boot partition of the SD card:
 
 1. Edit ``config.txt`` and add ``dtoverlay=dwc2`` on a new line, then save the
 file.
-1. Create an empty file called ``ssh`` (no file extension) and save it in the
+2. Create an empty file called ``ssh`` (no file extension) and save it in the
 boot partition.
-1. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
+3. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
 ``rootwait``.
 
 (See `blog.gbaman.info`_ for more information)
