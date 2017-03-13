@@ -117,6 +117,7 @@ from .boards import (
     TrafficLights,
     PiTraffic,
     PiStop,
+    StatusBoard,
     SnowPi,
     TrafficLightsBuzzer,
     FishDish,

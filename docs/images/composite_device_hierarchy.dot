@@ -26,6 +26,7 @@ digraph classes {
     TrafficLights->LEDBoard;
     PiTraffic->TrafficLights;
     PiStop->TrafficLights;
+    StatusBoard->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
