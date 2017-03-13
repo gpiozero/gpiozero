@@ -5,6 +5,11 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.3.2 (2017-03-03)
+==========================
+
+* Added new Pi models to stop :func:`pi_info` breaking
+
 Release 1.3.1 (2016-08-31 ... later)
 ====================================
 
