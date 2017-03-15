@@ -212,8 +212,8 @@ class LoadAverage(InternalDevice):
         Returns the current load average
         """
         with io.open(self.load_average_file, 'r') as f:
-            file_contents = f.readline().strip().split()
-            return float(file_contents[self._load_average_file_column])
+            file_columns = f.readline().strip().split()
+            return float(file_columns[self._load_average_file_column])
 
     @property
     def value(self):
