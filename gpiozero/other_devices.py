@@ -185,7 +185,7 @@ class LoadAverage(InternalDevice):
 
     :param int minutes:
         The number of minutes over which to average the load. Must be 1, 5 or
-        15.
+        15. This defaults to 1.
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
         max_load_average=1.0, threshold=0.8, minutes=1):
