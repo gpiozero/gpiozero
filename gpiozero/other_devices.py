@@ -190,7 +190,6 @@ class LoadAverage(InternalDevice):
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
         max_load_average=1.0, threshold=0.8, minutes=1):
         self.load_average_file = load_average_file
-        super(InternalDevice, self).__init__()
         self.min_load_average = min_load_average
         self.max_load_average = max_load_average
         self.threshold = threshold
@@ -201,6 +200,7 @@ class LoadAverage(InternalDevice):
             5: 1,
             15: 2,
         }[minutes]
+        super(LoadAverage, self).__init__()
         self._fire_events()
 
     def __repr__(self):
