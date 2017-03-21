@@ -18,7 +18,7 @@ from threading import RLock
 import pkg_resources
 
 from .threads import _threads_shutdown
-from .pins import _pins_shutdown
+from .pins import Pin, _pins_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
@@ -380,6 +380,8 @@ class GPIODevice(Device):
             raise GPIOPinMissing('No pin given')
         if isinstance(pin, int):
             pin = pin_factory(pin)
+        if not isinstance(pin, Pin):
+            raise ValueError('pin must be an int or a gpiozero Pin object')
         with _PINS_LOCK:
             if pin in _PINS:
                 raise GPIOPinInUse(
