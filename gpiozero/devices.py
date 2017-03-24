@@ -340,7 +340,8 @@ class CompositeDevice(Device):
     def close(self):
         if self._all:
             for device in self._all:
-                device.close()
+                if isinstance(device, Device):
+                    device.close()
 
     @property
     def closed(self):
