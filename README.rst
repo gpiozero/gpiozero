@@ -74,6 +74,9 @@ or::
 
     sudo apt-get install python-gpiozero
 
+Take a look at the `changelog <https://gpiozero.readthedocs.io/en/latest/changelog.html>`_
+when upgrading from a previous version.
+
 Documentation
 =============
 
