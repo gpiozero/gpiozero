@@ -50,7 +50,7 @@ __keywords__ = [
     'gpio',
 ]
 
-__requires__ = [
+__requires__ = ['RPi.GPIO>0.6.0',
 ]
 
 __extra_requires__ = {
