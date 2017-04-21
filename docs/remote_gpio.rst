@@ -48,7 +48,7 @@ example::
 You will need to launch the pigpio daemon every time you wish to use this
 feature. To automate running the daemon at boot time::
 
-    ???
+    sudo systemctl enable pigpiod
 
 Preparing the host computer
 ===========================
@@ -149,7 +149,7 @@ ensure the default pin factory is set to ``PiGPIOPin``. If ``RPi.GPIO`` is
 installed, this will be selected as the default pin factory, so either uninstall
 it, or use another environment variable to set it to ``PiGPIOPin``::
 
-    $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=192.168.1.3 python3 hello.py
+    $ GPIOZERO_PIN_FACTORY=PiGPIOPin PIGPIO_ADDR=192.168.1.3 python3 hello.py
 
 This usage will set the pin factory to :class:`PiGPIOPin` with a default host of
 ``192.168.1.3``. The pin factory can be changed inline in the code, as seen in
@@ -212,7 +212,7 @@ environment variables, or by using :meth:`~Device._set_pin_factory`:
 .. literalinclude:: examples/traffichat_remote_1.py
 
 This also allows you to swap between two IP addresses and create instances of
-mutliple HATs connected to different Pis:
+multiple HATs connected to different Pis:
 
 .. literalinclude:: examples/traffichat_remote_2.py
 
