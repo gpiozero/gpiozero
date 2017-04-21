@@ -149,7 +149,7 @@ ensure the default pin factory is set to ``PiGPIOPin``. If ``RPi.GPIO`` is
 installed, this will be selected as the default pin factory, so either uninstall
 it, or use another environment variable to set it to ``PiGPIOPin``::
 
-    $ GPIOZERO_PIN_FACTORY=PiGPIOPin PIGPIO_ADDR=192.168.1.3 python3 hello.py
+    $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=192.168.1.3 python3 hello.py
 
 This usage will set the pin factory to :class:`PiGPIOPin` with a default host of
 ``192.168.1.3``. The pin factory can be changed inline in the code, as seen in
