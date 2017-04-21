@@ -64,7 +64,7 @@ omit any arguments from either scheme. The defaults are:
 * *clock_pin* defaults to 11, *mosi_pin* defaults to 10, *miso_pin* defaults
   to 9, and *select_pin* defaults to 8.
 
-Hence the following constructors are all equiavlent::
+Hence the following constructors are all equivalent::
 
     from gpiozero import MCP3008
 
