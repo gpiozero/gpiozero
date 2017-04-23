@@ -80,6 +80,7 @@ from .boards import (
     TrafficLights,
     PiTraffic,
     PiStop,
+    StatusZero,
     SnowPi,
     TrafficLightsBuzzer,
     FishDish,

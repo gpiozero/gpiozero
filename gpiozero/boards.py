@@ -795,6 +795,24 @@ class PiStop(TrafficLights):
                                         pwm=pwm, initial_value=initial_value)
 
 
+class StatusZero(LEDBoard):
+    def __init__(self, *names, **kwargs):
+        pins = (
+            (4, 17),
+            (27, 22),
+            (10, 9),
+        )
+        if len(names) == 0:
+            names = ['one', 'two', 'three', 'four', 'five'][:len(pins)]
+        elif len(names) > len(pins):
+            raise ValueError
+        strips = OrderedDict()
+        for index, name in enumerate(names):
+            green, red = pins[index]
+            strips[name] = LEDBoard(green=green, red=red, **kwargs)
+        super(StatusZero, self).__init__(_order=strips.keys(), **strips)
+
+
 class SnowPi(LEDBoard):
     """
     Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.
@@ -1184,4 +1202,3 @@ class Energenie(SourceMixin, Device):
 
     def off(self):
         self.value = False
-
