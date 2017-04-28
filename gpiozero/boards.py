@@ -826,13 +826,14 @@ class StatusZero(LEDBoard):
             (10, 9),
         )
         if len(labels) == 0:
-            labels = ['one', 'two', 'three'][:len(pins)]
+            labels = ['one', 'two', 'three']
         elif len(labels) > len(pins):
             raise ValueError
         strips = OrderedDict()
         for index, label in enumerate(labels):
             green, red = pins[index]
-            strips[label] = LEDBoard(red=red, green=green, **kwargs)
+            strips[label] = LEDBoard(red=red, green=green,
+                _order=('red', 'green'), **kwargs)
         super(StatusZero, self).__init__(_order=strips.keys(), **strips)
 
 
@@ -855,9 +856,8 @@ class StatusBoard(CompositeOutputDevice):
     :param str \*labels:
         Specify the names of the labels you wish to designate the strips to.
         You can list up to three labels. If no labels are given, three strips
-        will be initialised with names 'one', 'two', and 'three'. If some, but
-        not all strips are given labels, any remaining strips will not be
-        initialised.
+        will be initialised with names 'one' to 'five'. If some, but not all
+        strips are given labels, any remaining strips will not be initialised.
 
     .. _STATUS: https://thepihut.com/status
     """
@@ -870,7 +870,7 @@ class StatusBoard(CompositeOutputDevice):
             (6, 13, 18),
         )
         if len(labels) == 0:
-            labels = ['one', 'two', 'three', 'four', 'five'][:len(pins)]
+            labels = ['one', 'two', 'three', 'four', 'five']
         elif len(labels) > len(pins):
             raise ValueError
         strips = OrderedDict()
@@ -887,7 +887,6 @@ class StatusBoard(CompositeOutputDevice):
 class SnowPi(LEDBoard):
     """
     Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.
-
 
     The SnowPi pins are fixed and therefore there's no need to specify them
     when constructing this class. The following example turns on the eyes, sets
