@@ -880,7 +880,7 @@ class StatusBoard(CompositeOutputDevice):
                 button=Button(button),
                 lights=LEDBoard(
                     red=red, green=green, _order=('red', 'green'), **kwargs
-                ), _order=('button', 'lights'), **kwargs)
+                ), _order=('button', 'lights'))
         super(StatusBoard, self).__init__(_order=strips.keys(), **strips)
 
 
