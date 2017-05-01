@@ -821,9 +821,9 @@ class StatusZero(LEDBoard):
     """
     def __init__(self, *labels, **kwargs):
         pins = (
-            (4, 17),
-            (27, 22),
-            (10, 9),
+            (17, 4),
+            (22, 27),
+            (9, 10),
         )
         if len(labels) == 0:
             labels = ['one', 'two', 'three']
@@ -863,11 +863,11 @@ class StatusBoard(CompositeOutputDevice):
     """
     def __init__(self, *labels, **kwargs):
         pins = (
-            (4, 17, 14),
-            (27, 22, 19),
-            (10, 9, 15),
-            (11, 5, 26),
-            (6, 13, 18),
+            (17, 4, 14),
+            (22, 27, 19),
+            (9, 10, 15),
+            (5, 11, 26),
+            (13, 6, 18),
         )
         if len(labels) == 0:
             labels = ['one', 'two', 'three', 'four', 'five']
