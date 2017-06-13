@@ -60,6 +60,8 @@ class PinoutTool(object):
                 raise IOError('This device is not a Raspberry Pi')
         else:
             pi_info(args.revision).pprint(color=args.color)
+        print('')
+        print('For further information, please refer to https://pinout.xyz/')
 
 
 main = PinoutTool()
