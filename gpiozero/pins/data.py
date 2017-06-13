@@ -152,18 +152,18 @@ ZERO12_BOARD = """\
 {style:white on green},-------------------------.{style:reset}
 {style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
 {style:white on green}| {P1:{style} col1}{style:white on green}    |{style:reset}
-{style:black on white}---+{style:white on green}       {style:on black}+----+{style:on green} {style:bold}PiZero{style:normal}  |{style:reset}
-{style:black on white} sd|{style:white on green}       {style:on black}|SoC |{style:on green}  {style:bold}V{pcb_revision:3s}{style:normal}   |{style:reset}
-{style:black on white}---+|hdmi|{style:white on green} {style:on black}+----+{style:on green} {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
+{style:black on white}---+{style:white on green}       {style:on black}+---+{style:on green}  {style:bold}PiZero{style:normal}  |{style:reset}
+{style:black on white} sd|{style:white on green}       {style:on black}|SoC|{style:on green}   {style:bold}V{pcb_revision:3s}{style:normal}   |{style:reset}
+{style:black on white}---+|hdmi|{style:white on green} {style:on black}+---+{style:on green}  {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
 ZERO13_BOARD = """\
 {style:white on green}.-------------------------.{style:reset}
 {style:white on green}| {P1:{style} col2}{style:white on green} P1 |{style:reset}
 {style:white on green}| {P1:{style} col1}{style:white on green}   {style:black on white}|c{style:reset}
-{style:black on white}---+{style:white on green}       {style:on black}+----+{style:on green} {style:bold}PiZero{style:normal} {style:black on white}|s{style:reset}
-{style:black on white} sd|{style:white on green}       {style:on black}|SoC |{style:on green}  {style:bold}V{pcb_revision:3s}{style:normal}  {style:black on white}|i{style:reset}
-{style:black on white}---+|hdmi|{style:white on green} {style:on black}+----+{style:on green} {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
+{style:black on white}---+{style:white on green}       {style:on black}+---+{style:on green} {style:bold}Pi{model:6s}{style:normal}{style:black on white}|s{style:reset}
+{style:black on white} sd|{style:white on green}       {style:on black}|SoC|{style:on green}   {style:bold}V{pcb_revision:3s}{style:normal}  {style:black on white}|i{style:reset}
+{style:black on white}---+|hdmi|{style:white on green} {style:on black}+---+{style:on green}  {style:black on white}usb{style:on green} {style:on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
 CM_BOARD = """\
@@ -838,20 +838,21 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # uuuuuuuu - Unused
             # F        - New flag (1=valid new-style revision, 0=old-style)
             # MMM      - Memory size (0=256, 1=512, 2=1024)
-            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest)
+            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
-            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM, 8=3B, 9=Zero)
+            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM,
+            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W)
             # RRRR     - Revision (0, 1, 2, etc.)
             try:
                 model = {
-                    0: 'A',
-                    1: 'B',
-                    2: 'A+',
-                    3: 'B+',
-                    4: '2B',
-                    6: 'CM',
-                    8: '3B',
-                    9: 'Zero',
+                    0:  'A',
+                    1:  'B',
+                    2:  'A+',
+                    3:  'B+',
+                    4:  '2B',
+                    6:  'CM',
+                    8:  '3B',
+                    9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
                     }[(revision & 0xff0) >> 4]
@@ -880,64 +881,73 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     2: 1024,
                     }[(revision & 0x700000) >> 20]
                 released = {
-                    'A':    '2013Q1',
-                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-                    'A+':   '2014Q4' if memory == 512 else '2016Q3',
-                    'B+':   '2014Q3',
-                    '2B':   '2015Q1' if pcb_revision == '1.1' else '2016Q3',
-                    'CM':   '2014Q2',
-                    '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2016Q4',
-                    'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
-                    'CM3':  '2017Q1',
+                    'A':      '2013Q1',
+                    'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                    'A+':     '2014Q4' if memory == 512 else '2016Q3',
+                    'B+':     '2014Q3',
+                    '2B':     '2015Q1' if pcb_revision == '1.1' else '2016Q3',
+                    'CM':     '2014Q2',
+                    '3B':     '2016Q1' if manufacturer in ('Sony', 'Embest') else '2016Q4',
+                    'Zero':   '2015Q4' if pcb_revision == '1.0' else '2016Q2',
+                    'CM3':    '2017Q1',
                     'Zero W': '2017Q1',
                     }[model]
                 storage = {
-                    'A': 'SD',
-                    'B': 'SD',
-                    'CM': 'eMMC',
+                    'A':   'SD',
+                    'B':   'SD',
+                    'CM':  'eMMC',
                     'CM3': 'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
-                    'A':    1,
-                    'A+':   1,
-                    'Zero': 1,
+                    'A':      1,
+                    'A+':     1,
+                    'Zero':   1,
                     'Zero W': 1,
-                    'B':    2,
-                    'CM':   0,
-                    'CM3':  1,
+                    'B':      2,
+                    'CM':     0,
+                    'CM3':    1,
                     }.get(model, 4)
                 ethernet = {
-                    'A':    0,
-                    'A+':   0,
-                    'Zero': 0,
+                    'A':      0,
+                    'A+':     0,
+                    'Zero':   0,
                     'Zero W': 0,
-                    'CM':   0,
-                    'CM3':  0,
+                    'CM':     0,
+                    'CM3':    0,
                     }.get(model, 1)
                 wifi = {
-                    '3B': True,
+                    '3B':     True,
                     'Zero W': True,
                     }.get(model, False)
                 bluetooth = {
-                    '3B': True,
+                    '3B':     True,
                     'Zero W': True,
                     }.get(model, False)
                 csi = {
-                    'Zero': 0 if pcb_revision == '1.0' else 1,
+                    'Zero':   0 if pcb_revision == '1.0' else 1,
                     'Zero W': 1,
-                    'CM':   2,
-                    'CM3':  2,
+                    'CM':     2,
+                    'CM3':    2,
                     }.get(model, 1)
                 dsi = {
-                    'Zero': 0,
+                    'Zero':   0,
                     'Zero W': 0,
                     }.get(model, csi)
                 headers = {
-                    'A':  {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
-                    'CM': {'SODIMM': CM_SODIMM},
+                    'A':   {'P1': REV2_P1, 'P5': REV2_P5},
+                    'B':   {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
+                    'CM':  {'SODIMM': CM_SODIMM},
                     'CM3': {'SODIMM': CM3_SODIMM},
                     }.get(model, {'P1': PLUS_P1})
+                board = {
+                    'A':      A_BOARD,
+                    'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
+                    'A+':     APLUS_BOARD,
+                    'CM':     CM_BOARD,
+                    'CM3':    CM_BOARD,
+                    'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                    'Zero W': ZERO13_BOARD,
+                    }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
         else:
