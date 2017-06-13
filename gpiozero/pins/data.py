@@ -6,7 +6,6 @@ from __future__ import (
     )
 str = type('')
 
-import io
 import os
 import sys
 from textwrap import dedent
@@ -580,7 +579,6 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     def _format_full(self, style):
         Cell = namedtuple('Cell', ('content', 'align', 'style'))
 
-        pin_digits = len(str(self.rows * self.columns))
         lines = []
         for row in range(self.rows):
             line = []
@@ -658,7 +656,6 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         output.
         """
         print('{0:{style} full}'.format(self, style=Style(color)))
-
 
 
 class PiBoardInfo(namedtuple('PiBoardInfo', (
@@ -843,6 +840,11 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM,
             #                  8=3B, 9=Zero, 10=CM3, 12=Zero W)
             # RRRR     - Revision (0, 1, 2, etc.)
+            revcode_memory       = (revision & 0x700000) >> 20
+            revcode_manufacturer = (revision & 0xf0000)  >> 16
+            revcode_processor    = (revision & 0xf000)   >> 12
+            revcode_type         = (revision & 0xff0)    >> 4
+            revcode_revision     = (revision & 0x0f)
             try:
                 model = {
                     0:  'A',
@@ -855,43 +857,43 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
-                    }[(revision & 0xff0) >> 4]
+                    }[revcode_type]
                 if model in ('A', 'B'):
                     pcb_revision = {
                         0: '1.0', # is this right?
                         1: '1.0',
                         2: '2.0',
-                        }[revision & 0x0f]
+                        }.get(revcode_revision, 'Unknown')
                 else:
-                    pcb_revision = '1.%d' % (revision & 0x0f)
+                    pcb_revision = '1.%d' % revcode_revision
                 soc = {
                     0: 'BCM2835',
                     1: 'BCM2836',
                     2: 'BCM2837',
-                    }[(revision & 0xf000) >> 12]
+                    }.get(revcode_processor, 'Unknown')
                 manufacturer = {
                     0: 'Sony',
                     1: 'Egoman',
                     2: 'Embest',
                     3: 'Sony Japan',
-                    }[(revision & 0xf0000) >> 16]
+                    }.get(revcode_manufacturer, 'Unknown')
                 memory = {
                     0: 256,
                     1: 512,
                     2: 1024,
-                    }[(revision & 0x700000) >> 20]
+                    }.get(revcode_memory, 0)
                 released = {
                     'A':      '2013Q1',
                     'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
                     'A+':     '2014Q4' if memory == 512 else '2016Q3',
                     'B+':     '2014Q3',
-                    '2B':     '2015Q1' if pcb_revision == '1.1' else '2016Q3',
+                    '2B':     '2015Q1' if pcb_revision in ('1.0', '1.1') else '2016Q3',
                     'CM':     '2014Q2',
                     '3B':     '2016Q1' if manufacturer in ('Sony', 'Embest') else '2016Q4',
-                    'Zero':   '2015Q4' if pcb_revision == '1.0' else '2016Q2',
+                    'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
                     'CM3':    '2017Q1',
                     'Zero W': '2017Q1',
-                    }[model]
+                    }.get(model, 'Unknown')
                 storage = {
                     'A':   'SD',
                     'B':   'SD',
