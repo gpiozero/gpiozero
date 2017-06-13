@@ -9,27 +9,27 @@ str = type('')
 
 import pytest
 
-from gpiozero.cli import pinout
+from gpiozero.cli.pinout import main
 
 
 def test_args_incorrect():
     with pytest.raises(SystemExit) as ex:
-        pinout.parse_args(['--nonexistentarg'])
+        main(['pinout', '--nonexistentarg'])
 
 def test_args_color():
-    args = pinout.parse_args([])
+    args = main.parser.parse_args([])
     assert args.color is None
-    args = pinout.parse_args(['--color'])
+    args = main.parser.parse_args(['--color'])
     assert args.color is True
-    args = pinout.parse_args(['--monochrome'])
+    args = main.parser.parse_args(['--monochrome'])
     assert args.color is False
 
 def test_args_revision():
-    args = pinout.parse_args(['--revision', '000d'])
+    args = main.parser.parse_args(['--revision', '000d'])
     assert args.revision == '000d'
 
 def test_help(capsys):
     with pytest.raises(SystemExit) as ex:
-        pinout.parse_args(['--help'])
+        main(['pinout', '--help'])
     out, err = capsys.readouterr()
     assert 'GPIO pinout' in out
