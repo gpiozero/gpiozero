@@ -344,6 +344,23 @@ CM_SODIMM = {
     199: ('VBAT',           False), 200: ('VBAT',           False),
     }
 
+CM3_SODIMM = CM_SODIMM.copy()
+CM3_SODIMM.update({
+    4:  ('NC / SDX VREF',  False),
+    6:  ('NC / SDX VREF',  False),
+    8:  (GND,              False),
+    10: ('NC / SDX CLK',   False),
+    12: ('NC / SDX CMD',   False),
+    14: (GND,              False),
+    16: ('NC / SDX D0',    False),
+    18: ('NC / SDX D1',    False),
+    20: (GND,              False),
+    22: ('NC / SDX D2',    False),
+    24: ('NC / SDX D3',    False),
+    88: ('HDMI HPD N 1V8', False),
+    90: ('EMMC EN N 1V8',  False),
+    })
+
 # The following data is sourced from a combination of the following locations:
 #
 # http://elinux.org/RPi_HardwareHistory
@@ -835,6 +852,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     6: 'CM',
                     8: '3B',
                     9: 'Zero',
+                    10: 'CM3',
+                    12: 'Zero W',
                     }[(revision & 0xff0) >> 4]
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -844,16 +863,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                         }[revision & 0x0f]
                 else:
                     pcb_revision = '1.%d' % (revision & 0x0f)
-                released = {
-                    'A':    '2013Q1',
-                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-                    'A+':   '2014Q4',
-                    'B+':   '2014Q3',
-                    '2B':   '2015Q1' if pcb_revision == '1.0' or pcb_revision == '1.1' else '2016Q3',
-                    'CM':   '2014Q2',
-                    '3B':   '2016Q1',
-                    'Zero': '2015Q4' if pcb_revision == '1.2' else '2016Q2',
-                    }[model]
                 soc = {
                     0: 'BCM2835',
                     1: 'BCM2836',
@@ -863,55 +872,72 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'Sony',
                     1: 'Egoman',
                     2: 'Embest',
+                    3: 'Sony Japan',
                     }[(revision & 0xf0000) >> 16]
                 memory = {
                     0: 256,
                     1: 512,
                     2: 1024,
                     }[(revision & 0x700000) >> 20]
+                released = {
+                    'A':    '2013Q1',
+                    'B':    '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                    'A+':   '2014Q4' if memory == 512 else '2016Q3',
+                    'B+':   '2014Q3',
+                    '2B':   '2015Q1' if pcb_revision == '1.1' else '2016Q3',
+                    'CM':   '2014Q2',
+                    '3B':   '2016Q1' if manufacturer == 'Sony' or manufacturer == 'Embest' else '2016Q4',
+                    'Zero': '2015Q4' if pcb_revision == '1.0' else '2016Q2',
+                    'CM3':  '2017Q1',
+                    'Zero W': '2017Q1',
+                    }[model]
                 storage = {
                     'A': 'SD',
                     'B': 'SD',
                     'CM': 'eMMC',
+                    'CM3': 'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
                     'A':    1,
                     'A+':   1,
                     'Zero': 1,
+                    'Zero W': 1,
                     'B':    2,
-                    'CM':   1,
+                    'CM':   0,
+                    'CM3':  1,
                     }.get(model, 4)
                 ethernet = {
                     'A':    0,
                     'A+':   0,
                     'Zero': 0,
+                    'Zero W': 0,
                     'CM':   0,
+                    'CM3':  0,
                     }.get(model, 1)
                 wifi = {
                     '3B': True,
+                    'Zero W': True,
                     }.get(model, False)
                 bluetooth = {
                     '3B': True,
+                    'Zero W': True,
                     }.get(model, False)
                 csi = {
-                    'Zero': 0 if pcb_revision == '1.2' else 1,
+                    'Zero': 0 if pcb_revision == '1.0' else 1,
+                    'Zero W': 1,
                     'CM':   2,
+                    'CM3':  2,
                     }.get(model, 1)
                 dsi = {
                     'Zero': 0,
+                    'Zero W': 0,
                     }.get(model, csi)
                 headers = {
                     'A':  {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':  {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                    'B':  {'P1': REV2_P1, 'P5': REV2_P5} if pcb_revision == '2.0' else {'P1': REV1_P1},
                     'CM': {'SODIMM': CM_SODIMM},
+                    'CM3': {'SODIMM': CM3_SODIMM},
                     }.get(model, {'P1': PLUS_P1})
-                board = {
-                    'A':    A_BOARD,
-                    'B':    REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
-                    'A+':   APLUS_BOARD,
-                    'CM':   CM_BOARD,
-                    'Zero': ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
-                    }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
         else:
