@@ -224,7 +224,7 @@ class Device(ValuesMixin, GPIOBase):
             p.address if isinstance(p, Pin) else p
             for p in pins_or_addresses
             )
-        with self._res_lock:
+        with Device._res_lock:
             for address in addresses:
                 for device_ref in Device._reservations[address]:
                     device = device_ref()
@@ -247,10 +247,10 @@ class Device(ValuesMixin, GPIOBase):
             p.address if isinstance(p, Pin) else p
             for p in pins_or_addresses
             )
-        with self._res_lock:
+        with Device._res_lock:
             for address in addresses:
                 Device._reservations[address] = [
-                    ref for ref in self._reservations[address]
+                    ref for ref in Device._reservations[address]
                     if ref() not in (self, None) # may as well clean up dead refs
                     ]
 
@@ -259,13 +259,13 @@ class Device(ValuesMixin, GPIOBase):
         Releases all pin reservations taken out by this device. See
         :meth:`_release_pins` for further information).
         """
-        with self._res_lock:
+        with Device._res_lock:
             Device._reservations = defaultdict(list, {
                 address: [
                     ref for ref in conflictors
                     if ref() not in (self, None)
                     ]
-                for address, conflictors in self._reservations.items()
+                for address, conflictors in Device._reservations.items()
                 })
 
     def _conflicts_with(self, other):
@@ -424,8 +424,8 @@ class GPIODevice(Device):
             self._reserve_pins(pin)
         else:
             # Check you can reserve *before* constructing the pin
-            self._reserve_pins(self._pin_factory.pin_address(pin))
-            pin = self._pin_factory.pin(pin)
+            self._reserve_pins(Device._pin_factory.pin_address(pin))
+            pin = Device._pin_factory.pin(pin)
         self._pin = pin
         self._active_state = True
         self._inactive_state = False
