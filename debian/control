@@ -14,11 +14,12 @@ Section: python
 Depends: ${misc:Depends}, ${python:Depends}, python-pkg-resources
 Recommends: python-rpi.gpio, python-spidev
 Suggests: python-gpiozero-docs
-Description: Simple API for controlling devices attached to the GPIO pins.
- gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
- interaction with devices connected to the GPIO pins, from simple buttons and
- LEDs, up to various add-on boards. The API tries to adhere closely to Python's
- idioms and naming conventions.
+Description: Simple API for controlling devices attached to a Pi's GPIO pins.
+ gpiozero builds on various pin libraries to provide a set of classes designed
+ to simplify interaction with devices connected to the GPIO pins, from simple
+ buttons and LEDs, up to various add-on boards. The API tries to adhere closely
+ to Python's idioms and naming conventions, and features alternative
+ programming paradigm approaches.
  .
  This is the Python 2 version of the package.
 
@@ -28,11 +29,12 @@ Section: python
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Recommends: python3-rpi.gpio, python3-spidev
 Suggests: python-gpiozero-docs
-Description: Simple API for controlling devices attached to the GPIO pins.
- gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
- interaction with devices connected to the GPIO pins, from simple buttons and
- LEDs, up to various add-on boards. The API tries to adhere closely to Python's
- idioms and naming conventions.
+Description: Simple API for controlling devices attached to a Pi's GPIO pins.
+ gpiozero builds on various pin libraries to provide a set of classes designed
+ to simplify interaction with devices connected to the GPIO pins, from simple
+ buttons and LEDs, up to various add-on boards. The API tries to adhere closely
+ to Python's idioms and naming conventions, and features alternative
+ programming paradigm approaches.
  .
  This is the Python 3 version of the package.
 
@@ -40,10 +42,11 @@ Package: python-gpiozero-doc
 Architecture: all
 Section: doc
 Depends: ${sphinxdoc:Depends}, ${misc:Depends}
-Description: Documentation for the gpiozero API
- gpiozero builds on RPi.GPIO to provide a set of classes designed to simplify
- interaction with devices connected to the GPIO pins, from simple buttons and
- LEDs, up to various add-on boards. The API tries to adhere closely to Python's
- idioms and naming conventions.
+Description: Simple API for controlling devices attached to a Pi's GPIO pins.
+ gpiozero builds on various pin libraries to provide a set of classes designed
+ to simplify interaction with devices connected to the GPIO pins, from simple
+ buttons and LEDs, up to various add-on boards. The API tries to adhere closely
+ to Python's idioms and naming conventions, and features alternative
+ programming paradigm approaches.
  .
  This is the version independent documentation for the package.
