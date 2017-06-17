@@ -394,9 +394,10 @@ def SPI(**spi_args):
             spi_args['select_pin'] in (7, 8),
             )):
         if SpiDev is None:
-            warnings.warn(
-                SPISoftwareFallback(
-                    'failed to import spidev, falling back to software SPI'))
+            if SPISoftwareFallback.printWarnings:
+                warnings.warn(
+                    SPISoftwareFallback(
+                        'failed to import spidev, falling back to software SPI'))
         else:
             try:
                 hardware_spi_args = {
@@ -408,10 +409,11 @@ def SPI(**spi_args):
                 else:
                     return SPIHardwareInterface(**hardware_spi_args)
             except Exception as e:
-                warnings.warn(
-                    SPISoftwareFallback(
-                        'failed to initialize hardware SPI, falling back to '
-                        'software (error was: %s)' % str(e)))
+                if SPISoftwareFallback.printWarnings:
+                    warnings.warn(
+                        SPISoftwareFallback(
+                            'failed to initialize hardware SPI, falling back to '
+                            'software (error was: %s)' % str(e)))
     if shared:
         return SharedSPISoftwareInterface(**spi_args)
     else:

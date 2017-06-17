@@ -12,6 +12,7 @@ from RPi import GPIO
 from . import LocalPin
 from .data import pi_info
 from ..exc import (
+    GPIOZeroWarning,
     PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
@@ -90,9 +91,10 @@ class RPiGPIOPin(LocalPin):
             try:
                 cls.PI_INFO.physical_pin('GPIO%d' % number)
             except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
+                if PinNonPhysical.printWarnings:
+                    warnings.warn(
+                        PinNonPhysical(
+                            'no physical pins exist for GPIO%d' % number))
             self._number = number
             self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
             self._pwm = None

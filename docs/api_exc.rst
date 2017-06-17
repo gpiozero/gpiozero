@@ -33,6 +33,17 @@ so you can still do::
     except ValueError:
         print('Bad value specified')
 
+All of GPIO Zero's warnings descend from :exc:`GPIOZeroWarning`. The GPIO Zero
+warnings are used when printing a warning message using `warnings.warn()`. The
+:exc:`GPIOZeroWarning` class defines a single data member: `printWarnings`, which
+is tested before calling `warnings.warn()`, allowing you to turn off the
+warning messages on a per-class basis::
+
+    from gpiozero import LED, PinNonPhysical
+
+    PinNonPhysical.printWarnings = False
+    actled = LED(actpin)
+
 
 Errors
 ======
@@ -43,13 +54,19 @@ Errors
 
 .. autoexception:: BadEventHandler
 
+.. autoexception:: BadWaitTime
+
 .. autoexception:: BadQueueLen
 
-.. autoexception:: BadWaitTime
+.. autoexception:: BadPinFactory
 
 .. autoexception:: CompositeDeviceError
 
 .. autoexception:: CompositeDeviceBadName
+
+.. autoexception:: CompositeDeviceBadOrder
+
+.. autoexception:: CompositeDeviceBadDevice
 
 .. autoexception:: EnergenieSocketMissing
 
@@ -58,6 +75,8 @@ Errors
 .. autoexception:: SPIError
 
 .. autoexception:: SPIBadArgs
+
+.. autoexception:: SPIBadChannel
 
 .. autoexception:: GPIODeviceError
 
@@ -83,6 +102,8 @@ Errors
 
 .. autoexception:: PinInvalidEdges
 
+.. autoexception:: PinInvalidBounce
+
 .. autoexception:: PinSetInput
 
 .. autoexception:: PinFixedPull
@@ -95,11 +116,12 @@ Errors
 
 .. autoexception:: PinPWMFixedValue
 
+.. autoexception:: PinUnknownPi
+
 .. autoexception:: PinMultiplePins
 
 .. autoexception:: PinNoPins
 
-.. autoexception:: PinUnknownPi
 
 Warnings
 ========
@@ -110,3 +132,6 @@ Warnings
 
 .. autoexception:: SPISoftwareFallback
 
+.. autoexception:: PinWarning
+
+.. autoexception:: PinNonPhysical

@@ -111,9 +111,10 @@ class PiGPIOPin(Pin):
             try:
                 self._pi_info.physical_pin('GPIO%d' % number)
             except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
+                if PinNonPhysical.printWarnings:
+                    warnings.warn(
+                        PinNonPhysical(
+                            'no physical pins exist for GPIO%d' % number))
             self._host = host
             self._port = port
             self._number = number
