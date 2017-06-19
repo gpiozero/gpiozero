@@ -70,8 +70,11 @@ class SourceMixin(object):
 
     def close(self):
         try:
-            super(SourceMixin, self).close()
             self.source = None
+        except AttributeError:
+            pass
+        try:
+            super(SourceMixin, self).close()
         except AttributeError:
             pass
 

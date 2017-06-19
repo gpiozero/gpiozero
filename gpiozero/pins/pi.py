@@ -9,10 +9,10 @@ str = type('')
 import io
 from threading import RLock
 from types import MethodType
-from weakref import ref, proxy
 try:
-    from weakref import WeakMethod
+    from weakref import ref, WeakMethod
 except ImportError:
+
     from ..compat import WeakMethod
 import warnings
 
@@ -216,7 +216,7 @@ class PiPin(Pin):
     """
     def __init__(self, factory, number):
         super(PiPin, self).__init__()
-        self._factory = proxy(factory)
+        self._factory = factory
         self._when_changed_lock = RLock()
         self._when_changed = None
         self._number = number

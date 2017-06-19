@@ -34,6 +34,7 @@ from .exc import (
     GPIOPinInUse,
     GPIODeviceClosed,
     PinFactoryFallback,
+    PinReservationsExist,
     )
 from .compat import frozendict
 
@@ -202,6 +203,20 @@ class Device(ValuesMixin, GPIOBase):
 
     @classmethod
     def _set_pin_factory(cls, new_factory):
+        reserved_devices = {
+            dev
+            for ref_list in cls._reservations.values()
+            for ref in ref_list
+            for dev in (ref(),)
+            if dev is not None
+        }
+        if new_factory is None:
+            for dev in reserved_devices:
+                dev.close()
+        elif reserved_devices:
+            raise PinReservationsExist(
+                "can't change factory while devices still hold pin "
+                "reservations (%r)" % dev)
         if cls._pin_factory is not None:
             cls._pin_factory.close()
         cls._pin_factory = new_factory
