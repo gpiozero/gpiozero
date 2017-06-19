@@ -73,6 +73,11 @@ __entry_points__ = {
         'rpio    = gpiozero.pins.rpio:RPIOFactory',
         'native  = gpiozero.pins.native:NativeFactory',
         'mock    = gpiozero.pins.mock:MockFactory',
+        # Backwards compatible names
+        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'RPIOPin    = gpiozero.pins.rpio:RPIOFactory',
+        'NativePin  = gpiozero.pins.native:NativeFactory',
     ],
     'gpiozero_mock_pin_classes': [
         'mockpin          = gpiozero.pins.mock:MockPin',
