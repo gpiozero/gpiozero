@@ -15,16 +15,12 @@ try:
 except ImportError:
     from gpiozero.compat import isclose
 
-from gpiozero import *
 from gpiozero.pins.mock import MockSPIDevice, MockPin
+from gpiozero import *
 
-
-def setup_function(function):
-    import gpiozero.devices
-    gpiozero.devices.pin_factory = MockPin
 
 def teardown_function(function):
-    MockPin.clear_pins()
+    Device._pin_factory.reset()
 
 def clamp(v, min_value, max_value):
     return min(max_value, max(min_value, v))

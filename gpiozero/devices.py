@@ -10,15 +10,16 @@ str = type('')
 import os
 import atexit
 import weakref
-from collections import namedtuple
+import warnings
+from collections import namedtuple, defaultdict
 from itertools import chain
 from types import FunctionType
-from threading import RLock
+from threading import Lock
 
 import pkg_resources
 
+from .pins import Pin
 from .threads import _threads_shutdown
-from .pins import _pins_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
@@ -32,50 +33,10 @@ from .exc import (
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
+    PinFactoryFallback,
+    PinReservationsExist,
     )
 from .compat import frozendict
-
-
-def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
-    group = 'gpiozero_pin_factories'
-    if name is None:
-        # If no factory is explicitly specified, try various names in
-        # "preferred" order. Note that in this case we only select from
-        # gpiozero distribution so without explicitly specifying a name (via
-        # the environment) it's impossible to auto-select a factory from
-        # outside the base distribution
-        #
-        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
-        # no third-party libraries are available, however, we fall back to a
-        # pure Python implementation which supports platforms like PyPy
-        dist = pkg_resources.get_distribution('gpiozero')
-        for name in ('RPiGPIOPin', 'RPIOPin', 'PiGPIOPin', 'NativePin'):
-            try:
-                return pkg_resources.load_entry_point(dist, group, name)
-            except ImportError:
-                pass
-        raise BadPinFactory('Unable to locate any default pin factory!')
-    else:
-        for factory in pkg_resources.iter_entry_points(group, name):
-            return factory.load()
-        raise BadPinFactory('Unable to locate pin factory "%s"' % name)
-
-pin_factory = _default_pin_factory()
-
-
-_PINS = set()
-_PINS_LOCK = RLock() # Yes, this needs to be re-entrant
-
-def _shutdown():
-    _threads_shutdown()
-    with _PINS_LOCK:
-        while _PINS:
-            _PINS.pop().close()
-    # Any cleanup routines registered by pins libraries must be called *after*
-    # cleanup of pin objects used by devices
-    _pins_shutdown()
-
-atexit.register(_shutdown)
 
 
 class GPIOMeta(type):
@@ -106,7 +67,7 @@ class GPIOMeta(type):
             # already exists. Only construct the instance if the key's new.
             key = cls._shared_key(*args, **kwargs)
             try:
-                self = cls._INSTANCES[key]
+                self = cls._instances[key]
                 self._refs += 1
             except (KeyError, ReferenceError) as e:
                 self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -122,14 +83,14 @@ class GPIOMeta(type):
                             old_close()
                         finally:
                             try:
-                                del cls._INSTANCES[key]
+                                del cls._instances[key]
                             except KeyError:
                                 # If the _refs go negative (too many closes)
                                 # just ignore the resulting KeyError here -
                                 # it's already gone
                                 pass
                 self.close = close
-                cls._INSTANCES[key] = weakref.proxy(self)
+                cls._instances[key] = weakref.proxy(self)
         else:
             # Construct the instance as normal
             self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -229,12 +190,108 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
 class Device(ValuesMixin, GPIOBase):
     """
     Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
-    etc. This is the base class of the device hierarchy. It defines the
-    basic services applicable to all devices (specifically the :attr:`is_active`
+    etc. This is the base class of the device hierarchy. It defines the basic
+    services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
     """
+    _pin_factory = None # instance of a Factory sub-class
+    _reservations = defaultdict(list) # maps pin addresses to lists of devices
+    _res_lock = Lock()
+
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
+
+    @classmethod
+    def _set_pin_factory(cls, new_factory):
+        reserved_devices = {
+            dev
+            for ref_list in cls._reservations.values()
+            for ref in ref_list
+            for dev in (ref(),)
+            if dev is not None
+        }
+        if new_factory is None:
+            for dev in reserved_devices:
+                dev.close()
+        elif reserved_devices:
+            raise PinReservationsExist(
+                "can't change factory while devices still hold pin "
+                "reservations (%r)" % dev)
+        if cls._pin_factory is not None:
+            cls._pin_factory.close()
+        cls._pin_factory = new_factory
+
+    def _reserve_pins(self, *pins_or_addresses):
+        """
+        Called to indicate that the device reserves the right to use the
+        specified *pins_or_addresses*. This should be done during device
+        construction.  If pins are reserved, you must ensure that the
+        reservation is released by eventually called :meth:`_release_pins`.
+
+        The *pins_or_addresses* can be actual :class:`Pin` instances or the
+        addresses of pin instances (each address is a tuple of strings). The
+        latter form is permitted to ensure that devices do not have to
+        construct :class:`Pin` objects to reserve pins. This is important as
+        constructing a pin often configures it (e.g. as an input) which
+        conflicts with alternate pin functions like SPI.
+        """
+        addresses = (
+            p.address if isinstance(p, Pin) else p
+            for p in pins_or_addresses
+            )
+        with Device._res_lock:
+            for address in addresses:
+                for device_ref in Device._reservations[address]:
+                    device = device_ref()
+                    if device is not None and self._conflicts_with(device):
+                        raise GPIOPinInUse(
+                            'pin %s is already in use by %r' % (
+                                '/'.join(address), device)
+                        )
+                Device._reservations[address].append(weakref.ref(self))
+
+    def _release_pins(self, *pins_or_addresses):
+        """
+        Releases the reservation of this device against *pins_or_addresses*.
+        This is typically called during :meth:`close` to clean up reservations
+        taken during construction. Releasing a reservation that is not
+        currently held will be silently ignored (to permit clean-up after
+        failed / partial construction).
+        """
+        addresses = (
+            p.address if isinstance(p, Pin) else p
+            for p in pins_or_addresses
+            )
+        with Device._res_lock:
+            for address in addresses:
+                Device._reservations[address] = [
+                    ref for ref in Device._reservations[address]
+                    if ref() not in (self, None) # may as well clean up dead refs
+                    ]
+
+    def _release_all(self):
+        """
+        Releases all pin reservations taken out by this device. See
+        :meth:`_release_pins` for further information).
+        """
+        with Device._res_lock:
+            Device._reservations = defaultdict(list, {
+                address: [
+                    ref for ref in conflictors
+                    if ref() not in (self, None)
+                    ]
+                for address, conflictors in Device._reservations.items()
+                })
+
+    def _conflicts_with(self, other):
+        """
+        Called by :meth:`_reserve_pin` to test whether the *other*
+        :class:`Device` using a common pin conflicts with this device's intent
+        to use it. The default is ``True`` indicating that all devices conflict
+        with common pins.  Sub-classes may override this to permit more nuanced
+        replies.
+        """
+        return True
 
     @property
     def value(self):
@@ -378,14 +435,12 @@ class GPIODevice(Device):
         self._pin = None
         if pin is None:
             raise GPIOPinMissing('No pin given')
-        if isinstance(pin, int):
-            pin = pin_factory(pin)
-        with _PINS_LOCK:
-            if pin in _PINS:
-                raise GPIOPinInUse(
-                    'pin %r is already in use by another gpiozero object' % pin
-                )
-            _PINS.add(pin)
+        if isinstance(pin, Pin):
+            self._reserve_pins(pin)
+        else:
+            # Check you can reserve *before* constructing the pin
+            self._reserve_pins(Device._pin_factory.pin_address(pin))
+            pin = Device._pin_factory.pin(pin)
         self._pin = pin
         self._active_state = True
         self._inactive_state = False
@@ -402,12 +457,10 @@ class GPIODevice(Device):
 
     def close(self):
         super(GPIODevice, self).close()
-        with _PINS_LOCK:
-            pin = self._pin
+        if self._pin is not None:
+            self._release_pins(self._pin)
+            self._pin.close()
             self._pin = None
-            if pin in _PINS:
-                _PINS.remove(pin)
-                pin.close()
 
     @property
     def closed(self):
@@ -440,4 +493,42 @@ class GPIODevice(Device):
                 self.__class__.__name__, self.pin, self.is_active)
         except DeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
+
+
+# Defined last to ensure Device is defined before attempting to load any pin
+# factory; pin factories want to load spi which in turn relies on devices (for
+# the soft-SPI implementation)
+def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+    group = 'gpiozero_pin_factories'
+    if name is None:
+        # If no factory is explicitly specified, try various names in
+        # "preferred" order. Note that in this case we only select from
+        # gpiozero distribution so without explicitly specifying a name (via
+        # the environment) it's impossible to auto-select a factory from
+        # outside the base distribution
+        #
+        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions. If
+        # no third-party libraries are available, however, we fall back to a
+        # pure Python implementation which supports platforms like PyPy
+        dist = pkg_resources.get_distribution('gpiozero')
+        for name in ('rpigpio', 'rpio', 'pigpio', 'native'):
+            try:
+                return pkg_resources.load_entry_point(dist, group, name)()
+            except Exception as e:
+                warnings.warn(
+                    PinFactoryFallback(
+                        'Failed to load factory %s: %s' % (name, str(e))))
+        raise BadPinFactory('Unable to load any default pin factory!')
+    else:
+        for factory in pkg_resources.iter_entry_points(group, name.lower()):
+            return factory.load()()
+        raise BadPinFactory('Unable to find pin factory "%s"' % name)
+
+Device._set_pin_factory(_default_pin_factory())
+
+def _shutdown():
+    _threads_shutdown()
+    Device._set_pin_factory(None)
+
+atexit.register(_shutdown)
 

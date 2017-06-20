@@ -68,12 +68,22 @@ if sys.version_info[:2] == (3, 2):
 
 __entry_points__ = {
     'gpiozero_pin_factories': [
-        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOPin',
-        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOPin',
-        'RPIOPin    = gpiozero.pins.rpio:RPIOPin',
-        'NativePin  = gpiozero.pins.native:NativePin',
-        'MockPin    = gpiozero.pins.mock:MockPin',
-        'MockPWMPin = gpiozero.pins.mock:MockPWMPin',
+        'pigpio  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'rpigpio = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'rpio    = gpiozero.pins.rpio:RPIOFactory',
+        'native  = gpiozero.pins.native:NativeFactory',
+        'mock    = gpiozero.pins.mock:MockFactory',
+        # Backwards compatible names
+        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'RPIOPin    = gpiozero.pins.rpio:RPIOFactory',
+        'NativePin  = gpiozero.pins.native:NativeFactory',
+    ],
+    'gpiozero_mock_pin_classes': [
+        'mockpin          = gpiozero.pins.mock:MockPin',
+        'mockpwmpin       = gpiozero.pins.mock:MockPWMPin',
+        'mockchargingpin  = gpiozero.pins.mock:MockChargingPin',
+        'mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin',
     ],
     'console_scripts': [
         'pinout = gpiozero.cli.pinout:main',

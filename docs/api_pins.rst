@@ -11,68 +11,95 @@ are concerned with. However, some users may wish to take advantage of the
 capabilities of alternative GPIO implementations or (in future) use GPIO
 extender chips. This is the purpose of the pins portion of the library.
 
-When you construct a device, you pass in a GPIO pin number. However, what the
-library actually expects is a :class:`Pin` implementation. If it finds a simple
-integer number instead, it uses one of the following classes to provide the
-:class:`Pin` implementation (classes are listed in favoured order):
+When you construct a device, you pass in a pin specification. However, what the
+library actually expects is a :class:`Pin` implementation. If it finds anything
+else, it uses the existing ``Device._pin_factory`` to construct a :class:`Pin`
+implementation based on the specification.
 
-1. :class:`gpiozero.pins.rpigpio.RPiGPIOPin`
+Changing the pin factory
+========================
 
-2. :class:`gpiozero.pins.rpio.RPIOPin`
+The default pin factory can be replaced by specifying a value for the
+``GPIOZERO_PIN_FACTORY`` environment variable. For example:
 
-3. :class:`gpiozero.pins.pigpiod.PiGPIOPin`
+.. code-block:: console
 
-4. :class:`gpiozero.pins.native.NativePin`
+    pi@raspberrypi $ GPIOZERO_PIN_FACTORY=native python
+    Python 3.4.2 (default, Oct 19 2014, 13:31:11)
+    [GCC 4.9.1] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import gpiozero
+    >>> gpiozero.Device._pin_factory
+    <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
-You can change the default pin implementation by over-writing the
-``pin_factory`` global in the ``devices`` module like so::
+To set the ``GPIOZERO_PIN_FACTORY`` for the rest of your session you can
+export this value:
 
-    from gpiozero.pins.native import NativePin
-    import gpiozero.devices
-    # Force the default pin implementation to be NativePin
-    gpiozero.devices.pin_factory = NativePin
+.. code-block:: console
+
+    pi@raspberrypi $ export GPIOZERO_PIN_FACTORY=native
+    pi@raspberrypi $ python
+    Python 3.4.2 (default, Oct 19 2014, 13:31:11)
+    [GCC 4.9.1] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import gpiozero
+    >>> gpiozero.Device._pin_factory
+    <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
+    >>> quit()
+    pi@raspberrypi $ python
+    Python 3.4.2 (default, Oct 19 2014, 13:31:11)
+    [GCC 4.9.1] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import gpiozero
+    >>> gpiozero.Device._pin_factory
+    <gpiozero.pins.native.NativeFactory object at 0x76401330>
+
+If you add the ``export`` command to your :file:`~/.bashrc` file, you'll set
+the default pin factory for all future sessions too.
+
+The following values, and the corresponding :class:`Factory` and :class:`Pin`
+classes are listed in the table below. Factories are listed in the order that
+they are tried by default.
+
++---------+-----------------------------------------------+-------------------------------------------+
+| Name    | Factory class                                 | Pin class                                 |
++=========+===============================================+===========================================+
+| rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
++---------+-----------------------------------------------+-------------------------------------------+
+| rpio    | :class:`gpiozero.pins.rpio.RPIOFactory`       | :class:`gpiozero.pins.rpio.RPIOPin`       |
++---------+-----------------------------------------------+-------------------------------------------+
+| pigpio  | :class:`gpiozero.pins.pigpiod.PiGPIOFactory`  | :class:`gpiozero.pins.pigpiod.PiGPIOPin`  |
++---------+-----------------------------------------------+-------------------------------------------+
+| native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   |
++---------+-----------------------------------------------+-------------------------------------------+
+
+If you need to change the default pin factory from within a script, use the
+``Device._set_pin_factory`` class method, passing in the instance of the new
+factory to use. This is only supported at script startup (replacing the factory
+closes all existing pin instances which can have interesting consequences for
+any devices using them)::
+
+    from gpiozero.pins.native import NativeFactory
+    from gpiozero import *
+    Device._set_pin_factory(NativeFactory())
 
     from gpiozero import LED
 
     # This will now use NativePin instead of RPiGPIOPin
     led = LED(16)
 
-``pin_factory`` is a concrete descendent of the abstract :class:`Pin` class.
-The descendent may take additional parameters in its constructor provided they
-are optional; GPIO Zero will expect to be able to construct instances with
-nothing more than an integer pin number.
-
-However, the descendent may take default information from additional sources.
+Certain factories may take default information from additional sources.
 For example, to default to creating pins with
 :class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``
 you can set the :envvar:`PIGPIO_ADDR` environment variable when running your
-script::
+script:
 
-    $ PIGPIO_ADDR=remote-pi python my_script.py
+.. code-block:: console
 
-It is worth noting that instead of passing an integer to device constructors,
-you can pass an object derived from :class:`Pin` itself::
+    $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=remote-pi python3 my_script.py
 
-    from gpiozero.pins.native import NativePin
-    from gpiozero import LED
-
-    led = LED(NativePin(16))
-
-In future, this separation of pins and devices should also permit the library
-to utilize pins that are part of IO extender chips. For example::
-
-    from gpiozero import IOExtender, LED
-
-    ext = IOExtender()
-    led = LED(ext.pins[0])
-    led.on()
-
-.. warning::
-
-    While the devices API is now considered stable and won't change in
-    backwards incompatible ways, the pins API is *not* yet considered stable.
-    It is potentially subject to change in future versions. We welcome any
-    comments from testers!
+Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
+:file:`~/.bashrc` script too.
 
 .. warning::
 
@@ -83,41 +110,64 @@ to utilize pins that are part of IO extender chips. For example::
     actual raspberry pie, you have only yourself to blame.
 
 
-RPiGPIOPin
-==========
+RPi.GPIO
+========
+
+.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOFactory
 
 .. autoclass:: gpiozero.pins.rpigpio.RPiGPIOPin
 
 
-RPIOPin
-=======
+RPIO
+====
+
+.. autoclass:: gpiozero.pins.rpio.RPIOFactory
 
 .. autoclass:: gpiozero.pins.rpio.RPIOPin
 
 
-PiGPIOPin
-=========
+PiGPIO
+======
+
+.. autoclass:: gpiozero.pins.pigpiod.PiGPIOFactory
 
 .. autoclass:: gpiozero.pins.pigpiod.PiGPIOPin
 
 
-NativePin
-=========
+Native
+======
+
+.. autoclass:: gpiozero.pins.native.NativeFactory
 
 .. autoclass:: gpiozero.pins.native.NativePin
 
 
-Abstract Pin
+Base classes
 ============
+
+.. autoclass:: Factory
+    :members:
 
 .. autoclass:: Pin
     :members:
 
+.. autoclass:: SPI
+    :members:
 
-Local Pin
-=========
+.. currentmodule:: gpiozero.pins.pi
 
-.. autoclass:: LocalPin
+.. autoclass:: PiFactory
+    :members:
+
+.. autoclass:: PiPin
+    :members:
+
+.. currentmodule:: gpiozero.pins.local
+
+.. autoclass:: LocalPiFactory
+    :members:
+
+.. autoclass:: LocalPiPin
     :members:
 
 
@@ -129,6 +179,8 @@ revisions of Raspberry Pi. This is used internally to raise warnings when
 non-physical pins are used, or to raise exceptions when pull-downs are
 requested on pins with physical pull-up resistors attached. The following
 functions and classes can be used to query this database:
+
+.. currentmodule:: gpiozero
 
 .. autofunction:: pi_info
 

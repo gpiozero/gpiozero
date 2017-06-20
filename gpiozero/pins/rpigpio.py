@@ -7,10 +7,10 @@ from __future__ import (
 str = type('')
 
 import warnings
+
 from RPi import GPIO
 
-from . import LocalPin
-from .data import pi_info
+from .local import LocalPiFactory, LocalPiPin
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
@@ -19,12 +19,10 @@ from ..exc import (
     PinInvalidState,
     PinInvalidBounce,
     PinPWMFixedValue,
-    PinNonPhysical,
-    PinNoPins,
     )
 
 
-class RPiGPIOPin(LocalPin):
+class RPiGPIOFactory(LocalPiFactory):
     """
     Uses the `RPi.GPIO`_ library to interface to the Pi's GPIO pins. This is
     the default pin implementation if the RPi.GPIO library is installed.
@@ -39,7 +37,7 @@ class RPiGPIOPin(LocalPin):
 
     However, you can also construct RPi.GPIO pins manually if you wish::
 
-        from gpiozero.pins.rpigpio import RPiGPIOPin
+        from gpiozero.pins.rpigpio import RPiGPIOFactory
         from gpiozero import LED
 
         led = LED(RPiGPIOPin(12))
@@ -47,8 +45,18 @@ class RPiGPIOPin(LocalPin):
     .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
     """
 
-    _PINS = {}
+    def __init__(self):
+        super(RPiGPIOFactory, self).__init__()
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        self.pin_class = RPiGPIOPin
 
+    def close(self):
+        super(RPiGPIOFactory, self).close()
+        GPIO.cleanup()
+
+
+class RPiGPIOPin(LocalPiPin):
     GPIO_FUNCTIONS = {
         'input':   GPIO.IN,
         'output':  GPIO.OUT,
@@ -75,69 +83,42 @@ class RPiGPIOPin(LocalPin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    PI_INFO = None
-
-    def __new__(cls, number):
-        if not cls._PINS:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setwarnings(False)
-        if cls.PI_INFO is None:
-            cls.PI_INFO = pi_info()
-        try:
-            return cls._PINS[number]
-        except KeyError:
-            self = super(RPiGPIOPin, cls).__new__(cls)
-            try:
-                cls.PI_INFO.physical_pin('GPIO%d' % number)
-            except PinNoPins:
-                warnings.warn(
-                    PinNonPhysical(
-                        'no physical pins exist for GPIO%d' % number))
-            self._number = number
-            self._pull = 'up' if cls.PI_INFO.pulled_up('GPIO%d' % number) else 'floating'
-            self._pwm = None
-            self._frequency = None
-            self._duty_cycle = None
-            self._bounce = -666
-            self._when_changed = None
-            self._edges = GPIO.BOTH
-            GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[self._pull])
-            cls._PINS[number] = self
-            return self
-
-    def __repr__(self):
-        return "GPIO%d" % self._number
-
-    @property
-    def number(self):
-        return self._number
+    def __init__(self, factory, number):
+        super(RPiGPIOPin, self).__init__(factory, number)
+        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pwm = None
+        self._frequency = None
+        self._duty_cycle = None
+        self._bounce = -666
+        self._edges = GPIO.BOTH
+        GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[self._pull])
 
     def close(self):
         self.frequency = None
         self.when_changed = None
-        GPIO.cleanup(self._number)
+        GPIO.cleanup(self.number)
 
     def output_with_state(self, state):
         self._pull = 'floating'
-        GPIO.setup(self._number, GPIO.OUT, initial=state)
+        GPIO.setup(self.number, GPIO.OUT, initial=state)
 
     def input_with_pull(self, pull):
-        if pull != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
+        if pull != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
-            GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[pull])
+            GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[pull])
             self._pull = pull
         except KeyError:
             raise PinInvalidPull('invalid pull "%s" for pin %r' % (pull, self))
 
     def _get_function(self):
-        return self.GPIO_FUNCTION_NAMES[GPIO.gpio_function(self._number)]
+        return self.GPIO_FUNCTION_NAMES[GPIO.gpio_function(self.number)]
 
     def _set_function(self, value):
         if value != 'input':
             self._pull = 'floating'
         if value in ('input', 'output') and value in self.GPIO_FUNCTIONS:
-            GPIO.setup(self._number, self.GPIO_FUNCTIONS[value], self.GPIO_PULL_UPS[self._pull])
+            GPIO.setup(self.number, self.GPIO_FUNCTIONS[value], self.GPIO_PULL_UPS[self._pull])
         else:
             raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
 
@@ -145,7 +126,7 @@ class RPiGPIOPin(LocalPin):
         if self._pwm:
             return self._duty_cycle
         else:
-            return GPIO.input(self._number)
+            return GPIO.input(self.number)
 
     def _set_state(self, value):
         if self._pwm:
@@ -156,7 +137,7 @@ class RPiGPIOPin(LocalPin):
             self._duty_cycle = value
         else:
             try:
-                GPIO.output(self._number, value)
+                GPIO.output(self.number, value)
             except ValueError:
                 raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
             except RuntimeError:
@@ -168,10 +149,10 @@ class RPiGPIOPin(LocalPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.PI_INFO.pulled_up('GPIO%d' % self._number):
+        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
-            GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[value])
+            GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
             raise PinInvalidPull('invalid pull "%s" for pin %r' % (value, self))
@@ -182,7 +163,7 @@ class RPiGPIOPin(LocalPin):
     def _set_frequency(self, value):
         if self._frequency is None and value is not None:
             try:
-                self._pwm = GPIO.PWM(self._number, value)
+                self._pwm = GPIO.PWM(self.number, value)
             except RuntimeError:
                 raise PinPWMFixedValue('cannot start PWM on pin %r' % self)
             self._pwm.start(0)
@@ -221,19 +202,15 @@ class RPiGPIOPin(LocalPin):
         finally:
             self.when_changed = f
 
-    def _get_when_changed(self):
-        return self._when_changed
+    def _call_when_changed(self, channel):
+        super(RPiGPIOPin, self)._call_when_changed()
 
-    def _set_when_changed(self, value):
-        if self._when_changed is None and value is not None:
-            self._when_changed = value
-            GPIO.add_event_detect(
-                self._number, self._edges,
-                callback=lambda channel: self._when_changed(),
-                bouncetime=self._bounce)
-        elif self._when_changed is not None and value is None:
-            GPIO.remove_event_detect(self._number)
-            self._when_changed = None
-        else:
-            self._when_changed = value
+    def _enable_event_detect(self):
+        GPIO.add_event_detect(
+            self.number, self._edges,
+            callback=self._call_when_changed,
+            bouncetime=self._bounce)
+
+    def _disable_event_detect(self):
+        GPIO.remove_event_detect(self.number)
 
