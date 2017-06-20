@@ -15,7 +15,7 @@ except ImportError:
     SpiDev = None
 
 from . import SPI
-from .pi import PiFactory, PiPin
+from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS
 from .spi import SPISoftwareBus
 from ..devices import Device, SharedMixin
 from ..output_devices import OutputDevice
@@ -81,11 +81,12 @@ class LocalPiHardwareSPI(SPI, Device):
         self._interface = None
         self._address = factory.address + ('SPI(port=%d, device=%d)' % (port, device),)
         super(LocalPiHardwareSPI, self).__init__()
+        pins = SPI_HARDWARE_PINS[port]
         self._reserve_pins(
-            factory.pin_address(11),
-            factory.pin_address(10),
-            factory.pin_address(9),
-            factory.pin_address((8, 7)[device])
+            factory.pin_address(pins['clock']),
+            factory.pin_address(pins['mosi']),
+            factory.pin_address(pins['miso']),
+            factory.pin_address(pins['select'][device])
             )
         self._interface = SpiDev()
         self._interface.open(port, device)

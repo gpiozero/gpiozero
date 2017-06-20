@@ -12,7 +12,7 @@ from weakref import proxy
 import pigpio
 
 from . import SPI
-from .pi import PiPin, PiFactory
+from .pi import PiPin, PiFactory, SPI_HARDWARE_PINS
 from .data import pi_info
 from ..devices import Device
 from ..mixins import SharedMixin
@@ -299,10 +299,16 @@ class PiGPIOHardwareSPI(SPI, Device):
         self._factory = proxy(factory)
         self._handle = None
         super(PiGPIOHardwareSPI, self).__init__()
+        pins = SPI_HARDWARE_PINS[port]
         self._reserve_pins(*(
             factory.address + ('GPIO%d' % pin,)
-            for pin in (11, 10, 9, (8, 7)[device])
-            ))
+            for pin in (
+                pins['clock'],
+                pins['mosi'],
+                pins['miso'],
+                pins['select'][device]
+            )
+        ))
         self._spi_flags = 8 << 16
         self._baud = 500000
         self._handle = self._factory.connection.spi_open(

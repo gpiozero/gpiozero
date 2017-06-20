@@ -32,6 +32,16 @@ from ..exc import (
     )
 
 
+SPI_HARDWARE_PINS = {
+    0: {
+        'clock':  11,
+        'mosi':   10,
+        'miso':   9,
+        'select': (8, 7),
+    },
+}
+
+
 class PiFactory(Factory):
     """
     Abstract base class representing hardware attached to a Raspberry Pi. This
@@ -105,21 +115,24 @@ class PiFactory(Factory):
         if kwargs:
             raise SPIBadArgs(
                 'unrecognized keyword argument %s' % kwargs.popitem()[0])
-        if all((
-                spi_args['clock_pin'] == 11,
-                spi_args['mosi_pin'] == 10,
-                spi_args['miso_pin'] == 9,
-                spi_args['select_pin'] in (7, 8),
-                )):
-            try:
-                return self.spi_classes[('hardware', shared)](
-                    self, port=0, device=0 if spi_args['select_pin'] == 8 else 1
-                    )
-            except Exception as e:
-                warnings.warn(
-                    SPISoftwareFallback(
-                        'failed to initialize hardware SPI, falling back to '
-                        'software (error was: %s)' % str(e)))
+        for port, pins in SPI_HARDWARE_PINS.items():
+            if all((
+                    spi_args['clock_pin']  == pins['clock'],
+                    spi_args['mosi_pin']   == pins['mosi'],
+                    spi_args['miso_pin']   == pins['miso'],
+                    spi_args['select_pin'] in pins['select'],
+                    )):
+                try:
+                    return self.spi_classes[('hardware', shared)](
+                        self, port=port,
+                        device=pins['select'].index(spi_args['select_pin'])
+                        )
+                except Exception as e:
+                    warnings.warn(
+                        SPISoftwareFallback(
+                            'failed to initialize hardware SPI, falling back to '
+                            'software (error was: %s)' % str(e)))
+                    break
         # Convert all pin arguments to integer GPIO numbers. This is necessary
         # to ensure the shared-key for shared implementations get matched
         # correctly, and is a bit of a hack for the pigpio bit-bang
@@ -139,15 +152,16 @@ class PiFactory(Factory):
 
         Returns a tuple of ``(spi_args, other_args)``.
         """
-        pin_defaults = {
-            'clock_pin': 11,
-            'mosi_pin': 10,
-            'miso_pin': 9,
-            'select_pin': 8,
-            }
         dev_defaults = {
             'port': 0,
             'device': 0,
+            }
+        default_hw = SPI_HARDWARE_PINS[dev_defaults['port']]
+        pin_defaults = {
+            'clock_pin':  default_hw['clock'],
+            'mosi_pin':   default_hw['mosi'],
+            'miso_pin':   default_hw['miso'],
+            'select_pin': default_hw['select'][dev_defaults['device']],
             }
         spi_args = {
             key: value for (key, value) in kwargs.items()
@@ -171,10 +185,15 @@ class PiFactory(Factory):
                 }
             if spi_args['port'] != 0:
                 raise SPIBadArgs('port 0 is the only valid SPI port')
-            if spi_args['device'] not in (0, 1):
-                raise SPIBadArgs('device must be 0 or 1')
+            selected_hw = SPI_HARDWARE_PINS[spi_args['port']]
+            try:
+                selected_hw['select'][spi_args['device']]
+            except IndexError:
+                raise SPIBadArgs(
+                    'device must be in the range 0..%d' %
+                    len(selected_hw['select']))
             spi_args = {
-                key: value if key != 'select_pin' else (8, 7)[spi_args['device']]
+                key: value if key != 'select_pin' else selected_hw['select'][spi_args['device']]
                 for key, value in pin_defaults.items()
                 }
         else:
