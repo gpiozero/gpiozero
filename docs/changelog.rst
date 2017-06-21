@@ -61,7 +61,7 @@ Release 1.2.0 (2016-04-10)
 * Added support for lots of ADC chips (MCP3xxx family) (`#162`_) - many thanks
   to pcopa and lurch!
 * Added support for pigpiod as a pin implementation with
-  :class:`~gpiozero.pins.pigpiod.PiGPIOPin` (`#180`_)
+  :class:`~gpiozero.pins.pigpio.PiGPIOPin` (`#180`_)
 * Many refinements to the base classes mean more consistency in composite
   devices and several bugs squashed (`#164`_, `#175`_, `#182`_, `#189`_,
   `#193`_, `#229`_)
