@@ -68,13 +68,13 @@ if sys.version_info[:2] == (3, 2):
 
 __entry_points__ = {
     'gpiozero_pin_factories': [
-        'pigpio  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'pigpio  = gpiozero.pins.pigpio:PiGPIOFactory',
         'rpigpio = gpiozero.pins.rpigpio:RPiGPIOFactory',
         'rpio    = gpiozero.pins.rpio:RPIOFactory',
         'native  = gpiozero.pins.native:NativeFactory',
         'mock    = gpiozero.pins.mock:MockFactory',
         # Backwards compatible names
-        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOFactory',
+        'PiGPIOPin  = gpiozero.pins.pigpio:PiGPIOFactory',
         'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOFactory',
         'RPIOPin    = gpiozero.pins.rpio:RPIOFactory',
         'NativePin  = gpiozero.pins.native:NativeFactory',

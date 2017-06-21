@@ -45,9 +45,9 @@ class PiGPIOFactory(PiFactory):
     * Your script itself doesn't require root privileges; it just needs to
       be able to communicate with the daemon
 
-    You can construct pigpiod pins manually like so::
+    You can construct pigpio pins manually like so::
 
-        from gpiozero.pins.pigpiod import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOPin
         from gpiozero import LED
 
         led = LED(PiGPIOPin(12))
@@ -56,7 +56,7 @@ class PiGPIOFactory(PiFactory):
     accomplish this simply specify the host (and optionally port) when
     constructing the pin::
 
-        from gpiozero.pins.pigpiod import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOPin
         from gpiozero import LED
         from signal import pause
 
