@@ -9,6 +9,7 @@ str = type('')
 
 import sys
 import pytest
+from mock import patch
 from collections import namedtuple
 try:
     from math import isclose
@@ -247,89 +248,100 @@ def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False)
 
 
 def test_MCP3001():
-    mock = MockMCP3001(11, 10, 9, 8)
-    with MCP3001() as pot:
-        differential_mcp_test(mock, pot, 0, 1, 10)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3001(11, 10, 9, 8)
+        with MCP3001() as pot:
+            differential_mcp_test(mock, pot, 0, 1, 10)
 
 def test_MCP3002():
-    mock = MockMCP3002(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3002(channel=5)
-    with MCP3002(channel=1) as pot:
-        single_mcp_test(mock, pot, 1, 10)
-    with MCP3002(channel=1, differential=True) as pot:
-        differential_mcp_test(mock, pot, 1, 0, 10)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3002(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3002(channel=5)
+        with MCP3002(channel=1) as pot:
+            single_mcp_test(mock, pot, 1, 10)
+        with MCP3002(channel=1, differential=True) as pot:
+            differential_mcp_test(mock, pot, 1, 0, 10)
 
 def test_MCP3004():
-    mock = MockMCP3004(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3004(channel=5)
-    with MCP3004(channel=3) as pot:
-        single_mcp_test(mock, pot, 3, 10)
-    with MCP3004(channel=3, differential=True) as pot:
-        differential_mcp_test(mock, pot, 3, 2, 10)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3004(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3004(channel=5)
+        with MCP3004(channel=3) as pot:
+            single_mcp_test(mock, pot, 3, 10)
+        with MCP3004(channel=3, differential=True) as pot:
+            differential_mcp_test(mock, pot, 3, 2, 10)
 
 def test_MCP3008():
-    mock = MockMCP3008(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3008(channel=9)
-    with MCP3008(channel=0) as pot:
-        single_mcp_test(mock, pot, 0, 10)
-    with MCP3008(channel=0, differential=True) as pot:
-        differential_mcp_test(mock, pot, 0, 1, 10)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3008(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3008(channel=9)
+        with MCP3008(channel=0) as pot:
+            single_mcp_test(mock, pot, 0, 10)
+        with MCP3008(channel=0, differential=True) as pot:
+            differential_mcp_test(mock, pot, 0, 1, 10)
 
 def test_MCP3201():
-    mock = MockMCP3201(11, 10, 9, 8)
-    with MCP3201() as pot:
-        differential_mcp_test(mock, pot, 0, 1, 12)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3201(11, 10, 9, 8)
+        with MCP3201() as pot:
+            differential_mcp_test(mock, pot, 0, 1, 12)
 
 def test_MCP3202():
-    mock = MockMCP3202(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3202(channel=5)
-    with MCP3202(channel=1) as pot:
-        single_mcp_test(mock, pot, 1, 12)
-    with MCP3202(channel=1, differential=True) as pot:
-        differential_mcp_test(mock, pot, 1, 0, 12)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3202(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3202(channel=5)
+        with MCP3202(channel=1) as pot:
+            single_mcp_test(mock, pot, 1, 12)
+        with MCP3202(channel=1, differential=True) as pot:
+            differential_mcp_test(mock, pot, 1, 0, 12)
 
 def test_MCP3204():
-    mock = MockMCP3204(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3204(channel=5)
-    with MCP3204(channel=1) as pot:
-        single_mcp_test(mock, pot, 1, 12)
-    with MCP3204(channel=1, differential=True) as pot:
-        differential_mcp_test(mock, pot, 1, 0, 12)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3204(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3204(channel=5)
+        with MCP3204(channel=1) as pot:
+            single_mcp_test(mock, pot, 1, 12)
+        with MCP3204(channel=1, differential=True) as pot:
+            differential_mcp_test(mock, pot, 1, 0, 12)
 
 def test_MCP3208():
-    mock = MockMCP3208(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3208(channel=9)
-    with MCP3208(channel=7) as pot:
-        single_mcp_test(mock, pot, 7, 12)
-    with MCP3208(channel=7, differential=True) as pot:
-        differential_mcp_test(mock, pot, 7, 6, 12)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3208(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3208(channel=9)
+        with MCP3208(channel=7) as pot:
+            single_mcp_test(mock, pot, 7, 12)
+        with MCP3208(channel=7, differential=True) as pot:
+            differential_mcp_test(mock, pot, 7, 6, 12)
 
 def test_MCP3301():
-    mock = MockMCP3301(11, 10, 9, 8)
-    with MCP3301() as pot:
-        differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3301(11, 10, 9, 8)
+        with MCP3301() as pot:
+            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
 
 def test_MCP3302():
-    mock = MockMCP3302(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3302(channel=4)
-    with MCP3302(channel=0) as pot:
-        single_mcp_test(mock, pot, 0, 12)
-    with MCP3302(channel=0, differential=True) as pot:
-        differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3302(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3302(channel=4)
+        with MCP3302(channel=0) as pot:
+            single_mcp_test(mock, pot, 0, 12)
+        with MCP3302(channel=0, differential=True) as pot:
+            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
 
 def test_MCP3304():
-    mock = MockMCP3304(11, 10, 9, 8)
-    with pytest.raises(ValueError):
-        MCP3304(channel=9)
-    with MCP3304(channel=5) as pot:
-        single_mcp_test(mock, pot, 5, 12)
-    with MCP3304(channel=5, differential=True) as pot:
-        differential_mcp_test(mock, pot, 5, 4, 12, full=True)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        mock = MockMCP3304(11, 10, 9, 8)
+        with pytest.raises(ValueError):
+            MCP3304(channel=9)
+        with MCP3304(channel=5) as pot:
+            single_mcp_test(mock, pot, 5, 12)
+        with MCP3304(channel=5, differential=True) as pot:
+            differential_mcp_test(mock, pot, 5, 4, 12, full=True)
 

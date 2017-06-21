@@ -70,7 +70,8 @@ def test_spi_software_params():
                 assert isinstance(device, LocalPiSoftwareSPI)
             with Device._pin_factory.spi(select_pin=6, shared=True) as device:
                 assert isinstance(device, LocalPiSoftwareSPIShared)
-        with patch('gpiozero.devices.Device._pin_factory', NativeFactory()):
+        with patch('gpiozero.devices.Device._pin_factory', NativeFactory()), \
+                patch('gpiozero.pins.local.SpiDev', None):
             # Clear out the old factory's pins cache (this is only necessary
             # because we're being very naughty switching out pin factories)
             Device._pin_factory.pins.clear()
@@ -136,7 +137,9 @@ def test_spi_software_read():
             super(SPISlave, self).on_start()
             for i in range(10):
                 self.tx_word(i)
-    with SPISlave(11, 10, 9, 8) as slave, Device._pin_factory.spi() as master:
+    with patch('gpiozero.pins.local.SpiDev', None), \
+            SPISlave(11, 10, 9, 8) as slave, \
+            Device._pin_factory.spi() as master:
         assert master.read(3) == [0, 1, 2]
         assert master.read(6) == [0, 1, 2, 3, 4, 5]
         slave.clock_phase = True
@@ -145,7 +148,9 @@ def test_spi_software_read():
         assert master.read(6) == [0, 1, 2, 3, 4, 5]
 
 def test_spi_software_write():
-    with MockSPIDevice(11, 10, 9, 8) as test_device, Device._pin_factory.spi() as master:
+    with patch('gpiozero.pins.local.SpiDev', None), \
+            MockSPIDevice(11, 10, 9, 8) as test_device, \
+            Device._pin_factory.spi() as master:
         master.write([0])
         assert test_device.rx_word() == 0
         master.write([2, 0])
@@ -154,7 +159,8 @@ def test_spi_software_write():
         assert test_device.rx_word() == 257
 
 def test_spi_software_clock_mode():
-    with Device._pin_factory.spi() as master:
+    with patch('gpiozero.pins.local.SpiDev', None), \
+            Device._pin_factory.spi() as master:
         assert master.clock_mode == 0
         assert not master.clock_polarity
         assert not master.clock_phase
@@ -171,7 +177,8 @@ def test_spi_software_clock_mode():
             master.clock_mode = 5
 
 def test_spi_software_attr():
-    with Device._pin_factory.spi() as master:
+    with patch('gpiozero.pins.local.SpiDev', None), \
+            Device._pin_factory.spi() as master:
         assert not master.lsb_first
         assert not master.select_high
         assert master.bits_per_word == 8
