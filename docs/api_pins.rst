@@ -68,7 +68,7 @@ they are tried by default.
 +---------+-----------------------------------------------+-------------------------------------------+
 | rpio    | :class:`gpiozero.pins.rpio.RPIOFactory`       | :class:`gpiozero.pins.rpio.RPIOPin`       |
 +---------+-----------------------------------------------+-------------------------------------------+
-| pigpio  | :class:`gpiozero.pins.pigpiod.PiGPIOFactory`  | :class:`gpiozero.pins.pigpiod.PiGPIOPin`  |
+| pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
 | native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
@@ -90,7 +90,7 @@ any devices using them)::
 
 Certain factories may take default information from additional sources.
 For example, to default to creating pins with
-:class:`gpiozero.pins.pigpiod.PiGPIOPin` on a remote pi called ``remote-pi``
+:class:`gpiozero.pins.pigpio.PiGPIOPin` on a remote pi called ``remote-pi``
 you can set the :envvar:`PIGPIO_ADDR` environment variable when running your
 script:
 
@@ -129,9 +129,9 @@ RPIO
 PiGPIO
 ======
 
-.. autoclass:: gpiozero.pins.pigpiod.PiGPIOFactory
+.. autoclass:: gpiozero.pins.pigpio.PiGPIOFactory
 
-.. autoclass:: gpiozero.pins.pigpiod.PiGPIOPin
+.. autoclass:: gpiozero.pins.pigpio.PiGPIOPin
 
 
 Native
