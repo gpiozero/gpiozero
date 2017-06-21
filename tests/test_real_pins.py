@@ -41,7 +41,11 @@ INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
 
 @pytest.fixture(
     scope='module',
-    params=pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys())
+    params=[
+        name
+        for name in pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys()
+        if not name.endswith('Pin') # leave out compatibility names
+    ])
 def pin_factory(request):
     try:
         factory = pkg_resources.load_entry_point('gpiozero', 'gpiozero_pin_factories', request.param)()
