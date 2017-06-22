@@ -6,96 +6,97 @@ from __future__ import (
     )
 str = type('')
 
+import warnings
 
 import pytest
 
-from gpiozero.pins.mock import MockPin
 from gpiozero import *
 
 
 def teardown_function(function):
-    MockPin.clear_pins()
+    Device.pin_factory.reset()
+
 
 # TODO add more devices tests!
 
-def test_device_no_pin():
+def test_device_bad_pin():
     with pytest.raises(GPIOPinMissing):
         device = GPIODevice()
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice(60)
+
+def test_device_non_physical():
+    with warnings.catch_warnings(record=True) as w:
+        device = GPIODevice(37)
+        assert len(w) == 1
+        assert w[0].category == PinNonPhysical
 
 def test_device_init():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(2)
     with GPIODevice(pin) as device:
         assert not device.closed
         assert device.pin == pin
 
 def test_device_init_twice_same_pin():
-    pin = MockPin(2)
-    with GPIODevice(pin) as device:
+    with GPIODevice(2) as device:
         with pytest.raises(GPIOPinInUse):
-            device2 = GPIODevice(pin)
+            GPIODevice(2)
 
 def test_device_init_twice_different_pin():
-    pin = MockPin(2)
-    pin2 = MockPin(3)
-    with GPIODevice(pin) as device:
-        with GPIODevice(pin2) as device2:
+    with GPIODevice(2) as device:
+        with GPIODevice(3) as device2:
             pass
 
 def test_device_close():
-    pin = MockPin(2)
-    device = GPIODevice(pin)
+    device = GPIODevice(2)
+    # Don't use "with" here; we're testing close explicitly
     device.close()
     assert device.closed
     assert device.pin is None
 
 def test_device_reopen_same_pin():
-    pin = MockPin(2)
-    device = GPIODevice(pin)
-    device.close()
-    device2 = GPIODevice(pin)
-    assert not device2.closed
-    assert device2.pin == pin
-    assert device.closed
-    assert device.pin is None
-    device2.close()
+    pin = Device.pin_factory.pin(2)
+    with GPIODevice(pin) as device:
+        pass
+    with GPIODevice(pin) as device2:
+        assert not device2.closed
+        assert device2.pin is pin
+        assert device.closed
+        assert device.pin is None
 
 def test_device_repr():
-    pin = MockPin(2)
-    with GPIODevice(pin) as device:
-        assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % pin
+    with GPIODevice(4) as device:
+        assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % device.pin
 
 def test_device_repr_after_close():
-    pin = MockPin(2)
-    device = GPIODevice(pin)
-    device.close()
+    with GPIODevice(2) as device:
+        pass
     assert repr(device) == '<gpiozero.GPIODevice object closed>'
 
 def test_device_unknown_attr():
-    pin = MockPin(2)
-    with GPIODevice(pin) as device:
+    with GPIODevice(2) as device:
         with pytest.raises(AttributeError):
             device.foo = 1
 
 def test_device_context_manager():
-    pin = MockPin(2)
-    with GPIODevice(pin) as device:
+    with GPIODevice(2) as device:
         assert not device.closed
     assert device.closed
 
 def test_composite_device_sequence():
     with CompositeDevice(
-            InputDevice(MockPin(2)),
-            InputDevice(MockPin(3))
+            InputDevice(4),
+            InputDevice(5)
             ) as device:
         assert len(device) == 2
-        assert device[0].pin.number == 2
-        assert device[1].pin.number == 3
+        assert device[0].pin.number == 4
+        assert device[1].pin.number == 5
         assert device.namedtuple._fields == ('_0', '_1')
 
 def test_composite_device_values():
     with CompositeDevice(
-            InputDevice(MockPin(2)),
-            InputDevice(MockPin(3))
+            InputDevice(4),
+            InputDevice(5)
             ) as device:
         assert device.value == (0, 0)
         assert not device.is_active
@@ -105,8 +106,8 @@ def test_composite_device_values():
 
 def test_composite_device_named():
     with CompositeDevice(
-            foo=InputDevice(MockPin(2)),
-            bar=InputDevice(MockPin(3)),
+            foo=InputDevice(4),
+            bar=InputDevice(5),
             _order=('foo', 'bar')
             ) as device:
         assert device.namedtuple._fields == ('foo', 'bar')
@@ -121,13 +122,13 @@ def test_composite_device_bad_init():
     with pytest.raises(ValueError):
         CompositeDevice(2)
     with pytest.raises(ValueError):
-        CompositeDevice(MockPin(2))
+        CompositeDevice(Device.pin_factory.pin(2))
 
 def test_composite_device_read_only():
-    device = CompositeDevice(
-        foo=InputDevice(MockPin(2)),
-        bar=InputDevice(MockPin(3))
-        )
-    with pytest.raises(AttributeError):
-        device.foo = 1
+    with CompositeDevice(
+        foo=InputDevice(4),
+        bar=InputDevice(5)
+        ) as device:
+        with pytest.raises(AttributeError):
+            device.foo = 1
 

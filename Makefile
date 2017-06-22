@@ -101,7 +101,7 @@ develop: tags
 	$(PIP) install -e .[doc,test]
 
 test:
-	$(COVERAGE) run -m $(PYTEST) tests -v
+	$(COVERAGE) run -m $(PYTEST) tests -v -r sx
 	$(COVERAGE) report --rcfile coverage.cfg
 
 clean:

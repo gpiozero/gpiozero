@@ -8,7 +8,7 @@ The following recipes demonstrate some of the capabilities of the GPIO Zero
 library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
 
-.. _pin_numbering:
+.. _pin-numbering:
 
 Pin Numbering
 =============

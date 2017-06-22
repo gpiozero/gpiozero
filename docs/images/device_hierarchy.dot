@@ -1,7 +1,7 @@
 /* vim: set et sw=4 sts=4: */
 
 digraph classes {
-    graph [rankdir=BT];
+    graph [rankdir=RL];
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
@@ -60,11 +60,21 @@ digraph classes {
     SPIDevice->Device;
     AnalogInputDevice->SPIDevice;
     MCP3xxx->AnalogInputDevice;
+    MCP30xx->MCP3xxx;
+    MCP32xx->MCP3xxx;
     MCP33xx->MCP3xxx;
-    MCP3004->MCP3xxx;
-    MCP3008->MCP3xxx;
-    MCP3204->MCP3xxx;
-    MCP3208->MCP3xxx;
+    MCP3xx2->MCP3xxx;
+
+    MCP3001->MCP30xx;
+    MCP3002->MCP30xx;
+    MCP3004->MCP30xx;
+    MCP3008->MCP30xx;
+    MCP3201->MCP32xx;
+    MCP3202->MCP32xx;
+    MCP3204->MCP32xx;
+    MCP3208->MCP32xx;
+    MCP3002->MCP3xx2;
+    MCP3202->MCP3xx2;
     MCP3301->MCP33xx;
     MCP3302->MCP33xx;
     MCP3304->MCP33xx;
@@ -75,10 +85,15 @@ digraph classes {
     LEDCollection->CompositeOutputDevice;
     LEDBoard->LEDCollection;
     LEDBarGraph->LEDCollection;
+    LedBorg->RGBLED;
+    ButtonBoard->CompositeDevice;
+    ButtonBoard->HoldMixin;
     PiLiter->LEDBoard;
     PiLiterBarGraph->LEDBarGraph;
     TrafficLights->LEDBoard;
+    SnowPi->LEDBoard;
     PiTraffic->TrafficLights;
+    PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
@@ -90,10 +105,14 @@ digraph classes {
     CamJamKitRobot->Robot;
     Motor->CompositeDevice;
     Motor->SourceMixin;
+    Servo->CompositeDevice;
+    Servo->SourceMixin;
+    AngularServo->Servo;
 
     InternalDevice->Device;
     InternalDevice->EventsMixin;
     TimeOfDay->InternalDevice;
     PingServer->InternalDevice;
+    CPUTemperature->InternalDevice;
 }
 

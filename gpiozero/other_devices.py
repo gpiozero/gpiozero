@@ -56,7 +56,7 @@ class PingServer(InternalDevice):
         self._fire_events()
 
     def __repr__(self):
-        return '<gpiozero.PingDevice host="%s">' % self.host
+        return '<gpiozero.PingServer host="%s">' % self.host
 
     @property
     def value(self):

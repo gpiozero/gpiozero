@@ -12,57 +12,53 @@ import pytest
 from threading import Event
 from functools import partial
 
-from gpiozero.pins.mock import (
-    MockPin,
-    MockPulledUpPin,
-    MockChargingPin,
-    MockTriggerPin,
-    )
+from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
 from gpiozero import *
 
 
 def teardown_function(function):
-    MockPin.clear_pins()
+    Device.pin_factory.reset()
+    Device._reservations.clear()
+
 
 def test_input_initial_values():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with InputDevice(pin, pull_up=True) as device:
         assert pin.function == 'input'
         assert pin.pull == 'up'
         assert device.pull_up
-        device.close()
-        device = InputDevice(pin, pull_up=False)
+    with InputDevice(pin, pull_up=False) as device:
         assert pin.pull == 'down'
         assert not device.pull_up
 
 def test_input_is_active_low():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(2)
     with InputDevice(pin, pull_up=True) as device:
         pin.drive_high()
         assert not device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=True, is_active=False>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO2, pull_up=True, is_active=False>'
         pin.drive_low()
         assert device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=True, is_active=True>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO2, pull_up=True, is_active=True>'
 
 def test_input_is_active_high():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with InputDevice(pin, pull_up=False) as device:
         pin.drive_high()
         assert device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=False, is_active=True>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=False, is_active=True>'
         pin.drive_low()
         assert not device.is_active
-        assert repr(device) == '<gpiozero.InputDevice object on pin MOCK2, pull_up=False, is_active=False>'
+        assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=False, is_active=False>'
 
 def test_input_pulled_up():
-    pin = MockPulledUpPin(2)
+    pin = Device.pin_factory.pin(2)
     with pytest.raises(PinFixedPull):
         InputDevice(pin, pull_up=False)
 
 def test_input_event_activated():
     event = Event()
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         device.when_activated = lambda: event.set()
         assert not event.is_set()
@@ -71,7 +67,7 @@ def test_input_event_activated():
 
 def test_input_event_deactivated():
     event = Event()
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         device.when_deactivated = lambda: event.set()
         assert not event.is_set()
@@ -82,7 +78,7 @@ def test_input_event_deactivated():
 
 def test_input_partial_callback():
     event = Event()
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     def foo(a, b):
         event.set()
         return a + b
@@ -95,22 +91,22 @@ def test_input_partial_callback():
         assert event.is_set()
 
 def test_input_wait_active():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         pin.drive_high()
         assert device.wait_for_active(1)
         assert not device.wait_for_inactive(0)
 
 def test_input_wait_inactive():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with DigitalInputDevice(pin) as device:
         assert device.wait_for_inactive(1)
         assert not device.wait_for_active(0)
 
 def test_input_smoothed_attrib():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with SmoothedInputDevice(pin, threshold=0.5, queue_len=5, partial=False) as device:
-        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin=MOCK2, pull_up=False>'
+        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin GPIO4, pull_up=False>'
         assert device.threshold == 0.5
         assert device.queue_len == 5
         assert not device.partial
@@ -120,7 +116,7 @@ def test_input_smoothed_attrib():
             device.threshold = 1
 
 def test_input_smoothed_values():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with SmoothedInputDevice(pin) as device:
         device._queue.start()
         assert not device.is_active
@@ -130,7 +126,7 @@ def test_input_smoothed_values():
         assert device.wait_for_inactive(1)
 
 def test_input_button():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(2)
     with Button(pin) as button:
         assert pin.pull == 'up'
         assert not button.is_pressed
@@ -142,7 +138,7 @@ def test_input_button():
         assert button.wait_for_release(1)
 
 def test_input_line_sensor():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with LineSensor(pin) as sensor:
         pin.drive_low() # logic is inverted for line sensor
         assert sensor.wait_for_line(1)
@@ -152,7 +148,7 @@ def test_input_line_sensor():
         assert not sensor.line_detected
 
 def test_input_motion_sensor():
-    pin = MockPin(2)
+    pin = Device.pin_factory.pin(4)
     with MotionSensor(pin) as sensor:
         pin.drive_high()
         assert sensor.wait_for_motion(1)
@@ -164,7 +160,7 @@ def test_input_motion_sensor():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_input_light_sensor():
-    pin = MockChargingPin(2)
+    pin = Device.pin_factory.pin(4, pin_class=MockChargingPin)
     with LightSensor(pin) as sensor:
         pin.charge_time = 0.1
         assert sensor.wait_for_dark(1)
@@ -174,10 +170,8 @@ def test_input_light_sensor():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_input_distance_sensor():
-    echo_pin = MockPin(2)
-    trig_pin = MockTriggerPin(3)
-    trig_pin.echo_pin = echo_pin
-    trig_pin.echo_time = 0.02
+    echo_pin = Device.pin_factory.pin(4)
+    trig_pin = Device.pin_factory.pin(5, pin_class=MockTriggerPin, echo_pin=echo_pin, echo_time=0.02)
     with pytest.raises(ValueError):
         DistanceSensor(echo_pin, trig_pin, max_distance=-1)
     # normal queue len is large (because the sensor is *really* jittery) but

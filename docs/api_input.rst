@@ -52,7 +52,8 @@ Base Classes
 
 The classes in the sections above are derived from a series of base classes,
 some of which are effectively abstract. The classes form the (partial)
-hierarchy displayed in the graph below:
+hierarchy displayed in the graph below (abstract classes are shaded lighter
+than concrete classes):
 
 .. image:: images/input_device_hierarchy.*
 

@@ -18,10 +18,12 @@ Table of Contents
     api_tools
     api_pins
     api_exc
+    cli_tools
     source_values
     remote_gpio
     recipes_advanced
     recipes_remote_gpio
     contributing
+    development
     changelog
     license

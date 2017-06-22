@@ -4,6 +4,7 @@ Notes
 
 .. currentmodule:: gpiozero
 
+
 .. _keep-your-script-running:
 
 Keep your script running
@@ -45,6 +46,7 @@ events to be detected::
     button.when_pressed = hello
     pause()
 
+
 Importing from GPIO Zero
 ========================
 
@@ -69,12 +71,15 @@ In this case, all references to items within GPIO Zero must be prefixed::
 
     button = gpiozero.Button(2)
 
+
 How can I tell what version of gpiozero I have installed?
 =========================================================
 
 The gpiozero library relies on the setuptools package for installation
 services.  You can use the setuptools ``pkg_resources`` API to query which
-version of gpiozero is available in your Python environment like so::
+version of gpiozero is available in your Python environment like so:
+
+.. code-block:: pycon
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
@@ -88,7 +93,9 @@ first entry in the list will be the version that ``import gpiozero`` will
 import.
 
 If you receive the error "No module named pkg_resources", you need to install
-the ``pip`` utility. This can be done with the following command in Raspbian::
+the ``pip`` utility. This can be done with the following command in Raspbian:
+
+.. code-block:: console
 
     sudo apt install python-pip
 
