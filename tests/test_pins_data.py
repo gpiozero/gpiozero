@@ -19,9 +19,7 @@ from gpiozero import *
 
 
 def test_pi_revision():
-    # We're not using _set_pin_factory here because we don't want to implicitly
-    # close the old instance, just replace it while we test stuff
-    with patch('gpiozero.devices.Device._pin_factory', LocalPiFactory()):
+    with patch('gpiozero.devices.Device.pin_factory', LocalPiFactory()):
         # Can't use MockPin for this as we want something that'll actually try
         # and read /proc/cpuinfo (MockPin simply parrots the 2B's data);
         # LocalPiFactory is used as we can definitely instantiate it (strictly
@@ -32,20 +30,20 @@ def test_pi_revision():
             assert pi_info().revision == '0002'
             # LocalPiFactory caches the revision (because realistically it
             # isn't going to change at runtime); we need to wipe it here though
-            Device._pin_factory._info = None
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: a21042']
             assert pi_info().revision == 'a21042'
             # Check over-volting result (some argument over whether this is 7 or
             # 8 character result; make sure both work)
-            Device._pin_factory._info = None
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: 1000003']
             assert pi_info().revision == '0003'
-            Device._pin_factory._info = None
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: 100003']
             assert pi_info().revision == '0003'
             with pytest.raises(PinUnknownPi):
                 m.return_value.__enter__.return_value = ['nothing', 'relevant', 'at all']
-                Device._pin_factory._info = None
+                Device.pin_factory._info = None
                 pi_info()
             with pytest.raises(PinUnknownPi):
                 pi_info('0fff')

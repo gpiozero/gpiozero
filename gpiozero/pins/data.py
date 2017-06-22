@@ -1140,7 +1140,7 @@ def pi_info(revision=None):
         # The reason this import is located here is to avoid a circular
         # dependency; devices->pins.local->pins.data->devices
         from ..devices import Device
-        result = Device._pin_factory.pi_info
+        result = Device.pin_factory.pi_info
         if result is None:
             raise PinUnknownPi('The default pin_factory is not attached to a Pi')
         else:

@@ -312,10 +312,10 @@ class MockSPIDevice(object):
             self, clock_pin, mosi_pin=None, miso_pin=None, select_pin=None,
             clock_polarity=False, clock_phase=False, lsb_first=False,
             bits_per_word=8, select_high=False):
-        self.clock_pin = Device._pin_factory.pin(clock_pin, pin_class=MockSPIClockPin)
-        self.mosi_pin = None if mosi_pin is None else Device._pin_factory.pin(mosi_pin)
-        self.miso_pin = None if miso_pin is None else Device._pin_factory.pin(miso_pin)
-        self.select_pin = None if select_pin is None else Device._pin_factory.pin(select_pin, pin_class=MockSPISelectPin)
+        self.clock_pin = Device.pin_factory.pin(clock_pin, pin_class=MockSPIClockPin)
+        self.mosi_pin = None if mosi_pin is None else Device.pin_factory.pin(mosi_pin)
+        self.miso_pin = None if miso_pin is None else Device.pin_factory.pin(miso_pin)
+        self.select_pin = None if select_pin is None else Device.pin_factory.pin(select_pin, pin_class=MockSPISelectPin)
         self.clock_polarity = clock_polarity
         self.clock_phase = clock_phase
         self.lsb_first = lsb_first

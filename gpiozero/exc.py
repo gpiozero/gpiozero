@@ -145,9 +145,6 @@ class PinNoPins(PinError, RuntimeError):
 class PinInvalidPin(PinError, ValueError):
     "Error raised when an invalid pin specification is provided"
 
-class PinReservationsExist(PinError, RuntimeError):
-    "Error raised when pin factory is changed while reservations still exist"
-
 class GPIOZeroWarning(Warning):
     "Base class for all warnings in GPIO Zero"
 

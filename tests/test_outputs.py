@@ -21,12 +21,12 @@ from gpiozero import *
 
 
 def teardown_function(function):
-    Device._pin_factory.reset()
+    Device.pin_factory.reset()
     Device._reservations.clear()
 
 
 def test_output_initial_values():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with OutputDevice(pin, initial_value=False) as device:
         assert pin.function == 'output'
         assert not pin.state
@@ -37,7 +37,7 @@ def test_output_initial_values():
         assert state == pin.state
 
 def test_output_write_active_high():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with OutputDevice(pin) as device:
         device.on()
         assert pin.state
@@ -45,7 +45,7 @@ def test_output_write_active_high():
         assert not pin.state
 
 def test_output_write_active_low():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with OutputDevice(pin, active_high=False) as device:
         device.on()
         assert not pin.state
@@ -53,7 +53,7 @@ def test_output_write_active_low():
         assert pin.state
 
 def test_output_write_closed():
-    with OutputDevice(Device._pin_factory.pin(2)) as device:
+    with OutputDevice(Device.pin_factory.pin(2)) as device:
         device.close()
         assert device.closed
         device.close()
@@ -62,14 +62,14 @@ def test_output_write_closed():
             device.on()
 
 def test_output_write_silly():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with OutputDevice(pin) as device:
         pin.function = 'input'
         with pytest.raises(AttributeError):
             device.on()
 
 def test_output_value():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with OutputDevice(pin) as device:
         assert not device.value
         assert not pin.state
@@ -81,7 +81,7 @@ def test_output_value():
         assert not pin.state
 
 def test_output_digital_toggle():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with DigitalOutputDevice(pin) as device:
         assert not device.value
         assert not pin.state
@@ -95,7 +95,7 @@ def test_output_digital_toggle():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_blink_background():
-    pin = Device._pin_factory.pin(4)
+    pin = Device.pin_factory.pin(4)
     with DigitalOutputDevice(pin) as device:
         start = time()
         device.blink(0.1, 0.1, n=2)
@@ -113,7 +113,7 @@ def test_output_blink_background():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_blink_foreground():
-    pin = Device._pin_factory.pin(4)
+    pin = Device.pin_factory.pin(4)
     with DigitalOutputDevice(pin) as device:
         start = time()
         device.blink(0.1, 0.1, n=2, background=False)
@@ -127,7 +127,7 @@ def test_output_blink_foreground():
             ])
 
 def test_output_blink_interrupt_on():
-    pin = Device._pin_factory.pin(4)
+    pin = Device.pin_factory.pin(4)
     with DigitalOutputDevice(pin) as device:
         device.blink(1, 0.1)
         sleep(0.2)
@@ -135,7 +135,7 @@ def test_output_blink_interrupt_on():
         pin.assert_states([False, True, False])
 
 def test_output_blink_interrupt_off():
-    pin = Device._pin_factory.pin(4)
+    pin = Device.pin_factory.pin(4)
     with DigitalOutputDevice(pin) as device:
         device.blink(0.1, 1)
         sleep(0.2)
@@ -144,14 +144,14 @@ def test_output_blink_interrupt_off():
 
 def test_output_pwm_bad_initial_value():
     with pytest.raises(ValueError):
-        PWMOutputDevice(Device._pin_factory.pin(2), initial_value=2)
+        PWMOutputDevice(Device.pin_factory.pin(2), initial_value=2)
 
 def test_output_pwm_not_supported():
     with pytest.raises(AttributeError):
-        PWMOutputDevice(Device._pin_factory.pin(2))
+        PWMOutputDevice(Device.pin_factory.pin(2))
 
 def test_output_pwm_states():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         device.value = 0.1
         device.value = 0.2
@@ -159,7 +159,7 @@ def test_output_pwm_states():
         pin.assert_states([0.0, 0.1, 0.2, 0.0])
 
 def test_output_pwm_read():
-    pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with PWMOutputDevice(pin, frequency=100) as device:
         assert device.frequency == 100
         device.value = 0.1
@@ -172,14 +172,14 @@ def test_output_pwm_read():
         assert device.frequency is None
 
 def test_output_pwm_write():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         device.on()
         device.off()
         pin.assert_states([False, True, False])
 
 def test_output_pwm_toggle():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         device.toggle()
         device.value = 0.5
@@ -189,7 +189,7 @@ def test_output_pwm_toggle():
         pin.assert_states([False, True, 0.5, 0.1, 0.9, False])
 
 def test_output_pwm_active_high_read():
-    pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with PWMOutputDevice(pin, active_high=False) as device:
         device.value = 0.1
         assert isclose(device.value, 0.1)
@@ -198,18 +198,18 @@ def test_output_pwm_active_high_read():
         assert device.value
 
 def test_output_pwm_bad_value():
-    with PWMOutputDevice(Device._pin_factory.pin(2, pin_class=MockPWMPin)) as device:
+    with PWMOutputDevice(Device.pin_factory.pin(2, pin_class=MockPWMPin)) as device:
         with pytest.raises(ValueError):
             device.value = 2
 
 def test_output_pwm_write_closed():
-    with PWMOutputDevice(Device._pin_factory.pin(2, pin_class=MockPWMPin)) as device:
+    with PWMOutputDevice(Device.pin_factory.pin(2, pin_class=MockPWMPin)) as device:
         device.close()
         with pytest.raises(GPIODeviceClosed):
             device.on()
 
 def test_output_pwm_write_silly():
-    pin = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         pin.function = 'input'
         with pytest.raises(AttributeError):
@@ -218,7 +218,7 @@ def test_output_pwm_write_silly():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_blink_background():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.blink(0.1, 0.1, n=2)
@@ -236,7 +236,7 @@ def test_output_pwm_blink_background():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_blink_foreground():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.blink(0.1, 0.1, n=2, background=False)
@@ -252,7 +252,7 @@ def test_output_pwm_blink_foreground():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_fade_background():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.blink(0, 0, 0.2, 0.2, n=2)
@@ -286,7 +286,7 @@ def test_output_pwm_fade_background():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_fade_foreground():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.blink(0, 0, 0.2, 0.2, n=2, background=False)
@@ -318,7 +318,7 @@ def test_output_pwm_fade_foreground():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_pulse_background():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.pulse(0.2, 0.2, n=2)
@@ -352,7 +352,7 @@ def test_output_pwm_pulse_background():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_output_pwm_pulse_foreground():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         start = time()
         device.pulse(0.2, 0.2, n=2, background=False)
@@ -382,7 +382,7 @@ def test_output_pwm_pulse_foreground():
             ])
 
 def test_output_pwm_blink_interrupt():
-    pin = Device._pin_factory.pin(4, pin_class=MockPWMPin)
+    pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
     with PWMOutputDevice(pin) as device:
         device.blink(1, 0.1)
         sleep(0.2)
@@ -394,7 +394,7 @@ def test_rgbled_missing_pins():
         RGBLED()
 
 def test_rgbled_initial_value():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with RGBLED(r, g, b, initial_value=(0.1, 0.2, 0)) as device:
         assert r.frequency
         assert g.frequency
@@ -404,24 +404,24 @@ def test_rgbled_initial_value():
         assert isclose(b.state, 0.0)
 
 def test_rgbled_initial_value_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False, initial_value=(0, 1, 1)) as device:
         assert r.state == 0
         assert g.state == 1
         assert b.state == 1
 
 def test_rgbled_initial_bad_value():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with pytest.raises(ValueError):
         RGBLED(r, g, b, initial_value=(0.1, 0.2, 1.2))
 
 def test_rgbled_initial_bad_value_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with pytest.raises(ValueError):
         RGBLED(r, g, b, pwm=False, initial_value=(0.1, 0.2, 0))
 
 def test_rgbled_value():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
         assert isinstance(device._leds[0], PWMLED)
         assert isinstance(device._leds[1], PWMLED)
@@ -439,7 +439,7 @@ def test_rgbled_value():
         assert device.value == (0.5, 0.5, 0.5)
 
 def test_rgbled_value_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         assert isinstance(device._leds[0], LED)
         assert isinstance(device._leds[1], LED)
@@ -454,7 +454,7 @@ def test_rgbled_value_nonpwm():
         assert device.value == (0, 0, 0)
 
 def test_rgbled_bad_value():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
         with pytest.raises(ValueError):
             device.value = (2, 0, 0)
@@ -463,7 +463,7 @@ def test_rgbled_bad_value():
             device.value = (0, -1, 0)
 
 def test_rgbled_bad_value_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.value = (2, 0, 0)
@@ -481,7 +481,7 @@ def test_rgbled_bad_value_nonpwm():
             device.value = (0, 0, 0.5)
 
 def test_rgbled_toggle():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
         assert not device.is_active
         assert device.value == (0, 0, 0)
@@ -493,7 +493,7 @@ def test_rgbled_toggle():
         assert device.value == (0, 0, 0)
 
 def test_rgbled_toggle_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         assert not device.is_active
         assert device.value == (0, 0, 0)
@@ -505,7 +505,7 @@ def test_rgbled_toggle_nonpwm():
         assert device.value == (0, 0, 0)
 
 def test_rgbled_blink_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.blink(fade_in_time=1)
@@ -515,7 +515,7 @@ def test_rgbled_blink_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_blink_background():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.blink(0.1, 0.1, n=2)
@@ -536,7 +536,7 @@ def test_rgbled_blink_background():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_blink_background_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i) for i in (4, 5, 6))
     with RGBLED(r, g, b, pwm=False) as device:
         start = time()
         device.blink(0.1, 0.1, n=2)
@@ -557,7 +557,7 @@ def test_rgbled_blink_background_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_blink_foreground():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.blink(0.1, 0.1, n=2, background=False)
@@ -576,7 +576,7 @@ def test_rgbled_blink_foreground():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_blink_foreground_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i) for i in (4, 5, 6))
     with RGBLED(r, g, b, pwm=False) as device:
         start = time()
         device.blink(0.1, 0.1, n=2, background=False)
@@ -595,7 +595,7 @@ def test_rgbled_blink_foreground_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_fade_background():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.blink(0, 0, 0.2, 0.2, n=2)
@@ -630,7 +630,7 @@ def test_rgbled_fade_background():
         b.assert_states_and_times(expected)
 
 def test_rgbled_fade_background_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.blink(0, 0, 0.2, 0.2, n=2)
@@ -638,7 +638,7 @@ def test_rgbled_fade_background_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_fade_foreground():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.blink(0, 0, 0.2, 0.2, n=2, background=False)
@@ -671,7 +671,7 @@ def test_rgbled_fade_foreground():
         b.assert_states_and_times(expected)
 
 def test_rgbled_fade_foreground_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.blink(0, 0, 0.2, 0.2, n=2, background=False)
@@ -679,7 +679,7 @@ def test_rgbled_fade_foreground_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_pulse_background():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.pulse(0.2, 0.2, n=2)
@@ -714,7 +714,7 @@ def test_rgbled_pulse_background():
         b.assert_states_and_times(expected)
 
 def test_rgbled_pulse_background_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.pulse(0.2, 0.2, n=2)
@@ -722,7 +722,7 @@ def test_rgbled_pulse_background_nonpwm():
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
 def test_rgbled_pulse_foreground():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         start = time()
         device.pulse(0.2, 0.2, n=2, background=False)
@@ -755,13 +755,13 @@ def test_rgbled_pulse_foreground():
         b.assert_states_and_times(expected)
 
 def test_rgbled_pulse_foreground_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.pulse(0.2, 0.2, n=2, background=False)
 
 def test_rgbled_blink_interrupt():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (4, 5, 6))
     with RGBLED(r, g, b) as device:
         device.blink(1, 0.1)
         sleep(0.2)
@@ -771,7 +771,7 @@ def test_rgbled_blink_interrupt():
         b.assert_states([0, 1, 0])
 
 def test_rgbled_blink_interrupt_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (4, 5, 6))
+    r, g, b = (Device.pin_factory.pin(i) for i in (4, 5, 6))
     with RGBLED(r, g, b, pwm=False) as device:
         device.blink(1, 0.1)
         sleep(0.2)
@@ -781,7 +781,7 @@ def test_rgbled_blink_interrupt_nonpwm():
         b.assert_states([0, 1, 0])
 
 def test_rgbled_close():
-    r, g, b = (Device._pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i, pin_class=MockPWMPin) for i in (1, 2, 3))
     with RGBLED(r, g, b) as device:
         assert not device.closed
         device.close()
@@ -790,7 +790,7 @@ def test_rgbled_close():
         assert device.closed
 
 def test_rgbled_close_nonpwm():
-    r, g, b = (Device._pin_factory.pin(i) for i in (1, 2, 3))
+    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(r, g, b, pwm=False) as device:
         assert not device.closed
         device.close()
@@ -803,8 +803,8 @@ def test_motor_missing_pins():
         Motor()
 
 def test_motor_pins():
-    f = Device._pin_factory.pin(1, pin_class=MockPWMPin)
-    b = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    f = Device.pin_factory.pin(1, pin_class=MockPWMPin)
+    b = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Motor(f, b) as device:
         assert device.forward_device.pin is f
         assert isinstance(device.forward_device, PWMOutputDevice)
@@ -812,8 +812,8 @@ def test_motor_pins():
         assert isinstance(device.backward_device, PWMOutputDevice)
 
 def test_motor_pins_nonpwm():
-    f = Device._pin_factory.pin(1)
-    b = Device._pin_factory.pin(2)
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
     with Motor(f, b, pwm=False) as device:
         assert device.forward_device.pin is f
         assert isinstance(device.forward_device, DigitalOutputDevice)
@@ -821,8 +821,8 @@ def test_motor_pins_nonpwm():
         assert isinstance(device.backward_device, DigitalOutputDevice)
 
 def test_motor_close():
-    f = Device._pin_factory.pin(1, pin_class=MockPWMPin)
-    b = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    f = Device.pin_factory.pin(1, pin_class=MockPWMPin)
+    b = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Motor(f, b) as device:
         device.close()
         assert device.closed
@@ -832,8 +832,8 @@ def test_motor_close():
         assert device.closed
 
 def test_motor_close_nonpwm():
-    f = Device._pin_factory.pin(1)
-    b = Device._pin_factory.pin(2)
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
     with Motor(f, b, pwm=False) as device:
         device.close()
         assert device.closed
@@ -841,8 +841,8 @@ def test_motor_close_nonpwm():
         assert device.backward_device.pin is None
 
 def test_motor_value():
-    f = Device._pin_factory.pin(1, pin_class=MockPWMPin)
-    b = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    f = Device.pin_factory.pin(1, pin_class=MockPWMPin)
+    b = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Motor(f, b) as device:
         device.value = -1
         assert device.is_active
@@ -866,8 +866,8 @@ def test_motor_value():
         assert b.state == 0 and f.state == 0
 
 def test_motor_value_nonpwm():
-    f = Device._pin_factory.pin(1)
-    b = Device._pin_factory.pin(2)
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
     with Motor(f, b, pwm=False) as device:
         device.value = -1
         assert device.is_active
@@ -883,8 +883,8 @@ def test_motor_value_nonpwm():
         assert b.state == 0 and f.state == 0
 
 def test_motor_bad_value():
-    f = Device._pin_factory.pin(1, pin_class=MockPWMPin)
-    b = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    f = Device.pin_factory.pin(1, pin_class=MockPWMPin)
+    b = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Motor(f, b) as device:
         with pytest.raises(ValueError):
             device.value = -2
@@ -896,8 +896,8 @@ def test_motor_bad_value():
             device.backward(2)
 
 def test_motor_bad_value_nonpwm():
-    f = Device._pin_factory.pin(1)
-    b = Device._pin_factory.pin(2)
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
     with Motor(f, b, pwm=False) as device:
         with pytest.raises(ValueError):
             device.value = -2
@@ -909,8 +909,8 @@ def test_motor_bad_value_nonpwm():
             device.value = -0.5
 
 def test_motor_reverse():
-    f = Device._pin_factory.pin(1, pin_class=MockPWMPin)
-    b = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    f = Device.pin_factory.pin(1, pin_class=MockPWMPin)
+    b = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Motor(f, b) as device:
         device.forward()
         assert device.value == 1
@@ -926,8 +926,8 @@ def test_motor_reverse():
         assert b.state == 0 and f.state == 0.5
 
 def test_motor_reverse_nonpwm():
-    f = Device._pin_factory.pin(1)
-    b = Device._pin_factory.pin(2)
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
     with Motor(f, b, pwm=False) as device:
         device.forward()
         assert device.value == 1
@@ -937,13 +937,13 @@ def test_motor_reverse_nonpwm():
         assert b.state == 1 and f.state == 0
 
 def test_servo_pins():
-    p = Device._pin_factory.pin(1, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with Servo(p) as device:
         assert device.pwm_device.pin is p
         assert isinstance(device.pwm_device, PWMOutputDevice)
 
 def test_servo_bad_value():
-    p = Device._pin_factory.pin(1, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with pytest.raises(ValueError):
         Servo(p, initial_value=2)
     with pytest.raises(ValueError):
@@ -952,12 +952,12 @@ def test_servo_bad_value():
         Servo(p, max_pulse_width=30/1000)
 
 def test_servo_pins_nonpwm():
-    p = Device._pin_factory.pin(2)
+    p = Device.pin_factory.pin(2)
     with pytest.raises(PinPWMUnsupported):
         Servo(p)
 
 def test_servo_close():
-    p = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Servo(p) as device:
         device.close()
         assert device.closed
@@ -966,7 +966,7 @@ def test_servo_close():
         assert device.closed
 
 def test_servo_pulse_width():
-    p = Device._pin_factory.pin(2, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with Servo(p, min_pulse_width=5/10000, max_pulse_width=25/10000) as device:
         assert isclose(device.min_pulse_width, 5/10000)
         assert isclose(device.max_pulse_width, 25/10000)
@@ -980,7 +980,7 @@ def test_servo_pulse_width():
         assert device.pulse_width is None
 
 def test_servo_values():
-    p = Device._pin_factory.pin(1, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with Servo(p) as device:
         device.min()
         assert device.is_active
@@ -1007,13 +1007,13 @@ def test_servo_values():
         assert device.value is None
 
 def test_angular_servo_range():
-    p = Device._pin_factory.pin(1, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with AngularServo(p, initial_angle=15, min_angle=0, max_angle=90) as device:
         assert device.min_angle == 0
         assert device.max_angle == 90
 
 def test_angular_servo_angles():
-    p = Device._pin_factory.pin(1, pin_class=MockPWMPin)
+    p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with AngularServo(p) as device:
         device.angle = 0
         assert device.angle == 0

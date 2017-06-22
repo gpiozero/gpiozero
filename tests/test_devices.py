@@ -14,7 +14,7 @@ from gpiozero import *
 
 
 def teardown_function(function):
-    Device._pin_factory.reset()
+    Device.pin_factory.reset()
 
 
 # TODO add more devices tests!
@@ -32,7 +32,7 @@ def test_device_non_physical():
         assert w[0].category == PinNonPhysical
 
 def test_device_init():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with GPIODevice(pin) as device:
         assert not device.closed
         assert device.pin == pin
@@ -55,7 +55,7 @@ def test_device_close():
     assert device.pin is None
 
 def test_device_reopen_same_pin():
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with GPIODevice(pin) as device:
         pass
     with GPIODevice(pin) as device2:
@@ -122,7 +122,7 @@ def test_composite_device_bad_init():
     with pytest.raises(ValueError):
         CompositeDevice(2)
     with pytest.raises(ValueError):
-        CompositeDevice(Device._pin_factory.pin(2))
+        CompositeDevice(Device.pin_factory.pin(2))
 
 def test_composite_device_read_only():
     with CompositeDevice(

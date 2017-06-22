@@ -21,7 +21,7 @@ from gpiozero import *
 
 
 def teardown_function(function):
-    Device._pin_factory.reset()
+    Device.pin_factory.reset()
 
 def clamp(v, min_value, max_value):
     return min(max_value, max(min_value, v))

@@ -52,9 +52,9 @@ def pin_factory(request):
     except Exception as e:
         pytest.skip("skipped factory %s: %s" % (request.param, str(e)))
     else:
-        Device._set_pin_factory(factory)
+        Device.pin_factory = factory
         def fin():
-            Device._set_pin_factory(MockFactory())
+            Device.pin_factory = MockFactory()
         request.addfinalizer(fin)
         return factory
 
@@ -147,7 +147,7 @@ def test_bad_duty_cycle(pins):
         # NOTE: There's some race in RPi.GPIO that causes a segfault if we
         # don't pause before starting PWM; only seems to happen when stopping
         # and restarting PWM very rapidly (i.e. between test cases).
-        if Device._pin_factory.__class__.__name__ == 'RPiGPIOFactory':
+        if Device.pin_factory.__class__.__name__ == 'RPiGPIOFactory':
             sleep(0.1)
         test_pin.frequency = 100
     except PinPWMUnsupported:
@@ -164,7 +164,7 @@ def test_duty_cycles(pins):
     test_pin.function = 'output'
     try:
         # NOTE: see above
-        if Device._pin_factory.__class__.__name__ == 'RPiGPIOFactory':
+        if Device.pin_factory.__class__.__name__ == 'RPiGPIOFactory':
             sleep(0.1)
         test_pin.frequency = 100
     except PinPWMUnsupported:

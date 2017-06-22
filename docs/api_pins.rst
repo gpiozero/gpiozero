@@ -13,7 +13,7 @@ extender chips. This is the purpose of the pins portion of the library.
 
 When you construct a device, you pass in a pin specification. However, what the
 library actually expects is a :class:`Pin` implementation. If it finds anything
-else, it uses the existing ``Device._pin_factory`` to construct a :class:`Pin`
+else, it uses the existing ``Device.pin_factory`` to construct a :class:`Pin`
 implementation based on the specification.
 
 Changing the pin factory
@@ -29,7 +29,7 @@ The default pin factory can be replaced by specifying a value for the
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import gpiozero
-    >>> gpiozero.Device._pin_factory
+    >>> gpiozero.Device.pin_factory
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
 To set the ``GPIOZERO_PIN_FACTORY`` for the rest of your session you can
@@ -43,7 +43,7 @@ export this value:
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import gpiozero
-    >>> gpiozero.Device._pin_factory
+    >>> gpiozero.Device.pin_factory
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
     >>> quit()
     pi@raspberrypi $ python
@@ -51,7 +51,7 @@ export this value:
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import gpiozero
-    >>> gpiozero.Device._pin_factory
+    >>> gpiozero.Device.pin_factory
     <gpiozero.pins.native.NativeFactory object at 0x76401330>
 
 If you add the ``export`` command to your :file:`~/.bashrc` file, you'll set
@@ -73,15 +73,12 @@ they are tried by default.
 | native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
 
-If you need to change the default pin factory from within a script, use the
-``Device._set_pin_factory`` class method, passing in the instance of the new
-factory to use. This is only supported at script startup (replacing the factory
-closes all existing pin instances which can have interesting consequences for
-any devices using them)::
+If you need to change the default pin factory from within a script, set
+``Device.pin_factory`` to the new factory instance to use::
 
     from gpiozero.pins.native import NativeFactory
     from gpiozero import *
-    Device._set_pin_factory(NativeFactory())
+    Device.pin_factory = NativeFactory()
 
     from gpiozero import LED
 

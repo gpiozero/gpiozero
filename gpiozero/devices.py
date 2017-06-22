@@ -34,7 +34,6 @@ from .exc import (
     GPIOPinInUse,
     GPIODeviceClosed,
     PinFactoryFallback,
-    PinReservationsExist,
     )
 from .compat import frozendict
 
@@ -194,32 +193,12 @@ class Device(ValuesMixin, GPIOBase):
     services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
     """
-    _pin_factory = None # instance of a Factory sub-class
+    pin_factory = None # instance of a Factory sub-class
     _reservations = defaultdict(list) # maps pin addresses to lists of devices
     _res_lock = Lock()
 
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
-
-    @classmethod
-    def _set_pin_factory(cls, new_factory):
-        reserved_devices = {
-            dev
-            for ref_list in cls._reservations.values()
-            for ref in ref_list
-            for dev in (ref(),)
-            if dev is not None
-        }
-        if new_factory is None:
-            for dev in reserved_devices:
-                dev.close()
-        elif reserved_devices:
-            raise PinReservationsExist(
-                "can't change factory while devices still hold pin "
-                "reservations (%r)" % dev)
-        if cls._pin_factory is not None:
-            cls._pin_factory.close()
-        cls._pin_factory = new_factory
 
     def _reserve_pins(self, *pins_or_addresses):
         """
@@ -439,8 +418,8 @@ class GPIODevice(Device):
             self._reserve_pins(pin)
         else:
             # Check you can reserve *before* constructing the pin
-            self._reserve_pins(Device._pin_factory.pin_address(pin))
-            pin = Device._pin_factory.pin(pin)
+            self._reserve_pins(Device.pin_factory.pin_address(pin))
+            pin = Device.pin_factory.pin(pin)
         self._pin = pin
         self._active_state = True
         self._inactive_state = False
@@ -524,11 +503,27 @@ def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
             return factory.load()()
         raise BadPinFactory('Unable to find pin factory "%s"' % name)
 
-Device._set_pin_factory(_default_pin_factory())
+
+def _devices_shutdown():
+    if Device.pin_factory:
+        with Device._res_lock:
+            reserved_devices = {
+                dev
+                for ref_list in Device._reservations.values()
+                for ref in ref_list
+                for dev in (ref(),)
+                if dev is not None
+            }
+        for dev in reserved_devices:
+            dev.close()
+        Device.pin_factory.close()
+        Device.pin_factory = None
+
 
 def _shutdown():
     _threads_shutdown()
-    Device._set_pin_factory(None)
+    _devices_shutdown()
 
+
+Device.pin_factory = _default_pin_factory()
 atexit.register(_shutdown)
-
