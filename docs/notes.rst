@@ -36,7 +36,6 @@ manually (e.g. by pressing Ctrl+C). Similarly, when setting up callbacks on
 button presses or other input devices, the script needs to be running for the
 events to be detected::
 
-
     from gpiozero import Button
     from signal import pause
 
@@ -84,13 +83,13 @@ version of gpiozero is available in your Python environment like so:
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
-    [gpiozero 1.2.0 (/usr/local/lib/python2.7/dist-packages)]
+    [gpiozero 1.3.2 (/usr/lib/python3/dist-packages)]
     >>> require('gpiozero')[0].version
-    '1.2.0'
+    '1.3.2'
 
-If you have multiple versions installed (e.g. from ``pip`` and ``apt-get``)
-they will not show up in the list returned by the ``require`` method. However,
-the first entry in the list will be the version that ``import gpiozero`` will
+If you have multiple versions installed (e.g. from ``pip`` and ``apt``) they
+will not show up in the list returned by the ``require`` method. However, the
+first entry in the list will be the version that ``import gpiozero`` will
 import.
 
 If you receive the error "No module named pkg_resources", you need to install
@@ -98,5 +97,9 @@ the ``pip`` utility. This can be done with the following command in Raspbian:
 
 .. code-block:: console
 
-    $ sudo apt-get install python-pip
+    sudo apt install python-pip
 
+Alternatively, install pip with `get-pip`_.
+
+
+.. _get_pip: https://pip.pypa.io/en/stable/installing/

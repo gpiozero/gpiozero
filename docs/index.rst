@@ -8,6 +8,7 @@ Table of Contents
 
     recipes
     notes
+    installing
     api_input
     api_output
     api_spi
@@ -19,8 +20,10 @@ Table of Contents
     api_exc
     cli_tools
     source_values
+    remote_gpio
+    recipes_advanced
+    recipes_remote_gpio
     contributing
     development
     changelog
     license
-

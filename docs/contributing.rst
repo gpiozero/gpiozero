@@ -34,7 +34,7 @@ LED example").
 Commits which close (or intend to close) an issue should include the phrase
 "fix #123" or "close #123" where ``#123`` is the issue number, as well as
 include a short description, for example: "Add LED example, close #123", and
-pull requests should aim to match or closely match the correspoding issue
+pull requests should aim to match or closely match the corresponding issue
 title.
 
 Backwards compatibility

@@ -1,13 +1,12 @@
-=======
-Recipes
-=======
+================
+Recipes (Simple)
+================
 
 .. currentmodule:: gpiozero
 
-The following recipes demonstrate some of the capabilities of the gpiozero
+The following recipes demonstrate some of the capabilities of the GPIO Zero
 library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
-
 
 .. _pin-numbering:
 
@@ -25,7 +24,6 @@ example, if an LED was attached to "GPIO17" you would specify the pin number as
 17 rather than 11:
 
 .. image:: images/pin_layout.*
-
 
 LED
 ===
@@ -46,7 +44,6 @@ Alternatively:
     may be reset. Keep your script alive with :func:`signal.pause`. See
     :ref:`keep-your-script-running` for more information.
 
-
 LED with variable brightness
 ============================
 
@@ -60,7 +57,6 @@ Similarly to blinking on and off continuously, a PWMLED can pulse (fade in and
 out continuously):
 
 .. literalinclude:: examples/led_pulse.py
-
 
 Button
 ======
@@ -93,7 +89,6 @@ Similarly, functions can be attached to button releases:
 
 .. literalinclude:: examples/button_4.py
 
-
 Button controlled LED
 =====================
 
@@ -106,7 +101,6 @@ Turn on an :class:`LED` when a :class:`Button` is pressed:
 Alternatively:
 
 .. literalinclude:: examples/button_led_2.py
-
 
 Button controlled camera
 ========================
@@ -125,7 +119,6 @@ another to capture:
 
 .. literalinclude:: examples/button_camera_2.py
 
-
 Shutdown button
 ===============
 
@@ -134,7 +127,6 @@ button has been held for a given length of time. This example will shut down
 the Raspberry Pi when the button is held for 2 seconds:
 
 .. literalinclude:: examples/button_shutdown.py
-
 
 LEDBoard
 ========
@@ -147,7 +139,6 @@ Using :class:`LEDBoard` with ``pwm=True`` allows each LED's brightness to be
 controlled:
 
 .. literalinclude:: examples/led_board_2.py
-
 
 LEDBarGraph
 ===========
@@ -164,7 +155,6 @@ However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
 values using LED brightness:
 
 .. literalinclude:: examples/led_bargraph_2.py
-
 
 Traffic Lights
 ==============
@@ -185,19 +175,6 @@ Using :class:`LED` components:
 
 .. literalinclude:: examples/traffic_lights_3.py
 
-
-Travis build LED indicator
-==========================
-
-Use LEDs to indicate the status of a Travis build. A green light means the
-tests are passing, a red light means the build is broken:
-
-.. literalinclude:: examples/led_travis.py
-
-Note this recipe requires `travispy`_. Install with ``sudo pip3 install
-travispy``.
-
-
 Push button stop motion
 =======================
 
@@ -206,7 +183,6 @@ Capture a picture with the camera module every time a button is pressed:
 .. literalinclude:: examples/button_stop_motion.py
 
 See `Push Button Stop Motion`_ for a full resource.
-
 
 Reaction Game
 =============
@@ -219,7 +195,6 @@ When you see the light come on, the first person to press their button wins!
 
 See `Quick Reaction Game`_ for a full resource.
 
-
 GPIO Music Box
 ==============
 
@@ -228,7 +203,6 @@ Each button plays a different sound!
 .. literalinclude:: examples/music_box.py
 
 See `GPIO Music Box`_ for a full resource.
-
 
 All on when pressed
 ===================
@@ -247,7 +221,6 @@ Using :class:`LED`, :class:`Buzzer`, and :class:`Button` components:
 
 .. literalinclude:: examples/all_on_3.py
 
-
 Full color LED
 ==============
 
@@ -257,7 +230,6 @@ Making colours with an :class:`RGBLED`:
 
 .. literalinclude:: examples/rgbled.py
 
-
 Motion sensor
 =============
 
@@ -266,7 +238,6 @@ Motion sensor
 Light an :class:`LED` when a :class:`MotionSensor` detects motion:
 
 .. literalinclude:: examples/motion_sensor.py
-
 
 Light sensor
 ============
@@ -286,7 +257,6 @@ level:
 
 .. literalinclude:: examples/light_sensor_3.py
 
-
 Distance sensor
 ===============
 
@@ -300,7 +270,6 @@ Run a function when something gets near the sensor:
 
 .. literalinclude:: examples/distance_sensor_2.py
 
-
 Motors
 ======
 
@@ -309,7 +278,6 @@ Motors
 Spin a :class:`Motor` around forwards and backwards:
 
 .. literalinclude:: examples/motor.py
-
 
 Robot
 =====
@@ -325,18 +293,12 @@ Make a robot with a distance sensor that runs away when things get within
 
 .. literalinclude:: examples/robot_2.py
 
-
 Button controlled robot
 =======================
 
 Use four GPIO buttons as forward/back/left/right controls for a robot:
 
 .. literalinclude:: examples/robot_buttons_1.py
-
-Alternatively, use four buttons to program the directions and add a fifth
-button to process them in turn, like a Bee-Bot or Turtle robot.
-
-.. literalinclude:: examples/robot_buttons_2.py
 
 Keyboard controlled robot
 =========================
@@ -362,7 +324,6 @@ suffice:
     with ``sudo pip3 install evdev`` first. Be aware that ``evdev`` will only
     work with local input devices; this recipe will *not* work over SSH.
 
-
 Motion sensor robot
 ===================
 
@@ -373,7 +334,6 @@ Make a robot drive forward when it detects motion:
 Alternatively:
 
 .. literalinclude:: examples/robot_motion_2.py
-
 
 Potentiometer
 =============
@@ -390,7 +350,6 @@ states that won't "fill" an LED:
 
 .. literalinclude:: examples/pot_2.py
 
-
 Measure temperature with an ADC
 ===============================
 
@@ -400,7 +359,6 @@ Wire a TMP36 temperature sensor to the first channel of an :class:`MCP3008`
 analog to digital converter:
 
 .. literalinclude:: examples/thermometer.py
-
 
 Full color LED controlled by 3 potentiometers
 =============================================
@@ -419,52 +377,15 @@ Alternatively, the following example is identical, but uses the
 Please note the example above requires Python 3. In Python 2, :func:`zip`
 doesn't support lazy evaluation so the script will simply hang.
 
+More recipes
+============
 
-Controlling the Pi's own LEDs
-=============================
+Continue to:
 
-On certain models of Pi (specifically the model A+, B+, and 2B) it's possible
-to control the power and activity LEDs.  This can be useful for testing GPIO
-functionality without the need to wire up your own LEDs (also useful because
-the power and activity LEDs are "known good").
-
-Firstly you need to disable the usual triggers for the built-in LEDs. This can
-be done from the terminal with the following commands:
-
-.. code-block:: console
-
-    $ echo none | sudo tee /sys/class/leds/led0/trigger
-    $ echo gpio | sudo tee /sys/class/leds/led1/trigger
-
-Now you can control the LEDs with gpiozero like so:
-
-.. literalinclude:: examples/led_builtin.py
-
-To revert the LEDs to their usual purpose you can either reboot your Pi or
-run the following commands:
-
-.. code-block:: console
-
-    $ echo mmc0 | sudo tee /sys/class/leds/led0/trigger
-    $ echo input | sudo tee /sys/class/leds/led1/trigger
-
-.. note::
-
-    On the Pi Zero you can control the activity LED with this recipe, but
-    there's no separate power LED to control (it's also worth noting the
-    activity LED is active low, so set ``active_high=False`` when constructing
-    your LED component).
-
-    On the original Pi 1 (model A or B), the activity LED can be controlled
-    with GPIO16 (after disabling its trigger as above) but the power LED is
-    hard-wired on.
-
-    On the Pi 3B the LEDs are controlled by a GPIO expander which is not
-    accessible from gpiozero (yet).
+* :doc:`recipes_advanced`
+* :doc:`recipes_remote_gpio`
 
 
-.. _travispy: https://travispy.readthedocs.io/
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
-
