@@ -411,7 +411,7 @@ class MockSPIDevice(object):
 
 class MockFactory(LocalPiFactory):
     def __init__(
-            self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a21041'),
+            self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a02082'),
             pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
         super(MockFactory, self).__init__()
         self._revision = revision
