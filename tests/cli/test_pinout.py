@@ -9,7 +9,7 @@ str = type('')
 
 import pytest
 
-from gpiozero.cli.pinout import main
+from gpiozerocli.pinout import main
 
 
 def test_args_incorrect():
@@ -32,4 +32,4 @@ def test_help(capsys):
     with pytest.raises(SystemExit) as ex:
         main(['pinout', '--help'])
     out, err = capsys.readouterr()
-    assert 'GPIO pinout' in out
+    assert 'GPIO pin-out' in out
