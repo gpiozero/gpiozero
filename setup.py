@@ -86,7 +86,7 @@ __entry_points__ = {
         'mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin',
     ],
     'console_scripts': [
-        'pinout = gpiozero.cli.pinout:main',
+        'pinout = gpiozerocli.pinout:main',
     ]
 }
 
