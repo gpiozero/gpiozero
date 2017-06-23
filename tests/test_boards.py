@@ -30,6 +30,8 @@ def setup_function(function):
         'test_led_board_fade_background',
         'test_led_bar_graph_pwm_value',
         'test_led_bar_graph_pwm_initial_value',
+        'test_statusboard_kwargs',
+        'test_statuszero_kwargs',
         ) else MockPin
 
 def teardown_function(function):
@@ -779,17 +781,7 @@ def test_energenie():
         device1.close()
         assert repr(device1) == '<gpiozero.Energenie object closed>'
 
-def test_statuszero_bad_init():
-    with pytest.raises(ValueError):
-        StatusZero('')
-    with pytest.raises(ValueError):
-        StatusZero('1')
-    with pytest.raises(ValueError):
-        StatusZero(1)
-    with pytest.raises(ValueError):
-        StatusZero('a', 'b', 'c', 'd')
-
-def test_statuszero_good_init():
+def test_statuszero_init():
     with StatusZero() as sz:
         assert sz
     with StatusZero('a') as sz:
@@ -830,17 +822,7 @@ def test_statuszero_named():
         with pytest.raises(AttributeError):
             sz.one
 
-def test_statusboard_bad_init():
-    with pytest.raises(ValueError):
-        StatusBoard('')
-    with pytest.raises(ValueError):
-        StatusBoard('1')
-    with pytest.raises(ValueError):
-        StatusBoard(1)
-    with pytest.raises(ValueError):
-        StatusBoard('a', 'b', 'c', 'd', 'e', 'f')
-
-def test_statusboard_good_init():
+def test_statusboard_init():
     with StatusBoard() as sb:
         assert sb
     with StatusBoard('a') as sb:
