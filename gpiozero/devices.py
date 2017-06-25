@@ -321,16 +321,16 @@ class CompositeDevice(Device):
             for missing_name in set(kwargs.keys()) - set(self._order):
                 raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
         self._order = tuple(self._order)
-        super(CompositeDevice, self).__init__()
         for name in set(self._order) & set(dir(self)):
             raise CompositeDeviceBadName('%s is a reserved name' % name)
-        self._all = args + tuple(kwargs[v] for v in self._order)
-        for dev in self._all:
+        for dev in chain(args, kwargs.values()):
             if not isinstance(dev, Device):
                 raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
         self._named = frozendict(kwargs)
         self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
             ('device_%d' % i for i in range(len(args))), self._order))
+        self._all = args + tuple(kwargs[v] for v in self._order)
+        super(CompositeDevice, self).__init__()
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
