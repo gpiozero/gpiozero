@@ -783,13 +783,21 @@ def test_energenie():
 
 def test_statuszero_init():
     with StatusZero() as sz:
-        assert sz
+        assert sz.namedtuple._fields == ('one', 'two', 'three')
     with StatusZero('a') as sz:
-        assert sz
+        assert sz.namedtuple._fields == ('a',)
     with StatusZero('a', 'b') as sz:
-        assert sz
+        assert sz.namedtuple._fields == ('a', 'b')
     with StatusZero('a', 'b', 'c') as sz:
-        assert sz
+        assert sz.namedtuple._fields == ('a', 'b', 'c')
+    with pytest.raises(ValueError):
+        StatusZero('a', 'b', 'c', 'd')
+    with pytest.raises(ValueError):
+        StatusZero('0')
+    with pytest.raises(ValueError):
+        StatusZero('foo', 'hello world')
+    with pytest.raises(ValueError):
+        StatusZero('foo', 'foo')
 
 def test_statuszero():
     with StatusZero() as sz:
@@ -824,13 +832,21 @@ def test_statuszero_named():
 
 def test_statusboard_init():
     with StatusBoard() as sb:
-        assert sb
+        assert sb.namedtuple._fields == ('one', 'two', 'three', 'four', 'five')
     with StatusBoard('a') as sb:
-        assert sb
+        assert sb.namedtuple._fields == ('a',)
     with StatusBoard('a', 'b') as sb:
-        assert sb
+        assert sb.namedtuple._fields == ('a', 'b',)
     with StatusBoard('a', 'b', 'c', 'd', 'e') as sb:
-        assert sb
+        assert sb.namedtuple._fields == ('a', 'b', 'c', 'd', 'e')
+    with pytest.raises(ValueError):
+        StatusBoard('a', 'b', 'c', 'd', 'e', 'f')
+    with pytest.raises(ValueError):
+        StatusBoard('0')
+    with pytest.raises(ValueError):
+        StatusBoard('foo', 'hello world')
+    with pytest.raises(ValueError):
+        StatusBoard('foo', 'foo')
 
 def test_statusboard():
     with StatusBoard() as sb:

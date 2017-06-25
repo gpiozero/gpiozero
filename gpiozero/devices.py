@@ -330,8 +330,7 @@ class CompositeDevice(Device):
                 raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
         self._named = frozendict(kwargs)
         self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
-            (str(i) for i in range(len(args))), self._order),
-            rename=True)
+            ('device_%d' % i for i in range(len(args))), self._order))
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict

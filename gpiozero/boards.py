@@ -12,7 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 from .exc import (
     DeviceClosed,
@@ -819,6 +819,8 @@ class StatusZero(LEDBoard):
 
     .. _STATUS Zero: https://thepihut.com/statuszero
     """
+    default_labels = ('one', 'two', 'three')
+
     def __init__(self, *labels, **kwargs):
         pins = (
             (17, 4),
@@ -826,12 +828,14 @@ class StatusZero(LEDBoard):
             (9, 10),
         )
         if len(labels) == 0:
-            labels = ['one', 'two', 'three']
+            labels = self.default_labels
         elif len(labels) > len(pins):
-            raise ValueError
+            raise ValueError("StatusZero doesn't support more than three labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
         strips = OrderedDict()
-        for index, label in enumerate(labels):
-            green, red = pins[index]
+        for (green, red), label in zip(pins, labels):
             strips[label] = LEDBoard(red=red, green=green,
                 _order=('red', 'green'), **kwargs)
         super(StatusZero, self).__init__(_order=strips.keys(), **strips)
@@ -861,6 +865,8 @@ class StatusBoard(CompositeOutputDevice):
 
     .. _STATUS: https://thepihut.com/status
     """
+    default_labels = ('one', 'two', 'three', 'four', 'five')
+
     def __init__(self, *labels, **kwargs):
         pins = (
             (17, 4, 14),
@@ -870,12 +876,14 @@ class StatusBoard(CompositeOutputDevice):
             (13, 6, 18),
         )
         if len(labels) == 0:
-            labels = ['one', 'two', 'three', 'four', 'five']
+            labels = self.default_labels
         elif len(labels) > len(pins):
-            raise ValueError
+            raise ValueError("StatusBoard doesn't support more than five labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
         strips = OrderedDict()
-        for index, label in enumerate(labels):
-            green, red, button = pins[index]
+        for (green, red, button), label in zip(pins, labels):
             strips[label] = CompositeOutputDevice(
                 button=Button(button),
                 lights=LEDBoard(
