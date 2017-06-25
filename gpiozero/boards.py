@@ -834,11 +834,10 @@ class StatusZero(LEDBoard):
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
             raise ValueError("Duplicate label %s" % dup)
-        strips = OrderedDict()
-        for (green, red), label in zip(pins, labels):
-            strips[label] = LEDBoard(red=red, green=green,
-                _order=('red', 'green'), **kwargs)
-        super(StatusZero, self).__init__(_order=strips.keys(), **strips)
+        super(StatusZero, self).__init__(_order=labels, **{
+            label: LEDBoard(red=red, green=green, _order=('red', 'green'), **kwargs)
+            for (green, red), label in zip(pins, labels)
+        })
 
 
 class StatusBoard(CompositeOutputDevice):
@@ -882,14 +881,14 @@ class StatusBoard(CompositeOutputDevice):
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
             raise ValueError("Duplicate label %s" % dup)
-        strips = OrderedDict()
-        for (green, red, button), label in zip(pins, labels):
-            strips[label] = CompositeOutputDevice(
+        super(StatusBoard, self).__init__(_order=labels, **{
+            label: CompositeOutputDevice(
                 button=Button(button),
                 lights=LEDBoard(
                     red=red, green=green, _order=('red', 'green'), **kwargs
                 ), _order=('button', 'lights'))
-        super(StatusBoard, self).__init__(_order=strips.keys(), **strips)
+            for (green, red, button), label in zip(pins, labels)
+        })
 
 
 class SnowPi(LEDBoard):
