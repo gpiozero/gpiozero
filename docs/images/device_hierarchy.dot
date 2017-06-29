@@ -90,11 +90,13 @@ digraph classes {
     ButtonBoard->HoldMixin;
     PiLiter->LEDBoard;
     PiLiterBarGraph->LEDBarGraph;
+    StatusZero->LEDBoard;
     TrafficLights->LEDBoard;
     SnowPi->LEDBoard;
     PiTraffic->TrafficLights;
     PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
+    StatusBoard->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
     Robot->CompositeDevice;
@@ -115,4 +117,3 @@ digraph classes {
     PingServer->InternalDevice;
     CPUTemperature->InternalDevice;
 }
-

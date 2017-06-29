@@ -12,7 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 from .exc import (
     DeviceClosed,
@@ -795,6 +795,102 @@ class PiStop(TrafficLights):
                                         pwm=pwm, initial_value=initial_value)
 
 
+class StatusZero(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for The Pi Hut's `STATUS Zero`_: a Pi Zero sized
+    add-on board with three sets of red/green LEDs to provide a status
+    indicator.
+
+    The following example designates the first strip the label "wifi" and the
+    second "raining", and turns them green and red respectfully::
+
+        from gpiozero import StatusZero
+
+        status = StatusZero('wifi', 'raining')
+        status.wifi.green.on()
+        status.raining.red.on()
+
+    :param str \*labels:
+        Specify the names of the labels you wish to designate the strips to.
+        You can list up to three labels. If no labels are given, three strips
+        will be initialised with names 'one', 'two', and 'three'. If some, but
+        not all strips are given labels, any remaining strips will not be
+        initialised.
+
+    .. _STATUS Zero: https://thepihut.com/statuszero
+    """
+    default_labels = ('one', 'two', 'three')
+
+    def __init__(self, *labels, **kwargs):
+        pins = (
+            (17, 4),
+            (22, 27),
+            (9, 10),
+        )
+        if len(labels) == 0:
+            labels = self.default_labels
+        elif len(labels) > len(pins):
+            raise ValueError("StatusZero doesn't support more than three labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
+        super(StatusZero, self).__init__(_order=labels, **{
+            label: LEDBoard(red=red, green=green, _order=('red', 'green'), **kwargs)
+            for (green, red), label in zip(pins, labels)
+        })
+
+
+class StatusBoard(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice` for The Pi Hut's `STATUS`_ board: a
+    HAT sized add-on board with five sets of red/green LEDs and buttons to
+    provide a status indicator with additional input.
+
+    The following example designates the first strip the label "wifi" and the
+    second "raining", turns the wifi green and then activates the button to
+    toggle its lights when pressed::
+
+        from gpiozero import StatusBoard
+
+        status = StatusBoard('wifi', 'raining')
+        status.wifi.lights.green.on()
+        status.wifi.button.when_pressed = status.wifi.lights.toggle
+
+    :param str \*labels:
+        Specify the names of the labels you wish to designate the strips to.
+        You can list up to three labels. If no labels are given, three strips
+        will be initialised with names 'one' to 'five'. If some, but not all
+        strips are given labels, any remaining strips will not be initialised.
+
+    .. _STATUS: https://thepihut.com/status
+    """
+    default_labels = ('one', 'two', 'three', 'four', 'five')
+
+    def __init__(self, *labels, **kwargs):
+        pins = (
+            (17, 4, 14),
+            (22, 27, 19),
+            (9, 10, 15),
+            (5, 11, 26),
+            (13, 6, 18),
+        )
+        if len(labels) == 0:
+            labels = self.default_labels
+        elif len(labels) > len(pins):
+            raise ValueError("StatusBoard doesn't support more than five labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
+        super(StatusBoard, self).__init__(_order=labels, **{
+            label: CompositeOutputDevice(
+                button=Button(button),
+                lights=LEDBoard(
+                    red=red, green=green, _order=('red', 'green'), **kwargs
+                ), _order=('button', 'lights'))
+            for (green, red, button), label in zip(pins, labels)
+        })
+
+
 class SnowPi(LEDBoard):
     """
     Extends :class:`LEDBoard` for the `Ryanteck SnowPi`_ board.
@@ -1184,4 +1280,3 @@ class Energenie(SourceMixin, Device):
 
     def off(self):
         self.value = False
-

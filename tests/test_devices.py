@@ -91,7 +91,7 @@ def test_composite_device_sequence():
         assert len(device) == 2
         assert device[0].pin.number == 4
         assert device[1].pin.number == 5
-        assert device.namedtuple._fields == ('_0', '_1')
+        assert device.namedtuple._fields == ('device_0', 'device_1')
 
 def test_composite_device_values():
     with CompositeDevice(

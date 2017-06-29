@@ -127,6 +127,20 @@ Energenie
     :inherited-members:
     :members:
 
+StatusZero
+==========
+
+.. autoclass:: StatusZero
+    :inherited-members:
+    :members:
+
+StatusBoard
+===========
+
+.. autoclass:: StatusBoard
+    :inherited-members:
+    :members:
+
 SnowPi
 ======
 
@@ -168,4 +182,3 @@ CompositeDevice
 
 .. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
     :members:
-

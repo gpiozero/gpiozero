@@ -30,6 +30,8 @@ def setup_function(function):
         'test_led_board_fade_background',
         'test_led_bar_graph_pwm_value',
         'test_led_bar_graph_pwm_initial_value',
+        'test_statusboard_kwargs',
+        'test_statuszero_kwargs',
         ) else MockPin
 
 def teardown_function(function):
@@ -778,3 +780,113 @@ def test_energenie():
         pins[5].assert_states_and_times([(0.0, False), (0.1, True), (0.25, False)])
         device1.close()
         assert repr(device1) == '<gpiozero.Energenie object closed>'
+
+def test_statuszero_init():
+    with StatusZero() as sz:
+        assert sz.namedtuple._fields == ('one', 'two', 'three')
+    with StatusZero('a') as sz:
+        assert sz.namedtuple._fields == ('a',)
+    with StatusZero('a', 'b') as sz:
+        assert sz.namedtuple._fields == ('a', 'b')
+    with StatusZero('a', 'b', 'c') as sz:
+        assert sz.namedtuple._fields == ('a', 'b', 'c')
+    with pytest.raises(ValueError):
+        StatusZero('a', 'b', 'c', 'd')
+    with pytest.raises(ValueError):
+        StatusZero('0')
+    with pytest.raises(ValueError):
+        StatusZero('foo', 'hello world')
+    with pytest.raises(ValueError):
+        StatusZero('foo', 'foo')
+
+def test_statuszero():
+    with StatusZero() as sz:
+        assert isinstance(sz.one, LEDBoard)
+        assert isinstance(sz.two, LEDBoard)
+        assert isinstance(sz.three, LEDBoard)
+        assert isinstance(sz.one.red, LED)
+        assert isinstance(sz.one.green, LED)
+        assert sz.value == ((False, False), (False, False), (False, False))
+        sz.on()
+        assert sz.value == ((True, True), (True, True), (True, True))
+        sz.one.green.off()
+        assert sz.one.value == (True, False)
+
+def test_statuszero_kwargs():
+    with StatusZero(pwm=True, initial_value=True) as sz:
+        assert isinstance(sz.one, LEDBoard)
+        assert isinstance(sz.two, LEDBoard)
+        assert isinstance(sz.three, LEDBoard)
+        assert isinstance(sz.one.red, PWMLED)
+        assert isinstance(sz.one.green, PWMLED)
+        assert sz.value == ((1, 1), (1, 1), (1, 1))
+        sz.off()
+        assert sz.value == ((0, 0), (0, 0), (0, 0))
+
+def test_statuszero_named():
+    with StatusZero('a') as sz:
+        assert isinstance(sz.a, LEDBoard)
+        assert isinstance(sz.a.red, LED)
+        with pytest.raises(AttributeError):
+            sz.one
+
+def test_statusboard_init():
+    with StatusBoard() as sb:
+        assert sb.namedtuple._fields == ('one', 'two', 'three', 'four', 'five')
+    with StatusBoard('a') as sb:
+        assert sb.namedtuple._fields == ('a',)
+    with StatusBoard('a', 'b') as sb:
+        assert sb.namedtuple._fields == ('a', 'b',)
+    with StatusBoard('a', 'b', 'c', 'd', 'e') as sb:
+        assert sb.namedtuple._fields == ('a', 'b', 'c', 'd', 'e')
+    with pytest.raises(ValueError):
+        StatusBoard('a', 'b', 'c', 'd', 'e', 'f')
+    with pytest.raises(ValueError):
+        StatusBoard('0')
+    with pytest.raises(ValueError):
+        StatusBoard('foo', 'hello world')
+    with pytest.raises(ValueError):
+        StatusBoard('foo', 'foo')
+
+def test_statusboard():
+    with StatusBoard() as sb:
+        assert isinstance(sb.one, CompositeOutputDevice)
+        assert isinstance(sb.two, CompositeOutputDevice)
+        assert isinstance(sb.five, CompositeOutputDevice)
+        assert isinstance(sb.one.button, Button)
+        assert isinstance(sb.one.lights, LEDBoard)
+        assert isinstance(sb.one.lights.red, LED)
+        assert isinstance(sb.one.lights.green, LED)
+        assert sb.value == ((False, (False, False)), (False, (False, False)),
+                            (False, (False, False)), (False, (False, False)),
+                            (False, (False, False)))
+        sb.on()
+        assert sb.value == ((False, (True, True)), (False, (True, True)),
+                            (False, (True, True)), (False, (True, True)),
+                            (False, (True, True)))
+        sb.one.lights.green.off()
+        assert sb.one.value == (False, (True, False))
+
+def test_statusboard_kwargs():
+    with StatusBoard(pwm=True, initial_value=True) as sb:
+        assert isinstance(sb.one, CompositeOutputDevice)
+        assert isinstance(sb.two, CompositeOutputDevice)
+        assert isinstance(sb.five, CompositeOutputDevice)
+        assert isinstance(sb.one.button, Button)
+        assert isinstance(sb.one.lights, LEDBoard)
+        assert isinstance(sb.one.lights.red, PWMLED)
+        assert isinstance(sb.one.lights.green, PWMLED)
+        assert sb.value == ((False, (1, 1)), (False, (1, 1)), (False, (1, 1)),
+                           (False, (1, 1)), (False, (1, 1)))
+        sb.off()
+        assert sb.value == ((False, (0, 0)), (False, (0, 0)), (False, (0, 0)),
+                            (False, (0, 0)), (False, (0, 0)))
+
+def test_statusboard_named():
+    with StatusBoard('a') as sb:
+        assert isinstance(sb.a, CompositeOutputDevice)
+        assert isinstance(sb.a.button, Button)
+        assert isinstance(sb.a.lights, LEDBoard)
+        assert isinstance(sb.a.lights.red, LED)
+        with pytest.raises(AttributeError):
+            sb.one
