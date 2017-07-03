@@ -8,6 +8,10 @@ from __future__ import (
     )
 str = type('')
 
+from weakref import ref
+from collections import defaultdict
+from threading import Lock
+
 from ..exc import (
     PinInvalidFunction,
     PinSetInput,
@@ -20,6 +24,7 @@ from ..exc import (
     SPIFixedBitOrder,
     SPIFixedSelect,
     SPIFixedWordSize,
+    GPIOPinInUse,
     )
 
 
@@ -36,10 +41,61 @@ class Factory(object):
     applicable:
 
     * :meth:`close`
+    * :meth:`reserve_pins`
+    * :meth:`release_pins`
+    * :meth:`release_all`
     * :meth:`pin`
     * :meth:`spi`
     * :meth:`_get_pi_info`
     """
+    def __init__(self):
+        self._reservations = defaultdict(list)
+        self._res_lock = Lock()
+
+    def reserve_pins(self, requester, *pins):
+        """
+        Called to indicate that the device reserves the right to use the
+        specified *pins*. This should be done during device construction.  If
+        pins are reserved, you must ensure that the reservation is released by
+        eventually called :meth:`release_pins`.
+        """
+        with self._res_lock:
+            for pin in pins:
+                for reserver_ref in self._reservations[pin]:
+                    reserver = reserver_ref()
+                    if reserver is not None and requester._conflicts_with(reserver):
+                        raise GPIOPinInUse('pin %s is already in use by %r' %
+                                           (pin, reserver))
+                self._reservations[pin].append(ref(requester))
+
+    def release_pins(self, reserver, *pins):
+        """
+        Releases the reservation of *reserver* against *pins*.  This is
+        typically called during :meth:`Device.close` to clean up reservations
+        taken during construction. Releasing a reservation that is not currently
+        held will be silently ignored (to permit clean-up after failed / partial
+        construction).
+        """
+        with self._res_lock:
+            for pin in pins:
+                self._reservations[pin] = [
+                    ref for ref in self._reservations[pin]
+                    if ref() not in (reserver, None) # may as well clean up dead refs
+                    ]
+
+    def release_all(self, reserver):
+        """
+        Releases all pin reservations taken out by *reserver*. See
+        :meth:`release_pins` for further information).
+        """
+        with self._res_lock:
+            self._reservations = defaultdict(list, {
+                pin: [
+                    ref for ref in conflictors
+                    if ref() not in (reserver, None)
+                    ]
+                for pin, conflictors in self._reservations.items()
+                })
 
     def close(self):
         """
@@ -63,19 +119,6 @@ class Factory(object):
         """
         raise PinUnsupported("Individual pins are not supported by this pin factory")
 
-    def pin_address(self, spec):
-        """
-        Returns the address that a pin *would* have if constructed from the
-        given *spec*.
-
-        This unusual method is used by the pin reservation system to check
-        for conflicts *prior* to pin construction; with most implementations,
-        pin construction implicitly alters the state of the pin (e.g. setting
-        it to an input). This allows pin reservation to take place without
-        affecting the state of other components.
-        """
-        raise NotImplementedError
-
     def spi(self, **spi_args):
         """
         Returns an instance of an :class:`SPI` interface, for the specified SPI
@@ -88,21 +131,6 @@ class Factory(object):
 
     def _get_address(self):
         raise NotImplementedError
-
-    address = property(
-        lambda self: self._get_address(),
-        doc="""\
-        Returns a tuple of strings representing the address of the factory.
-        For the Pi itself this is a tuple of one string representing the Pi's
-        address (e.g. "localhost"). Expander chips can return a tuple appending
-        whatever string they require to uniquely identify the expander chip
-        amongst all factories in the system.
-
-        .. note::
-
-            This property *must* return an immutable object capable of being
-            used as a dictionary key.
-        """)
 
     def _get_pi_info(self):
         return None
@@ -128,7 +156,6 @@ class Pin(object):
     represent the capabilities of pins. Descendents *must* override the
     following methods:
 
-    * :meth:`_get_address`
     * :meth:`_get_function`
     * :meth:`_set_function`
     * :meth:`_get_state`
@@ -153,7 +180,7 @@ class Pin(object):
     """
 
     def __repr__(self):
-        return self.address[-1]
+        return "<Pin>"
 
     def close(self):
         """
@@ -194,18 +221,6 @@ class Pin(object):
         """
         self.function = 'input'
         self.pull = pull
-
-    def _get_address(self):
-        raise NotImplementedError
-
-    address = property(
-        lambda self: self._get_address(),
-        doc="""\
-        The address of the pin. This property is a tuple of strings constructed
-        from the owning factory's address with the unique address of the pin
-        appended to it. The tuple as a whole uniquely identifies the pin
-        amongst all pins attached to the system.
-        """)
 
     def _get_function(self):
         return "input"

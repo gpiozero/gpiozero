@@ -228,7 +228,7 @@ class NativePin(LocalPiPin):
         self._change_thread = None
         self._change_event = Event()
         self.function = 'input'
-        self.pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self.bounce = None
         self.edges = 'both'
 
@@ -236,7 +236,7 @@ class NativePin(LocalPiPin):
         self.frequency = None
         self.when_changed = None
         self.function = 'input'
-        self.pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[(self.factory.mem[self._func_offset] >> self._func_shift) & 7]
@@ -269,7 +269,7 @@ class NativePin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             value = self.GPIO_PULL_UPS[value]

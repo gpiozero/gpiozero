@@ -7,7 +7,6 @@ from __future__ import (
 str = type('')
 
 import os
-from weakref import proxy
 
 import pigpio
 
@@ -126,9 +125,6 @@ class PiGPIOFactory(PiFactory):
     def _get_revision(self):
         return self.connection.get_hardware_revision()
 
-    def _get_address(self):
-        return ("%s:%d" % (self.host, self.port),)
-
     def spi(self, **spi_args):
         intf = super(PiGPIOFactory, self).spi(**spi_args)
         self._spis.append(intf)
@@ -166,7 +162,7 @@ class PiGPIOPin(PiPin):
 
     def __init__(self, factory, number):
         super(PiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._bounce = None
         self._callback = None
@@ -183,7 +179,7 @@ class PiGPIOPin(PiPin):
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+            self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[self.factory.connection.get_mode(self.number)]
@@ -225,7 +221,7 @@ class PiGPIOPin(PiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[value])
@@ -296,19 +292,17 @@ class PiGPIOHardwareSPI(SPI, Device):
     def __init__(self, factory, port, device):
         self._port = port
         self._device = device
-        self._factory = proxy(factory)
+        self._factory = factory
         self._handle = None
         super(PiGPIOHardwareSPI, self).__init__()
         pins = SPI_HARDWARE_PINS[port]
-        self._reserve_pins(*(
-            factory.address + ('GPIO%d' % pin,)
-            for pin in (
-                pins['clock'],
-                pins['mosi'],
-                pins['miso'],
-                pins['select'][device]
-            )
-        ))
+        self._factory.reserve_pins(
+            self,
+            pins['clock'],
+            pins['mosi'],
+            pins['miso'],
+            pins['select'][device]
+        )
         self._spi_flags = 8 << 16
         self._baud = 500000
         self._handle = self._factory.connection.spi_open(
@@ -330,7 +324,7 @@ class PiGPIOHardwareSPI(SPI, Device):
         if not self.closed:
             self._factory.connection.spi_close(self._handle)
         self._handle = None
-        self._release_all()
+        self._factory.release_all(self)
         super(PiGPIOHardwareSPI, self).close()
 
     @property
@@ -397,13 +391,14 @@ class PiGPIOSoftwareSPI(SPI, Device):
         self._clock_pin = clock_pin
         self._mosi_pin = mosi_pin
         self._miso_pin = miso_pin
-        self._factory = proxy(factory)
+        self._factory = factory
         super(PiGPIOSoftwareSPI, self).__init__()
-        self._reserve_pins(
-            factory.pin_address(clock_pin),
-            factory.pin_address(mosi_pin),
-            factory.pin_address(miso_pin),
-            factory.pin_address(select_pin),
+        self._factory.reserve_pins(
+            self,
+            clock_pin,
+            mosi_pin,
+            miso_pin,
+            select_pin,
             )
         self._spi_flags = 0
         self._baud = 100000
@@ -434,7 +429,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
         if not self.closed:
             self._closed = True
             self._factory.connection.bb_spi_close(self._select_pin)
-        self._release_all()
+        self.factory.release_all(self)
         super(PiGPIOSoftwareSPI, self).close()
 
     @property

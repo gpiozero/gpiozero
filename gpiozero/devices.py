@@ -11,7 +11,7 @@ import os
 import atexit
 import weakref
 import warnings
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from itertools import chain
 from types import FunctionType
 from threading import Lock
@@ -194,77 +194,21 @@ class Device(ValuesMixin, GPIOBase):
     property, the :attr:`value` property, and the :meth:`close` method).
     """
     pin_factory = None # instance of a Factory sub-class
-    _reservations = defaultdict(list) # maps pin addresses to lists of devices
-    _res_lock = Lock()
+
+    def __init__(self, **kwargs):
+        # Force pin_factory to be keyword-only, even in Python 2
+        self.pin_factory = kwargs.pop('pin_factory', Device.pin_factory)
+        if kwargs:
+            raise TypeError("Device.__init__() got unexpected keyword "
+                            "argument '%s'" % kwargs.popitem()[0])
+        super(Device, self).__init__()
 
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
 
-    def _reserve_pins(self, *pins_or_addresses):
-        """
-        Called to indicate that the device reserves the right to use the
-        specified *pins_or_addresses*. This should be done during device
-        construction.  If pins are reserved, you must ensure that the
-        reservation is released by eventually called :meth:`_release_pins`.
-
-        The *pins_or_addresses* can be actual :class:`Pin` instances or the
-        addresses of pin instances (each address is a tuple of strings). The
-        latter form is permitted to ensure that devices do not have to
-        construct :class:`Pin` objects to reserve pins. This is important as
-        constructing a pin often configures it (e.g. as an input) which
-        conflicts with alternate pin functions like SPI.
-        """
-        addresses = (
-            p.address if isinstance(p, Pin) else p
-            for p in pins_or_addresses
-            )
-        with Device._res_lock:
-            for address in addresses:
-                for device_ref in Device._reservations[address]:
-                    device = device_ref()
-                    if device is not None and self._conflicts_with(device):
-                        raise GPIOPinInUse(
-                            'pin %s is already in use by %r' % (
-                                '/'.join(address), device)
-                        )
-                Device._reservations[address].append(weakref.ref(self))
-
-    def _release_pins(self, *pins_or_addresses):
-        """
-        Releases the reservation of this device against *pins_or_addresses*.
-        This is typically called during :meth:`close` to clean up reservations
-        taken during construction. Releasing a reservation that is not
-        currently held will be silently ignored (to permit clean-up after
-        failed / partial construction).
-        """
-        addresses = (
-            p.address if isinstance(p, Pin) else p
-            for p in pins_or_addresses
-            )
-        with Device._res_lock:
-            for address in addresses:
-                Device._reservations[address] = [
-                    ref for ref in Device._reservations[address]
-                    if ref() not in (self, None) # may as well clean up dead refs
-                    ]
-
-    def _release_all(self):
-        """
-        Releases all pin reservations taken out by this device. See
-        :meth:`_release_pins` for further information).
-        """
-        with Device._res_lock:
-            Device._reservations = defaultdict(list, {
-                address: [
-                    ref for ref in conflictors
-                    if ref() not in (self, None)
-                    ]
-                for address, conflictors in Device._reservations.items()
-                })
-
     def _conflicts_with(self, other):
         """
-        Called by :meth:`_reserve_pin` to test whether the *other*
+        Called by :meth:`Factory.reserve_pins` to test whether the *other*
         :class:`Device` using a common pin conflicts with this device's intent
         to use it. The default is ``True`` indicating that all devices conflict
         with common pins.  Sub-classes may override this to permit more nuanced
@@ -315,6 +259,7 @@ class CompositeDevice(Device):
         self._named = frozendict({})
         self._namedtuple = None
         self._order = kwargs.pop('_order', None)
+        pin_factory = kwargs.pop('pin_factory', None)
         try:
             if self._order is None:
                 self._order = sorted(kwargs.keys())
@@ -336,7 +281,8 @@ class CompositeDevice(Device):
                     dev.close()
             raise
         self._all = args + tuple(kwargs[v] for v in self._order)
-        super(CompositeDevice, self).__init__()
+        kwargs = {'pin_factory': pin_factory} if pin_factory is not None else {}
+        super(CompositeDevice, self).__init__(**kwargs)
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
@@ -412,20 +358,17 @@ class GPIODevice(Device):
         this is ``None``, :exc:`GPIOPinMissing` will be raised. If the pin is
         already in use by another device, :exc:`GPIOPinInUse` will be raised.
     """
-    def __init__(self, pin=None):
-        super(GPIODevice, self).__init__()
+    def __init__(self, pin=None, **kwargs):
+        super(GPIODevice, self).__init__(**kwargs)
         # self._pin must be set before any possible exceptions can be raised
         # because it's accessed in __del__. However, it mustn't be given the
         # value of pin until we've verified that it isn't already allocated
         self._pin = None
         if pin is None:
             raise GPIOPinMissing('No pin given')
-        if isinstance(pin, Pin):
-            self._reserve_pins(pin)
-        else:
-            # Check you can reserve *before* constructing the pin
-            self._reserve_pins(Device.pin_factory.pin_address(pin))
-            pin = Device.pin_factory.pin(pin)
+        # Check you can reserve *before* constructing the pin
+        self.pin_factory.reserve_pins(self, pin)
+        pin = self.pin_factory.pin(pin)
         self._pin = pin
         self._active_state = True
         self._inactive_state = False
@@ -443,7 +386,7 @@ class GPIODevice(Device):
     def close(self):
         super(GPIODevice, self).close()
         if self._pin is not None:
-            self._release_pins(self._pin)
+            self.pin_factory.release_pins(self, self._pin.number)
             self._pin.close()
             self._pin = None
 
@@ -512,10 +455,10 @@ def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
 
 def _devices_shutdown():
     if Device.pin_factory:
-        with Device._res_lock:
+        with Device.pin_factory._res_lock:
             reserved_devices = {
                 dev
-                for ref_list in Device._reservations.values()
+                for ref_list in Device.pin_factory._reservations.values()
                 for ref in ref_list
                 for dev in (ref(),)
                 if dev is not None

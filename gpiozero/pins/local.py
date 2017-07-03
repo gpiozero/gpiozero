@@ -8,6 +8,8 @@ str = type('')
 
 import io
 import warnings
+from collections import defaultdict
+from threading import Lock
 
 try:
     from spidev import SpiDev
@@ -31,6 +33,8 @@ class LocalPiFactory(PiFactory):
     :class:`~gpiozero.pins.native.NativePin`).
     """
     pins = {}
+    _reservations = defaultdict(list)
+    _res_lock = Lock()
 
     def __init__(self):
         super(LocalPiFactory, self).__init__()
@@ -40,14 +44,13 @@ class LocalPiFactory(PiFactory):
             ('software', 'exclusive'): LocalPiSoftwareSPI,
             ('software', 'shared'):    LocalPiSoftwareSPIShared,
             }
-        # Override the pins dict to be this class' pins dict. This is a bit of
-        # a dirty hack, but ensures that anyone evil enough to mix pin
-        # implementations doesn't try and control the same pin with different
-        # backends
+        # Override the reservations and pins dict to be this class' attributes.
+        # This is a bit of a dirty hack, but ensures that anyone evil enough to
+        # mix pin implementations doesn't try and control the same pin with
+        # different backends
         self.pins = LocalPiFactory.pins
-
-    def _get_address(self):
-        return ('localhost',)
+        self._reservations = LocalPiFactory._reservations
+        self._res_lock = LocalPiFactory._res_lock
 
     def _get_revision(self):
         # Cache the result as we can reasonably assume it won't change during
@@ -74,19 +77,19 @@ class LocalPiPin(PiPin):
 
 class LocalPiHardwareSPI(SPI, Device):
     def __init__(self, factory, port, device):
-        if SpiDev is None:
-            raise ImportError('failed to import spidev')
         self._port = port
         self._device = device
         self._interface = None
-        self._address = factory.address + ('SPI(port=%d, device=%d)' % (port, device),)
+        if SpiDev is None:
+            raise ImportError('failed to import spidev')
         super(LocalPiHardwareSPI, self).__init__()
         pins = SPI_HARDWARE_PINS[port]
-        self._reserve_pins(
-            factory.pin_address(pins['clock']),
-            factory.pin_address(pins['mosi']),
-            factory.pin_address(pins['miso']),
-            factory.pin_address(pins['select'][device])
+        self.pin_factory.reserve_pins(
+            self,
+            pins['clock'],
+            pins['mosi'],
+            pins['miso'],
+            pins['select'][device]
             )
         self._interface = SpiDev()
         self._interface.open(port, device)
@@ -98,7 +101,7 @@ class LocalPiHardwareSPI(SPI, Device):
                 self._interface.close()
             finally:
                 self._interface = None
-        self._release_all()
+        self.pin_factory.release_all(self)
         super(LocalPiHardwareSPI, self).close()
 
     @property
@@ -148,10 +151,6 @@ class LocalPiHardwareSPI(SPI, Device):
 class LocalPiSoftwareSPI(SPI, OutputDevice):
     def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         self._bus = None
-        self._address = factory.address + (
-            'SPI(clock_pin=%d, mosi_pin=%d, miso_pin=%d, select_pin=%d)' % (
-            clock_pin, mosi_pin, miso_pin, select_pin),
-            )
         super(LocalPiSoftwareSPI, self).__init__(select_pin, active_high=False)
         try:
             self._clock_phase = False
@@ -163,6 +162,7 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
             raise
 
     def _conflicts_with(self, other):
+        # XXX Need to refine this
         return not (
             isinstance(other, LocalPiSoftwareSPI) and
             (self.pin.number != other.pin.number)
