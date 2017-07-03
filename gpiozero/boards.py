@@ -858,7 +858,7 @@ class StatusBoard(CompositeOutputDevice):
 
     :param str \*labels:
         Specify the names of the labels you wish to designate the strips to.
-        You can list up to three labels. If no labels are given, three strips
+        You can list up to five labels. If no labels are given, five strips
         will be initialised with names 'one' to 'five'. If some, but not all
         strips are given labels, any remaining strips will not be initialised.
 
