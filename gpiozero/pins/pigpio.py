@@ -163,7 +163,7 @@ class PiGPIOPin(PiPin):
 
     def __init__(self, factory, number):
         super(PiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._bounce = None
         self._callback = None
