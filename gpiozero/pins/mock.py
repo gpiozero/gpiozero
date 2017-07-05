@@ -40,7 +40,7 @@ class MockPin(PiPin):
     def __init__(self, factory, number):
         super(MockPin, self).__init__(factory, number)
         self._function = 'input'
-        self._pull = 'up' if factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._state = self._pull == 'up'
         self._bounce = None
         self._edges = 'both'
