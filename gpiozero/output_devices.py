@@ -1154,9 +1154,32 @@ class AngularServo(Servo):
             frame_width=20/1000):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        self._min_value = -1
+        self._value_range = 2
         super(AngularServo, self).__init__(
-            pin, initial_value, min_pulse_width, max_pulse_width, frame_width)
+            pin, self._angle_to_value(initial_angle), min_pulse_width,
+            max_pulse_width, frame_width)
+
+    def _angle_to_value(self, angle):
+        if angle is None:
+            return None
+        else:
+            return (
+                    self._value_range *
+                    ((angle - self._min_angle) / self._angular_range) +
+                    self._min_value)
+
+    def _value_to_angle(self, value):
+        if value is None:
+            return None
+        else:
+            # NOTE: Why round(n, 12) here instead of 14? Angle ranges can be
+            # much larger than -1..1 so we need a little more rounding to
+            # smooth off the rough corners!
+            return round(
+                self._angular_range *
+                ((value - self._min_value) / self._value_range) +
+                self._min_angle, 12)
 
     @property
     def min_angle(self):
@@ -1186,25 +1209,8 @@ class AngularServo(Servo):
         Typically this means the servo's position remains unchanged, but that
         it can be moved by hand.
         """
-        result = self._get_value()
-        if result is None:
-            return None
-        else:
-            # NOTE: Why round(n, 12) here instead of 14? Angle ranges can be
-            # much larger than -1..1 so we need a little more rounding to
-            # smooth off the rough corners!
-            return round(
-                self._angular_range *
-                ((result - self._min_value) / self._value_range) +
-                self._min_angle, 12)
+        return self._value_to_angle(self._get_value())
 
     @angle.setter
-    def angle(self, value):
-        if value is None:
-            self.value = None
-        else:
-            self.value = (
-                self._value_range *
-                ((value - self._min_angle) / self._angular_range) +
-                self._min_value)
-
+    def angle(self, angle):
+        self.value = self._angle_to_value(angle)

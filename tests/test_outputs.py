@@ -1006,6 +1006,24 @@ def test_servo_values():
         device.value = None
         assert device.value is None
 
+def test_servo_initial_values():
+    p = MockPWMPin(1)
+    with Servo(p, initial_value=-1) as device:
+        assert device.is_active
+        assert device.value == -1
+        assert isclose(p.state, 0.05)
+    with Servo(p, initial_value=1) as device:
+        assert device.is_active
+        assert device.value == 1
+        assert isclose(p.state, 0.1)
+    with Servo(p, initial_value=0) as device:
+        assert device.is_active
+        assert device.value == 0.0
+        assert isclose(p.state, 0.075)
+    with Servo(p, initial_value=None) as device:
+        assert not device.is_active
+        assert device.value is None
+
 def test_angular_servo_range():
     p = Device.pin_factory.pin(1, pin_class=MockPWMPin)
     with AngularServo(p, initial_angle=15, min_angle=0, max_angle=90) as device:
@@ -1047,3 +1065,17 @@ def test_angular_servo_angles():
         assert device.angle == -15
         assert isclose(device.value, 1/3)
 
+def test_angular_servo_initial_angles():
+    p = MockPWMPin(1)
+    with AngularServo(p, initial_angle=0) as device:
+        assert isclose(device.value, 0)
+        assert device.angle == 0
+    with AngularServo(p, initial_angle=90) as device:
+        assert device.angle == 90
+        assert isclose(device.value, 1)
+    with AngularServo(p, initial_angle=-90) as device:
+        assert device.angle == -90
+        assert isclose(device.value, -1)
+    with AngularServo(p, initial_angle=None) as device:
+        assert device.angle is None
+        assert device.value is None
