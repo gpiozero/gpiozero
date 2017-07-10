@@ -54,7 +54,7 @@ Preparing the host computer
 ===========================
 
 If the host computer is a Raspberry Pi running Raspbian Jessie (or a PC running
-x86 PIXEL), then you have everything you need. If you're using another Linux
+Raspbian x86), then you have everything you need. If you're using another Linux
 distribution, Mac OS or Windows then you'll need to install the ``pigpio``
 Python library on the PC.
 
