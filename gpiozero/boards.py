@@ -961,7 +961,7 @@ class StatusBoard(CompositeOutputDevice):
         super(StatusBoard, self).__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: CompositeOutputDevice(
-                    button=Button(button),
+                    button=Button(button, pin_factory=pin_factory),
                     lights=LEDBoard(
                         red=red, green=green, _order=('red', 'green'),
                         pin_factory=pin_factory, **kwargs
