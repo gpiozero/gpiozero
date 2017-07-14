@@ -8,24 +8,6 @@ The following recipes demonstrate some of the capabilities of the GPIO Zero
 library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
 
-.. _pin-numbering:
-
-Pin Numbering
-=============
-
-This library uses Broadcom (BCM) pin numbering for the GPIO pins, as opposed
-to physical (BOARD) numbering. Unlike in the `RPi.GPIO`_ library, this is not
-configurable.
-
-.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
-
-Any pin marked "GPIO" in the diagram below can be used as a pin number.  For
-example, if an LED was attached to "GPIO17" you would specify the pin number as
-17 rather than 11:
-
-.. image:: images/pin_layout.*
-    :align: center
-
 Importing GPIO Zero
 ===================
 
@@ -51,6 +33,24 @@ Alternatively, the whole GPIO Zero library can be imported::
 In this case, all references to items within GPIO Zero must be prefixed::
 
     button = gpiozero.Button(2)
+
+.. _pin-numbering:
+
+Pin Numbering
+=============
+
+This library uses Broadcom (BCM) pin numbering for the GPIO pins, as opposed
+to physical (BOARD) numbering. Unlike in the `RPi.GPIO`_ library, this is not
+configurable.
+
+.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+
+Any pin marked "GPIO" in the diagram below can be used as a pin number.  For
+example, if an LED was attached to "GPIO17" you would specify the pin number as
+17 rather than 11:
+
+.. image:: images/pin_layout.*
+    :align: center
 
 LED
 ===
