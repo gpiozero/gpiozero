@@ -9,42 +9,58 @@ operating systems, including for PCs using the :doc:`remote_gpio` feature.
 Raspberry Pi
 ============
 
-First, update your repositories list::
+First, update your repositories list:
 
-    sudo apt update
+.. code-block:: console
 
-Then install the package for Python 3::
+    pi@raspberrypi:~$ sudo apt update
 
-    sudo apt install python3-gpiozero
+Then install the package for Python 3:
 
-or Python 2::
+.. code-block:: console
 
-    sudo apt install python-gpiozero
+    pi@raspberrypi:~$ sudo apt install python3-gpiozero
+
+or Python 2:
+
+.. code-block:: console
+
+    pi@raspberrypi:~$ sudo apt install python-gpiozero
 
 Linux
 =====
 
-First, update your distribution's repositories list. For example::
+First, update your distribution's repositories list. For example:
 
-    sudo apt update
+.. code-block:: console
 
-Then install pip for Python 3::
+    $ sudo apt update
 
-    sudo apt install python3-pip
+Then install pip for Python 3:
 
-or Python 3::
+.. code-block:: console
 
-    sudo apt install python-pip
+    $ sudo apt install python3-pip
+
+or Python 3:
+
+.. code-block:: console
+
+    $ sudo apt install python-pip
 
 (Alternatively, install pip with `get-pip`_.)
 
-Next, install gpiozero for Python 3::
+Next, install gpiozero for Python 3:
 
-    sudo pip3 install gpiozero
+.. code-block:: console
 
-or Python 2::
+    $ sudo pip3 install gpiozero
 
-    sudo pip install gpiozero
+or Python 2:
+
+.. code-block:: console
+
+    $ sudo pip install gpiozero
 
 .. note::
 
@@ -55,24 +71,32 @@ or Python 2::
 Mac OS
 ======
 
-First, install pip::
+First, install pip:
 
-    ???
+.. code-block:: console
 
-Next, install gpiozero with pip::
+    $ ???
 
-    pip install gpiozero
+Next, install gpiozero with pip:
+
+.. code-block:: console
+
+    $ pip install gpiozero
 
 Windows
 =======
 
-First, install pip::
+First, install pip:
 
-    ???
+.. code-block:: doscon
 
-Next, install gpiozero with pip::
+    C:\Users\user1> ???
 
-    pip install gpiozero
+Next, install gpiozero with pip:
+
+.. code-block:: doscon
+
+    C:\Users\user1> pip install gpiozero
 
 
 .. _Raspbian Jessie: https://www.raspberrypi.org/downloads/raspbian/

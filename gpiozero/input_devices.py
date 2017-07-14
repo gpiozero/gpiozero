@@ -32,9 +32,13 @@ class InputDevice(GPIODevice):
     :param bool pull_up:
         If ``True``, the pin will be pulled high with an internal resistor. If
         ``False`` (the default), the pin will be pulled low.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, pin=None, pull_up=False):
-        super(InputDevice, self).__init__(pin)
+    def __init__(self, pin=None, pull_up=False, pin_factory=None):
+        super(InputDevice, self).__init__(pin, pin_factory=pin_factory)
         try:
             self.pin.function = 'input'
             pull = 'up' if pull_up else 'down'
@@ -75,9 +79,16 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         Specifies the length of time (in seconds) that the component will
         ignore changes in state after an initial change. This defaults to
         ``None`` which indicates that no bounce compensation will be performed.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, pin=None, pull_up=False, bounce_time=None):
-        super(DigitalInputDevice, self).__init__(pin, pull_up)
+    def __init__(
+            self, pin=None, pull_up=False, bounce_time=None, pin_factory=None):
+        super(DigitalInputDevice, self).__init__(
+            pin, pull_up, pin_factory=pin_factory
+        )
         try:
             self.pin.bounce = bounce_time
             self.pin.edges = 'both'
@@ -127,12 +138,18 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         (from the :attr:`is_active` property) will block until the queue has
         filled.  If ``True``, a value will be returned immediately, but be
         aware that this value is likely to fluctuate excessively.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5,
-            queue_len=5, sample_wait=0.0, partial=False):
+            queue_len=5, sample_wait=0.0, partial=False, pin_factory=None):
         self._queue = None
-        super(SmoothedInputDevice, self).__init__(pin, pull_up)
+        super(SmoothedInputDevice, self).__init__(
+            pin, pull_up, pin_factory=pin_factory
+        )
         try:
             self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
             self.threshold = float(threshold)
@@ -263,11 +280,17 @@ class Button(HoldMixin, DigitalInputDevice):
         as long as the device remains active, every *hold_time* seconds. If
         ``False`` (the default) the :attr:`when_held` handler will be only be
         executed once per hold.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, pull_up=True, bounce_time=None,
-            hold_time=1, hold_repeat=False):
-        super(Button, self).__init__(pin, pull_up, bounce_time)
+            hold_time=1, hold_repeat=False, pin_factory=None):
+        super(Button, self).__init__(
+            pin, pull_up, bounce_time, pin_factory=pin_factory
+        )
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
@@ -325,14 +348,19 @@ class LineSensor(SmoothedInputDevice):
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(
             self, pin=None, queue_len=5, sample_rate=100, threshold=0.5,
-            partial=False):
+            partial=False, pin_factory=None):
         super(LineSensor, self).__init__(
             pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
+            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
+            pin_factory=pin_factory
         )
         try:
             self._queue.start()
@@ -394,13 +422,18 @@ class MotionSensor(SmoothedInputDevice):
         :attr:`~SmoothedInputDevice.is_active` until the internal queue has
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
-            partial=False):
+            partial=False, pin_factory=None):
         super(MotionSensor, self).__init__(
             pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial
+            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
+            pin_factory=pin_factory
         )
         try:
             self._queue.start()
@@ -460,14 +493,19 @@ class LightSensor(SmoothedInputDevice):
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _CamJam #2 EduKit: http://camjam.me/?page_id=623
     """
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
-            threshold=0.1, partial=False):
+            threshold=0.1, partial=False, pin_factory=None):
         super(LightSensor, self).__init__(
             pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=0.0, partial=partial
+            queue_len=queue_len, sample_wait=0.0, partial=partial,
+            pin_factory=pin_factory
         )
         try:
             self._charge_time_limit = charge_time_limit
@@ -568,17 +606,22 @@ class DistanceSensor(SmoothedInputDevice):
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(
             self, echo=None, trigger=None, queue_len=30, max_distance=1,
-            threshold_distance=0.3, partial=False):
+            threshold_distance=0.3, partial=False, pin_factory=None):
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
-            queue_len=queue_len, sample_wait=0.0, partial=partial
+            queue_len=queue_len, sample_wait=0.0, partial=partial,
+            pin_factory=pin_factory
         )
         try:
             self.speed_of_sound = 343.26 # m/s

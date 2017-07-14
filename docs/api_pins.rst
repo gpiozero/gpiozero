@@ -11,10 +11,23 @@ are concerned with. However, some users may wish to take advantage of the
 capabilities of alternative GPIO implementations or (in future) use GPIO
 extender chips. This is the purpose of the pins portion of the library.
 
-When you construct a device, you pass in a pin specification. However, what the
-library actually expects is a :class:`Pin` implementation. If it finds anything
-else, it uses the existing ``Device.pin_factory`` to construct a :class:`Pin`
-implementation based on the specification.
+When you construct a device, you pass in a pin specification. This is passed to
+a pin :class:`Factory` which turns it into a :class:`Pin` implementation.  The
+default factory can be queried (and changed) with ``Device.pin_factory``, i.e.
+the ``pin_factory`` attribute of the :class:`Device` class. However, all
+classes accept a ``pin_factory`` keyword argument to their constructors
+permitting the factory to be overridden on a per-device basis (the reason for
+allowing per-device factories is made apparent later in the :doc:`remote_gpio`
+chapter).
+
+This is illustrated in the following flow-chart:
+
+.. image:: images/device_pin_flowchart.*
+
+The default factory is constructed when GPIO Zero is first imported; if no
+default factory can be constructed (e.g. because no GPIO implementations are
+installed, or all of them fail to load for whatever reason), an
+:exc:`ImportError` will be raised.
 
 Changing the pin factory
 ========================
@@ -24,7 +37,7 @@ The default pin factory can be replaced by specifying a value for the
 
 .. code-block:: console
 
-    pi@raspberrypi $ GPIOZERO_PIN_FACTORY=native python
+    $ GPIOZERO_PIN_FACTORY=native python
     Python 3.4.2 (default, Oct 19 2014, 13:31:11)
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
@@ -37,8 +50,8 @@ export this value:
 
 .. code-block:: console
 
-    pi@raspberrypi $ export GPIOZERO_PIN_FACTORY=native
-    pi@raspberrypi $ python
+    $ export GPIOZERO_PIN_FACTORY=native
+    $ python
     Python 3.4.2 (default, Oct 19 2014, 13:31:11)
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
@@ -46,7 +59,7 @@ export this value:
     >>> gpiozero.Device.pin_factory
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
     >>> quit()
-    pi@raspberrypi $ python
+    $ python
     Python 3.4.2 (default, Oct 19 2014, 13:31:11)
     [GCC 4.9.1] on linux
     Type "help", "copyright", "credits" or "license" for more information.
@@ -73,17 +86,30 @@ they are tried by default.
 | native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
 
-If you need to change the default pin factory from within a script, set
+If you need to change the default pin factory from within a script, either set
 ``Device.pin_factory`` to the new factory instance to use::
 
     from gpiozero.pins.native import NativeFactory
-    from gpiozero import *
+    from gpiozero import Device, LED
+
     Device.pin_factory = NativeFactory()
 
+    # These will now implicitly use NativePin instead of
+    # RPiGPIOPin
+    led1 = LED(16)
+    led2 = LED(17)
+
+Or use the ``pin_factory`` keyword parameter mentioned above::
+
+    from gpiozero.pins.native import NativeFactory
     from gpiozero import LED
 
-    # This will now use NativePin instead of RPiGPIOPin
-    led = LED(16)
+    my_factory = NativeFactory()
+
+    # This will use NativePin instead of RPiGPIOPin for led1
+    # but led2 will continue to use RPiGPIOPin
+    led1 = LED(16, pin_factory=my_factory)
+    led2 = LED(17)
 
 Certain factories may take default information from additional sources.
 For example, to default to creating pins with
@@ -100,11 +126,13 @@ Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
 
 .. warning::
 
-    The astute and mischievous reader may note that it is possible to mix pin
-    implementations, e.g. using ``RPiGPIOPin`` for one pin, and ``NativePin``
-    for another. This is unsupported, and if it results in your script
-    crashing, your components failing, or your Raspberry Pi turning into an
-    actual raspberry pie, you have only yourself to blame.
+    The astute and mischievous reader may note that it is possible to mix
+    strictly local pin implementations, e.g. using ``RPiGPIOPin`` for one pin,
+    and ``NativePin`` for another. This is unsupported, and if it results in
+    your script crashing, your components failing, or your Raspberry Pi turning
+    into an actual raspberry pie, you have only yourself to blame.
+
+    Sensible uses of multiple pin factories are given in :doc:`remote_gpio`.
 
 
 RPi.GPIO

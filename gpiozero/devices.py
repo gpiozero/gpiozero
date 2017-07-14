@@ -197,7 +197,11 @@ class Device(ValuesMixin, GPIOBase):
 
     def __init__(self, **kwargs):
         # Force pin_factory to be keyword-only, even in Python 2
-        self.pin_factory = kwargs.pop('pin_factory', Device.pin_factory)
+        pin_factory = kwargs.pop('pin_factory', None)
+        if pin_factory is None:
+            self.pin_factory = Device.pin_factory
+        else:
+            self.pin_factory = pin_factory
         if kwargs:
             raise TypeError("Device.__init__() got unexpected keyword "
                             "argument '%s'" % kwargs.popitem()[0])
@@ -281,8 +285,7 @@ class CompositeDevice(Device):
                     dev.close()
             raise
         self._all = args + tuple(kwargs[v] for v in self._order)
-        kwargs = {'pin_factory': pin_factory} if pin_factory is not None else {}
-        super(CompositeDevice, self).__init__(**kwargs)
+        super(CompositeDevice, self).__init__(pin_factory=pin_factory)
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
