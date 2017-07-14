@@ -183,9 +183,10 @@ following:
 If you are running this from a PC (not a Raspberry Pi) with gpiozero and the
 pigpio Python library installed, this will work with no further configuration.
 However, if you are running this from a Raspberry Pi, you will also need to
-ensure the default pin factory is set to ``PiGPIOPin``. If ``RPi.GPIO`` is
+ensure the default pin factory is set to ``PiGPIOFactory``. If ``RPi.GPIO`` is
 installed, this will be selected as the default pin factory, so either
-uninstall it, or use another environment variable to set it to ``PiGPIOPin``:
+uninstall it, or use another environment variable to set it to
+``PiGPIOFactory``:
 
 .. code-block:: console
 
