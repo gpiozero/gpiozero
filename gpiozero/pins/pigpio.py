@@ -46,20 +46,21 @@ class PiGPIOFactory(PiFactory):
 
     You can construct pigpio pins manually like so::
 
-        from gpiozero.pins.pigpio import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOFactory
         from gpiozero import LED
 
-        led = LED(PiGPIOPin(12))
+        factory = PiGPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     This is particularly useful for controlling pins on a remote machine. To
     accomplish this simply specify the host (and optionally port) when
     constructing the pin::
 
-        from gpiozero.pins.pigpio import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOFactory
         from gpiozero import LED
-        from signal import pause
 
-        led = LED(PiGPIOPin(12, host='192.168.0.2'))
+        factory = PiGPIOFactory(host='192.168.0.2')
+        led = LED(12, pin_factory=factory)
 
     .. note::
 

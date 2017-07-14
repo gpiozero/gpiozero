@@ -40,7 +40,8 @@ class RPiGPIOFactory(LocalPiFactory):
         from gpiozero.pins.rpigpio import RPiGPIOFactory
         from gpiozero import LED
 
-        led = LED(RPiGPIOPin(12))
+        factory = RPiGPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
     """

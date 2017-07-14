@@ -127,10 +127,10 @@ Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
 .. warning::
 
     The astute and mischievous reader may note that it is possible to mix
-    strictly local pin implementations, e.g. using ``RPiGPIOPin`` for one pin,
-    and ``NativePin`` for another. This is unsupported, and if it results in
-    your script crashing, your components failing, or your Raspberry Pi turning
-    into an actual raspberry pie, you have only yourself to blame.
+    factories, e.g. using ``RPiGPIOFactory`` for one pin, and ``NativeFactory``
+    for another. This is unsupported, and if it results in your script
+    crashing, your components failing, or your Raspberry Pi turning into an
+    actual raspberry pie, you have only yourself to blame.
 
     Sensible uses of multiple pin factories are given in :doc:`remote_gpio`.
 

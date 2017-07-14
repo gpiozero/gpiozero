@@ -40,10 +40,11 @@ class RPIOFactory(LocalPiFactory):
 
     You can construct RPIO pins manually like so::
 
-        from gpiozero.pins.rpio import RPIOPin
+        from gpiozero.pins.rpio import RPIOFactory
         from gpiozero import LED
 
-        led = LED(RPIOPin(12))
+        factory = RPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     .. _RPIO: https://pythonhosted.org/RPIO/
     """

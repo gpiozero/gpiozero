@@ -161,10 +161,11 @@ class NativeFactory(LocalPiFactory):
 
     You can construct native pin instances manually like so::
 
-        from gpiozero.pins.native import NativePin
+        from gpiozero.pins.native import NativeFactory
         from gpiozero import LED
 
-        led = LED(NativePin(12))
+        factory = NativeFactory()
+        led = LED(12, pin_factory=factory)
     """
     def __init__(self):
         super(NativeFactory, self).__init__()
