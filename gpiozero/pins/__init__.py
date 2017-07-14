@@ -30,15 +30,9 @@ from ..exc import (
 
 class Factory(object):
     """
-    Generates pins, SPI, and I2C interfaces for devices. This is an abstract
-    base class for pin factories. Descendents *must* override the following
-    methods:
-
-    * :meth:`_get_address`
-    * :meth:`pin_address`
-
-    Descendents *may* additionally override the following methods, if
-    applicable:
+    Generates pins and SPI interfaces for devices. This is an abstract
+    base class for pin factories. Descendents *may* override the following
+    methods, if applicable:
 
     * :meth:`close`
     * :meth:`reserve_pins`
@@ -128,9 +122,6 @@ class Factory(object):
         raise :exc:`SPIBadArgs`.
         """
         raise PinSPIUnsupported('SPI not supported by this pin factory')
-
-    def _get_address(self):
-        raise NotImplementedError
 
     def _get_pi_info(self):
         return None

@@ -46,20 +46,21 @@ class PiGPIOFactory(PiFactory):
 
     You can construct pigpio pins manually like so::
 
-        from gpiozero.pins.pigpio import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOFactory
         from gpiozero import LED
 
-        led = LED(PiGPIOPin(12))
+        factory = PiGPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     This is particularly useful for controlling pins on a remote machine. To
     accomplish this simply specify the host (and optionally port) when
     constructing the pin::
 
-        from gpiozero.pins.pigpio import PiGPIOPin
+        from gpiozero.pins.pigpio import PiGPIOFactory
         from gpiozero import LED
-        from signal import pause
 
-        led = LED(PiGPIOPin(12, host='192.168.0.2'))
+        factory = PiGPIOFactory(host='192.168.0.2')
+        led = LED(12, pin_factory=factory)
 
     .. note::
 
@@ -132,6 +133,12 @@ class PiGPIOFactory(PiFactory):
 
 
 class PiGPIOPin(PiPin):
+    """
+    Pin implementation for the `pigpio`_ library. See :class:`PiGPIOFactory`
+    for more information.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
     GPIO_FUNCTIONS = {
         'input':   pigpio.INPUT,
@@ -162,7 +169,7 @@ class PiGPIOPin(PiPin):
 
     def __init__(self, factory, number):
         super(PiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._bounce = None
         self._callback = None
@@ -289,6 +296,12 @@ class PiGPIOPin(PiPin):
 
 
 class PiGPIOHardwareSPI(SPI, Device):
+    """
+    Hardware SPI implementation for the `pigpio`_ library. Uses the ``spi_*``
+    functions from the pigpio API.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     def __init__(self, factory, port, device):
         self._port = port
         self._device = device
@@ -385,6 +398,12 @@ class PiGPIOHardwareSPI(SPI, Device):
 
 
 class PiGPIOSoftwareSPI(SPI, Device):
+    """
+    Software SPI implementation for the `pigpio`_ library. Uses the ``bb_spi_*``
+    functions from the pigpio API.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         self._closed = True
         self._select_pin = select_pin

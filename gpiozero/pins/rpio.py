@@ -40,10 +40,11 @@ class RPIOFactory(LocalPiFactory):
 
     You can construct RPIO pins manually like so::
 
-        from gpiozero.pins.rpio import RPIOPin
+        from gpiozero.pins.rpio import RPIOFactory
         from gpiozero import LED
 
-        led = LED(RPIOPin(12))
+        factory = RPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     .. _RPIO: https://pythonhosted.org/RPIO/
     """
@@ -63,6 +64,12 @@ class RPIOFactory(LocalPiFactory):
 
 
 class RPIOPin(LocalPiPin):
+    """
+    Pin implementation for the `RPIO`_ library. See :class:`RPIOFactory` for
+    more information.
+
+    .. _RPIO: https://pythonhosted.org/RPIO/
+    """
     GPIO_FUNCTIONS = {
         'input':   RPIO.IN,
         'output':  RPIO.OUT,
@@ -80,7 +87,7 @@ class RPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._duty_cycle = None
         self._bounce = None
@@ -138,7 +145,7 @@ class RPIOPin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             RPIO.setup(self.number, RPIO.IN, self.GPIO_PULL_UPS[value])

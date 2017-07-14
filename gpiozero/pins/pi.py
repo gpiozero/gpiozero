@@ -238,11 +238,11 @@ class PiPin(Pin):
         self._when_changed = None
         self._number = number
         try:
-            factory.pi_info.physical_pin('GPIO%d' % self.number)
+            factory.pi_info.physical_pin(repr(self))
         except PinNoPins:
             warnings.warn(
                 PinNonPhysical(
-                    'no physical pins exist for GPIO%d' % self.number))
+                    'no physical pins exist for %s' % repr(self)))
 
     @property
     def number(self):

@@ -40,7 +40,8 @@ class RPiGPIOFactory(LocalPiFactory):
         from gpiozero.pins.rpigpio import RPiGPIOFactory
         from gpiozero import LED
 
-        led = LED(RPiGPIOPin(12))
+        factory = RPiGPIOFactory()
+        led = LED(12, pin_factory=factory)
 
     .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
     """
@@ -57,6 +58,12 @@ class RPiGPIOFactory(LocalPiFactory):
 
 
 class RPiGPIOPin(LocalPiPin):
+    """
+    Pin implementation for the `RPi.GPIO`_ library. See :class:`RPiGPIOFactory`
+    for more information.
+
+    .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+    """
     GPIO_FUNCTIONS = {
         'input':   GPIO.IN,
         'output':  GPIO.OUT,
@@ -85,7 +92,7 @@ class RPiGPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = None
         self._frequency = None
         self._duty_cycle = None
@@ -103,7 +110,7 @@ class RPiGPIOPin(LocalPiPin):
         GPIO.setup(self.number, GPIO.OUT, initial=state)
 
     def input_with_pull(self, pull):
-        if pull != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if pull != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[pull])
@@ -149,7 +156,7 @@ class RPiGPIOPin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[value])

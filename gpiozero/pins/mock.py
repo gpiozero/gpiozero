@@ -216,7 +216,7 @@ class MockChargingPin(MockPin):
 class MockTriggerPin(MockPin):
     """
     This derivative of :class:`MockPin` is intended to be used with another
-    :class:`MockPin` to emulate a distance sensor. Set :attr:`echo_pin` to the
+    :class:`MockPin` to emulate a distance sensor. Set *echo_pin* to the
     corresponding pin instance. When this pin is driven high it will trigger
     the echo pin to drive high for the echo time.
     """
@@ -410,6 +410,14 @@ class MockSPIDevice(object):
 
 
 class MockFactory(LocalPiFactory):
+    """
+    Factory for generating mock pins. The *revision* parameter specifies what
+    revision of Pi the mock factory pretends to be (this affects the result of
+    the :attr:`pi_info` attribute as well as where pull-ups are assumed to be).
+    The *pin_class* attribute specifies which mock pin class will be generated
+    by the :meth:`pin` method by default. This can be changed after
+    construction by modifying the :attr:`pin_class` attribute.
+    """
     def __init__(
             self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a02082'),
             pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
@@ -427,10 +435,22 @@ class MockFactory(LocalPiFactory):
         return self._revision
 
     def reset(self):
+        """
+        Clears the pins and reservations sets. This is primarily useful in
+        test suites to ensure the pin factory is back in a "clean" state before
+        the next set of tests are run.
+        """
         self.pins.clear()
         self._reservations.clear()
 
     def pin(self, spec, pin_class=None, **kwargs):
+        """
+        The pin method for :class:`MockFactory` additionally takes a *pin_class*
+        attribute which can be used to override the class' :attr:`pin_class`
+        attribute. Any additional keyword arguments will be passed along to the
+        pin constructor (useful with things like :class:`MockConnectedPin` which
+        expect to be constructed with another pin).
+        """
         if pin_class is None:
             pin_class = self.pin_class
         n = self._to_gpio(spec)

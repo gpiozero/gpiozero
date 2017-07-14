@@ -1,9 +1,11 @@
 from gpiozero import LED
-from gpiozero.pins.pigpio import PiGPIOPin
+from gpiozero.pins.pigpio import PiGPIOFactory
 from signal import pause
 
+factory = PiGPIOFactory(host='192.168.1.3')
+
 button = Button(2)
-led = LED(PiGPIOPin(17, host='192.168.1.3'))
+led = LED(17, pin_factory=factory)
 
 led.source = button.values
 
