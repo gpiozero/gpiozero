@@ -23,7 +23,7 @@ Preparing the Raspberry Pi
 
 If you're using Raspbian Jessie (desktop - not Jessie Lite) then you have
 everything you need to use the remote GPIO feature. If you're using Jessie
-Lite, or another distribution, you'll need to install pigpio::
+Lite, or another distribution, you'll need to install pigpio:
 
 .. code-block:: console
 
@@ -52,7 +52,9 @@ example:
     $ sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
 
 You will need to launch the pigpio daemon every time you wish to use this
-feature. To automate running the daemon at boot time::
+feature. To automate running the daemon at boot time:
+
+.. code-block:: console
 
     $ sudo systemctl enable pigpiod
 
