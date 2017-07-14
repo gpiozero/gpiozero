@@ -448,7 +448,7 @@ def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
             except Exception as e:
                 warnings.warn(
                     PinFactoryFallback(
-                        'Failed to load factory %s: %s' % (name, str(e))))
+                        'Falling back from %s: %s' % (name, str(e))))
         raise BadPinFactory('Unable to load any default pin factory!')
     else:
         for factory in pkg_resources.iter_entry_points(group, name.lower()):
