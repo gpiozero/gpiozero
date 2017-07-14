@@ -64,6 +64,12 @@ class RPIOFactory(LocalPiFactory):
 
 
 class RPIOPin(LocalPiPin):
+    """
+    Pin implementation for the `RPIO`_ library. See :class:`RPIOFactory` for
+    more information.
+
+    .. _RPIO: https://pythonhosted.org/RPIO/
+    """
     GPIO_FUNCTIONS = {
         'input':   RPIO.IN,
         'output':  RPIO.OUT,

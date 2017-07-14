@@ -135,36 +135,22 @@ Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
     Sensible uses of multiple pin factories are given in :doc:`remote_gpio`.
 
 
-RPi.GPIO
-========
+Mock pins
+=========
 
-.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOFactory
+There's also a :class:`gpiozero.pins.mock.MockFactory` which generates entirely
+fake pins. This was originally intended for GPIO Zero developers who wish to
+write tests for devices without having to have the physical device wired in to
+their Pi. However, they have also proven relatively useful in developing GPIO
+Zero scripts without having a Pi to hand. This pin factory will never be loaded
+by default; it must be explicitly specified. For example:
 
-.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOPin
+.. literalinclude:: examples/mock_demo.py
 
-
-RPIO
-====
-
-.. autoclass:: gpiozero.pins.rpio.RPIOFactory
-
-.. autoclass:: gpiozero.pins.rpio.RPIOPin
-
-
-PiGPIO
-======
-
-.. autoclass:: gpiozero.pins.pigpio.PiGPIOFactory
-
-.. autoclass:: gpiozero.pins.pigpio.PiGPIOPin
-
-
-Native
-======
-
-.. autoclass:: gpiozero.pins.native.NativeFactory
-
-.. autoclass:: gpiozero.pins.native.NativePin
+Several sub-classes of mock pins exist for emulating various other things
+(pins that do/don't support PWM, pins that are connected together, pins that
+drive high after a delay, etc). Interested users are invited to read the GPIO
+Zero test suite for further examples of usage.
 
 
 Base classes
@@ -196,22 +182,62 @@ Base classes
     :members:
 
 
-Utilities
-=========
+RPi.GPIO
+========
 
-The pins module also contains a database of information about the various
-revisions of Raspberry Pi. This is used internally to raise warnings when
-non-physical pins are used, or to raise exceptions when pull-downs are
-requested on pins with physical pull-up resistors attached. The following
-functions and classes can be used to query this database:
+.. currentmodule:: gpiozero.pins.rpigpio
 
-.. currentmodule:: gpiozero
+.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOFactory
 
-.. autofunction:: pi_info
+.. autoclass:: gpiozero.pins.rpigpio.RPiGPIOPin
 
-.. autoclass:: PiBoardInfo
 
-.. autoclass:: HeaderInfo
+RPIO
+====
 
-.. autoclass:: PinInfo
+.. currentmodule:: gpiozero.pins.rpio
+
+.. autoclass:: gpiozero.pins.rpio.RPIOFactory
+
+.. autoclass:: gpiozero.pins.rpio.RPIOPin
+
+
+PiGPIO
+======
+
+.. currentmodule:: gpiozero.pins.pigpio
+
+.. autoclass:: gpiozero.pins.pigpio.PiGPIOFactory
+
+.. autoclass:: gpiozero.pins.pigpio.PiGPIOPin
+
+
+Native
+======
+
+.. currentmodule:: gpiozero.pins.native
+
+.. autoclass:: gpiozero.pins.native.NativeFactory
+
+.. autoclass:: gpiozero.pins.native.NativePin
+
+
+Mock
+====
+
+.. currentmodule:: gpiozero.pins.mock
+
+.. autoclass:: gpiozero.pins.mock.MockFactory
+    :members:
+
+.. autoclass:: gpiozero.pins.mock.MockPin
+    :members:
+
+.. autoclass:: gpiozero.pins.mock.MockPWMPin
+
+.. autoclass:: gpiozero.pins.mock.MockConnectedPin
+
+.. autoclass:: gpiozero.pins.mock.MockChargingPin
+
+.. autoclass:: gpiozero.pins.mock.MockTriggerPin
 

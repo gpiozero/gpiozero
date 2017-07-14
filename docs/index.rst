@@ -17,6 +17,7 @@ Table of Contents
     api_generic
     api_tools
     api_pins
+    api_utils
     api_exc
     cli_tools
     source_values

@@ -178,6 +178,9 @@ class NativeFactory(LocalPiFactory):
 
 
 class NativePin(LocalPiPin):
+    """
+    Native pin implementation. See :class:`NativeFactory` for more information.
+    """
     GPIO_FUNCTIONS = {
         'input':   0b000,
         'output':  0b001,

@@ -133,6 +133,12 @@ class PiGPIOFactory(PiFactory):
 
 
 class PiGPIOPin(PiPin):
+    """
+    Pin implementation for the `pigpio`_ library. See :class:`PiGPIOFactory`
+    for more information.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
     GPIO_FUNCTIONS = {
         'input':   pigpio.INPUT,
@@ -290,6 +296,12 @@ class PiGPIOPin(PiPin):
 
 
 class PiGPIOHardwareSPI(SPI, Device):
+    """
+    Hardware SPI implementation for the `pigpio`_ library. Uses the ``spi_*``
+    functions from the pigpio API.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     def __init__(self, factory, port, device):
         self._port = port
         self._device = device
@@ -386,6 +398,12 @@ class PiGPIOHardwareSPI(SPI, Device):
 
 
 class PiGPIOSoftwareSPI(SPI, Device):
+    """
+    Software SPI implementation for the `pigpio`_ library. Uses the ``bb_spi_*``
+    functions from the pigpio API.
+
+    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    """
     def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         self._closed = True
         self._select_pin = select_pin
