@@ -4,7 +4,8 @@ Table of Contents
 =================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
+    :numbered:
 
     recipes
     notes
@@ -28,3 +29,11 @@ Table of Contents
     development
     changelog
     license
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
