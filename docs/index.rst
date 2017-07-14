@@ -8,7 +8,6 @@ Table of Contents
     :numbered:
 
     recipes
-    notes
     installing
     api_input
     api_output

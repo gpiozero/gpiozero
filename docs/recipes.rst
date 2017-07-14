@@ -24,6 +24,31 @@ example, if an LED was attached to "GPIO17" you would specify the pin number as
 17 rather than 11:
 
 .. image:: images/pin_layout.*
+    :align: center
+
+Importing GPIO Zero
+===================
+
+In Python, libraries and functions used in a script must be imported by name
+at the top of the file, with the exception of the functions built into Python
+by default.
+
+For example, to use the :class:`Button` interface from GPIO Zero, it
+should be explicitly imported::
+
+    from gpiozero import Button
+
+Now :class:`~gpiozero.Button` is available directly in your script::
+
+    button = Button(2)
+
+Alternatively, the whole GPIO Zero library can be imported::
+
+    import gpiozero
+
+In this case, all references to items within GPIO Zero must be prefixed::
+
+    button = gpiozero.Button(2)
 
 LED
 ===
