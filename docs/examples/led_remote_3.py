@@ -1,9 +1,10 @@
 from gpiozero import LED
-from gpiozero.pins.pigpio import PiGPIOPin
+from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
 
+remote_factory = PiGPIOFactory(host='192.168.1.3')
 led_1 = LED(17)  # local pin
-led_2 = LED(PiGPIOPin(17, host='192.168.1.3'))  # remote pin
+led_2 = LED(17, pin_factory=remote_factory)  # remote pin
 
 while True:
     led_1.on()

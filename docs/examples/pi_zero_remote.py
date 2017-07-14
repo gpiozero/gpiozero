@@ -1,8 +1,9 @@
 from gpiozero import LED
-from gpiozero.pins.pigpio import PiGPIOPin
+from gpiozero.pins.pigpio import PiGPIOFactory
 from signal import pause
 
-led = LED(PiGPIOPin(17, host='raspberrypi.local'))
+factory = PiGPIOFactory(host='raspberrypi.local')
+led = LED(17, pin_factory=factory)
 
 led.blink()
 

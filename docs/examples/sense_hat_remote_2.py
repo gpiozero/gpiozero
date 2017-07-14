@@ -1,8 +1,9 @@
 from gpiozero import LightSensor
-from gpiozero.pins.pigpio import PiGPIOPin
+from gpiozero.pins.pigpio import PiGPIOFactory
 from sense_hat import SenseHat
 
-light = LightSensor(PiGPIOPin(4, host='192.168.1.4'))  # remote motion sensor
+remote_factory = PiGPIOFactory(host='192.168.1.4')
+light = LightSensor(4, pin_factory=remote_factory)  # remote motion sensor
 sense = SenseHat()  # local sense hat
 
 blue = (0, 0, 255)

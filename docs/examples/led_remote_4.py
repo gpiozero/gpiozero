@@ -1,8 +1,9 @@
 from gpiozero import LED
-from gpiozero.pins.rpigpio import RPiGPIOPin
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 from time import sleep
 
-led_1 = LED(RPiGPIOPin(17))  # local pin
+local_factory = RPiGPIOFactory()
+led_1 = LED(17, pin_factory=local_factory)  # local pin
 led_2 = LED(17)  # remote pin
 
 while True:

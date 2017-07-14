@@ -12,8 +12,8 @@ documentation page.
 
 One of the pin libraries supported, `pigpio`_, provides the ability to control
 GPIO pins remotely over the network, which means you can use GPIO Zero to
-control devices connected to a Raspberry Pi on the network. You can do this from
-another Raspberry Pi, or even from a PC.
+control devices connected to a Raspberry Pi on the network. You can do this
+from another Raspberry Pi, or even from a PC.
 
 See the :doc:`recipes_remote_gpio` page for examples on how remote pins can be
 used.
@@ -22,8 +22,8 @@ Preparing the Raspberry Pi
 ==========================
 
 If you're using Raspbian Jessie (desktop - not Jessie Lite) then you have
-everything you need to use the remote GPIO feature. If you're using Jessie Lite,
-or another distribution, you'll need to install pigpio:
+everything you need to use the remote GPIO feature. If you're using Jessie
+Lite, or another distribution, you'll need to install pigpio::
 
 .. code-block:: console
 
@@ -182,16 +182,16 @@ If you are running this from a PC (not a Raspberry Pi) with gpiozero and the
 pigpio Python library installed, this will work with no further configuration.
 However, if you are running this from a Raspberry Pi, you will also need to
 ensure the default pin factory is set to ``PiGPIOPin``. If ``RPi.GPIO`` is
-installed, this will be selected as the default pin factory, so either uninstall
-it, or use another environment variable to set it to ``PiGPIOPin``:
+installed, this will be selected as the default pin factory, so either
+uninstall it, or use another environment variable to set it to ``PiGPIOPin``:
 
 .. code-block:: console
 
     $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=192.168.1.3 python3 hello.py
 
-This usage will set the pin factory to :class:`PiGPIOPin` with a default host of
-``192.168.1.3``. The pin factory can be changed inline in the code, as seen in
-the following sections.
+This usage will set the pin factory to :class:`PiGPIOFactory` with a default
+host of ``192.168.1.3``. The pin factory can be changed inline in the code, as
+seen in the following sections.
 
 With this usage, you can write gpiozero code like you would on a Raspberry Pi,
 with no modifications needed. For example:
@@ -218,9 +218,9 @@ Pin objects
 ===========
 
 An alternative (or additional) method of configuring gpiozero objects to use
-remote pins is to create instances of :class:PiGPIOPin objects, and
-instantiating device objects with those pin objects, rather than just numbers.
-For example, with no environment variables set:
+remote pins is to create instances of :class:`PiGPIOFactory` objects, and use
+them when instantiating device objects. For example, with no environment
+variables set:
 
 .. literalinclude:: examples/led_remote_1.py
 
@@ -230,8 +230,8 @@ This allows devices on multiple Raspberry Pis to be used in the same script:
 
 You can, of course, continue to create gpiozero device objects as normal, and
 create others using remote pins. For example, if run on a Raspberry Pi, the
-following script will flash an LED on the host Pi, and also on another Pi on the
-network:
+following script will flash an LED on the host Pi, and also on another Pi on
+the network:
 
 .. literalinclude:: examples/led_remote_3.py
 
@@ -249,7 +249,8 @@ Note that these examples use the :class:`LED` class, which takes a ``pin``
 argument to initialise. Some classes, particularly those representing HATs and
 other add-on boards, do not require their pin numbers to be specified. However,
 it is still possible to use remote pins with these devices, either using
-environment variables, or by using :meth:`~Device._set_pin_factory`:
+environment variables, :attr:`Device.pin_factory`, or the ``pin_factory``
+keyword argument:
 
 .. literalinclude:: examples/traffichat_remote_1.py
 
@@ -299,10 +300,10 @@ from the computer, referencing the host by its hostname, like so:
 
 .. note::
 
-    When running code directly on a Raspberry Pi, any pin type can be used
+    When running code directly on a Raspberry Pi, any pin factory can be used
     (assuming the relevant library is installed), but when a device is used
-    remotely, only :class:`PiGPIOPin` can be used, as pigpio is the only pin
-    library which supports remote GPIO.
+    remotely, only :class:`PiGPIOFactory` can be used, as pigpio is the only
+    pin library which supports remote GPIO.
 
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
