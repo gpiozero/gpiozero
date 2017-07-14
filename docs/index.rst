@@ -25,6 +25,7 @@ Table of Contents
     remote_gpio
     recipes_advanced
     recipes_remote_gpio
+    faq
     contributing
     development
     changelog
