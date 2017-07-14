@@ -58,11 +58,11 @@ together:
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
-colour LEDs, robotics kits and more. See the :doc:`recipes` page for ideas on
-how to get started.
+colour LEDs, robotics kits and more. See the `Recipes`_ chapter of the
+documentation for ideas on how to get started.
 
-Install
-=======
+Installation
+============
 
 GPIO Zero is installed by default in Raspbian Jessie, available from
 `raspberrypi.org`_. To install on Jessie Lite or other operating systems,
@@ -76,13 +76,8 @@ Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
 Development
 ===========
 
-This project is being developed on `GitHub`_. Join in:
-
-* Provide suggestions, report bugs and ask questions as `issues`_
-* Provide examples we can use as `recipes`_
-* `Contribute`_ to the code
-
-Alternatively, email suggestions and feedback to ben@raspberrypi.org
+Please refer to the `Contributing`_ and `Development`_ chapters in the
+documentation.
 
 Contributors
 ============
@@ -111,10 +106,10 @@ Other contributors:
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _raspberrypi.org: https://www.raspberrypi.org/downloads/
-.. _GitHub: https://github.com/RPi-Distro/python-gpiozero
-.. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _Contribute: https://gpiozero.readthedocs.io/en/latest/contributing.html
+.. _Recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
+.. _Contributing: http://gpiozero.readthedocs.io/en/latest/contributing.html
+.. _Development: http://gpiozero.readthedocs.io/en/latest/development.html
+
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Andrew Scheller: https://github.com/lurch
