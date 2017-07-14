@@ -1,6 +1,8 @@
-==============
-Output Devices
-==============
+====================
+API - Output Devices
+====================
+
+.. module:: gpiozero.output_devices
 
 .. currentmodule:: gpiozero
 

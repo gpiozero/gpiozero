@@ -1,6 +1,6 @@
-==========
-Exceptions
-==========
+================
+API - Exceptions
+================
 
 .. currentmodule:: gpiozero
 

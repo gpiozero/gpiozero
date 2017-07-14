@@ -1,6 +1,8 @@
-======================
-Boards and Accessories
-======================
+============================
+API - Boards and Accessories
+============================
+
+.. module:: gpiozero.boards
 
 .. currentmodule:: gpiozero
 

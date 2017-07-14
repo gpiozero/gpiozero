@@ -1,6 +1,6 @@
-==================
-Recipes (Advanced)
-==================
+================
+Advanced Recipes
+================
 
 .. currentmodule:: gpiozero
 

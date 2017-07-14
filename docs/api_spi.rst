@@ -1,6 +1,8 @@
-===========
-SPI Devices
-===========
+=================
+API - SPI Devices
+=================
+
+.. module:: gpiozero.spi_devices
 
 .. currentmodule:: gpiozero
 

@@ -1,6 +1,6 @@
-===========
-Remote GPIO
-===========
+=======================
+Configuring Remote GPIO
+=======================
 
 .. currentmodule:: gpiozero
 

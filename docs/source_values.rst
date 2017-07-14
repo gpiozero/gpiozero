@@ -14,9 +14,9 @@ which is equivalent to:
 
 .. literalinclude:: examples/led_button_loop.py
 
-Every device has a ``.value`` property (the device's current value). Input
-devices can only have their values read, but output devices can also have their
-value set to alter the state of the device::
+Every device has a :attr:`~Device.value` property (the device's current value).
+Input devices can only have their values read, but output devices can also have
+their value set to alter the state of the device::
 
     >>> led = PWMLED(17)
     >>> led.value  # LED is initially off
@@ -26,13 +26,15 @@ value set to alter the state of the device::
     1.0
     >>> led.value = 0  # LED is now off
 
-Every device also has a ``.values`` property (a generator continuously yielding
-the device's current value). All output devices have a ``.source`` property
-which can be set to any iterator. The device will iterate over the values
-provided, setting the device's value to each element at a rate specified in the
-``source_delay`` property.
+Every device also has a :attr:`~ValuesMixin.values` property (a generator
+continuously yielding the device's current value). All output devices have a
+:attr:`~SourceMixin.source` property which can be set to any iterator. The
+device will iterate over the values provided, setting the device's value to
+each element at a rate specified in the :attr:`~SourceMixin.source_delay`
+property.
 
 .. image:: images/source_values.*
+    :align: center
 
 The most common use case for this is to set the source of an output device to
 the values of an input device, like the example above. A more interesting
@@ -40,8 +42,9 @@ example would be a potentiometer controlling the brightness of an LED:
 
 .. literalinclude:: examples/pwmled_pot.py
 
-It is also possible to set an output device's ``source`` to the ``values`` of
-another output device, to keep them matching:
+It is also possible to set an output device's :attr:`~SourceMixin.source` to
+the :attr:`~ValuesMixin.values` of another output device, to keep them
+matching:
 
 .. literalinclude:: examples/matching_leds.py
 
@@ -49,6 +52,7 @@ The device's values can also be processed before they are passed to the
 ``source``:
 
 .. image:: images/source_value_processing.*
+    :align: center
 
 For example:
 
@@ -58,13 +62,14 @@ Alternatively, a custom generator can be used to provide values from an
 artificial source:
 
 .. image:: images/custom_generator.*
+    :align: center
 
 For example:
 
 .. literalinclude:: examples/custom_generator.py
 
 If the iterator is infinite (i.e. an infinite generator), the elements will be
-processed until the ``source`` is changed or set to ``None``.
+processed until the :attr:`~SourceMixin.source` is changed or set to ``None``.
 
 If the iterator is finite (e.g. a list), this will terminate once all elements
 are processed (leaving the device's value at the final element):
@@ -74,9 +79,10 @@ are processed (leaving the device's value at the final element):
 Composite devices
 -----------------
 
-Most devices have a ``value`` range between 0 and 1. Some have a range between
--1 and 1 (e.g. ``Motor``). The ``value`` of a composite device is a namedtuple
-of such values. For example, the ``Robot`` class::
+Most devices have a :attr:`~Device.value` range between 0 and 1. Some have a
+range between -1 and 1 (e.g. :class:`Motor`). The :attr:`~Device.value` of a
+composite device is a namedtuple of such values. For example, the
+:class:`Robot` class::
 
     >>> from gpiozero import Robot
     >>> robot = Robot(left=(14, 15), right=(17, 18))
@@ -95,8 +101,9 @@ of such values. For example, the ``Robot`` class::
 Source Tools
 ------------
 
-GPIO Zero provides a set of ready-made functions for dealing with source/values,
-called source tools. These are available by importing from ``gpiozero.tools``.
+GPIO Zero provides a set of ready-made functions for dealing with
+source/values, called source tools. These are available by importing from
+:mod:`gpiozero.tools`.
 
 Some of these source tools are artificial sources which require no input:
 
@@ -119,8 +126,8 @@ Some tools combine the values of multiple sources:
 
 .. image:: images/combining_sources.*
 
-In this example, the LED is lit only if both buttons are pressed (like an `AND`_
-gate):
+In this example, the LED is lit only if both buttons are pressed (like an
+`AND`_ gate):
 
 .. _AND: https://en.wikipedia.org/wiki/AND_gate
 

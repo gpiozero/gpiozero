@@ -1,6 +1,8 @@
-====
-Pins
-====
+==========
+API - Pins
+==========
+
+.. module:: gpiozero.pins
 
 .. currentmodule:: gpiozero
 
@@ -165,7 +167,7 @@ Base classes
 .. autoclass:: SPI
     :members:
 
-.. currentmodule:: gpiozero.pins.pi
+.. module:: gpiozero.pins.pi
 
 .. autoclass:: PiFactory
     :members:
@@ -173,7 +175,7 @@ Base classes
 .. autoclass:: PiPin
     :members:
 
-.. currentmodule:: gpiozero.pins.local
+.. module:: gpiozero.pins.local
 
 .. autoclass:: LocalPiFactory
     :members:
@@ -185,7 +187,7 @@ Base classes
 RPi.GPIO
 ========
 
-.. currentmodule:: gpiozero.pins.rpigpio
+.. module:: gpiozero.pins.rpigpio
 
 .. autoclass:: gpiozero.pins.rpigpio.RPiGPIOFactory
 
@@ -195,7 +197,7 @@ RPi.GPIO
 RPIO
 ====
 
-.. currentmodule:: gpiozero.pins.rpio
+.. module:: gpiozero.pins.rpio
 
 .. autoclass:: gpiozero.pins.rpio.RPIOFactory
 
@@ -205,7 +207,7 @@ RPIO
 PiGPIO
 ======
 
-.. currentmodule:: gpiozero.pins.pigpio
+.. module:: gpiozero.pins.pigpio
 
 .. autoclass:: gpiozero.pins.pigpio.PiGPIOFactory
 
@@ -215,7 +217,7 @@ PiGPIO
 Native
 ======
 
-.. currentmodule:: gpiozero.pins.native
+.. module:: gpiozero.pins.native
 
 .. autoclass:: gpiozero.pins.native.NativeFactory
 
@@ -225,7 +227,7 @@ Native
 Mock
 ====
 
-.. currentmodule:: gpiozero.pins.mock
+.. module:: gpiozero.pins.mock
 
 .. autoclass:: gpiozero.pins.mock.MockFactory
     :members:

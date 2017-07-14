@@ -1,6 +1,6 @@
-================
-Recipes (Simple)
-================
+=============
+Basic Recipes
+=============
 
 .. currentmodule:: gpiozero
 
@@ -28,6 +28,8 @@ example, if an LED was attached to "GPIO17" you would specify the pin number as
 
 Importing GPIO Zero
 ===================
+
+.. module:: gpiozero
 
 In Python, libraries and functions used in a script must be imported by name
 at the top of the file, with the exception of the functions built into Python
