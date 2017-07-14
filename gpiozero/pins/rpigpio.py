@@ -92,7 +92,7 @@ class RPiGPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = None
         self._frequency = None
         self._duty_cycle = None
@@ -110,7 +110,7 @@ class RPiGPIOPin(LocalPiPin):
         GPIO.setup(self.number, GPIO.OUT, initial=state)
 
     def input_with_pull(self, pull):
-        if pull != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if pull != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[pull])
@@ -156,7 +156,7 @@ class RPiGPIOPin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         try:
             GPIO.setup(self.number, GPIO.IN, self.GPIO_PULL_UPS[value])
