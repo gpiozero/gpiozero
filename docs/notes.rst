@@ -102,4 +102,4 @@ the ``pip`` utility. This can be done with the following command in Raspbian:
 Alternatively, install pip with `get-pip`_.
 
 
-.. _get_pip: https://pip.pypa.io/en/stable/installing/
+.. _get-pip: https://pip.pypa.io/en/stable/installing/

@@ -80,7 +80,7 @@ class RPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = False
         self._duty_cycle = None
         self._bounce = None

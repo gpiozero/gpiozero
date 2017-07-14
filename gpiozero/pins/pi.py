@@ -7,8 +7,9 @@ from __future__ import (
 str = type('')
 
 import io
-from threading import RLock
+from threading import RLock, Lock
 from types import MethodType
+from collections import defaultdict
 try:
     from weakref import ref, WeakMethod
 except ImportError:
@@ -48,6 +49,7 @@ class PiFactory(Factory):
     forms the base of :class:`~gpiozero.pins.local.LocalPiFactory`.
     """
     def __init__(self):
+        super(PiFactory, self).__init__()
         self._info = None
         self.pins = {}
         self.pin_class = None
@@ -71,10 +73,6 @@ class PiFactory(Factory):
             pin = self.pin_class(self, n)
             self.pins[n] = pin
         return pin
-
-    def pin_address(self, spec):
-        n = self._to_gpio(spec)
-        return self.address + ('GPIO%d' % n,)
 
     def _to_gpio(self, spec):
         """
@@ -240,22 +238,22 @@ class PiPin(Pin):
         self._when_changed = None
         self._number = number
         try:
-            factory.pi_info.physical_pin(self.address[-1])
+            factory.pi_info.physical_pin('GPIO%d' % self.number)
         except PinNoPins:
             warnings.warn(
                 PinNonPhysical(
-                    'no physical pins exist for %s' % self.address[-1]))
+                    'no physical pins exist for GPIO%d' % self.number))
 
     @property
     def number(self):
         return self._number
 
+    def __repr__(self):
+        return 'GPIO%d' % self._number
+
     @property
     def factory(self):
         return self._factory
-
-    def _get_address(self):
-        return self.factory.address + ('GPIO%d' % self.number,)
 
     def _call_when_changed(self):
         """

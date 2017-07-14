@@ -33,7 +33,7 @@ are represented in purple, while abstract classes are shaded lighter):
 Device
 ======
 
-.. autoclass:: Device
+.. autoclass:: Device(\*, pin_factory=None)
     :members: close, closed, value, is_active
 
 ValuesMixin

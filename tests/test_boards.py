@@ -36,7 +36,6 @@ def setup_function(function):
 
 def teardown_function(function):
     Device.pin_factory.reset()
-    Device._reservations.clear()
 
 def teardown_module(module):
     # make sure we reset the default
@@ -47,7 +46,7 @@ def test_composite_output_on_off():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(pin1), OutputDevice(pin2), foo=OutputDevice(pin3)) as device:
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         device.on()
         assert all((pin1.state, pin2.state, pin3.state))
         device.off()
@@ -57,7 +56,7 @@ def test_composite_output_toggle():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(pin1), OutputDevice(pin2), foo=OutputDevice(pin3)) as device:
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         device.toggle()
         assert all((pin1.state, pin2.state, pin3.state))
         device[0].off()
@@ -70,7 +69,7 @@ def test_composite_output_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(pin1), OutputDevice(pin2), foo=OutputDevice(pin3)) as device:
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         assert device.value == (0, 0, 0)
         device.toggle()
         assert device.value == (1, 1, 1)
@@ -83,7 +82,7 @@ def test_led_board_on_off():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3) as board:
+    with LEDBoard(2, 3, foo=4) as board:
         assert isinstance(board[0], LED)
         assert isinstance(board[1], LED)
         assert isinstance(board[2], LED)
@@ -140,7 +139,7 @@ def test_led_board_active_low():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3, active_high=False) as board:
+    with LEDBoard(2, 3, foo=4, active_high=False) as board:
         assert not board.active_high
         assert not board[0].active_high
         assert not board[1].active_high
@@ -164,7 +163,7 @@ def test_led_board_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3) as board:
+    with LEDBoard(2, 3, foo=4) as board:
         assert board.value == (0, 0, 0)
         board.value = (0, 1, 0)
         assert board.value == (0, 1, 0)
@@ -175,7 +174,7 @@ def test_led_board_pwm_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3, pwm=True) as board:
+    with LEDBoard(2, 3, foo=4, pwm=True) as board:
         assert board.value == (0, 0, 0)
         board.value = (0, 1, 0)
         assert board.value == (0, 1, 0)
@@ -186,7 +185,7 @@ def test_led_board_pwm_bad_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3, pwm=True) as board:
+    with LEDBoard(2, 3, foo=4, pwm=True) as board:
         with pytest.raises(ValueError):
             board.value = (-1, 0, 0)
         with pytest.raises(ValueError):
@@ -196,20 +195,20 @@ def test_led_board_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3, initial_value=0) as board:
+    with LEDBoard(2, 3, foo=4, initial_value=0) as board:
         assert board.value == (0, 0, 0)
-    with LEDBoard(pin1, pin2, foo=pin3, initial_value=1) as board:
+    with LEDBoard(2, 3, foo=4, initial_value=1) as board:
         assert board.value == (1, 1, 1)
 
 def test_led_board_pwm_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=0) as board:
+    with LEDBoard(2, 3, foo=4, pwm=True, initial_value=0) as board:
         assert board.value == (0, 0, 0)
-    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=1) as board:
+    with LEDBoard(2, 3, foo=4, pwm=True, initial_value=1) as board:
         assert board.value == (1, 1, 1)
-    with LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=0.5) as board:
+    with LEDBoard(2, 3, foo=4, pwm=True, initial_value=0.5) as board:
         assert board.value == (0.5, 0.5, 0.5)
 
 def test_led_board_pwm_bad_initial_value():
@@ -217,15 +216,15 @@ def test_led_board_pwm_bad_initial_value():
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
     with pytest.raises(ValueError):
-        LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=-1)
+        LEDBoard(2, 3, foo=4, pwm=True, initial_value=-1)
     with pytest.raises(ValueError):
-        LEDBoard(pin1, pin2, foo=pin3, pwm=True, initial_value=2)
+        LEDBoard(2, 3, foo=4, pwm=True, initial_value=2)
 
 def test_led_board_nested():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(2, LEDBoard(3, 4)) as board:
         assert list(led.pin for led in board.leds) == [pin1, pin2, pin3]
         assert board.value == (0, (0, 0))
         board.value = (1, (0, 1))
@@ -237,7 +236,7 @@ def test_led_board_bad_blink():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(2, LEDBoard(3, 4)) as board:
         with pytest.raises(ValueError):
             board.blink(fade_in_time=1, fade_out_time=1)
         with pytest.raises(ValueError):
@@ -251,7 +250,7 @@ def test_led_board_blink_background():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         # Instantiation takes a long enough time that it throws off our timing
         # here!
         pin1.clear_states()
@@ -276,7 +275,7 @@ def test_led_board_blink_foreground():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -298,7 +297,7 @@ def test_led_board_blink_control():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -326,7 +325,7 @@ def test_led_board_blink_take_over():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -351,7 +350,7 @@ def test_led_board_blink_control_all():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -376,7 +375,7 @@ def test_led_board_blink_interrupt_on():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         board.blink(1, 0.1)
         sleep(0.2)
         board.off() # should interrupt while on
@@ -388,7 +387,7 @@ def test_led_board_blink_interrupt_off():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3)) as board:
+    with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -405,7 +404,7 @@ def test_led_board_fade_background():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
     pin3 = Device.pin_factory.pin(6)
-    with LEDBoard(pin1, LEDBoard(pin2, pin3, pwm=True), pwm=True) as board:
+    with LEDBoard(4, LEDBoard(5, 6, pwm=True), pwm=True) as board:
         pin1.clear_states()
         pin2.clear_states()
         pin3.clear_states()
@@ -442,7 +441,7 @@ def test_led_bar_graph_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3) as graph:
+    with LEDBarGraph(2, 3, 4) as graph:
         assert isinstance(graph[0], LED)
         assert isinstance(graph[1], LED)
         assert isinstance(graph[2], LED)
@@ -475,7 +474,7 @@ def test_led_bar_graph_active_low():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3, active_high=False) as graph:
+    with LEDBarGraph(2, 3, 4, active_high=False) as graph:
         assert not graph.active_high
         assert not graph[0].active_high
         assert not graph[1].active_high
@@ -497,7 +496,7 @@ def test_led_bar_graph_pwm_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3, pwm=True) as graph:
+    with LEDBarGraph(2, 3, 4, pwm=True) as graph:
         assert isinstance(graph[0], PWMLED)
         assert isinstance(graph[1], PWMLED)
         assert isinstance(graph[2], PWMLED)
@@ -524,7 +523,7 @@ def test_led_bar_graph_bad_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3) as graph:
+    with LEDBarGraph(2, 3, 4) as graph:
         with pytest.raises(ValueError):
             graph.value = -2
         with pytest.raises(ValueError):
@@ -535,20 +534,20 @@ def test_led_bar_graph_bad_init():
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
     with pytest.raises(TypeError):
-        LEDBarGraph(pin1, pin2, foo=pin3)
+        LEDBarGraph(2, 3, foo=4)
     with pytest.raises(ValueError):
-        LEDBarGraph(pin1, pin2, pin3, initial_value=-2)
+        LEDBarGraph(2, 3, 4, initial_value=-2)
     with pytest.raises(ValueError):
-        LEDBarGraph(pin1, pin2, pin3, initial_value=2)
+        LEDBarGraph(2, 3, 4, initial_value=2)
 
 def test_led_bar_graph_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3, initial_value=1/3) as graph:
+    with LEDBarGraph(2, 3, 4, initial_value=1/3) as graph:
         assert graph.value == 1/3
         assert pin1.state and not (pin2.state or pin3.state)
-    with LEDBarGraph(pin1, pin2, pin3, initial_value=-1/3) as graph:
+    with LEDBarGraph(2, 3, 4, initial_value=-1/3) as graph:
         assert graph.value == -1/3
         assert pin3.state and not (pin1.state or pin2.state)
 
@@ -556,10 +555,10 @@ def test_led_bar_graph_pwm_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
     pin3 = Device.pin_factory.pin(4)
-    with LEDBarGraph(pin1, pin2, pin3, pwm=True, initial_value=0.5) as graph:
+    with LEDBarGraph(2, 3, 4, pwm=True, initial_value=0.5) as graph:
         assert graph.value == 0.5
         assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
-    with LEDBarGraph(pin1, pin2, pin3, pwm=True, initial_value=-0.5) as graph:
+    with LEDBarGraph(2, 3, 4, pwm=True, initial_value=-0.5) as graph:
         assert graph.value == -0.5
         assert (pin1.state, pin2.state, pin3.state) == (0, 0.5, 1)
 
@@ -585,7 +584,7 @@ def test_traffic_lights():
     red_pin = Device.pin_factory.pin(2)
     amber_pin = Device.pin_factory.pin(3)
     green_pin = Device.pin_factory.pin(4)
-    with TrafficLights(red_pin, amber_pin, green_pin) as board:
+    with TrafficLights(2, 3, 4) as board:
         board.red.on()
         assert board.red.value
         assert not board.amber.value
@@ -598,7 +597,7 @@ def test_traffic_lights():
         assert amber_pin.state
         board.yellow.off()
         assert not amber_pin.state
-    with TrafficLights(red=red_pin, yellow=amber_pin, green=green_pin) as board:
+    with TrafficLights(red=2, yellow=3, green=4) as board:
         board.yellow.on()
         assert not board.red.value
         assert board.amber.value
@@ -618,7 +617,7 @@ def test_traffic_lights_bad_init():
     green_pin = Device.pin_factory.pin(4)
     yellow_pin = Device.pin_factory.pin(5)
     with pytest.raises(ValueError):
-        TrafficLights(red=red_pin, amber=amber_pin, yellow=yellow_pin, green=green_pin)
+        TrafficLights(red=2, amber=3, yellow=5, green=4)
 
 def test_pi_traffic():
     pins = [Device.pin_factory.pin(n) for n in (9, 10, 11)]
@@ -677,9 +676,9 @@ def test_traffic_lights_buzzer():
     buzzer_pin = Device.pin_factory.pin(5)
     button_pin = Device.pin_factory.pin(6)
     with TrafficLightsBuzzer(
-            TrafficLights(red_pin, amber_pin, green_pin),
-            Buzzer(buzzer_pin),
-            Button(button_pin)) as board:
+            TrafficLights(2, 3, 4),
+            Buzzer(5),
+            Button(6)) as board:
         board.lights.red.on()
         board.buzzer.on()
         assert red_pin.state

@@ -7,7 +7,7 @@ Remote GPIO
 GPIO Zero supports a number of different pin implementations (low-level pin
 libraries which deal with the GPIO pins directly). By default, the `RPi.GPIO`_
 library is used (assuming it is installed on your system), but you can
-optionally specify one to use. For more information, see the :doc:`pins`
+optionally specify one to use. For more information, see the :doc:`api_pins`
 documentation page.
 
 One of the pin libraries supported, `pigpio`_, provides the ability to control
@@ -23,9 +23,11 @@ Preparing the Raspberry Pi
 
 If you're using Raspbian Jessie (desktop - not Jessie Lite) then you have
 everything you need to use the remote GPIO feature. If you're using Jessie Lite,
-or another distribution, you'll need to install pigpio::
+or another distribution, you'll need to install pigpio:
 
-    sudo apt install pigpio
+.. code-block:: console
+
+    $ sudo apt install pigpio
 
 Then you just need to enable **Remote GPIO** in the Raspberry Pi configuration
 tool:
@@ -34,21 +36,25 @@ tool:
 
 (Alternatively, use ``sudo raspi-config`` on the command line)
 
-Then launch the pigpio daemon::
+Then launch the pigpio daemon:
 
-    sudo pigpiod
+.. code-block:: console
+
+    $ sudo pigpiod
 
 To only allow connections from a specific IP address, use the ``-n`` flag. For
-example::
+example:
 
-    sudo pigpiod -n localhost # allow localhost only
-    sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
-    sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
+.. code-block:: console
+
+    $ sudo pigpiod -n localhost # allow localhost only
+    $ sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
+    $ sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
 
 You will need to launch the pigpio daemon every time you wish to use this
 feature. To automate running the daemon at boot time::
 
-    sudo systemctl enable pigpiod
+    $ sudo systemctl enable pigpiod
 
 Preparing the host computer
 ===========================
@@ -61,72 +67,100 @@ Python library on the PC.
 Raspberry Pi
 ------------
 
-First, update your repositories list::
+First, update your repositories list:
 
-    sudo apt update
+.. code-block:: console
 
-Then install the pigpio library for Python 3::
+    $ sudo apt update
 
-    sudo apt install python3-pigpio
+Then install the pigpio library for Python 3:
 
-or Python 2::
+.. code-block:: console
 
-    sudo apt install python-pigpio
+    $ sudo apt install python3-pigpio
 
-Alternatively, install with pip::
+or Python 2:
 
-    sudo pip3 install pigpio
+.. code-block:: console
 
-or::
+    $ sudo apt install python-pigpio
 
-    sudo pip install pigpio
+Alternatively, install with pip:
+
+.. code-block:: console
+
+    $ sudo pip3 install pigpio
+
+or:
+
+.. code-block:: console
+
+    $ sudo pip install pigpio
 
 Linux
 -----
 
-First, update your distribution's repositories list. For example::
+First, update your distribution's repositories list. For example:
 
-    sudo apt update
+.. code-block:: console
 
-Then install pip for Python 3::
+    $ sudo apt update
 
-    sudo apt install python3-pip
+Then install pip for Python 3:
 
-or Python 2::
+.. code-block:: console
 
-    sudo apt install python-pip
+    $ sudo apt install python3-pip
+
+or Python 2:
+
+.. code-block:: console
+
+    $ sudo apt install python-pip
 
 (Alternatively, install pip with `get-pip`_.)
 
-Next, install pigpio for Python 3::
+Next, install pigpio for Python 3:
 
-    sudo pip3 install pigpio
+.. code-block:: console
 
-or Python 2::
+    $ sudo pip3 install pigpio
 
-    sudo pip install pigpio
+or Python 2:
+
+.. code-block:: console
+
+    $ sudo pip install pigpio
 
 Mac OS
 ------
 
-First, install pip::
+First, install pip:
 
-    ???
+.. code-block:: console
 
-Next, install pigpio with pip::
+    $ ???
 
-    pip install pigpio
+Next, install pigpio with pip:
+
+.. code-block:: console
+
+    $ pip install pigpio
 
 Windows
 -------
 
-First install pip::
+First install pip:
 
-    ???
+.. code-block:: doscon
 
-Next, install pigpio with pip::
+    C:\Users\user1> ???
 
-    pip install pigpio
+Next, install pigpio with pip:
+
+.. code-block:: doscon
+
+    C:\Users\user1> pip install pigpio
 
 Environment variables
 =====================
@@ -135,7 +169,9 @@ The simplest way to use devices with remote pins is to set the ``PIGPIO_ADDR``
 environment variable to the IP address of the desired Raspberry Pi. You must
 run your Python script or launch your development environment with the
 environment variable set using the command line. For example, one of the
-following::
+following:
+
+.. code-block:: console
 
     $ PIGPIO_ADDR=192.168.1.3 python3 hello.py
     $ PIGPIO_ADDR=192.168.1.3 python3
@@ -147,7 +183,9 @@ pigpio Python library installed, this will work with no further configuration.
 However, if you are running this from a Raspberry Pi, you will also need to
 ensure the default pin factory is set to ``PiGPIOPin``. If ``RPi.GPIO`` is
 installed, this will be selected as the default pin factory, so either uninstall
-it, or use another environment variable to set it to ``PiGPIOPin``::
+it, or use another environment variable to set it to ``PiGPIOPin``:
+
+.. code-block:: console
 
     $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=192.168.1.3 python3 hello.py
 
@@ -160,12 +198,16 @@ with no modifications needed. For example:
 
 .. literalinclude:: examples/led_1.py
 
-When run with::
+When run with:
+
+.. code-block:: console
 
     $ PIGPIO_ADDR=192.168.1.3 python3 led.py
 
 will flash the LED connected to pin 17 of the Raspberry Pi with the IP address
-``192.168.1.3``. And::
+``192.168.1.3``. And:
+
+.. code-block:: console
 
     $ PIGPIO_ADDR=192.168.1.4 python3 led.py
 
@@ -236,11 +278,13 @@ computer using remote pins.
 First, configure the boot partition of the SD card:
 
 1. Edit ``config.txt`` and add ``dtoverlay=dwc2`` on a new line, then save the
-file.
+   file.
+
 2. Create an empty file called ``ssh`` (no file extension) and save it in the
-boot partition.
+   boot partition.
+
 3. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
-``rootwait``.
+   ``rootwait``.
 
 (See `blog.gbaman.info`_ for more information)
 

@@ -28,7 +28,9 @@ class SPIDevice(Device):
     """
     def __init__(self, **spi_args):
         self._spi = None
-        super(SPIDevice, self).__init__()
+        super(SPIDevice, self).__init__(
+            pin_factory=spi_args.pop('pin_factory', None)
+        )
         self._spi = self.pin_factory.spi(**spi_args)
 
     def close(self):

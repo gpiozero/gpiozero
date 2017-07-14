@@ -33,7 +33,7 @@ def test_device_non_physical():
 
 def test_device_init():
     pin = Device.pin_factory.pin(2)
-    with GPIODevice(pin) as device:
+    with GPIODevice(2) as device:
         assert not device.closed
         assert device.pin == pin
 
@@ -56,9 +56,9 @@ def test_device_close():
 
 def test_device_reopen_same_pin():
     pin = Device.pin_factory.pin(2)
-    with GPIODevice(pin) as device:
+    with GPIODevice(2) as device:
         pass
-    with GPIODevice(pin) as device2:
+    with GPIODevice(2) as device2:
         assert not device2.closed
         assert device2.pin is pin
         assert device.closed

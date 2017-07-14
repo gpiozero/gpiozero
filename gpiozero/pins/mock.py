@@ -40,7 +40,7 @@ class MockPin(PiPin):
     def __init__(self, factory, number):
         super(MockPin, self).__init__(factory, number)
         self._function = 'input'
-        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._state = self._pull == 'up'
         self._bounce = None
         self._edges = 'both'
@@ -94,7 +94,7 @@ class MockPin(PiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull('cannot set pull on non-input pin %r' % self)
-        if value != 'up' and self.factory.pi_info.pulled_up(self.address[-1]):
+        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
             raise PinFixedPull('%r has a physical pull-up resistor' % self)
         if value not in ('floating', 'up', 'down'):
             raise PinInvalidPull('pull must be floating, up, or down')
@@ -423,14 +423,12 @@ class MockFactory(LocalPiFactory):
             pin_class = pkg_resources.load_entry_point(dist, group, pin_class.lower())
         self.pin_class = pin_class
 
-    def _get_address(self):
-        return ('mock',)
-
     def _get_revision(self):
         return self._revision
 
     def reset(self):
         self.pins.clear()
+        self._reservations.clear()
 
     def pin(self, spec, pin_class=None, **kwargs):
         if pin_class is None:

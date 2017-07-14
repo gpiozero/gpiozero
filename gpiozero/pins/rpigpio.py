@@ -85,7 +85,7 @@ class RPiGPIOPin(LocalPiPin):
 
     def __init__(self, factory, number):
         super(RPiGPIOPin, self).__init__(factory, number)
-        self._pull = 'up' if factory.pi_info.pulled_up(self.address[-1]) else 'floating'
+        self._pull = 'up' if self.factory.pi_info.pulled_up(self.address[-1]) else 'floating'
         self._pwm = None
         self._frequency = None
         self._duty_cycle = None
