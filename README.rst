@@ -2,17 +2,19 @@
 gpiozero
 ========
 
-.. image:: https://badge.fury.io/py/gpiozero.svg
-    :target: https://badge.fury.io/py/gpiozero
-    :alt: Latest Version
+.. only:: builder_html
 
-.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
-    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
-    :alt: Build Tests
+    .. image:: https://badge.fury.io/py/gpiozero.svg
+        :target: https://badge.fury.io/py/gpiozero
+        :alt: Latest Version
 
-.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
-    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
-    :alt: Code Coverage
+    .. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+        :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+        :alt: Build Tests
+
+    .. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+        :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+        :alt: Code Coverage
 
 A simple interface to GPIO devices with Raspberry Pi.
 
@@ -56,23 +58,15 @@ together:
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
-colour LEDs, robotics kits and more.
+colour LEDs, robotics kits and more. See the :doc:`recipes` page for ideas on
+how to get started.
 
 Install
 =======
 
-First, update your repositories list::
-
-    sudo apt-get update
-
-Then install the package of your choice. Both Python 3 and Python 2 are
-supported. Python 3 is recommended::
-
-    sudo apt-get install python3-gpiozero
-
-or::
-
-    sudo apt-get install python-gpiozero
+GPIO Zero is installed by default in Raspbian Jessie, available from
+`raspberrypi.org`_. To install on Jessie Lite or other operating systems,
+including for PCs using remote GPIO, see the :doc:`installing` page.
 
 Documentation
 =============
@@ -116,6 +110,7 @@ Other contributors:
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
+.. _raspberrypi.org: https://www.raspberrypi.org/downloads/
 .. _GitHub: https://github.com/RPi-Distro/python-gpiozero
 .. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
@@ -135,4 +130,3 @@ Other contributors:
 .. _Clare Macrae: https://github.com/claremacrae
 .. _Tim Golden: https://github.com/tjguk
 .. _Phil Howard: https://github.com/Gadgetoid
-

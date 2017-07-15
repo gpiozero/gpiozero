@@ -64,7 +64,11 @@ omit any arguments from either scheme. The defaults are:
 * *clock_pin* defaults to 11, *mosi_pin* defaults to 10, *miso_pin* defaults
   to 9, and *select_pin* defaults to 8.
 
-Hence the following constructors are all equiavlent::
+* As with other GPIO based devices you can optionally specify a *pin_factory*
+  argument overriding the default pin factory (see :doc:`api_pins` for more
+  information).
+
+Hence the following constructors are all equivalent::
 
     from gpiozero import MCP3008
 
@@ -121,7 +125,8 @@ Base Classes
 
 The classes in the sections above are derived from a series of base classes,
 some of which are effectively abstract. The classes form the (partial)
-hierarchy displayed in the graph below:
+hierarchy displayed in the graph below (abstract classes are shaded lighter
+than concrete classes):
 
 .. image:: images/spi_device_hierarchy.*
 
