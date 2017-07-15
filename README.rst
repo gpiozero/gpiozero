@@ -2,19 +2,17 @@
 gpiozero
 ========
 
-.. only:: builder_html
+.. image:: https://badge.fury.io/py/gpiozero.svg
+    :target: https://badge.fury.io/py/gpiozero
+    :alt: Latest Version
 
-    .. image:: https://badge.fury.io/py/gpiozero.svg
-        :target: https://badge.fury.io/py/gpiozero
-        :alt: Latest Version
+.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
+    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+    :alt: Build Tests
 
-    .. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
-        :target: https://travis-ci.org/RPi-Distro/python-gpiozero
-        :alt: Build Tests
-
-    .. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
-        :target: https://codecov.io/github/RPi-Distro/python-gpiozero
-        :alt: Code Coverage
+.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
+    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+    :alt: Code Coverage
 
 A simple interface to GPIO devices with Raspberry Pi.
 
@@ -66,18 +64,14 @@ Installation
 
 GPIO Zero is installed by default in Raspbian Jessie, available from
 `raspberrypi.org`_. To install on Jessie Lite or other operating systems,
-including for PCs using remote GPIO, see the :doc:`installing` page.
+including for PCs using remote GPIO, see the `Installing`_ chapter.
 
 Documentation
 =============
 
 Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
-
-Development
-===========
-
 Please refer to the `Contributing`_ and `Development`_ chapters in the
-documentation.
+documentation for information on contributing to the project.
 
 Contributors
 ============
@@ -109,6 +103,7 @@ Other contributors:
 .. _Recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
 .. _Contributing: http://gpiozero.readthedocs.io/en/latest/contributing.html
 .. _Development: http://gpiozero.readthedocs.io/en/latest/development.html
+.. _Installing: http://gpiozero.readthedocs/io/en/latest/installing.html
 
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
