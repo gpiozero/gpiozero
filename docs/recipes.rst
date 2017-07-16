@@ -399,7 +399,7 @@ Alternatively, the following example is identical, but uses the
 :attr:`~SourceMixin.source` property rather than a :keyword:`while` loop:
 
 .. literalinclude:: examples/rgbled_pot_2.py
-    :emphasize-lines: 8
+    :emphasize-lines: 9
 
 Please note the example above requires Python 3. In Python 2, :func:`zip`
 doesn't support lazy evaluation so the script will simply hang.
