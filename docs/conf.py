@@ -153,9 +153,12 @@ epub_show_urls = 'no'
 
 # -- Options for manual page output ---------------------------------------
 
-man_pages = []
+man_pages = [
+    ('cli_pinout',  'pinout',      'GPIO Zero pinout tool',       [_setup.__author__], 1),
+    ('remote_gpio', 'remote-gpio', 'GPIO Zero remote GPIO guide', [_setup.__author__], 7),
+]
 
-#man_show_urls = False
+man_show_urls = True
 
 # -- Options for Texinfo output -------------------------------------------
 
