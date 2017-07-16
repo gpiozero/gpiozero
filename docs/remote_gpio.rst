@@ -21,8 +21,8 @@ used.
 Preparing the Raspberry Pi
 ==========================
 
-If you're using Raspbian Jessie (desktop - not Jessie Lite) then you have
-everything you need to use the remote GPIO feature. If you're using Jessie
+If you're using Raspbian Jessie (desktop - not Raspbian Lite) then you have
+everything you need to use the remote GPIO feature. If you're using Raspbian
 Lite, or another distribution, you'll need to install pigpio:
 
 .. code-block:: console
@@ -75,29 +75,29 @@ First, update your repositories list:
 
     $ sudo apt update
 
-Then install the pigpio library for Python 3:
+Then install GPIO Zero and the pigpio library for Python 3:
 
 .. code-block:: console
 
-    $ sudo apt install python3-pigpio
+    $ sudo apt install python3-gpiozero python3-pigpio
 
 or Python 2:
 
 .. code-block:: console
 
-    $ sudo apt install python-pigpio
+    $ sudo apt install python-gpiozero python-pigpio
 
 Alternatively, install with pip:
 
 .. code-block:: console
 
-    $ sudo pip3 install pigpio
+    $ sudo pip3 install gpiozero pigpio
 
-or:
+or for Python 2:
 
 .. code-block:: console
 
-    $ sudo pip install pigpio
+    $ sudo pip install gpiozero pigpio
 
 Linux
 -----
@@ -122,47 +122,45 @@ or Python 2:
 
 (Alternatively, install pip with `get-pip`_.)
 
-Next, install pigpio for Python 3:
+Next, install GPIO Zero and pigpio for Python 3:
 
 .. code-block:: console
 
-    $ sudo pip3 install pigpio
+    $ sudo pip3 install gpiozero pigpio
 
 or Python 2:
 
 .. code-block:: console
 
-    $ sudo pip install pigpio
+    $ sudo pip install gpiozero pigpio
 
 Mac OS
 ------
 
-First, install pip:
+First, install pip. If you installed Python 3 using brew, you will already have
+pip. If not, install pip with `get-pip`_.
+
+Next, install GPIO Zero and pigpio with pip:
 
 .. code-block:: console
 
-    $ ???
+    $ pip3 install gpiozero pigpio
 
-Next, install pigpio with pip:
+Or for Python 2:
 
 .. code-block:: console
 
-    $ pip install pigpio
+    $ pip install gpiozero pigpio
 
 Windows
 -------
 
-First install pip:
+First, install pip by `following this guide`_. Next, install GPIO Zero and
+pigpio with pip:
 
 .. code-block:: doscon
 
-    C:\Users\user1> ???
-
-Next, install pigpio with pip:
-
-.. code-block:: doscon
-
-    C:\Users\user1> pip install pigpio
+    C:\Users\user1> pip install gpiozero pigpio
 
 Environment variables
 =====================
@@ -312,6 +310,7 @@ from the computer, referencing the host by its hostname, like so:
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 .. _pigpio: http://abyz.co.uk/rpi/pigpio/python.html
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
+.. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
 .. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
 .. _Raspberry Pi Zero: https://www.raspberrypi.org/products/pi-zero/
 .. _Pi Zero W: https://www.raspberrypi.org/products/pi-zero-w/
