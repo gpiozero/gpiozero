@@ -80,6 +80,7 @@ install: $(SUBDIRS)
 doc: $(DOC_SOURCES)
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
+	$(MAKE) -C docs epub
 	$(MAKE) -C docs latexpdf
 
 source: $(DIST_TAR) $(DIST_ZIP)

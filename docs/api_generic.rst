@@ -1,6 +1,8 @@
-===============
-Generic Classes
-===============
+=====================
+API - Generic Classes
+=====================
+
+.. module:: gpiozero.devices
 
 .. currentmodule:: gpiozero
 

@@ -1,6 +1,8 @@
-=============
-Input Devices
-=============
+===================
+API - Input Devices
+===================
+
+.. module:: gpiozero.input_devices
 
 .. currentmodule:: gpiozero
 

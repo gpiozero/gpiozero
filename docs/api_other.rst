@@ -1,6 +1,8 @@
-================
-Internal Devices
-================
+======================
+API - Internal Devices
+======================
+
+.. module:: gpiozero.other_devices
 
 .. currentmodule:: gpiozero
 

@@ -322,7 +322,7 @@ class Pin(object):
         detection, measured in seconds. If bounce detection is not currently in
         use, this is ``None``.
 
-        For example, if :attr:`edge` is currently "rising", :attr:`bounce` is
+        For example, if :attr:`edges` is currently "rising", :attr:`bounce` is
         currently 5/1000 (5ms), then the waveform below will only fire
         :attr:`when_changed` on two occasions despite there being three rising
         edges:
