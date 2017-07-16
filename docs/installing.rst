@@ -52,6 +52,6 @@ page for more information.
 
 
 .. _Raspbian Jessie: https://www.raspberrypi.org/downloads/raspbian/
-.. _PIXEL x86: https://www.raspberrypi.org/blog/pixel-pc-mac/
+.. _Raspbian x86: https://www.raspberrypi.org/blog/pixel-pc-mac/
 .. _raspberrypi.org: https://www.raspberrypi.org/downloads/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
