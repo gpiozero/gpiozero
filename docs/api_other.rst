@@ -31,6 +31,7 @@ CPUTemperature
 ==============
 
 .. autoclass:: CPUTemperature
+    :members: temperature, is_active
 
 Base Classes
 ============
@@ -50,4 +51,3 @@ InternalDevice
 
 .. autoclass:: InternalDevice()
     :members:
-

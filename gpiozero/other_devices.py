@@ -87,10 +87,12 @@ class CPUTemperature(InternalDevice):
 
         # Use minimums and maximums that are closer to "normal" usage so the
         # bar graph is a bit more "lively"
-        temp = CPUTemperature(min_temp=50, max_temp=90)
+        cpu = CPUTemperature(min_temp=50, max_temp=90)
+
+        print('Initial temperature: {}C'.format(cpu.temperature))
 
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
-        graph.source = temp.values
+        graph.source = cpu.values
 
         pause()
 
