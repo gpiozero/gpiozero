@@ -26,7 +26,7 @@ Release 1.4.0 (2017-07-??)
 * Support for :class:`StatusZero` and :class:`StatusBoard` HATs (`#558`_)
 * Added :program:`pinout` command line tool to provide a simple
   reference to the GPIO layout and information about the associated Pi
-  (`#497`_, `#504`_)
+  (`#497`_, `#504`_) thanks to Stewart Adcock for the initial work
 * :func:`pi_info` made more lenient for new (unknown) Pi models (`#529`_)
 * Fixed a variety of packaging issues (`#535`_, `#518`_, `#519`_)
 * Improved text in factory fallback warnings (`#572`_)
