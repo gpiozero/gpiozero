@@ -58,7 +58,7 @@ Light sensor + Sense HAT
 =========================
 
 The `Sense HAT`_ (not supported by GPIO Zero) includes temperature, humidity and
-pressure sensors, but no light sensor. Remote pins allow an external light
+pressure sensors, but no light sensor. Remote GPIO allows an external light
 sensor to be used as well. The Sense HAT LED display can be used to show
 different colours according to the light levels:
 
