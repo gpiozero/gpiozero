@@ -96,6 +96,7 @@ Other contributors:
 - `Clare Macrae`_
 - `Tim Golden`_
 - `Phil Howard`_
+- `Stewart Adcock`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -120,3 +121,4 @@ Other contributors:
 .. _Clare Macrae: https://github.com/claremacrae
 .. _Tim Golden: https://github.com/tjguk
 .. _Phil Howard: https://github.com/Gadgetoid
+.. _Stewart Adcock: https://github.com/stewartadcock
