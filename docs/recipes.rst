@@ -401,8 +401,38 @@ Alternatively, the following example is identical, but uses the
 .. literalinclude:: examples/rgbled_pot_2.py
     :emphasize-lines: 8
 
-Please note the example above requires Python 3. In Python 2, :func:`zip`
-doesn't support lazy evaluation so the script will simply hang.
+.. note::
+
+    Please note the example above requires Python 3. In Python 2, :func:`zip`
+    doesn't support lazy evaluation so the script will simply hang.
+
+Timed heat lamp
+===============
+
+If you have a pet (e.g. a tortoise) which requires a heat lamp to be switched
+on for a certain amount of time each day, you can use an `Energenie Pi-mote`_
+to remotely control the lamp, and the :class:`TimeOfDay` class to control the
+timing:
+
+.. literalinclude:: examples/timed_heat_lamp.py
+
+Internet connection status indicator
+====================================
+
+You can use a pair of green and red LEDs to indicate whether or not your
+internet connection is working. Simply use the :class:`PingServer` class to
+identify whether a ping to `google.com` is successful. If successful, the green
+LED is lit, and if not, the red LED is lit:
+
+.. literalinclude:: examples/internet_status_indicator.py
+
+CPU Temperature Bar Graph
+=========================
+
+You can read the Raspberry Pi's own CPU temperature using the built-in
+:class:`CPUTemperature` class, and display this on a "bar graph" of LEDs:
+
+.. literalinclude:: examples/cpu_temperature_bar_graph.py
 
 More recipes
 ============
@@ -416,3 +446,4 @@ Continue to:
 .. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
 .. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
+.. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI

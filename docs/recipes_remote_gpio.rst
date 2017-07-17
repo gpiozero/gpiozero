@@ -44,6 +44,15 @@ doorbell, and use a push button as the doorbell:
 This could also be used as an internal doorbell (tell people it's time for
 dinner from the kitchen).
 
+Remote button robot
+===================
+
+Similarly to the simple recipe for the button controlled robot, this example
+uses four buttons to control the direction of a robot. However, using remote
+pins for the robot means the control buttons can be separate from the robot:
+
+.. literalinclude:: examples/remote_button_robot.py
+
 Light sensor + Sense HAT
 =========================
 
