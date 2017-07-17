@@ -4,9 +4,10 @@ Remote GPIO Recipes
 
 .. currentmodule:: gpiozero
 
-The following recipes demonstrate some of the capabilities of the feature of the
-GPIO Zero library. Before you start following these examples, please read up on
-preparing your Pi and your host PC to work with :doc:`remote_gpio`.
+The following recipes demonstrate some of the capabilities of the remote GPIO
+feature of the GPIO Zero library. Before you start following these examples,
+please read up on preparing your Pi and your host PC to work with
+:doc:`remote_gpio`.
 
 Please note that all recipes are written assuming Python 3. Recipes *may* work
 under Python 2, but no guarantees!
