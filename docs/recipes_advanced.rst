@@ -57,8 +57,8 @@ To include reverse direction, scale the potentiometer values from 0-1 to -1-1:
 
 .. literalinclude:: examples/robot_pots_2.py
 
-BlueDot
-=======
+BlueDot LED
+===========
 
 BlueDot is a Python library an Android app which allows you to easily add
 Bluetooth control to your Raspberry Pi project. A simple example to control a
