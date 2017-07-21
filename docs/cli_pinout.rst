@@ -1,6 +1,8 @@
 pinout
 ======
 
+.. image:: images/pinout_pi3.png
+
 Synopsis
 --------
 
