@@ -48,7 +48,7 @@ To output information about the current Raspberry Pi:
 
     $ pinout
 
-For a Raspberry Pi model 2B, this will output something like the following:
+For a Raspberry Pi model 3B, this will output something like the following:
 
 .. code-block:: none
 
@@ -56,7 +56,7 @@ For a Raspberry Pi model 2B, this will output something like the following:
     | oooooooooooooooooooo J8     +====
     | 1ooooooooooooooooooo        | USB
     |                             +====
-    |      Pi Model 2B V1.1          |
+    |      Pi Model 3B V1.1          |
     |      +----+                 +====
     | |D|  |SoC |                 | USB
     | |S|  |    |                 +====
@@ -66,14 +66,14 @@ For a Raspberry Pi model 2B, this will output something like the following:
     | pwr        |HDMI| |I||A|  +======
     `-| |--------|    |----|V|-------'
 
-    Revision           : a01041
-    SoC                : BCM2836
+    Revision           : a02082
+    SoC                : BCM2837
     RAM                : 1024Mb
     Storage            : MicroSD
     USB ports          : 4 (excluding power)
     Ethernet ports     : 1
-    Wi-fi              : False
-    Bluetooth          : False
+    Wi-fi              : True
+    Bluetooth          : True
     Camera ports (CSI) : 1
     Display ports (DSI): 1
 
