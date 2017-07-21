@@ -104,7 +104,7 @@ Other contributors:
 .. _Recipes: http://gpiozero.readthedocs.io/en/latest/recipes.html
 .. _Contributing: http://gpiozero.readthedocs.io/en/latest/contributing.html
 .. _Development: http://gpiozero.readthedocs.io/en/latest/development.html
-.. _Installing: http://gpiozero.readthedocs/io/en/latest/installing.html
+.. _Installing: http://gpiozero.readthedocs.io/en/latest/installing.html
 
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
