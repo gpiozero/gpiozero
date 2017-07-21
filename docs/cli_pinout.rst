@@ -123,11 +123,13 @@ To manually specify the revision of Pi you want to query, use
 
     $ pinout -r 000d
 
-Or new-style `revision codes`_ (such as for the Pi Zero):
+Or new-style `revision codes`_ (such as for the Pi Zero W):
 
 .. code-block:: console
 
-    $ pinout -r 900093
+    $ pinout -r 9000c1
+
+.. image:: images/pinout_pizero_w.png
 
 You can also use the tool with :doc:`remote_gpio` to query remote Raspberry
 Pi's:
