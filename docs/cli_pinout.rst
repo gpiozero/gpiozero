@@ -16,7 +16,7 @@ Description
 A utility for querying Raspberry Pi GPIO pin-out information. Running
 :program:`pinout` on its own will output a board diagram, and GPIO header
 diagram for the current Raspberry Pi. It is also possible to manually specify a
-revision of Pi, or (by using :doc:`remote_gpio`) to output information about a
+revision of Pi, or (by :doc:`remote_gpio`) to output information about a
 remote Pi.
 
 Options
