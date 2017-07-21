@@ -4,7 +4,7 @@
 License
 =======
 
-Copyright 2015 `Raspberry Pi Foundation`_.
+Copyright 2015-2017 `Raspberry Pi Foundation`_.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
