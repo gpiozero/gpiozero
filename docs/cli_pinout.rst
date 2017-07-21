@@ -160,7 +160,7 @@ PIGPIO_ADDR
 
 PIGPIO_PORT
     The port number the pigpio library should attempt to connect to (if the
-    pigpio pin factory is being used). Defaults to 8888.
+    pigpio pin factory is being used). Defaults to ``8888``.
 
 
 .. only:: builder_man
