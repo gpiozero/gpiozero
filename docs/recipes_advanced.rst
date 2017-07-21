@@ -127,4 +127,4 @@ run the following commands:
 
 .. _travispy: https://travispy.readthedocs.io/
 .. _STATUS Zero: https://thepihut.com/status
-.. _BlueDot documentation: http://bluedot.readthedocs.io/en/latest/index.html
+.. _BlueDot documentation: https://bluedot.readthedocs.io/en/latest/index.html
