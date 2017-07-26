@@ -101,10 +101,10 @@ Other contributors:
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _raspberrypi.org: https://www.raspberrypi.org/downloads/
-.. _Recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _Contributing: https://gpiozero.readthedocs.io/en/latest/contributing.html
-.. _Development: https://gpiozero.readthedocs.io/en/latest/development.html
-.. _Installing: https://gpiozero.readthedocs.io/en/latest/installing.html
+.. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
+.. _Contributing: https://gpiozero.readthedocs.io/en/stable/contributing.html
+.. _Development: https://gpiozero.readthedocs.io/en/stable/development.html
+.. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
 
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
