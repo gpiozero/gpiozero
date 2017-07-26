@@ -1249,7 +1249,7 @@ class Robot(SourceMixin, CompositeDevice):
 
 class RyanteckRobot(Robot):
     """
-    Extends :class:`Robot` for the `Ryanteck MCB`_ robot.
+    Extends :class:`Robot` for the `Ryanteck motor controller board`_.
 
     The Ryanteck MCB pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example drives the robot
@@ -1264,7 +1264,7 @@ class RyanteckRobot(Robot):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck MCB: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
+    .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
 
     def __init__(self, pin_factory=None):
@@ -1275,7 +1275,7 @@ class RyanteckRobot(Robot):
 
 class CamJamKitRobot(Robot):
     """
-    Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
+    Extends :class:`Robot` for the `CamJam #3 EduKit`_ motor controller board.
 
     The CamJam robot controller pins are fixed and therefore there's no need
     to specify them when constructing this class. The following example drives

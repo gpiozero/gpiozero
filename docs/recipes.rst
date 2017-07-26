@@ -167,6 +167,9 @@ controlled:
 
 .. literalinclude:: examples/led_board_2.py
 
+See more :class:`LEDBoard` examples in the :ref:`advanced LEDBoard recipes
+<ledboard-advanced>`.
+
 LEDBarGraph
 ===========
 
@@ -399,7 +402,7 @@ Alternatively, the following example is identical, but uses the
 :attr:`~SourceMixin.source` property rather than a :keyword:`while` loop:
 
 .. literalinclude:: examples/rgbled_pot_2.py
-    :emphasize-lines: 8
+    :emphasize-lines: 9
 
 .. note::
 

@@ -31,6 +31,8 @@ default factory can be constructed (e.g. because no GPIO implementations are
 installed, or all of them fail to load for whatever reason), an
 :exc:`ImportError` will be raised.
 
+.. _changing-pin-factory:
+
 Changing the pin factory
 ========================
 

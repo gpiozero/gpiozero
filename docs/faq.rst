@@ -7,6 +7,50 @@ Frequently Asked Questions
 .. currentmodule:: gpiozero
 
 
+.. _keep-your-script-running:
+
+How do I keep my script running?
+================================
+
+The following script looks like it should turn an LED on::
+
+    from gpiozero import LED
+
+    led = LED(17)
+    led.on()
+
+And it does, if you're using the Python (or IPython or IDLE) shell. However,
+if you saved this script as a Python file and ran it, it would flash on
+briefly, then the script would end and it would turn off.
+
+The following file includes an intentional :func:`~signal.pause` to keep the
+script alive::
+
+    from gpiozero import LED
+    from signal import pause
+
+    led = LED(17)
+    led.on()
+
+    pause()
+
+Now the script will stay running, leaving the LED on, until it is terminated
+manually (e.g. by pressing Ctrl+C). Similarly, when setting up callbacks on
+button presses or other input devices, the script needs to be running for the
+events to be detected::
+
+    from gpiozero import Button
+    from signal import pause
+
+    def hello():
+        print("Hello")
+
+    button = Button(2)
+    button.when_pressed = hello
+
+    pause()
+
+
 My event handler isn't being called?
 ====================================
 
@@ -21,7 +65,7 @@ example::
     b = Button(17)
     b.when_pressed = pushed()
 
-In the case above, when assigning to the ``when_pressed``, the thing that is
+In the case above, when assigning to ``when_pressed``, the thing that is
 assigned is the *result of calling* the ``pushed`` function. Because ``pushed``
 doesn't explicitly return anything, the result is ``None``. Hence this is
 equivalent to doing::
@@ -69,7 +113,7 @@ suppress the warnings you've got a couple of options:
 
    .. code-block:: console
 
-       $ GPIOZERO_PIN_FACTORY=pigpio python
+       $ GPIOZERO_PIN_FACTORY=pigpio python3
 
    In this case no warning is issued because there's no fallback; either the
    specified factory loads or it fails in which case an :exc:`ImportError` will
@@ -96,65 +140,22 @@ version of gpiozero is available in your Python environment like so:
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
-    [gpiozero 1.3.2 (/usr/lib/python3/dist-packages)]
+    [gpiozero 1.4.0 (/usr/lib/python3/dist-packages)]
     >>> require('gpiozero')[0].version
-    '1.3.2'
+    '1.4.0'
 
 If you have multiple versions installed (e.g. from ``pip`` and ``apt``) they
 will not show up in the list returned by the ``require`` method. However, the
 first entry in the list will be the version that ``import gpiozero`` will
 import.
 
-If you receive the error "No module named pkg_resources", you need to install
-the ``pip`` utility. This can be done with the following command in Raspbian:
+If you receive the error ``No module named pkg_resources``, you need to install
+``pip``. This can be done with the following command in Raspbian:
 
 .. code-block:: console
 
-    $ sudo apt install python-pip
+    $ sudo apt install python3-pip
 
 Alternatively, install pip with `get-pip`_.
 
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
-
-
-.. _keep-your-script-running:
-
-How do I keep my script running?
-================================
-
-The following script looks like it should turn an LED on::
-
-    from gpiozero import LED
-
-    led = LED(17)
-    led.on()
-
-And it does, if you're using the Python (or IPython or IDLE) shell. However,
-if you saved this script as a Python file and ran it, it would flash on
-briefly, then the script would end and it would turn off.
-
-The following file includes an intentional :func:`~signal.pause` to keep the
-script alive::
-
-    from gpiozero import LED
-    from signal import pause
-
-    led = LED(17)
-    led.on()
-    pause()
-
-Now the script will stay running, leaving the LED on, until it is terminated
-manually (e.g. by pressing Ctrl+C). Similarly, when setting up callbacks on
-button presses or other input devices, the script needs to be running for the
-events to be detected::
-
-    from gpiozero import Button
-    from signal import pause
-
-    def hello():
-        print("Hello")
-
-    button = Button(2)
-    button.when_pressed = hello
-    pause()
-

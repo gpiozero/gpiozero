@@ -5,6 +5,54 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.4.0 (2017-07-26)
+==========================
+
+* Pin factory is now :ref:`configurable from device constructors
+  <changing-pin-factory>` as well as command line. NOTE: this is a backwards
+  incompatible change for manual pin construction but it's hoped this is
+  (currently) a sufficiently rare use case that this won't affect too many
+  people and the benefits of the new system warrant such a change, i.e. the
+  ability to use remote pin factories with HAT classes that don't accept pin
+  assignations (`#279`_)
+* Major work on SPI, primarily to support remote hardware SPI (`#421`_,
+  `#459`_, `#465`_, `#468`_, `#575`_)
+* Pin reservation now works properly between GPIO and SPI devices (`#459`_,
+  `#468`_)
+* Lots of work on the documentation: :doc:`source/values chapter
+  <source_values>`, better charts, more recipes, :doc:`remote GPIO
+  configuration <remote_gpio>`, mock pins, better PDF output (`#484`_, `#469`_,
+  `#523`_, `#520`_, `#434`_, `#565`_, `#576`_)
+* Support for :class:`StatusZero` and :class:`StatusBoard` HATs (`#558`_)
+* Added :program:`pinout` command line tool to provide a simple
+  reference to the GPIO layout and information about the associated Pi
+  (`#497`_, `#504`_) thanks to Stewart Adcock for the initial work
+* :func:`pi_info` made more lenient for new (unknown) Pi models (`#529`_)
+* Fixed a variety of packaging issues (`#535`_, `#518`_, `#519`_)
+* Improved text in factory fallback warnings (`#572`_)
+
+.. _#279: https://github.com/RPi-Distro/python-gpiozero/issues/279
+.. _#421: https://github.com/RPi-Distro/python-gpiozero/issues/421
+.. _#434: https://github.com/RPi-Distro/python-gpiozero/issues/434
+.. _#459: https://github.com/RPi-Distro/python-gpiozero/issues/459
+.. _#465: https://github.com/RPi-Distro/python-gpiozero/issues/465
+.. _#468: https://github.com/RPi-Distro/python-gpiozero/issues/468
+.. _#469: https://github.com/RPi-Distro/python-gpiozero/issues/469
+.. _#484: https://github.com/RPi-Distro/python-gpiozero/issues/484
+.. _#497: https://github.com/RPi-Distro/python-gpiozero/issues/497
+.. _#504: https://github.com/RPi-Distro/python-gpiozero/issues/504
+.. _#518: https://github.com/RPi-Distro/python-gpiozero/issues/518
+.. _#519: https://github.com/RPi-Distro/python-gpiozero/issues/519
+.. _#520: https://github.com/RPi-Distro/python-gpiozero/issues/520
+.. _#523: https://github.com/RPi-Distro/python-gpiozero/issues/523
+.. _#529: https://github.com/RPi-Distro/python-gpiozero/issues/529
+.. _#535: https://github.com/RPi-Distro/python-gpiozero/issues/535
+.. _#558: https://github.com/RPi-Distro/python-gpiozero/issues/558
+.. _#565: https://github.com/RPi-Distro/python-gpiozero/issues/565
+.. _#572: https://github.com/RPi-Distro/python-gpiozero/issues/572
+.. _#575: https://github.com/RPi-Distro/python-gpiozero/issues/575
+.. _#576: https://github.com/RPi-Distro/python-gpiozero/issues/576
+
 Release 1.3.2 (2017-03-03)
 ==========================
 
