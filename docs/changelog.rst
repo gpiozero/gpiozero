@@ -5,7 +5,7 @@ Changelog
 .. currentmodule:: gpiozero
 
 
-Release 1.4.0 (2017-07-??)
+Release 1.4.0 (2017-07-26)
 ==========================
 
 * Pin factory is now :ref:`configurable from device constructors
