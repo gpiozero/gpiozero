@@ -1,6 +1,6 @@
-====================
-API - Device Sources
-====================
+=========================
+API - Device Source Tools
+=========================
 
 .. module:: gpiozero.tools
 
