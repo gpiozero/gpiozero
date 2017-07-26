@@ -4,7 +4,7 @@ Installing GPIO Zero
 
 GPIO Zero is installed by default in `Raspbian Jessie`_ and `Raspbian x86`_,
 available from `raspberrypi.org`_. Follow these guides to installing on other
-operating systems, including for PCs using the :doc:`remote_gpio` feature.
+operating systems, including for PCs using the :doc:`remote GPIO </remote_gpio>` feature.
 
 Raspberry Pi
 ============
