@@ -21,29 +21,48 @@ used.
 Preparing the Raspberry Pi
 ==========================
 
-If you're using Raspbian Jessie (desktop - not Raspbian Lite) then you have
-everything you need to use the remote GPIO feature. If you're using Raspbian
-Lite, or another distribution, you'll need to install pigpio:
+If you're using Raspbian (desktop - not Raspbian Lite) then you have everything
+you need to use the remote GPIO feature. If you're using Raspbian Lite, or
+another distribution, you'll need to install pigpio:
 
 .. code-block:: console
 
     $ sudo apt install pigpio
 
-Then you just need to enable **Remote GPIO** in the Raspberry Pi configuration
-tool:
+Alternatively, pigpio is available from `abyz.co.uk`_.
+
+You'll need to launch the pigpio daemon on the Raspberry Pi to allow remote
+connections. You can do this in three different ways. Most users will find the
+desktop method the easiest (and can skip to the next section).
+
+Desktop
+-------
+
+On the Raspbian desktop image, enable **Remote GPIO** in the Raspberry Pi
+configuration tool:
 
 .. image:: images/raspi-config.png
 
-(Alternatively, use ``sudo raspi-config`` on the command line)
+This will launch the pigpio daemon automatically.
 
-Then launch the pigpio daemon:
+Command-line: raspi-config
+--------------------------
+
+Alternatively, enter ``sudo raspi-config`` on the command line, and enable
+Remote GPIO. This will also launch the pigpio daemon automatically.
+
+Command-line: manual
+--------------------
+
+Another option is to launch the pigpio daemon manually:
 
 .. code-block:: console
 
     $ sudo pigpiod
 
-To only allow connections from a specific IP address, use the ``-n`` flag. For
-example:
+This is for single-use and will not persist after a reboot. However, this method
+can be used to allow connections from a specific IP address, using the ``-n``
+flag. For example:
 
 .. code-block:: console
 
@@ -51,20 +70,19 @@ example:
     $ sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
     $ sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
 
-You will need to launch the pigpio daemon every time you wish to use this
-feature. To automate running the daemon at boot time:
+To automate running the daemon at boot time, run:
 
 .. code-block:: console
 
     $ sudo systemctl enable pigpiod
 
-Preparing the host computer
-===========================
+Preparing the control computer
+==============================
 
-If the host computer is a Raspberry Pi running Raspbian Jessie (or a PC running
-Raspbian x86), then you have everything you need. If you're using another Linux
-distribution, Mac OS or Windows then you'll need to install the ``pigpio``
-Python library on the PC.
+If the control computer (the computer you're running your Python code from) is
+a Raspberry Pi running Raspbian (or a PC running Raspbian x86), then you have
+everything you need. If you're using another Linux distribution, Mac OS or
+Windows then you'll need to install the ``pigpio`` Python library on the PC.
 
 Raspberry Pi
 ------------
@@ -213,7 +231,15 @@ will flash the LED connected to pin 17 of the Raspberry Pi with the IP address
     $ PIGPIO_ADDR=192.168.1.4 python3 led.py
 
 will flash the LED connected to pin 17 of the Raspberry Pi with the IP address
-``192.168.1.4``, without any code changes.
+``192.168.1.4``, without any code changes, as long as the Raspberry Pi has the
+pigpio daemon running.
+
+.. note::
+
+    When running code directly on a Raspberry Pi, any pin factory can be used
+    (assuming the relevant library is installed), but when a device is used
+    remotely, only :class:`PiGPIOFactory` can be used, as pigpio is the only
+    pin library which supports remote GPIO.
 
 Pin objects
 ===========
@@ -231,8 +257,8 @@ This allows devices on multiple Raspberry Pis to be used in the same script:
 
 You can, of course, continue to create gpiozero device objects as normal, and
 create others using remote pins. For example, if run on a Raspberry Pi, the
-following script will flash an LED on the host Pi, and also on another Pi on
-the network:
+following script will flash an LED on the controller Pi, and also on another Pi
+on the network:
 
 .. literalinclude:: examples/led_remote_3.py
 
@@ -288,30 +314,31 @@ First, configure the boot partition of the SD card:
 3. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
    ``rootwait``.
 
-(See `blog.gbaman.info`_ for more information)
+(See guides on `blog.gbaman.info`_ and `learn.adafruit.com`_ for more detailed
+instructions)
 
 Then connect the Pi Zero to your computer using a micro USB cable (connecting it
 to the USB port, not the power port). You'll see the indicator LED flashing as
 the Pi Zero boots. When it's ready, you will be able to ping and SSH into it
-using the hostname ``raspberrypi.local``. SSH into the Pi Zero, ensure Remote
-GPIO is enabled and the pigpio daemon is running, and you can use remote pins
-from the computer, referencing the host by its hostname, like so:
+using the hostname ``raspberrypi.local``. SSH into the Pi Zero, install pigpio
+and run the pigpio daemon.
 
-.. literalinclude:: examples/pi_zero_remote.py
+Then, drop out of the SSH session and you can run Python code on your computer
+to control devices attached to the Pi Zero, referencing it by its hostname (or
+IP address if you know it), for example:
 
-.. note::
+.. code-block:: console
 
-    When running code directly on a Raspberry Pi, any pin factory can be used
-    (assuming the relevant library is installed), but when a device is used
-    remotely, only :class:`PiGPIOFactory` can be used, as pigpio is the only
-    pin library which supports remote GPIO.
+    $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=raspberrypi.local python3 led.py
 
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 .. _pigpio: http://abyz.co.uk/rpi/pigpio/python.html
+.. _abyz.co.uk: http://abyz.co.uk/rpi/pigpio/download.html
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
 .. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
-.. _Raspberry Pi Zero: https://www.raspberrypi.org/products/pi-zero/
-.. _Pi Zero W: https://www.raspberrypi.org/products/pi-zero-w/
+.. _Raspberry Pi Zero: https://www.raspberrypi.org/products/raspberry-pi-zero/
+.. _Pi Zero W: https://www.raspberrypi.org/products/raspberry-pi-zero-w/
 .. _blog.gbaman.info: http://blog.gbaman.info/?p=791
+.. _learn.adafruit.com: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget

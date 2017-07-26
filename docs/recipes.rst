@@ -187,7 +187,7 @@ This means the individual LEDs can be accessed by their name:
 .. literalinclude:: examples/led_board_6.py
 
 :class:`LEDBoard` objects can also be nested to contain other :class:`LEDBoard`
-objects.
+objects:
 
 .. literalinclude:: examples/led_board_7.py
 
