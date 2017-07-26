@@ -162,34 +162,12 @@ A collection of LEDs can be accessed using :class:`LEDBoard`:
 
 .. literalinclude:: examples/led_board_1.py
 
-You can also iterate over the LEDs one-by-one:
-
-.. literalinclude:: examples/led_board_2.py
-
 Using :class:`LEDBoard` with ``pwm=True`` allows each LED's brightness to be
 controlled:
 
-.. literalinclude:: examples/led_board_3.py
+.. literalinclude:: examples/led_board_2.py
 
-:class:`LEDBoard` also supports indexing. This means you can access the
-individual :class:`LED` objects using ``leds[i]`` where ``i`` is an integer
-from 0 up to (not including) the number of LEDs:
-
-.. literalinclude:: examples/led_board_4.py
-
-This also means you can use slicing to access a subset of the LEDs:
-
-.. literalinclude:: examples/led_board_5.py
-
-:class:`LEDBoard` objects can have their `LED` objects named upon construction.
-This means the individual LEDs can be accessed by their name:
-
-.. literalinclude:: examples/led_board_6.py
-
-:class:`LEDBoard` objects can also be nested to contain other :class:`LEDBoard`
-objects:
-
-.. literalinclude:: examples/led_board_7.py
+See more :class:`LEDBoard` examples in :doc:`recipes_advanced`.
 
 LEDBarGraph
 ===========

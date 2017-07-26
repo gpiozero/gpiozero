@@ -8,6 +8,46 @@ The following recipes demonstrate some of the capabilities of the GPIO Zero
 library. Please note that all recipes are written assuming Python 3. Recipes
 *may* work under Python 2, but no guarantees!
 
+LEDBoard
+========
+
+You can iterate over the LEDs in a :class:`LEDBoard` object one-by-one:
+
+.. literalinclude:: examples/led_board_3.py
+
+:class:`LEDBoard` also supports indexing. This means you can access the
+individual :class:`LED` objects using ``leds[i]`` where ``i`` is an integer
+from 0 up to (not including) the number of LEDs:
+
+.. literalinclude:: examples/led_board_4.py
+
+This also means you can use slicing to access a subset of the LEDs:
+
+.. literalinclude:: examples/led_board_5.py
+
+:class:`LEDBoard` objects can have their `LED` objects named upon construction.
+This means the individual LEDs can be accessed by their name:
+
+.. literalinclude:: examples/led_board_6.py
+
+:class:`LEDBoard` objects can also be nested within other :class:`LEDBoard`
+objects:
+
+.. literalinclude:: examples/led_board_7.py
+
+Who's home indicator
+====================
+
+Using a number of green-red LED pairs, you can show the status of who's home,
+according to which IP addresses you can ping successfully. Note that this
+assumes each person's mobile phone has a reserved IP address on the home router.
+
+.. literalinclude:: examples/whos_home_leds.py
+
+Alternatively, using the `STATUS Zero`_ board:
+
+.. literalinclude:: examples/whos_home_status.py
+
 Travis build LED indicator
 ==========================
 
@@ -27,19 +67,6 @@ to program the directions and add a fifth button to process them in turn, like
 a Bee-Bot or Turtle robot.
 
 .. literalinclude:: examples/robot_buttons_2.py
-
-Who's home indicator
-====================
-
-Using a number of green-red LED pairs, you can show the status of who's home,
-according to which IP addresses you can ping successfully. Note that this
-assumes each person's mobile phone has a reserved IP address on the home router.
-
-.. literalinclude:: examples/whos_home_leds.py
-
-Alternatively, using the `STATUS Zero`_ board:
-
-.. literalinclude:: examples/whos_home_status.py
 
 Robot controlled by 2 potentiometers
 ====================================

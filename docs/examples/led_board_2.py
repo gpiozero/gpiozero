@@ -1,9 +1,8 @@
 from gpiozero import LEDBoard
-from time import sleep
+from signal import pause
 
-leds = LEDBoard(5, 6, 13, 19, 26)
+leds = LEDBoard(5, 6, 13, 19, 26, pwm=True)
 
-for led in leds:
-    led.on()
-    sleep(1)
-    led.off()
+leds.value = (0.2, 0.4, 0.6, 0.8, 1.0)
+
+pause()
