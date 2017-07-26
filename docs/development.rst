@@ -32,7 +32,7 @@ within a virtual Python environment:
 
 .. code-block:: console
 
-    $ sudo apt-get install lsb-release build-essential git git-core \
+    $ sudo apt install lsb-release build-essential git git-core \
     >   exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
     >   python-dev python3-dev
     $ cd
@@ -89,7 +89,7 @@ command should install all required dependencies:
 
 .. code-block:: console
 
-    $ sudo apt-get install texlive-latex-recommended texlive-latex-extra \
+    $ sudo apt install texlive-latex-recommended texlive-latex-extra \
         texlive-fonts-recommended graphviz inkscape
 
 Once these are installed, you can use the "doc" target to build the

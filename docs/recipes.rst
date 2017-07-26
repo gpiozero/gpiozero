@@ -167,7 +167,8 @@ controlled:
 
 .. literalinclude:: examples/led_board_2.py
 
-See more :class:`LEDBoard` examples in :doc:`recipes_advanced`.
+See more :class:`LEDBoard` examples in the :ref:`advanced LEDBoard recipes
+<ledboard-advanced>`.
 
 LEDBarGraph
 ===========

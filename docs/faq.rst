@@ -65,7 +65,7 @@ example::
     b = Button(17)
     b.when_pressed = pushed()
 
-In the case above, when assigning to the ``when_pressed``, the thing that is
+In the case above, when assigning to ``when_pressed``, the thing that is
 assigned is the *result of calling* the ``pushed`` function. Because ``pushed``
 doesn't explicitly return anything, the result is ``None``. Hence this is
 equivalent to doing::
@@ -113,7 +113,7 @@ suppress the warnings you've got a couple of options:
 
    .. code-block:: console
 
-       $ GPIOZERO_PIN_FACTORY=pigpio python
+       $ GPIOZERO_PIN_FACTORY=pigpio python3
 
    In this case no warning is issued because there's no fallback; either the
    specified factory loads or it fails in which case an :exc:`ImportError` will
