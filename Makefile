@@ -55,7 +55,7 @@ DIST_DEB=dist/python-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.gz \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
-MAN_PAGES=
+MAN_PAGES=man/pinout.1 man/remote-gpio.7
 
 
 # Default target
@@ -80,6 +80,7 @@ install: $(SUBDIRS)
 doc: $(DOC_SOURCES)
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
+	$(MAKE) -C docs epub
 	$(MAKE) -C docs latexpdf
 
 source: $(DIST_TAR) $(DIST_ZIP)
@@ -101,7 +102,7 @@ develop: tags
 	$(PIP) install -e .[doc,test]
 
 test:
-	$(COVERAGE) run -m $(PYTEST) tests -v
+	$(COVERAGE) run -m $(PYTEST) tests -v -r sx
 	$(COVERAGE) report --rcfile coverage.cfg
 
 clean:
@@ -151,7 +152,7 @@ $(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	mkdir -p dist/
 	for f in $(DIST_DSC); do cp ../$${f##*/} dist/; done
 
-release: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
+changelog: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	$(MAKE) clean
 	# ensure there are no current uncommitted changes
 	test -z "$(shell git status --porcelain)"
@@ -159,17 +160,17 @@ release: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	dch --newversion $(VER)$(DEB_SUFFIX) --controlmaint
 	# commit the changes and add a new tag
 	git commit debian/changelog -m "Updated changelog for release $(VER)"
+
+release: $(PY_SOURCES) $(DOC_SOURCES) $(DIST_DEB) $(DIST_DSC)
 	git tag -s v$(VER) -m "Release v$(VER)"
+	git push --tags
 	# update the package's registration on PyPI (in case any metadata's changed)
 	$(PYTHON) $(PYFLAGS) setup.py register -r https://pypi.python.org/pypi
-
-upload: $(PY_SOURCES) $(DOC_SOURCES) $(DIST_DEB) $(DIST_DSC)
 	# build a source archive and upload to PyPI
 	$(PYTHON) $(PYFLAGS) setup.py sdist upload -r https://pypi.python.org/pypi
 	# build the deb source archive and upload to Raspbian
 	dput raspberrypi dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
 	dput raspberrypi dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
-	git push --tags
 
 .PHONY: all install develop test doc source egg zip tar deb dist clean tags release upload $(SUBDIRS)
 

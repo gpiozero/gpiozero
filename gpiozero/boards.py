@@ -12,7 +12,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 from .exc import (
     DeviceClosed,
@@ -50,6 +50,10 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         specific order). All keyword arguments *must* be included in the
         collection. If omitted, an alphabetically sorted order will be selected
         for keyword arguments.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
 
     def on(self):
@@ -127,6 +131,10 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         executed once per hold. This parameter can only be specified as a
         keyword parameter.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     :param \*\*named_pins:
         Specify GPIO pins that buttons of the board are attached to,
         associating each button with a property name. You can designate as
@@ -138,6 +146,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         bounce_time = kwargs.pop('bounce_time', None)
         hold_time = kwargs.pop('hold_time', 1)
         hold_repeat = kwargs.pop('hold_repeat', False)
+        pin_factory = kwargs.pop('pin_factory', None)
         order = kwargs.pop('_order', None)
         super(ButtonBoard, self).__init__(
             *(
@@ -145,6 +154,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
                 for pin in args
                 ),
             _order=order,
+            pin_factory=pin_factory,
             **{
                 name: Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
                 for name, pin in kwargs.items()
@@ -212,20 +222,28 @@ class LEDCollection(CompositeOutputDevice):
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', False)
+        pin_factory = kwargs.pop('pin_factory', None)
         order = kwargs.pop('_order', None)
         LEDClass = PWMLED if pwm else LED
         super(LEDCollection, self).__init__(
             *(
                 pin_or_collection
                 if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
+                LEDClass(
+                    pin_or_collection, active_high, initial_value,
+                    pin_factory=pin_factory
+                )
                 for pin_or_collection in args
                 ),
             _order=order,
+            pin_factory=pin_factory,
             **{
                 name: pin_or_collection
                 if isinstance(pin_or_collection, LEDCollection) else
-                LEDClass(pin_or_collection, active_high, initial_value)
+                LEDClass(
+                    pin_or_collection, active_high, initial_value,
+                    pin_factory=pin_factory
+                )
                 for name, pin_or_collection in kwargs.items()
                 })
         leds = []
@@ -285,6 +303,10 @@ class LEDBoard(LEDCollection):
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially. This parameter can only be
         specified as a keyword parameter.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
 
     :param \*\*named_pins:
         Specify GPIO pins that LEDs of the board are attached to, associating
@@ -489,6 +511,10 @@ class LEDBarGraph(LEDCollection):
         The initial :attr:`value` of the graph given as a float between -1 and
         +1.  Defaults to ``0.0``. This parameter can only be specified as a
         keyword parameter.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
 
     def __init__(self, *pins, **kwargs):
@@ -498,9 +524,12 @@ class LEDBarGraph(LEDCollection):
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', 0.0)
+        pin_factory = kwargs.pop('pin_factory', None)
         if kwargs:
             raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
-        super(LEDBarGraph, self).__init__(*pins, pwm=pwm, active_high=active_high)
+        super(LEDBarGraph, self).__init__(
+            *pins, pwm=pwm, active_high=active_high, pin_factory=pin_factory
+        )
         try:
             self.value = initial_value
         except:
@@ -575,12 +604,17 @@ class LedBorg(RGBLED):
         each component of the LedBorg. If ``False``, construct regular
         :class:`LED` instances, which prevents smooth color graduations.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _PiBorg LedBorg: https://www.piborg.org/ledborg
     """
 
-    def __init__(self, initial_value=(0, 0, 0), pwm=True):
+    def __init__(self, initial_value=(0, 0, 0), pwm=True, pin_factory=None):
         super(LedBorg, self).__init__(red=17, green=27, blue=22,
-                                      pwm=pwm, initial_value=initial_value)
+                                      pwm=pwm, initial_value=initial_value,
+                                      pin_factory=pin_factory)
 
 
 class PiLiter(LEDBoard):
@@ -607,12 +641,17 @@ class PiLiter(LEDBoard):
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False, initial_value=False):
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         super(PiLiter, self).__init__(4, 17, 27, 18, 22, 23, 24, 25,
-                                      pwm=pwm, initial_value=initial_value)
+                                      pwm=pwm, initial_value=initial_value,
+                                      pin_factory=pin_factory)
 
 
 class PiLiterBarGraph(LEDBarGraph):
@@ -637,13 +676,18 @@ class PiLiterBarGraph(LEDBarGraph):
         The initial :attr:`value` of the graph given as a float between -1 and
         +1. Defaults to ``0.0``.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False, initial_value=0.0):
+    def __init__(self, pwm=False, initial_value=0.0, pin_factory=None):
         pins = (4, 17, 27, 18, 22, 23, 24, 25)
-        super(PiLiterBarGraph, self).__init__(*pins,
-                pwm=pwm, initial_value=initial_value)
+        super(PiLiterBarGraph, self).__init__(
+            *pins, pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
+        )
 
 
 class TrafficLights(LEDBoard):
@@ -683,9 +727,14 @@ class TrafficLights(LEDBoard):
         The GPIO pin that the yellow LED is attached to. This is merely an
         alias for the ``amber`` parameter - you can't specify both ``amber``
         and ``yellow``.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, red=None, amber=None, green=None,
-                 pwm=False, initial_value=False, yellow=None):
+                 pwm=False, initial_value=False, yellow=None,
+                 pin_factory=None):
         if amber is not None and yellow is not None:
             raise OutputDeviceBadValue(
                 'Only one of amber or yellow can be specified'
@@ -703,7 +752,7 @@ class TrafficLights(LEDBoard):
             )
         super(TrafficLights, self).__init__(
             pwm=pwm, initial_value=initial_value,
-            _order=devices.keys(),
+            _order=devices.keys(), pin_factory=pin_factory,
             **devices)
 
     def __getattr__(self, name):
@@ -742,11 +791,16 @@ class PiTraffic(TrafficLights):
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
-    def __init__(self, pwm=False, initial_value=False):
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         super(PiTraffic, self).__init__(9, 10, 11,
-                                        pwm=pwm, initial_value=initial_value)
+                                        pwm=pwm, initial_value=initial_value,
+                                        pin_factory=pin_factory)
 
 
 class PiStop(TrafficLights):
@@ -777,6 +831,10 @@ class PiStop(TrafficLights):
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _PiHardware Pi-Stop: https://pihw.wordpress.com/meltwaters-pi-hardware-kits/pi-stop/
     .. _location: https://github.com/PiHw/Pi-Stop/blob/master/markdown_source/markdown/Discover-PiStop.md
     """
@@ -789,13 +847,132 @@ class PiStop(TrafficLights):
         'D': (2, 3, 4),
     }
 
-    def __init__(self, location=None, pwm=False, initial_value=False):
+    def __init__(
+            self, location=None, pwm=False, initial_value=False,
+            pin_factory=None):
         gpios = self.LOCATIONS.get(location, None)
         if gpios is None:
             raise ValueError('location must be one of: %s' %
                              ', '.join(sorted(self.LOCATIONS.keys())))
-        super(PiStop, self).__init__(*gpios,
-                                        pwm=pwm, initial_value=initial_value)
+        super(PiStop, self).__init__(
+            *gpios, pwm=pwm, initial_value=initial_value,
+            pin_factory=pin_factory
+        )
+
+
+class StatusZero(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for The Pi Hut's `STATUS Zero`_: a Pi Zero sized
+    add-on board with three sets of red/green LEDs to provide a status
+    indicator.
+
+    The following example designates the first strip the label "wifi" and the
+    second "raining", and turns them green and red respectfully::
+
+        from gpiozero import StatusZero
+
+        status = StatusZero('wifi', 'raining')
+        status.wifi.green.on()
+        status.raining.red.on()
+
+    :param str \*labels:
+        Specify the names of the labels you wish to designate the strips to.
+        You can list up to three labels. If no labels are given, three strips
+        will be initialised with names 'one', 'two', and 'three'. If some, but
+        not all strips are given labels, any remaining strips will not be
+        initialised.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _STATUS Zero: https://thepihut.com/statuszero
+    """
+    default_labels = ('one', 'two', 'three')
+
+    def __init__(self, *labels, **kwargs):
+        pins = (
+            (17, 4),
+            (22, 27),
+            (9, 10),
+        )
+        pin_factory = kwargs.pop('pin_factory', None)
+        if len(labels) == 0:
+            labels = self.default_labels
+        elif len(labels) > len(pins):
+            raise ValueError("StatusZero doesn't support more than three labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
+        super(StatusZero, self).__init__(
+            _order=labels, pin_factory=pin_factory, **{
+                label: LEDBoard(
+                    red=red, green=green, _order=('red', 'green'),
+                    pin_factory=pin_factory, **kwargs
+                )
+                for (green, red), label in zip(pins, labels)
+            }
+        )
+
+
+class StatusBoard(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice` for The Pi Hut's `STATUS`_ board: a
+    HAT sized add-on board with five sets of red/green LEDs and buttons to
+    provide a status indicator with additional input.
+
+    The following example designates the first strip the label "wifi" and the
+    second "raining", turns the wifi green and then activates the button to
+    toggle its lights when pressed::
+
+        from gpiozero import StatusBoard
+
+        status = StatusBoard('wifi', 'raining')
+        status.wifi.lights.green.on()
+        status.wifi.button.when_pressed = status.wifi.lights.toggle
+
+    :param str \*labels:
+        Specify the names of the labels you wish to designate the strips to.
+        You can list up to five labels. If no labels are given, five strips
+        will be initialised with names 'one' to 'five'. If some, but not all
+        strips are given labels, any remaining strips will not be initialised.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _STATUS: https://thepihut.com/status
+    """
+    default_labels = ('one', 'two', 'three', 'four', 'five')
+
+    def __init__(self, *labels, **kwargs):
+        pins = (
+            (17, 4, 14),
+            (22, 27, 19),
+            (9, 10, 15),
+            (5, 11, 26),
+            (13, 6, 18),
+        )
+        pin_factory = kwargs.pop('pin_factory', None)
+        if len(labels) == 0:
+            labels = self.default_labels
+        elif len(labels) > len(pins):
+            raise ValueError("StatusBoard doesn't support more than five labels")
+        dup, count = Counter(labels).most_common(1)[0]
+        if count > 1:
+            raise ValueError("Duplicate label %s" % dup)
+        super(StatusBoard, self).__init__(
+            _order=labels, pin_factory=pin_factory, **{
+                label: CompositeOutputDevice(
+                    button=Button(button, pin_factory=pin_factory),
+                    lights=LEDBoard(
+                        red=red, green=green, _order=('red', 'green'),
+                        pin_factory=pin_factory, **kwargs
+                    ), _order=('button', 'lights'), pin_factory=pin_factory
+                )
+                for (green, red, button), label in zip(pins, labels)
+            }
+        )
 
 
 class SnowPi(LEDBoard):
@@ -824,30 +1001,39 @@ class SnowPi(LEDBoard):
         in when configured for output (warning: this can be on). If ``True``,
         the device will be switched on initially.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Ryanteck SnowPi: https://ryanteck.uk/raspberry-pi/114-snowpi-the-gpio-snowman-for-raspberry-pi-0635648608303.html
     """
-    def __init__(self, pwm=False, initial_value=False):
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         super(SnowPi, self).__init__(
             arms=LEDBoard(
                 left=LEDBoard(
                     top=17, middle=18, bottom=22,
                     pwm=pwm, initial_value=initial_value,
-                    _order=('top', 'middle', 'bottom')),
+                    _order=('top', 'middle', 'bottom'),
+                    pin_factory=pin_factory),
                 right=LEDBoard(
                     top=7, middle=8, bottom=9,
                     pwm=pwm, initial_value=initial_value,
-                    _order=('top', 'middle', 'bottom')),
-                _order=('left', 'right')
+                    _order=('top', 'middle', 'bottom'),
+                    pin_factory=pin_factory),
+                _order=('left', 'right'),
+                pin_factory=pin_factory
                 ),
             eyes=LEDBoard(
                 left=23, right=24,
                 pwm=pwm, initial_value=initial_value,
-                _order=('left', 'right')
+                _order=('left', 'right'),
+                pin_factory=pin_factory
                 ),
             nose=25,
             pwm=pwm, initial_value=initial_value,
-            _order=('eyes', 'nose', 'arms')
-            )
+            _order=('eyes', 'nose', 'arms'),
+            pin_factory=pin_factory
+        )
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):
@@ -864,12 +1050,18 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
 
     :param Button button:
         An instance of :class:`Button` representing the button on the HAT.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
 
-    def __init__(self, lights, buzzer, button):
+    def __init__(self, lights, buzzer, button, pin_factory=None):
         super(TrafficLightsBuzzer, self).__init__(
             lights=lights, buzzer=buzzer, button=button,
-            _order=('lights', 'buzzer', 'button'))
+            _order=('lights', 'buzzer', 'button'),
+            pin_factory=pin_factory
+        )
 
 
 class FishDish(TrafficLightsBuzzer):
@@ -892,14 +1084,19 @@ class FishDish(TrafficLightsBuzzer):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
 
-    def __init__(self, pwm=False):
+    def __init__(self, pwm=False, pin_factory=None):
         super(FishDish, self).__init__(
-            TrafficLights(9, 22, 4, pwm=pwm),
-            Buzzer(8),
-            Button(7, pull_up=False),
+            TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
+            Buzzer(8, pin_factory=pin_factory),
+            Button(7, pull_up=False, pin_factory=pin_factory),
+            pin_factory=pin_factory
         )
 
 
@@ -923,14 +1120,19 @@ class TrafficHat(TrafficLightsBuzzer):
         LED. If ``False`` (the default), construct regular :class:`LED`
         instances.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
     """
 
-    def __init__(self, pwm=False):
+    def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
-            TrafficLights(24, 23, 22, pwm=pwm),
-            Buzzer(5),
-            Button(25),
+            TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
+            Buzzer(5, pin_factory=pin_factory),
+            Button(25, pin_factory=pin_factory),
+            pin_factory=pin_factory
         )
 
 
@@ -956,13 +1158,19 @@ class Robot(SourceMixin, CompositeDevice):
     :param tuple right:
         A tuple of two GPIO pins representing the forward and backward inputs
         of the right motor's controller.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
 
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, pin_factory=None):
         super(Robot, self).__init__(
-                left_motor=Motor(*left),
-                right_motor=Motor(*right),
-                _order=('left_motor', 'right_motor'))
+            left_motor=Motor(*left, pin_factory=pin_factory),
+            right_motor=Motor(*right, pin_factory=pin_factory),
+            _order=('left_motor', 'right_motor'),
+            pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -1044,7 +1252,7 @@ class Robot(SourceMixin, CompositeDevice):
 
 class RyanteckRobot(Robot):
     """
-    Extends :class:`Robot` for the `Ryanteck MCB`_ robot.
+    Extends :class:`Robot` for the `Ryanteck motor controller board`_.
 
     The Ryanteck MCB pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example drives the robot
@@ -1055,16 +1263,22 @@ class RyanteckRobot(Robot):
         robot = RyanteckRobot()
         robot.forward()
 
-    .. _Ryanteck MCB: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
 
-    def __init__(self):
-        super(RyanteckRobot, self).__init__((17, 18), (22, 23))
+    def __init__(self, pin_factory=None):
+        super(RyanteckRobot, self).__init__(
+            (17, 18), (22, 23), pin_factory=pin_factory
+        )
 
 
 class CamJamKitRobot(Robot):
     """
-    Extends :class:`Robot` for the `CamJam #3 EduKit`_ robot controller.
+    Extends :class:`Robot` for the `CamJam #3 EduKit`_ motor controller board.
 
     The CamJam robot controller pins are fixed and therefore there's no need
     to specify them when constructing this class. The following example drives
@@ -1075,20 +1289,31 @@ class CamJamKitRobot(Robot):
         robot = CamJamKitRobot()
         robot.forward()
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
 
-    def __init__(self):
-        super(CamJamKitRobot, self).__init__((9, 10), (7, 8))
+    def __init__(self, pin_factory=None):
+        super(CamJamKitRobot, self).__init__(
+            (9, 10), (7, 8), pin_factory=pin_factory
+        )
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
-    def __init__(self):
+    def __init__(self, pin_factory=None):
         self._lock = Lock()
         super(_EnergenieMaster, self).__init__(
-                *(OutputDevice(pin) for pin in (17, 22, 23, 27)),
-                mode=OutputDevice(24), enable=OutputDevice(25),
-                _order=('mode', 'enable'))
+            *(
+                OutputDevice(pin, pin_factory=pin_factory)
+                for pin in (17, 22, 23, 27)
+            ),
+            mode=OutputDevice(24, pin_factory=pin_factory),
+            enable=OutputDevice(25, pin_factory=pin_factory),
+            _order=('mode', 'enable'), pin_factory=pin_factory
+        )
 
     def close(self):
         if self._lock:
@@ -1097,7 +1322,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
             self._lock = None
 
     @classmethod
-    def _shared_key(cls):
+    def _shared_key(cls, pin_factory):
         # There's only one Energenie master
         return None
 
@@ -1138,18 +1363,22 @@ class Energenie(SourceMixin, Device):
         the socket, which will be set upon construction. This defaults to
         ``False`` which will switch the socket off.
 
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
     .. _Energenie socket: https://energenie4u.co.uk/index.php/catalogue/product/ENER002-2PI
     """
 
-    def __init__(self, socket=None, initial_value=False):
+    def __init__(self, socket=None, initial_value=False, pin_factory=None):
         if socket is None:
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
         self._value = None
-        super(Energenie, self).__init__()
+        super(Energenie, self).__init__(pin_factory=pin_factory)
         self._socket = socket
-        self._master = _EnergenieMaster()
+        self._master = _EnergenieMaster(pin_factory=pin_factory)
         if initial_value:
             self.on()
         else:
@@ -1223,7 +1452,7 @@ class RotaryEncoder(Device):
 
     :param bool pull_up:
         If ``True`` (the default), the GPIO pins will be pulled high by default.
-        In this case, connect the middle GPIO pin to ground. If ``False``, 
+        In this case, connect the middle GPIO pin to ground. If ``False``,
         the GPIO pins will be pulled low by default. In this case,
         connect the middle pin of the RotaryEncoder to 3V3.
     """
@@ -1377,7 +1606,7 @@ class RotaryEncoderClickable(CompositeDevice):
 
     :param bool encoder_pull_up:
         If ``True`` (the default), the GPIO pins will be pulled high by default.
-        In this case, connect the middle GPIO pin to ground. If ``False``, 
+        In this case, connect the middle GPIO pin to ground. If ``False``,
         the GPIO pins will be pulled low by default. In this case,
         connect the middle pin of the RotaryEncoder to 3V3.
 
@@ -1434,4 +1663,3 @@ class RotaryEncoderClickable(CompositeDevice):
                 self.button.pull_up,
                 self.is_active
         )
-

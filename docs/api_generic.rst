@@ -1,6 +1,8 @@
-===============
-Generic Classes
-===============
+=====================
+API - Generic Classes
+=====================
+
+.. module:: gpiozero.devices
 
 .. currentmodule:: gpiozero
 
@@ -23,7 +25,8 @@ classes (most of which are documented in their corresponding chapters):
   devices like HATs
 
 There are also several `mixin classes`_ for adding important functionality
-at numerous points in the hierarchy, which is illustrated below:
+at numerous points in the hierarchy, which is illustrated below (mixin classes
+are represented in purple, while abstract classes are shaded lighter):
 
 .. image:: images/device_hierarchy.*
 
@@ -32,7 +35,7 @@ at numerous points in the hierarchy, which is illustrated below:
 Device
 ======
 
-.. autoclass:: Device
+.. autoclass:: Device(\*, pin_factory=None)
     :members: close, closed, value, is_active
 
 ValuesMixin

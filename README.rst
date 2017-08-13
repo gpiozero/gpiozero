@@ -14,7 +14,7 @@ gpiozero
     :target: https://codecov.io/github/RPi-Distro/python-gpiozero
     :alt: Code Coverage
 
-A simple interface to everyday GPIO components used with Raspberry Pi.
+A simple interface to GPIO devices with Raspberry Pi.
 
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
 other contributors.
@@ -56,57 +56,69 @@ together:
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
-colour LEDs, robotics kits and more.
+colour LEDs, robotics kits and more. See the `Recipes`_ chapter of the
+documentation for ideas on how to get started.
 
-Install
-=======
+Installation
+============
 
-First, update your repositories list::
-
-    sudo apt-get update
-
-Then install the package of your choice. Both Python 3 and Python 2 are
-supported. Python 3 is recommended::
-
-    sudo apt-get install python3-gpiozero
-
-or::
-
-    sudo apt-get install python-gpiozero
+GPIO Zero is installed by default in Raspbian Jessie, available from
+`raspberrypi.org`_. To install on Jessie Lite or other operating systems,
+including for PCs using remote GPIO, see the `Installing`_ chapter.
 
 Documentation
 =============
 
 Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
-
-Development
-===========
-
-This project is being developed on `GitHub`_. Join in:
-
-* Provide suggestions, report bugs and ask questions as `issues`_
-* Provide examples we can use as `recipes`_
-* `Contribute`_ to the code
-
-Alternatively, email suggestions and feedback to ben@raspberrypi.org
+Please refer to the `Contributing`_ and `Development`_ chapters in the
+documentation for information on contributing to the project.
 
 Contributors
 ============
 
-- `Ben Nuttall`_ (project maintainer)
+Core developers:
+
+- `Ben Nuttall`_
 - `Dave Jones`_
-- `Martin O'Hanlon`_
 - `Andrew Scheller`_
+
+Other contributors:
+
+- `Martin O'Hanlon`_
+- `Steve Amor`_
+- `David Glaude`_
+- `Edward Betts`_
+- `Alex Chan`_
+- `Thijs Triemstra`_
 - `Schelto vanDoorn`_
+- `Alex Eames`_
+- `Barry Byford`_
+- `Clare Macrae`_
+- `Tim Golden`_
+- `Phil Howard`_
+- `Stewart Adcock`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
-.. _GitHub: https://github.com/RPi-Distro/python-gpiozero
-.. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _contribute: https://gpiozero.readthedocs.io/en/latest/contributing.html
+.. _raspberrypi.org: https://www.raspberrypi.org/downloads/
+.. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
+.. _Contributing: https://gpiozero.readthedocs.io/en/stable/contributing.html
+.. _Development: https://gpiozero.readthedocs.io/en/stable/development.html
+.. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
+
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
-.. _Martin O'Hanlon: https://github.com/martinohanlon
 .. _Andrew Scheller: https://github.com/lurch
-.. _Schelto vanDoorn: https://github.com/pcopa
+.. _Martin O'Hanlon: https://github.com/martinohanlon
+.. _Steve Amor: https://github.com/SteveAmor
+.. _David Glaude: https://github.com/dglaude
+.. _Edward Betts: https://github.com/edwardbetts
+.. _Alex Chan: https://github.com/alexwlchan
+.. _Thijs Triemstra: https://github.com/thijstriemstra
+.. _Schelto vanDoorn: https://github.com/goloplo
+.. _Alex Eames: https://github.com/raspitv
+.. _Barry Byford: https://github.com/ukBaz
+.. _Clare Macrae: https://github.com/claremacrae
+.. _Tim Golden: https://github.com/tjguk
+.. _Phil Howard: https://github.com/Gadgetoid
+.. _Stewart Adcock: https://github.com/stewartadcock

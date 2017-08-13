@@ -1,6 +1,8 @@
-======================
-Boards and Accessories
-======================
+============================
+API - Boards and Accessories
+============================
+
+.. module:: gpiozero.boards
 
 .. currentmodule:: gpiozero
 
@@ -18,21 +20,21 @@ individually.
 LEDBoard
 ========
 
-.. autoclass:: LEDBoard(\*pins, pwm=False, active_high=True, initial_value=False, \*\*named_pins)
+.. autoclass:: LEDBoard(\*pins, pwm=False, active_high=True, initial_value=False, pin_factory=None, \*\*named_pins)
     :inherited-members:
     :members:
 
 LEDBarGraph
 ===========
 
-.. autoclass:: LEDBarGraph(\*pins, initial_value=0)
+.. autoclass:: LEDBarGraph(\*pins, pwm=False, active_high=True, initial_value=0, pin_factory=None)
     :inherited-members:
     :members:
 
 ButtonBoard
 ===========
 
-.. autoclass:: ButtonBoard(\*pins, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False, \*\*named_pins)
+.. autoclass:: ButtonBoard(\*pins, pull_up=True, bounce_time=None, hold_time=1, hold_repeat=False, pin_factory=None, \*\*named_pins)
     :inherited-members:
     :members:
 
@@ -127,6 +129,20 @@ Energenie
     :inherited-members:
     :members:
 
+StatusZero
+==========
+
+.. autoclass:: StatusZero(\*labels, pwm=False, active_high=True, initial_value=False, pin_factory=None)
+    :inherited-members:
+    :members:
+
+StatusBoard
+===========
+
+.. autoclass:: StatusBoard(\*labels, pwm=False, active_high=True, initial_value=False, pin_factory=None)
+    :inherited-members:
+    :members:
+
 SnowPi
 ======
 
@@ -154,18 +170,17 @@ to construct classes for their own devices.
 LEDCollection
 =============
 
-.. autoclass:: LEDCollection
+.. autoclass:: LEDCollection(\*pins, pwm=False, active_high=True, initial_value=False, pin_factory=None, \*\*named_pins)
     :members:
 
 CompositeOutputDevice
 =====================
 
-.. autoclass:: CompositeOutputDevice(\*args, _order=None, \*\*kwargs)
+.. autoclass:: CompositeOutputDevice(\*args, _order=None, pin_factory=None, \*\*kwargs)
     :members:
 
 CompositeDevice
 ===============
 
-.. autoclass:: CompositeDevice(\*args, _order=None, \*\*kwargs)
+.. autoclass:: CompositeDevice(\*args, _order=None, pin_factory=None, \*\*kwargs)
     :members:
-

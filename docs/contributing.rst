@@ -4,11 +4,7 @@
 Contributing
 ============
 
-This module was designed for use in education; particularly for young children.
-It is intended to provide a simple interface to everyday components.
-
-If a proposed change added an advanced feature but made basic usage more
-complex, it is unlikely to be added.
+Contributions to the library are welcome! Here are some guidelines to follow.
 
 Suggestions
 ===========
@@ -33,8 +29,13 @@ Commit messages and pull requests
 
 Commit messages should be concise but descriptive, and in the form of a patch
 description, i.e. instructional not past tense ("Add LED example" not "Added
-LED example"). Commits that close (or intend to close) an issue should use the
-phrase "fix #123" where ``#123`` is the issue number.
+LED example").
+
+Commits which close (or intend to close) an issue should include the phrase
+"fix #123" or "close #123" where ``#123`` is the issue number, as well as
+include a short description, for example: "Add LED example, close #123", and
+pull requests should aim to match or closely match the corresponding issue
+title.
 
 Backwards compatibility
 =======================
@@ -42,11 +43,12 @@ Backwards compatibility
 Since this library reached v1.0 we aim to maintain backwards-compatibility
 thereafter. Changes which break backwards-compatibility will not be accepted.
 
-Python
-======
+Python 2/3
+==========
 
-* Python 2/3 compatibility
-* PEP8-compliance (with exceptions)
+The library is 100% compatible with both Python 2 and 3. We intend to drop
+Python 2 support in 2020 when Python 2 reaches `end-of-life`_.
 
 .. _docs: https://github.com/RPi-Distro/python-gpiozero/tree/master/docs
 .. _issue: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _end-of-life: http://legacy.python.org/dev/peps/pep-0373/

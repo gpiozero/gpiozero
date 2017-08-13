@@ -10,6 +10,8 @@ export DH_OPTIONS
 override_dh_auto_install:
 	python setup.py install --root debian/python-gpiozero --install-layout=deb
 	python3 setup.py install --root debian/python3-gpiozero --install-layout=deb
+	# Strip out binaries from the py2 package
+	rm debian/python-gpiozero/usr/bin/pinout
 
 #override_dh_auto_test:
 #	# Don't run the tests!
