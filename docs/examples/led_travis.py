@@ -4,16 +4,17 @@ from gpiozero.tools import negated
 from time import sleep
 from signal import pause
 
-def build_passed(repo='RPi-Distro/python-gpiozero', delay=3600):
+def build_passed(repo):
     t = TravisPy()
     r = t.repo(repo)
     while True:
         yield r.last_build_state == 'passed'
-        sleep(delay) # Sleep an hour before hitting travis again
 
 red = LED(12)
 green = LED(16)
 
+green.source = build_passed('RPi-Distro/python-gpiozero')
+green.source_delay = 60 * 5  # check every 5 minutes
 red.source = negated(green.values)
-green.source = build_passed()
+
 pause()
