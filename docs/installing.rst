@@ -2,10 +2,11 @@
 Installing GPIO Zero
 ====================
 
-GPIO Zero is installed by default in `Raspbian Jessie`_ and `Raspbian x86`_,
-available from `raspberrypi.org`_. Follow these guides to installing on other
-operating systems, including for PCs using the :doc:`remote GPIO <remote_gpio>`
-feature.
+GPIO Zero is installed by default in the `Raspbian`_ image, and the
+`Raspberry Pi Desktop`_ image for PC/Mac, both available from
+`raspberrypi.org`_. Follow these guides to installing on Raspbian Lite
+and other operating systems, including for PCs using the
+:doc:`remote GPIO <remote_gpio>` feature.
 
 Raspberry Pi
 ============
@@ -52,7 +53,7 @@ to install GPIO Zero on that computer using pip. See the :doc:`remote_gpio`
 page for more information.
 
 
-.. _Raspbian Jessie: https://www.raspberrypi.org/downloads/raspbian/
-.. _Raspbian x86: https://www.raspberrypi.org/blog/pixel-pc-mac/
+.. _Raspbian: https://www.raspberrypi.org/downloads/raspbian/
+.. _Raspberry Pi Desktop: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
 .. _raspberrypi.org: https://www.raspberrypi.org/downloads/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
