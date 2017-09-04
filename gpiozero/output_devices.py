@@ -152,14 +152,17 @@ class DigitalOutputDevice(OutputDevice):
 
     def close(self):
         self._stop_blink()
+        self._stop_source()
         super(DigitalOutputDevice, self).close()
 
     def on(self):
         self._stop_blink()
+        self._stop_source()
         self._write(True)
 
     def off(self):
         self._stop_blink()
+        self._stop_source()
         self._write(False)
 
     def blink(self, on_time=1, off_time=1, n=None, background=True):
@@ -182,6 +185,7 @@ class DigitalOutputDevice(OutputDevice):
             this method never returning).
         """
         self._stop_blink()
+        self._stop_source()
         self._blink_thread = GPIOThread(
             target=self._blink_device, args=(on_time, off_time, n)
         )
@@ -189,6 +193,9 @@ class DigitalOutputDevice(OutputDevice):
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
+
+    def _stop_source(self):
+        self.source = None
 
     def _stop_blink(self):
         if self._controller:
@@ -1264,4 +1271,3 @@ class AngularServo(Servo):
                 self._value_range *
                 ((value - self._min_angle) / self._angular_range) +
                 self._min_value)
-
