@@ -62,8 +62,8 @@ documentation for ideas on how to get started.
 Installation
 ============
 
-GPIO Zero is installed by default in Raspbian Jessie, available from
-`raspberrypi.org`_. To install on Jessie Lite or other operating systems,
+GPIO Zero is installed by default in the Raspbian desktop image, available from
+`raspberrypi.org`_. To install on Raspbian Lite or other operating systems,
 including for PCs using remote GPIO, see the `Installing`_ chapter.
 
 Documentation
