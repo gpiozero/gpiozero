@@ -634,17 +634,18 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = False
             self.pin.edges = 'both'
             self.pin.bounce = None
-            def callback():
-                if self._echo_rise is None:
-                    self._echo_rise = time()
-                else:
-                    self._echo_fall = time()
-                self._echo.set()
-            self.pin.when_changed = callback
+            self.pin.when_changed = self._echo_callback
             self._queue.start()
         except:
             self.close()
             raise
+
+    def _echo_callback(self):
+        if self._echo_rise is None:
+            self._echo_rise = time()
+        else:
+            self._echo_fall = time()
+        self._echo.set()
 
     def close(self):
         try:
