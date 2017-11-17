@@ -13,6 +13,7 @@ import argparse
 import sys
 import textwrap
 import warnings
+import webbrowser
 
 class PinoutTool(object):
     def __init__(self):
@@ -37,6 +38,12 @@ class PinoutTool(object):
             dest='color',
             action='store_false',
             help='Force monochrome output. See also --color'
+        )
+        self.parser.add_argument(
+            '-x', '--xyz',
+            dest='xyz',
+            action='store_true',
+            help='Open pinout.xyz in the default web browser'
         )
 
     def __call__(self, args=None):
@@ -73,7 +80,9 @@ class PinoutTool(object):
             )
             sys.stderr.write(formatter.format_help())
         else:
-            if args.revision == '':
+            if args.xyz:
+                webbrowser.open('https://pinout.xyz')
+            elif args.revision == '':
                 try:
                     pi_info().pprint(color=args.color)
                 except IOError:
