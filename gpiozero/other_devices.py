@@ -39,10 +39,12 @@ class PingServer(InternalDevice):
         from gpiozero import PingServer, LED
         from signal import pause
 
-        server = PingServer('my-server')
+        google = PingServer('google.com')
         led = LED(4)
-        led.source_delay = 1
-        led.source = server.values
+
+        led.source_delay = 60  # check once per minute
+        led.source = google.values
+
         pause()
 
     :param str host:
@@ -54,7 +56,7 @@ class PingServer(InternalDevice):
         self._fire_events()
 
     def __repr__(self):
-        return '<gpiozero.PingDevice host="%s">' % self.host
+        return '<gpiozero.PingServer host="%s">' % self.host
 
     @property
     def value(self):
@@ -85,9 +87,13 @@ class CPUTemperature(InternalDevice):
 
         # Use minimums and maximums that are closer to "normal" usage so the
         # bar graph is a bit more "lively"
-        temp = CPUTemperature(min_temp=50, max_temp=90)
+        cpu = CPUTemperature(min_temp=50, max_temp=90)
+
+        print('Initial temperature: {}C'.format(cpu.temperature))
+
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
-        graph.source = temp.values
+        graph.source = cpu.values
+
         pause()
 
     :param str sensor_file:
@@ -158,14 +164,15 @@ class TimeOfDay(InternalDevice):
     The following example turns on a lamp attached to an :class:`Energenie`
     plug between 7 and 8 AM::
 
-        from datetime import time
         from gpiozero import TimeOfDay, Energenie
+        from datetime import time
         from signal import pause
 
         lamp = Energenie(0)
         morning = TimeOfDay(time(7), time(8))
-        morning.when_activated = lamp.on
-        morning.when_deactivated = lamp.off
+
+        lamp.source = morning.values
+
         pause()
 
     :param ~datetime.time start_time:
@@ -240,4 +247,3 @@ class TimeOfDay(InternalDevice):
             return self.start_time <= datetime.utcnow().time() <= self.end_time
         else:
             return self.start_time <= datetime.now().time() <= self.end_time
-

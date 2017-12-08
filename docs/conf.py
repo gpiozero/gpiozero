@@ -89,8 +89,8 @@ else:
     html_theme = 'default'
     #html_theme_options = {}
     #html_sidebars = {}
+html_title = '%s %s Documentation' % (project, version)
 #html_theme_path = []
-#html_title = None
 #html_short_title = None
 #html_logo = None
 #html_favicon = None
@@ -119,7 +119,7 @@ htmlhelp_basename = '%sdoc' % _setup.__project__
 latex_elements = {
     'papersize': 'a4paper',
     'pointsize': '10pt',
-    #'preamble': '',
+    'preamble': r'\def\thempfootnote{\arabic{mpfootnote}}', # workaround sphinx issue #2530
 }
 
 latex_documents = [
@@ -129,21 +129,36 @@ latex_documents = [
         '%s Documentation' % project,  # title
         _setup.__author__,             # author
         'manual',                      # documentclass
+        True,                          # documents ref'd from toctree only
         ),
 ]
 
 #latex_logo = None
 #latex_use_parts = False
-#latex_show_pagerefs = False
-#latex_show_urls = False
+latex_show_pagerefs = True
+latex_show_urls = 'footnote'
 #latex_appendices = []
 #latex_domain_indices = True
 
+# -- Options for epub output ----------------------------------------------
+
+epub_basename = _setup.__project__
+#epub_theme = 'epub'
+#epub_title = html_title
+epub_author = _setup.__author__
+epub_identifier = 'https://gpiozero.readthedocs.io/'
+#epub_tocdepth = 3
+epub_show_urls = 'no'
+#epub_use_index = True
+
 # -- Options for manual page output ---------------------------------------
 
-man_pages = []
+man_pages = [
+    ('cli_pinout',  'pinout',      'GPIO Zero pinout tool',       [_setup.__author__], 1),
+    ('remote_gpio', 'remote-gpio', 'GPIO Zero remote GPIO guide', [_setup.__author__], 7),
+]
 
-#man_show_urls = False
+man_show_urls = True
 
 # -- Options for Texinfo output -------------------------------------------
 
