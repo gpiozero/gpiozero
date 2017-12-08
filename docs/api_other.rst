@@ -1,6 +1,8 @@
-================
-Internal Devices
-================
+======================
+API - Internal Devices
+======================
+
+.. module:: gpiozero.other_devices
 
 .. currentmodule:: gpiozero
 
@@ -29,13 +31,15 @@ CPUTemperature
 ==============
 
 .. autoclass:: CPUTemperature
+    :members: temperature, is_active
 
 Base Classes
 ============
 
 The classes in the sections above are derived from a series of base classes,
 some of which are effectively abstract. The classes form the (partial)
-hierarchy displayed in the graph below:
+hierarchy displayed in the graph below (abstract classes are shaded lighter
+than concrete classes):
 
 .. image:: images/other_device_hierarchy.*
 
@@ -47,4 +51,3 @@ InternalDevice
 
 .. autoclass:: InternalDevice()
     :members:
-

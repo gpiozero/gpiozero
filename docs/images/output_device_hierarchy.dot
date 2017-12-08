@@ -1,7 +1,7 @@
 /* vim: set et sw=4 sts=4: */
 
 digraph classes {
-    graph [rankdir=BT];
+    graph [rankdir=RL];
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 

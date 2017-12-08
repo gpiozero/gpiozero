@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.3.1'
+__version__      = '1.4.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
@@ -42,6 +42,7 @@ __classifiers__ = [
     "Programming Language :: Python :: 3.3",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
@@ -68,13 +69,26 @@ if sys.version_info[:2] == (3, 2):
 
 __entry_points__ = {
     'gpiozero_pin_factories': [
-        'PiGPIOPin  = gpiozero.pins.pigpiod:PiGPIOPin',
-        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOPin',
-        'RPIOPin    = gpiozero.pins.rpio:RPIOPin',
-        'NativePin  = gpiozero.pins.native:NativePin',
-        'MockPin    = gpiozero.pins.mock:MockPin',
-        'MockPWMPin = gpiozero.pins.mock:MockPWMPin',
+        'pigpio  = gpiozero.pins.pigpio:PiGPIOFactory',
+        'rpigpio = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'rpio    = gpiozero.pins.rpio:RPIOFactory',
+        'native  = gpiozero.pins.native:NativeFactory',
+        'mock    = gpiozero.pins.mock:MockFactory',
+        # Backwards compatible names
+        'PiGPIOPin  = gpiozero.pins.pigpio:PiGPIOFactory',
+        'RPiGPIOPin = gpiozero.pins.rpigpio:RPiGPIOFactory',
+        'RPIOPin    = gpiozero.pins.rpio:RPIOFactory',
+        'NativePin  = gpiozero.pins.native:NativeFactory',
     ],
+    'gpiozero_mock_pin_classes': [
+        'mockpin          = gpiozero.pins.mock:MockPin',
+        'mockpwmpin       = gpiozero.pins.mock:MockPWMPin',
+        'mockchargingpin  = gpiozero.pins.mock:MockChargingPin',
+        'mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin',
+    ],
+    'console_scripts': [
+        'pinout = gpiozerocli.pinout:main',
+    ]
 }
 
 
