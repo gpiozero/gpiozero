@@ -451,6 +451,11 @@ def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
                         'Falling back from %s: %s' % (name, str(e))))
         raise BadPinFactory('Unable to load any default pin factory!')
     else:
+        # Try with the name verbatim first. If that fails, attempt with the
+        # lower-cased name (this ensures compatibility names work but we're
+        # still case insensitive for all factories)
+        for factory in pkg_resources.iter_entry_points(group, name):
+            return factory.load()()
         for factory in pkg_resources.iter_entry_points(group, name.lower()):
             return factory.load()()
         raise BadPinFactory('Unable to find pin factory "%s"' % name)
