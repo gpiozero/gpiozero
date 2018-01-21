@@ -9,6 +9,10 @@ from __future__ import (
 
 from time import sleep, time
 from threading import Event
+try:
+    from statistics import mean
+except ImportError:
+    from .compat import mean
 
 from .exc import InputDeviceError, DeviceClosed
 from .devices import GPIODevice
@@ -151,7 +155,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             pin, pull_up, pin_factory=pin_factory
         )
         try:
-            self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
+            self._queue = GPIOQueue(self, queue_len, sample_wait, partial, mean)
             self.threshold = float(threshold)
         except:
             self.close()
