@@ -559,13 +559,28 @@ class DistanceSensor(SmoothedInputDevice):
 
     2. Connect the TRIG pin of the sensor a GPIO pin.
 
-    3. Connect a 330Ω resistor from the ECHO pin of the sensor to a different
-       GPIO pin.
+    3. Connect one end of a 330Ω resistor to the ECHO pin of the sensor.
 
-    4. Connect a 470Ω resistor from ground to the ECHO GPIO pin. This forms
-       the required voltage divider.
+    4. Connect one end of a 470Ω resistor to the GND pin of the sensor.
 
-    5. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
+    5. Connect the free ends of both resistors to another GPIO pin. This forms
+       the required `voltage divider`_.
+
+    6. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
+
+    .. note::
+
+        If you do not have the precise values of resistor specified above,
+        don't worry! What matters is the *ratio* of the resistors to each
+        other.
+
+        You also don't need to be absolutely precise; the `voltage divider`_
+        given above will actually output ~3V (rather than 3.3V). A simple 2:3
+        ratio will give 3.333V which implies you can take three resistors of
+        equal value, use one of them instead of the 330Ω resistor, and two of
+        them in series instead of the 470Ω resistor.
+
+    .. _voltage divider: https://en.wikipedia.org/wiki/Voltage_divider
 
     The following code will periodically report the distance measured by the
     sensor in cm assuming the TRIG pin is connected to GPIO17, and the ECHO
