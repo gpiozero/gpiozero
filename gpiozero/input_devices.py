@@ -7,10 +7,11 @@ from __future__ import (
     division,
 )
 
+import warnings
 from time import sleep, time
 from threading import Event, Lock
 
-from .exc import InputDeviceError, DeviceClosed
+from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho
 from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
 
@@ -761,7 +762,8 @@ class DistanceSensor(SmoothedInputDevice):
                     return 0.0
             else:
                 # The echo pin never rose or fell; something's gone horribly
-                # wrong (XXX raise a warning?)
+                # wrong
+                warnings.warn(DistanceSensorNoEcho('no echo received'))
                 return 1.0
 
     @property
