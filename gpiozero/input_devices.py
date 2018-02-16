@@ -638,7 +638,7 @@ class DistanceSensor(SmoothedInputDevice):
         self._trigger = None
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
-            queue_len=queue_len, sample_wait=0.001, partial=partial,
+            queue_len=queue_len, sample_wait=0.06, partial=partial,
             pin_factory=pin_factory
         )
         try:
