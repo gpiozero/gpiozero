@@ -8,7 +8,7 @@ from __future__ import (
 )
 
 from time import sleep, time
-from threading import Event
+from threading import Event, Lock
 
 from .exc import InputDeviceError, DeviceClosed
 from .devices import GPIODevice
@@ -627,15 +627,17 @@ class DistanceSensor(SmoothedInputDevice):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
+    ECHO_LOCK = Lock()
+
     def __init__(
-            self, echo=None, trigger=None, queue_len=30, max_distance=1,
+            self, echo=None, trigger=None, queue_len=10, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
-            queue_len=queue_len, sample_wait=0.0, partial=partial,
+            queue_len=queue_len, sample_wait=0.001, partial=partial,
             pin_factory=pin_factory
         )
         try:
@@ -649,13 +651,7 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = False
             self.pin.edges = 'both'
             self.pin.bounce = None
-            def callback():
-                if self._echo_rise is None:
-                    self._echo_rise = time()
-                else:
-                    self._echo_fall = time()
-                self._echo.set()
-            self.pin.when_changed = callback
+            self.pin.when_changed = self._echo_changed
             self._queue.start()
         except:
             self.close()
@@ -727,35 +723,46 @@ class DistanceSensor(SmoothedInputDevice):
         """
         return self.pin
 
+    def _echo_changed(self):
+        if self._echo_rise is None:
+            self._echo_rise = time()
+        else:
+            self._echo_fall = time()
+        self._echo.set()
+
     def _read(self):
         # Make sure the echo pin is low then ensure the echo event is clear
         while self.pin.state:
             sleep(0.00001)
         self._echo.clear()
-        # Fire the trigger
-        self._trigger.pin.state = True
-        sleep(0.00001)
-        self._trigger.pin.state = False
-        # Wait up to 1 second for the echo pin to rise
-        if self._echo.wait(1):
-            self._echo.clear()
-            # Wait up to 40ms for the echo pin to fall (35ms is maximum pulse
-            # time so any longer means something's gone wrong). Calculate
-            # distance as time for echo multiplied by speed of sound divided by
-            # two to compensate for travel to and from the reflector
-            if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
-                distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
-                self._echo_fall = None
-                self._echo_rise = None
-                return min(1.0, distance / self._max_distance)
+        # Obtain ECHO_LOCK to ensure multiple distance sensors don't listen
+        # for each other's "pings"
+        with DistanceSensor.ECHO_LOCK:
+            # Fire the trigger
+            self._trigger.pin.state = True
+            sleep(0.00001)
+            self._trigger.pin.state = False
+            # Wait up to 1 second for the echo pin to rise
+            if self._echo.wait(1):
+                self._echo.clear()
+                # Wait up to 40ms for the echo pin to fall (35ms is maximum
+                # pulse time so any longer means something's gone wrong).
+                # Calculate distance as time for echo multiplied by speed of
+                # sound divided by two to compensate for travel to and from the
+                # reflector
+                if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
+                    distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
+                    self._echo_fall = None
+                    self._echo_rise = None
+                    return min(1.0, distance / self._max_distance)
+                else:
+                    # If we only saw one edge it means we missed the echo
+                    # because it was too fast; report minimum distance
+                    return 0.0
             else:
-                # If we only saw one edge it means we missed the echo because
-                # it was too fast; report minimum distance
-                return 0.0
-        else:
-            # The echo pin never rose or fell; something's gone horribly
-            # wrong (XXX raise a warning?)
-            return 1.0
+                # The echo pin never rose or fell; something's gone horribly
+                # wrong (XXX raise a warning?)
+                return 1.0
 
     @property
     def in_range(self):
