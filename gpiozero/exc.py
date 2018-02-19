@@ -148,6 +148,9 @@ class PinInvalidPin(PinError, ValueError):
 class GPIOZeroWarning(Warning):
     "Base class for all warnings in GPIO Zero"
 
+class DistanceSensorNoEcho(GPIOZeroWarning):
+    "Warning raised when the distance sensor sees no echo at all"
+
 class SPIWarning(GPIOZeroWarning):
     "Base class for warnings related to the SPI implementation"
 

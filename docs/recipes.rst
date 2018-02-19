@@ -290,7 +290,14 @@ level:
 Distance sensor
 ===============
 
-.. IMAGE TBD
+.. image:: images/distance_sensor_bb.*
+
+.. note::
+
+    In the diagram above, the wires leading from the sensor to the breadboard
+    can be omitted; simply plug the sensor directly into the breadboard facing
+    the edge (unfortunately this is difficult to illustrate in the diagram
+    without sensor's diagram obscuring most of the breadboard!)
 
 Have a :class:`DistanceSensor` detect the distance to the nearest object:
 
