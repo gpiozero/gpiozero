@@ -37,6 +37,8 @@ def test_spi_hardware_params():
         with patch('gpiozero.pins.local.SpiDev'):
             with factory.spi() as device:
                 assert isinstance(device, LocalPiHardwareSPI)
+                device.close()
+                assert device.closed
             with factory.spi(port=0, device=0) as device:
                 assert isinstance(device, LocalPiHardwareSPI)
             with factory.spi(port=0, device=1) as device:
@@ -66,8 +68,14 @@ def test_spi_software_params():
         with patch('gpiozero.pins.local.SpiDev'):
             with factory.spi(select_pin=6) as device:
                 assert isinstance(device, LocalPiSoftwareSPI)
+                device.close()
+                assert device.closed
             with factory.spi(clock_pin=11, mosi_pin=9, miso_pin=10) as device:
                 assert isinstance(device, LocalPiSoftwareSPI)
+                device._bus.close()
+                assert device._bus.closed
+                device.close()
+                assert device.closed
             with factory.spi(select_pin=6, shared=True) as device:
                 assert isinstance(device, LocalPiSoftwareSPIShared)
         with patch('gpiozero.pins.local.SpiDev', None):
