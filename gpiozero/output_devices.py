@@ -191,12 +191,12 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_blink(self):
-        if self._controller:
+        if getattr(self, '_controller', None):
             self._controller._stop_blink(self)
-            self._controller = None
-        if self._blink_thread:
+        self._controller = None
+        if getattr(self, '_blink_thread', None):
             self._blink_thread.stop()
-            self._blink_thread = None
+        self._blink_thread = None
 
     def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
@@ -335,7 +335,10 @@ class PWMOutputDevice(OutputDevice):
             raise
 
     def close(self):
-        self._stop_blink()
+        try:
+            self._stop_blink()
+        except AttributeError:
+            pass
         try:
             self.pin.frequency = None
         except AttributeError:
@@ -607,11 +610,11 @@ class RGBLED(SourceMixin, Device):
     blue = _led_property(2)
 
     def close(self):
-        if self._leds:
+        if getattr(self, '_leds', None):
             self._stop_blink()
             for led in self._leds:
                 led.close()
-            self._leds = ()
+        self._leds = ()
         super(RGBLED, self).close()
 
     @property

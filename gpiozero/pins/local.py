@@ -96,11 +96,9 @@ class LocalPiHardwareSPI(SPI, Device):
         self._interface.max_speed_hz = 500000
 
     def close(self):
-        if self._interface:
-            try:
-                self._interface.close()
-            finally:
-                self._interface = None
+        if getattr(self, '_interface', None):
+            self._interface.close()
+        self._interface = None
         self.pin_factory.release_all(self)
         super(LocalPiHardwareSPI, self).close()
 
@@ -169,9 +167,9 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
             )
 
     def close(self):
-        if self._bus:
+        if getattr(self, '_bus', None):
             self._bus.close()
-            self._bus = None
+        self._bus = None
         super(LocalPiSoftwareSPI, self).close()
 
     @property
@@ -242,4 +240,3 @@ class LocalPiSoftwareSPIShared(SharedMixin, LocalPiSoftwareSPI):
     @classmethod
     def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         return (select_pin,)
-

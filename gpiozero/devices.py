@@ -328,9 +328,10 @@ class CompositeDevice(Device):
         return self._all
 
     def close(self):
-        if self._all:
+        if getattr(self, '_all', None):
             for device in self._all:
-                device.close()
+                if isinstance(device, Device):
+                    device.close()
             self._all = ()
 
     @property
@@ -388,10 +389,10 @@ class GPIODevice(Device):
 
     def close(self):
         super(GPIODevice, self).close()
-        if self._pin is not None:
+        if getattr(self, '_pin', None) is not None:
             self.pin_factory.release_pins(self, self._pin.number)
             self._pin.close()
-            self._pin = None
+        self._pin = None
 
     @property
     def closed(self):

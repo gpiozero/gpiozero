@@ -34,7 +34,7 @@ class SPIDevice(Device):
         self._spi = self.pin_factory.spi(**spi_args)
 
     def close(self):
-        if self._spi:
+        if getattr(self, '_spi', None):
             self._spi.close()
             self._spi = None
         super(SPIDevice, self).close()

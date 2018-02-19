@@ -162,16 +162,15 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         try:
             self._queue.stop()
         except AttributeError:
-            # If the queue isn't initialized (it's None) ignore the error
-            # because we're trying to close anyway
-            if self._queue is not None:
+            # If the queue isn't initialized (it's None), or _queue hasn't been
+            # set ignore the error because we're trying to close anyway
+            if getattr(self, '_queue', None) is not None:
                 raise
         except RuntimeError:
             # Cannot join thread before it starts; we don't care about this
             # because we're trying to close the thread anyway
             pass
-        else:
-            self._queue = None
+        self._queue = None
         super(SmoothedInputDevice, self).close()
 
     def __repr__(self):
@@ -662,10 +661,9 @@ class DistanceSensor(SmoothedInputDevice):
         try:
             self._trigger.close()
         except AttributeError:
-            if self._trigger is not None:
+            if getattr(self, '_trigger', None) is not None:
                 raise
-        else:
-            self._trigger = None
+        self._trigger = None
         super(DistanceSensor, self).close()
 
     @property

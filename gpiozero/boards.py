@@ -215,7 +215,6 @@ class LEDCollection(CompositeOutputDevice):
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
     def __init__(self, *args, **kwargs):
-        self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', False)
@@ -313,12 +312,16 @@ class LEDBoard(LEDCollection):
         create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
+        self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
         super(LEDBoard, self).__init__(*args, **kwargs)
 
     def close(self):
-        self._stop_blink()
+        try:
+            self._stop_blink()
+        except AttributeError:
+            pass
         super(LEDBoard, self).close()
 
     def on(self, *args):
@@ -1373,10 +1376,10 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         )
 
     def close(self):
-        if self._lock:
+        if getattr(self, '_lock', None):
             with self._lock:
                 super(_EnergenieMaster, self).close()
-            self._lock = None
+        self._lock = None
 
     @classmethod
     def _shared_key(cls, pin_factory):
@@ -1442,10 +1445,9 @@ class Energenie(SourceMixin, Device):
             self.off()
 
     def close(self):
-        if self._master:
-            m = self._master
-            self._master = None
-            m.close()
+        if getattr(self, '_master', None):
+            self._master.close()
+        self._master = None
 
     @property
     def closed(self):
