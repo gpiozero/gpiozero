@@ -1203,22 +1203,18 @@ class Robot(SourceMixin, CompositeDevice):
             default is 0 (no curve). This parameter can only be specified as a
             keyword parameter, and is mutually exclusive with ``curve_left``.
         """
-        left_speed = speed
-        right_speed = speed
-        curve_left = kwargs.get('curve_left', 0)
-        curve_right = kwargs.get('curve_right', 0)
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
         if not 0 <= curve_left <= 1:
             raise ValueError('curve_left must be between 0 and 1')
         if not 0 <= curve_right <= 1:
             raise ValueError('curve_right must be between 0 and 1')
         if curve_left != 0 and curve_right != 0:
             raise ValueError('curve_left and curve_right can\'t be used at the same time')
-        if curve_left != 0:
-            left_speed *= 1 - curve_left
-        elif curve_right != 0:
-            right_speed *= 1 - curve_right
-        self.left_motor.forward(left_speed)
-        self.right_motor.forward(right_speed)
+        self.left_motor.forward(speed * (1 - curve_left))
+        self.right_motor.forward(speed * (1 - curve_right))
 
     def backward(self, speed=1, **kwargs):
         """
@@ -1240,22 +1236,18 @@ class Robot(SourceMixin, CompositeDevice):
             default is 0 (no curve). This parameter can only be specified as a
             keyword parameter, and is mutually exclusive with ``curve_left``.
         """
-        left_speed = speed
-        right_speed = speed
-        curve_left = kwargs.get('curve_left', 0)
-        curve_right = kwargs.get('curve_right', 0)
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
         if not 0 <= curve_left <= 1:
             raise ValueError('curve_left must be between 0 and 1')
         if not 0 <= curve_right <= 1:
             raise ValueError('curve_right must be between 0 and 1')
         if curve_left != 0 and curve_right != 0:
             raise ValueError('curve_left and curve_right can\'t be used at the same time')
-        if curve_left != 0:
-            left_speed *= 1 - curve_left
-        elif curve_right != 0:
-            right_speed *= 1 - curve_right
-        self.left_motor.backward(left_speed)
-        self.right_motor.backward(right_speed)
+        self.left_motor.backward(speed * (1 - curve_left))
+        self.right_motor.backward(speed * (1 - curve_right))
 
     def left(self, speed=1):
         """

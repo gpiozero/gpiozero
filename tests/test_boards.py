@@ -802,6 +802,10 @@ def test_robot():
             robot.backward(curve_right=2)
         with pytest.raises(ValueError):
             robot.backward(curve_left=1, curve_right=1)
+        with pytest.raises(TypeError):
+            robot.forward(curveleft=1)
+        with pytest.raises(TypeError):
+            robot.forward(curveright=1)
         robot.left()
         check_pins_and_value(robot, (-1, 1))
         robot.left(0)
