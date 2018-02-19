@@ -72,6 +72,8 @@ Artificial sources
 
 .. autofunction:: cos_values
 
+.. autofunction:: ramping_values
+
 .. autofunction:: random_values
 
 .. autofunction:: sin_values

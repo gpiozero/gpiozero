@@ -237,6 +237,15 @@ def test_random_values():
         assert 0 <= v <= 1
 
 def test_sin_values():
+    for e, v in zip([0, 0], sin_values(2)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
+    for e, v in zip([0, 1, 0, -1], sin_values(4)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
+    for e, v in zip([0, 2**0.5/2, 1, 2**0.5/2, 0, -2**0.5/2, -1, -2**0.5/2], sin_values(8)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
     firstval = None
     for i, v in zip(range(1000), sin_values()):
         assert -1 <= v <= 1
@@ -257,6 +266,15 @@ def test_sin_values():
                     assert v == firstval
 
 def test_cos_values():
+    for e, v in zip([1, -1], cos_values(2)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
+    for e, v in zip([1, 0, -1, 0], cos_values(4)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
+    for e, v in zip([1, 2**0.5/2, 0, -2**0.5/2, -1, -2**0.5/2, 0, 2**0.5/2], cos_values(8)):
+        assert -1 <= v <= 1
+        assert isclose(e, v, abs_tol=1e-9)
     firstval = None
     for i, v in zip(range(1000), cos_values()):
         assert -1 <= v <= 1
@@ -270,6 +288,28 @@ def test_cos_values():
         firstval = None
         for i, v in zip(range(1000), cos_values(period)):
             assert -1 <= v <= 1
+            if i == 0:
+                firstval = v
+            else:
+                if i % period == 0:
+                    assert v == firstval
+
+def test_ramping_values():
+    assert list(islice(ramping_values(2), 2)) == [0, 1]
+    assert list(islice(ramping_values(4), 4)) == [0, 0.5, 1, 0.5]
+    assert list(islice(ramping_values(8), 8)) == [0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25]
+    firstval = None
+    for i, v in zip(range(1000), ramping_values()):
+        assert 0 <= v <= 1
+        if i == 0:
+            firstval = v
+        else:
+            if i % 360 == 0:
+                v == firstval
+    for period in (360, 100):
+        firstval = None
+        for i, v in zip(range(1000), ramping_values(period)):
+            assert 0 <= v <= 1
             if i == 0:
                 firstval = v
             else:
