@@ -1209,7 +1209,13 @@ class AngularServo(Servo):
             frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        if ((min_angle <= initial_angle <= max_angle) or
+            (max_angle <= initial_angle <= min_angle)):
+            initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (min_angle, max_angle))
         super(AngularServo, self).__init__(
             pin, initial_value, min_pulse_width, max_pulse_width, frame_width,
             pin_factory=pin_factory
@@ -1256,12 +1262,16 @@ class AngularServo(Servo):
                 self._min_angle, 12)
 
     @angle.setter
-    def angle(self, value):
-        if value is None:
+    def angle(self, angle):
+        if angle is None:
             self.value = None
-        else:
+        elif ((self.min_angle <= angle <= self.max_angle) or
+              (self.max_angle <= angle <= self.min_angle)):
             self.value = (
                 self._value_range *
-                ((value - self._min_angle) / self._angular_range) +
+                ((angle - self._min_angle) / self._angular_range) +
                 self._min_value)
-
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (self.min_angle, self.max_angle))
