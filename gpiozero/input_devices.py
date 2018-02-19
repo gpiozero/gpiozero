@@ -423,15 +423,19 @@ class MotionSensor(SmoothedInputDevice):
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
 
+    :param bool pull_up:
+        If ``False`` (the default), the GPIO pin will be pulled low by default.
+        If ``True``, the GPIO pin will be pulled high by the sensor.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
-            partial=False, pin_factory=None):
+            partial=False, pull_up=False, pin_factory=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
+            pin, pull_up=pull_up, threshold=threshold,
             queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
             pin_factory=pin_factory
         )
