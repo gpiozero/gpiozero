@@ -1199,27 +1199,71 @@ class Robot(SourceMixin, CompositeDevice):
     def value(self, value):
         self.left_motor.value, self.right_motor.value = value
 
-    def forward(self, speed=1):
+    def forward(self, speed=1, **kwargs):
         """
         Drive the robot forward by running both motors forward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
-        """
-        self.left_motor.forward(speed)
-        self.right_motor.forward(speed)
 
-    def backward(self, speed=1):
+        :param float curve_left:
+            The amount to curve left while moving forwards, by driving the
+            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_right``.
+
+        :param float curve_right:
+            The amount to curve right while moving forwards, by driving the
+            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_left``.
+        """
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
+        if not 0 <= curve_left <= 1:
+            raise ValueError('curve_left must be between 0 and 1')
+        if not 0 <= curve_right <= 1:
+            raise ValueError('curve_right must be between 0 and 1')
+        if curve_left != 0 and curve_right != 0:
+            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+        self.left_motor.forward(speed * (1 - curve_left))
+        self.right_motor.forward(speed * (1 - curve_right))
+
+    def backward(self, speed=1, **kwargs):
         """
         Drive the robot backward by running both motors backward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
+
+        :param float curve_left:
+            The amount to curve left while moving backwards, by driving the
+            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_right``.
+
+        :param float curve_right:
+            The amount to curve right while moving backwards, by driving the
+            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_left``.
         """
-        self.left_motor.backward(speed)
-        self.right_motor.backward(speed)
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
+        if not 0 <= curve_left <= 1:
+            raise ValueError('curve_left must be between 0 and 1')
+        if not 0 <= curve_right <= 1:
+            raise ValueError('curve_right must be between 0 and 1')
+        if curve_left != 0 and curve_right != 0:
+            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+        self.left_motor.backward(speed * (1 - curve_left))
+        self.right_motor.backward(speed * (1 - curve_right))
 
     def left(self, speed=1):
         """
