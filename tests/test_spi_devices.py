@@ -208,49 +208,63 @@ class MockMCP3304(MockMCP33xx):
 def single_mcp_test(mock, pot, channel, bits):
     scale = 2**bits
     tolerance = 1 / scale
+    voltage_tolerance = pot.max_voltage / scale
     mock.channels[channel] = 0.0
     assert pot.raw_value == 0
     assert isclose(pot.value, 0.0, abs_tol=tolerance)
+    assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
     mock.channels[channel] = mock.vref / 2
     assert pot.raw_value == (scale / 2) - 1
     assert isclose(pot.value, 0.5, abs_tol=tolerance)
+    assert isclose(pot.voltage, pot.max_voltage / 2, abs_tol=voltage_tolerance)
     mock.channels[channel] = mock.vref
     assert pot.raw_value == scale - 1
     assert isclose(pot.value, 1.0, abs_tol=tolerance)
+    assert isclose(pot.voltage, pot.max_voltage, abs_tol=voltage_tolerance)
 
 def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False):
     scale = 2**bits
     tolerance = 1 / scale
+    voltage_tolerance = pot.max_voltage / scale
     mock.channels[pos_channel] = 0.0
     mock.channels[neg_channel] = 0.0
     assert pot.raw_value == 0
     assert isclose(pot.value, 0.0, abs_tol=tolerance)
+    assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
     mock.channels[pos_channel] = mock.vref / 2
     assert pot.raw_value == (scale / 2) - 1
     assert isclose(pot.value, 0.5, abs_tol=tolerance)
+    assert isclose(pot.voltage, pot.max_voltage / 2, abs_tol=voltage_tolerance)
     mock.channels[pos_channel] = mock.vref
     assert pot.raw_value == scale - 1
     assert isclose(pot.value, 1.0, abs_tol=tolerance)
+    assert isclose(pot.voltage, pot.max_voltage, abs_tol=voltage_tolerance)
     mock.channels[neg_channel] = mock.vref / 2
     assert pot.raw_value == (scale / 2) - 1
     assert isclose(pot.value, 0.5, abs_tol=tolerance)
+    assert isclose(pot.voltage, pot.max_voltage / 2, abs_tol=voltage_tolerance)
     mock.channels[pos_channel] = mock.vref / 2
     assert pot.raw_value == 0
     assert isclose(pot.value, 0.0, abs_tol=tolerance)
+    assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
     mock.channels[pos_channel] = 0.0
     mock.channels[neg_channel] = mock.vref
     if full:
         assert pot.raw_value == -scale
         assert isclose(pot.value, -1.0, abs_tol=tolerance)
+        assert isclose(pot.voltage, -pot.max_voltage, abs_tol=voltage_tolerance)
     else:
         assert pot.raw_value == 0
         assert isclose(pot.value, 0.0, abs_tol=tolerance)
+        assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
 
 
 def test_MCP3001():
     with patch('gpiozero.pins.local.SpiDev', None):
         mock = MockMCP3001(11, 10, 9, 8)
         with MCP3001() as pot:
+            differential_mcp_test(mock, pot, 0, 1, 10)
+        with MCP3001(max_voltage=5.0) as pot:
             differential_mcp_test(mock, pot, 0, 1, 10)
 
 def test_MCP3002():
@@ -259,6 +273,8 @@ def test_MCP3002():
         with pytest.raises(ValueError):
             MCP3002(channel=5)
         with MCP3002(channel=1) as pot:
+            single_mcp_test(mock, pot, 1, 10)
+        with MCP3002(channel=1, max_voltage=5.0) as pot:
             single_mcp_test(mock, pot, 1, 10)
         with MCP3002(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 10)
@@ -270,6 +286,8 @@ def test_MCP3004():
             MCP3004(channel=5)
         with MCP3004(channel=3) as pot:
             single_mcp_test(mock, pot, 3, 10)
+        with MCP3004(channel=3, max_voltage=5.0) as pot:
+            single_mcp_test(mock, pot, 3, 10)
         with MCP3004(channel=3, differential=True) as pot:
             differential_mcp_test(mock, pot, 3, 2, 10)
 
@@ -280,6 +298,8 @@ def test_MCP3008():
             MCP3008(channel=9)
         with MCP3008(channel=0) as pot:
             single_mcp_test(mock, pot, 0, 10)
+        with MCP3008(channel=1, max_voltage=5.0) as pot:
+            single_mcp_test(mock, pot, 1, 10)
         with MCP3008(channel=0, differential=True) as pot:
             differential_mcp_test(mock, pot, 0, 1, 10)
 
@@ -288,6 +308,8 @@ def test_MCP3201():
         mock = MockMCP3201(11, 10, 9, 8)
         with MCP3201() as pot:
             differential_mcp_test(mock, pot, 0, 1, 12)
+        with MCP3201(max_voltage=5.0) as pot:
+            differential_mcp_test(mock, pot, 0, 1, 12)
 
 def test_MCP3202():
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -295,6 +317,8 @@ def test_MCP3202():
         with pytest.raises(ValueError):
             MCP3202(channel=5)
         with MCP3202(channel=1) as pot:
+            single_mcp_test(mock, pot, 1, 12)
+        with MCP3202(channel=1, max_voltage=5.0) as pot:
             single_mcp_test(mock, pot, 1, 12)
         with MCP3202(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 12)
@@ -306,6 +330,8 @@ def test_MCP3204():
             MCP3204(channel=5)
         with MCP3204(channel=1) as pot:
             single_mcp_test(mock, pot, 1, 12)
+        with MCP3204(channel=1, max_voltage=5.0) as pot:
+            single_mcp_test(mock, pot, 1, 12)
         with MCP3204(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 12)
 
@@ -316,6 +342,8 @@ def test_MCP3208():
             MCP3208(channel=9)
         with MCP3208(channel=7) as pot:
             single_mcp_test(mock, pot, 7, 12)
+        with MCP3208(channel=7, max_voltage=5.0) as pot:
+            single_mcp_test(mock, pot, 7, 12)
         with MCP3208(channel=7, differential=True) as pot:
             differential_mcp_test(mock, pot, 7, 6, 12)
 
@@ -324,6 +352,8 @@ def test_MCP3301():
         mock = MockMCP3301(11, 10, 9, 8)
         with MCP3301() as pot:
             differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+        with MCP3301(max_voltage=5.0) as pot:
+            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
 
 def test_MCP3302():
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -331,6 +361,8 @@ def test_MCP3302():
         with pytest.raises(ValueError):
             MCP3302(channel=4)
         with MCP3302(channel=0) as pot:
+            single_mcp_test(mock, pot, 0, 12)
+        with MCP3302(channel=0, max_voltage=5.0) as pot:
             single_mcp_test(mock, pot, 0, 12)
         with MCP3302(channel=0, differential=True) as pot:
             differential_mcp_test(mock, pot, 0, 1, 12, full=True)
@@ -341,6 +373,8 @@ def test_MCP3304():
         with pytest.raises(ValueError):
             MCP3304(channel=9)
         with MCP3304(channel=5) as pot:
+            single_mcp_test(mock, pot, 5, 12)
+        with MCP3304(channel=5, max_voltage=5.0) as pot:
             single_mcp_test(mock, pot, 5, 12)
         with MCP3304(channel=5, differential=True) as pot:
             differential_mcp_test(mock, pot, 5, 4, 12, full=True)
