@@ -810,7 +810,7 @@ class RGBLED(SourceMixin, Device):
 class Motor(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic motor
-    connected to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
+    connected to a bi-directional motor driver circuit (i.e. an `H-bridge`_).
 
     Attach an `H-bridge`_ motor controller to your Pi; connect a power source
     (e.g. a battery pack or the 5V pin) to the controller; connect the outputs
@@ -945,23 +945,28 @@ class Motor(SourceMixin, CompositeDevice):
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic motor connected
-    to a Phase/Enable motor driver circuit.
+    to a Phase/Enable motor driver circuit; the phase of the driver
+    (corresponding to the *direction* pin) controls whether the motor turns
+    forwards or backwards, while enable controls the speed (corresponding to
+    the *power* pin).
+
     The following code will make the motor turn "forwards"::
+
         from gpiozero import PhaseEnableMotor
         motor = PhaseEnableMotor(12, 5)
         motor.forward()
+
     :param int power:
         The GPIO pin that the power input (PWM) of the motor driver chip is
         connected to.
+
     :param int direction:
         The GPIO pin that the direction input of the motor driver chip is
         connected to.
     """
     def __init__(self, power=None, direction=None):
         if not all([power, direction]):
-            raise GPIOPinMissing(
-                'power and direction pins must be provided'
-            )
+            raise GPIOPinMissing('power and direction pins must be provided')
         super(PhaseEnableMotor, self).__init__(
             power_device = PWMOutputDevice(power),
             direction_device = OutputDevice(direction),
@@ -1030,7 +1035,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         self.power_device.off()
 
-        
+
 class Servo(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a PWM-controlled servo
