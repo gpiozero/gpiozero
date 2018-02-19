@@ -29,7 +29,7 @@ another distribution, you'll need to install pigpio:
 
     $ sudo apt install pigpio
 
-Alternatively, pigpio is available from `abyz.co.uk`_.
+Alternatively, pigpio is available from `abyz.me.uk`_.
 
 You'll need to launch the pigpio daemon on the Raspberry Pi to allow remote
 connections. You can do this in three different ways. Most users will find the
@@ -333,8 +333,8 @@ IP address if you know it), for example:
 
 
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
-.. _pigpio: http://abyz.co.uk/rpi/pigpio/python.html
-.. _abyz.co.uk: http://abyz.co.uk/rpi/pigpio/download.html
+.. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
+.. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
 .. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
