@@ -22,7 +22,7 @@ from Windows and Mac OS is not supported at present.
 Raspberry Pi Desktop x86 setup
 ------------------------------
 
-1. Download an ISO of the Raspberry Pi Desktop OS from raspberrypi.org (this
+1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.org (this
    must be the Stretch release, not the older Jessie image).
 
 2. Write the image to a USB stick or burn to a DVD.
@@ -92,7 +92,7 @@ Zero:
 .. image:: images/gpio-expansion-example.png
 
 Alternatively, you can set the pin factory in-line, as explained in
-:doc`remote_gpio`.
+:doc:`remote_gpio`.
 
 Read more on the GPIO expander in blog posts on `raspberrypi.org`_ and
 `bennuttall.com`_.
@@ -134,6 +134,7 @@ IP address if you know it), for example:
 
 .. _Raspberry Pi Zero: https://www.raspberrypi.org/products/raspberry-pi-zero/
 .. _Pi Zero W: https://www.raspberrypi.org/products/raspberry-pi-zero-w/
+.. _Raspberry Pi Desktop OS: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
 .. _raspberrypi.org: https://www.raspberrypi.org/blog/gpio-expander/
 .. _bennuttall.com: http://bennuttall.com/raspberry-pi-zero-gpio-expander/
 .. _blog.gbaman.info: http://blog.gbaman.info/?p=791
