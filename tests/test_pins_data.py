@@ -56,18 +56,26 @@ def test_pi_info():
     assert r.manufacturer == 'Sony'
     assert r.storage == 'SD'
     assert r.usb == 2
+    assert r.ethernet == 1
     assert not r.wifi
     assert not r.bluetooth
     assert r.csi == 1
     assert r.dsi == 1
-    with pytest.raises(PinUnknownPi):
-        pi_info('9000f1')
+    r = pi_info('9000f1')
+    assert r.model == '???'
+    assert r.pcb_revision == '1.1'
+    assert r.memory == 512
+    assert r.manufacturer == 'Sony'
+    assert r.storage == 'MicroSD'
+    assert r.usb == 4
+    assert r.ethernet == 1
+    assert not r.wifi
+    assert not r.bluetooth
+    assert r.csi == 1
+    assert r.dsi == 1
 
 def test_pi_info_other_types():
-    with pytest.raises(PinUnknownPi):
-        pi_info(b'9000f1')
-    with pytest.raises(PinUnknownPi):
-        pi_info(0x9000f1)
+    assert pi_info(b'9000f1') == pi_info(0x9000f1)
 
 def test_physical_pins():
     # Assert physical pins for some well-known Pi's; a21041 is a Pi2B

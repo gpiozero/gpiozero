@@ -108,6 +108,13 @@ Robot
     :inherited-members:
     :members:
 
+PhaseEnableRobot
+================
+
+.. autoclass:: PhaseEnableRobot
+    :inherited-members:
+    :members:
+
 Ryanteck MCB Robot
 ==================
 
@@ -119,6 +126,13 @@ CamJam #3 Kit Robot
 ===================
 
 .. autoclass:: CamJamKitRobot
+    :inherited-members:
+    :members:
+
+Pololu DRV8835 Robot
+====================
+
+.. autoclass:: PololuDRV8835Robot
     :inherited-members:
     :members:
 

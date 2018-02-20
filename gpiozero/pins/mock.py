@@ -423,12 +423,14 @@ class MockFactory(LocalPiFactory):
             pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
         super(MockFactory, self).__init__()
         self._revision = revision
-        if not issubclass(pin_class, MockPin):
-            if isinstance(pin_class, bytes):
-                pin_class = pin_class.decode('ascii')
+        if isinstance(pin_class, bytes):
+            pin_class = pin_class.decode('ascii')
+        if isinstance(pin_class, str):
             dist = pkg_resources.get_distribution('gpiozero')
             group = 'gpiozero_mock_pin_classes'
             pin_class = pkg_resources.load_entry_point(dist, group, pin_class.lower())
+        if not issubclass(pin_class, MockPin):
+            raise ValueError('invalid mock pin_class: %r' % pin_class)
         self.pin_class = pin_class
 
     def _get_revision(self):

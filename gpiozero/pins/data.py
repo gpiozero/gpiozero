@@ -80,7 +80,7 @@ REV1_BOARD = """\
 {style:white on green}|                {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
 {style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
 {style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
 {style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
 {style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
 {style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
@@ -95,7 +95,7 @@ REV2_BOARD = """\
 {style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
 {style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
 {style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
 {style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
 {style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
 {style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
@@ -110,7 +110,7 @@ A_BOARD = """\
 {style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
 {style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
 {style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:2s} V{pcb_revision:3s}{style:normal}                  |{style:reset}
+{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
 {style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:on green}     |{style:reset}
 {style:white on green}|                        {style:on black}|S|{style:on green}     |{style:reset}
 {style:white on green}|                        {style:on black}|I|{style:on green}     |{style:reset}
@@ -122,7 +122,7 @@ BPLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
 {style:white on green}|                             {style:black on white}+===={style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}          |{style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:3s}V{pcb_revision:3s}{style:normal}          |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}                 {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}                 {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}                 {style:black on white}+===={style:reset}
@@ -137,7 +137,7 @@ APLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:2s} V{pcb_revision:3s}{style:normal}    |{style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:3s}V{pcb_revision:3s}{style:normal}    |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}           {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}           {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}           {style:black on white}+===={style:reset}
@@ -860,7 +860,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
-                    }[revcode_type]
+                    }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
                         0: '1.0', # is this right?
@@ -884,7 +884,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 256,
                     1: 512,
                     2: 1024,
-                    }.get(revcode_memory, 0)
+                    }.get(revcode_memory, None)
                 released = {
                     'A':      '2013Q1',
                     'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',

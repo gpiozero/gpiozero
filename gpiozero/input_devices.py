@@ -7,10 +7,15 @@ from __future__ import (
     division,
 )
 
+import warnings
 from time import sleep, time
-from threading import Event
+from threading import Event, Lock
+try:
+    from statistics import median
+except ImportError:
+    from .compat import median
 
-from .exc import InputDeviceError, DeviceClosed
+from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho
 from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
 
@@ -102,13 +107,14 @@ class DigitalInputDevice(EventsMixin, InputDevice):
 
 class SmoothedInputDevice(EventsMixin, InputDevice):
     """
-    Represents a generic input device which takes its value from the mean of a
-    queue of historical values.
+    Represents a generic input device which takes its value from the average of
+    a queue of historical values.
 
     This class extends :class:`InputDevice` with a queue which is filled by a
     background thread which continually polls the state of the underlying
-    device. The mean of the values in the queue is compared to a threshold
-    which is used to determine the state of the :attr:`is_active` property.
+    device. The average (a configurable function) of the values in the queue is
+    compared to a threshold which is used to determine the state of the
+    :attr:`is_active` property.
 
     .. note::
 
@@ -139,19 +145,25 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         filled.  If ``True``, a value will be returned immediately, but be
         aware that this value is likely to fluctuate excessively.
 
+    :param average:
+        The function used to average the values in the internal queue. This
+        defaults to :func:`statistics.median` which a good selection for
+        discarding outliers from jittery sensors. The function specific must
+        accept a sequence of numbers and return a single number.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, threshold=0.5,
-            queue_len=5, sample_wait=0.0, partial=False, pin_factory=None):
+            self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
+            sample_wait=0.0, partial=False, average=median, pin_factory=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
             pin, pull_up, pin_factory=pin_factory
         )
         try:
-            self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
+            self._queue = GPIOQueue(self, queue_len, sample_wait, partial, average)
             self.threshold = float(threshold)
         except:
             self.close()
@@ -161,16 +173,15 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         try:
             self._queue.stop()
         except AttributeError:
-            # If the queue isn't initialized (it's None) ignore the error
-            # because we're trying to close anyway
-            if self._queue is not None:
+            # If the queue isn't initialized (it's None), or _queue hasn't been
+            # set ignore the error because we're trying to close anyway
+            if getattr(self, '_queue', None) is not None:
                 raise
         except RuntimeError:
             # Cannot join thread before it starts; we don't care about this
             # because we're trying to close the thread anyway
             pass
-        else:
-            self._queue = None
+        self._queue = None
         super(SmoothedInputDevice, self).close()
 
     def __repr__(self):
@@ -423,15 +434,19 @@ class MotionSensor(SmoothedInputDevice):
         filled with values.  Only set this to ``True`` if you require values
         immediately after object construction.
 
+    :param bool pull_up:
+        If ``False`` (the default), the GPIO pin will be pulled low by default.
+        If ``True``, the GPIO pin will be pulled high by the sensor.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
             self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
-            partial=False, pin_factory=None):
+            partial=False, pull_up=False, pin_factory=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
+            pin, pull_up=pull_up, threshold=threshold,
             queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
             pin_factory=pin_factory
         )
@@ -559,13 +574,28 @@ class DistanceSensor(SmoothedInputDevice):
 
     2. Connect the TRIG pin of the sensor a GPIO pin.
 
-    3. Connect a 330Ω resistor from the ECHO pin of the sensor to a different
-       GPIO pin.
+    3. Connect one end of a 330Ω resistor to the ECHO pin of the sensor.
 
-    4. Connect a 470Ω resistor from ground to the ECHO GPIO pin. This forms
-       the required voltage divider.
+    4. Connect one end of a 470Ω resistor to the GND pin of the sensor.
 
-    5. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
+    5. Connect the free ends of both resistors to another GPIO pin. This forms
+       the required `voltage divider`_.
+
+    6. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
+
+    .. note::
+
+        If you do not have the precise values of resistor specified above,
+        don't worry! What matters is the *ratio* of the resistors to each
+        other.
+
+        You also don't need to be absolutely precise; the `voltage divider`_
+        given above will actually output ~3V (rather than 3.3V). A simple 2:3
+        ratio will give 3.333V which implies you can take three resistors of
+        equal value, use one of them instead of the 330Ω resistor, and two of
+        them in series instead of the 470Ω resistor.
+
+    .. _voltage divider: https://en.wikipedia.org/wiki/Voltage_divider
 
     The following code will periodically report the distance measured by the
     sensor in cm assuming the TRIG pin is connected to GPIO17, and the ECHO
@@ -612,15 +642,17 @@ class DistanceSensor(SmoothedInputDevice):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
+    ECHO_LOCK = Lock()
+
     def __init__(
-            self, echo=None, trigger=None, queue_len=30, max_distance=1,
+            self, echo=None, trigger=None, queue_len=10, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
-            queue_len=queue_len, sample_wait=0.0, partial=partial,
+            queue_len=queue_len, sample_wait=0.06, partial=partial,
             pin_factory=pin_factory
         )
         try:
@@ -634,13 +666,7 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = False
             self.pin.edges = 'both'
             self.pin.bounce = None
-            def callback():
-                if self._echo_rise is None:
-                    self._echo_rise = time()
-                else:
-                    self._echo_fall = time()
-                self._echo.set()
-            self.pin.when_changed = callback
+            self.pin.when_changed = self._echo_changed
             self._queue.start()
         except:
             self.close()
@@ -650,10 +676,9 @@ class DistanceSensor(SmoothedInputDevice):
         try:
             self._trigger.close()
         except AttributeError:
-            if self._trigger is not None:
+            if getattr(self, '_trigger', None) is not None:
                 raise
-        else:
-            self._trigger = None
+        self._trigger = None
         super(DistanceSensor, self).close()
 
     @property
@@ -712,35 +737,47 @@ class DistanceSensor(SmoothedInputDevice):
         """
         return self.pin
 
+    def _echo_changed(self):
+        if self._echo_rise is None:
+            self._echo_rise = time()
+        else:
+            self._echo_fall = time()
+        self._echo.set()
+
     def _read(self):
         # Make sure the echo pin is low then ensure the echo event is clear
         while self.pin.state:
             sleep(0.00001)
         self._echo.clear()
-        # Fire the trigger
-        self._trigger.pin.state = True
-        sleep(0.00001)
-        self._trigger.pin.state = False
-        # Wait up to 1 second for the echo pin to rise
-        if self._echo.wait(1):
-            self._echo.clear()
-            # Wait up to 40ms for the echo pin to fall (35ms is maximum pulse
-            # time so any longer means something's gone wrong). Calculate
-            # distance as time for echo multiplied by speed of sound divided by
-            # two to compensate for travel to and from the reflector
-            if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
-                distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
-                self._echo_fall = None
-                self._echo_rise = None
-                return min(1.0, distance / self._max_distance)
+        # Obtain ECHO_LOCK to ensure multiple distance sensors don't listen
+        # for each other's "pings"
+        with DistanceSensor.ECHO_LOCK:
+            # Fire the trigger
+            self._trigger.pin.state = True
+            sleep(0.00001)
+            self._trigger.pin.state = False
+            # Wait up to 1 second for the echo pin to rise
+            if self._echo.wait(1):
+                self._echo.clear()
+                # Wait up to 40ms for the echo pin to fall (35ms is maximum
+                # pulse time so any longer means something's gone wrong).
+                # Calculate distance as time for echo multiplied by speed of
+                # sound divided by two to compensate for travel to and from the
+                # reflector
+                if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
+                    distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
+                    self._echo_fall = None
+                    self._echo_rise = None
+                    return min(1.0, distance / self._max_distance)
+                else:
+                    # If we only saw one edge it means we missed the echo
+                    # because it was too fast; report minimum distance
+                    return 0.0
             else:
-                # If we only saw one edge it means we missed the echo because
-                # it was too fast; report minimum distance
-                return 0.0
-        else:
-            # The echo pin never rose or fell; something's gone horribly
-            # wrong (XXX raise a warning?)
-            return 1.0
+                # The echo pin never rose or fell; something's gone horribly
+                # wrong
+                warnings.warn(DistanceSensorNoEcho('no echo received'))
+                return 1.0
 
     @property
     def in_range(self):

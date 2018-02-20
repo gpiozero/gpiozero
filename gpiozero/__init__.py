@@ -91,6 +91,7 @@ from .boards import (
     RyanteckRobot,
     CamJamKitRobot,
     PhaseEnableRobot,
+    PololuDRV8835Robot,
     Energenie,
 )
 from .other_devices import (

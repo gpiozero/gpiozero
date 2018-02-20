@@ -191,12 +191,12 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_blink(self):
-        if self._controller:
+        if getattr(self, '_controller', None):
             self._controller._stop_blink(self)
-            self._controller = None
-        if self._blink_thread:
+        self._controller = None
+        if getattr(self, '_blink_thread', None):
             self._blink_thread.stop()
-            self._blink_thread = None
+        self._blink_thread = None
 
     def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
@@ -335,7 +335,10 @@ class PWMOutputDevice(OutputDevice):
             raise
 
     def close(self):
-        self._stop_blink()
+        try:
+            self._stop_blink()
+        except AttributeError:
+            pass
         try:
             self.pin.frequency = None
         except AttributeError:
@@ -607,11 +610,11 @@ class RGBLED(SourceMixin, Device):
     blue = _led_property(2)
 
     def close(self):
-        if self._leds:
+        if getattr(self, '_leds', None):
             self._stop_blink()
             for led in self._leds:
                 led.close()
-            self._leds = ()
+        self._leds = ()
         super(RGBLED, self).close()
 
     @property
@@ -810,7 +813,7 @@ class RGBLED(SourceMixin, Device):
 class Motor(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic motor
-    connected to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
+    connected to a bi-directional motor driver circuit (i.e. an `H-bridge`_).
 
     Attach an `H-bridge`_ motor controller to your Pi; connect a power source
     (e.g. a battery pack or the 5V pin) to the controller; connect the outputs
@@ -945,27 +948,45 @@ class Motor(SourceMixin, CompositeDevice):
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic motor connected
-    to a Phase/Enable motor driver circuit.
+    to a Phase/Enable motor driver circuit; the phase of the driver controls
+    whether the motor turns forwards or backwards, while enable controls the
+    speed with PWM.
+
     The following code will make the motor turn "forwards"::
+
         from gpiozero import PhaseEnableMotor
         motor = PhaseEnableMotor(12, 5)
         motor.forward()
-    :param int power:
-        The GPIO pin that the power input (PWM) of the motor driver chip is
+
+    :param int phase:
+        The GPIO pin that the phase (direction) input of the motor driver chip
+        is connected to.
+
+    :param int enable:
+        The GPIO pin that the enable (speed) input of the motor driver chip is
         connected to.
-    :param int direction:
-        The GPIO pin that the direction input of the motor driver chip is
-        connected to.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, power=None, direction=None):
-        if not all([power, direction]):
-            raise GPIOPinMissing(
-                'power and direction pins must be provided'
-            )
+    def __init__(self, phase=None, enable=None, pwm=True, pin_factory=None):
+        if not all([phase, enable]):
+            raise GPIOPinMissing('phase and enable pins must be provided')
+        PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super(PhaseEnableMotor, self).__init__(
-            power_device = PWMOutputDevice(power),
-            direction_device = OutputDevice(direction),
-            _order = ('power_device', 'direction_device'))
+            phase_device=OutputDevice(phase, pin_factory=pin_factory),
+            enable_device=PinClass(enable, pin_factory=pin_factory),
+            _order=('phase_device', 'enable_device'),
+            pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -973,7 +994,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Represents the speed of the motor as a floating point value between -1
         (full speed backward) and 1 (full speed forward).
         """
-        return self.power_device.value if self.direction_device.is_active else -self.power_device.value
+        return -self.enable_device.value if self.phase_device.is_active else self.enable_device.value
 
     @value.setter
     def value(self, value):
@@ -997,24 +1018,32 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
     def forward(self, speed=1):
         """
         Drive the motor forwards.
+
         :param float speed:
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self.power_device.off()
-        self.direction_device.on()
-        self.power_device.value = speed
+        if isinstance(self.enable_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
+        self.enable_device.off()
+        self.phase_device.off()
+        self.enable_device.value = speed
 
     def backward(self, speed=1):
         """
         Drive the motor backwards.
+
         :param float speed:
             The speed at which the motor should turn. Can be any value between
             0 (stopped) and the default 1 (maximum speed).
         """
-        self.power_device.off()
-        self.direction_device.off()
-        self.power_device.value = speed
+        if isinstance(self.enable_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
+        self.enable_device.off()
+        self.phase_device.on()
+        self.enable_device.value = speed
 
     def reverse(self):
         """
@@ -1028,9 +1057,9 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         Stop the motor.
         """
-        self.power_device.off()
+        self.enable_device.off()
 
-        
+
 class Servo(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a PWM-controlled servo
@@ -1298,7 +1327,15 @@ class AngularServo(Servo):
             frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        if initial_angle is None:
+            initial_value = None
+        elif ((min_angle <= initial_angle <= max_angle) or
+            (max_angle <= initial_angle <= min_angle)):
+            initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (min_angle, max_angle))
         super(AngularServo, self).__init__(
             pin, initial_value, min_pulse_width, max_pulse_width, frame_width,
             pin_factory=pin_factory
@@ -1345,11 +1382,16 @@ class AngularServo(Servo):
                 self._min_angle, 12)
 
     @angle.setter
-    def angle(self, value):
-        if value is None:
+    def angle(self, angle):
+        if angle is None:
             self.value = None
-        else:
+        elif ((self.min_angle <= angle <= self.max_angle) or
+              (self.max_angle <= angle <= self.min_angle)):
             self.value = (
                 self._value_range *
-                ((value - self._min_angle) / self._angular_range) +
+                ((angle - self._min_angle) / self._angular_range) +
                 self._min_value)
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (self.min_angle, self.max_angle))

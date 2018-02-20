@@ -35,7 +35,7 @@ class SPISoftwareBus(SharedMixin, Device):
 
     def close(self):
         super(SPISoftwareBus, self).close()
-        if self.lock:
+        if getattr(self, 'lock', None):
             with self.lock:
                 if self.miso is not None:
                     self.miso.close()
@@ -46,7 +46,7 @@ class SPISoftwareBus(SharedMixin, Device):
                 if self.clock is not None:
                     self.clock.close()
                     self.clock = None
-            self.lock = None
+        self.lock = None
 
     @property
     def closed(self):
@@ -94,5 +94,3 @@ class SPISoftwareBus(SharedMixin, Device):
                     mask = shift(mask, 1)
                 result.append(read_word)
         return result
-
-

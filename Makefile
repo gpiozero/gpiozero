@@ -108,6 +108,7 @@ test:
 clean:
 	$(PYTHON) $(PYFLAGS) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean
+	$(MAKE) -C docs clean
 	rm -fr build/ dist/ $(NAME).egg-info/ tags
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \

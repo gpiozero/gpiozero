@@ -216,7 +216,6 @@ class LEDCollection(CompositeOutputDevice):
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
     def __init__(self, *args, **kwargs):
-        self._blink_thread = None
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', False)
@@ -314,12 +313,16 @@ class LEDBoard(LEDCollection):
         create trees of LEDs.
     """
     def __init__(self, *args, **kwargs):
+        self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
         super(LEDBoard, self).__init__(*args, **kwargs)
 
     def close(self):
-        self._stop_blink()
+        try:
+            self._stop_blink()
+        except AttributeError:
+            pass
         super(LEDBoard, self).close()
 
     def on(self, *args):
@@ -578,6 +581,22 @@ class LEDBarGraph(LEDCollection):
             calc_value = lambda index: value >= ((index + 1) / count)
         for index, led in enumerate(leds):
             led.value = calc_value(index)
+
+    @property
+    def lit_count(self):
+        """
+        The number of LEDs on the bar graph actually lit up. Note that just
+        like ``value``, this can be negative if the LEDs are lit from last to
+        first.
+        """
+        lit_value = self.value * len(self)
+        if not isinstance(self[0], PWMLED):
+            lit_value = int(lit_value)
+        return lit_value
+
+    @lit_count.setter
+    def lit_count(self, value):
+        self.value = value / len(self)
 
 
 class LedBorg(RGBLED):
@@ -1184,27 +1203,71 @@ class Robot(SourceMixin, CompositeDevice):
     def value(self, value):
         self.left_motor.value, self.right_motor.value = value
 
-    def forward(self, speed=1):
+    def forward(self, speed=1, **kwargs):
         """
         Drive the robot forward by running both motors forward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
-        """
-        self.left_motor.forward(speed)
-        self.right_motor.forward(speed)
 
-    def backward(self, speed=1):
+        :param float curve_left:
+            The amount to curve left while moving forwards, by driving the
+            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_right``.
+
+        :param float curve_right:
+            The amount to curve right while moving forwards, by driving the
+            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_left``.
+        """
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
+        if not 0 <= curve_left <= 1:
+            raise ValueError('curve_left must be between 0 and 1')
+        if not 0 <= curve_right <= 1:
+            raise ValueError('curve_right must be between 0 and 1')
+        if curve_left != 0 and curve_right != 0:
+            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+        self.left_motor.forward(speed * (1 - curve_left))
+        self.right_motor.forward(speed * (1 - curve_right))
+
+    def backward(self, speed=1, **kwargs):
         """
         Drive the robot backward by running both motors backward.
 
         :param float speed:
             Speed at which to drive the motors, as a value between 0 (stopped)
             and 1 (full speed). The default is 1.
+
+        :param float curve_left:
+            The amount to curve left while moving backwards, by driving the
+            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_right``.
+
+        :param float curve_right:
+            The amount to curve right while moving backwards, by driving the
+            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            default is 0 (no curve). This parameter can only be specified as a
+            keyword parameter, and is mutually exclusive with ``curve_left``.
         """
-        self.left_motor.backward(speed)
-        self.right_motor.backward(speed)
+        curve_left = kwargs.pop('curve_left', 0)
+        curve_right = kwargs.pop('curve_right', 0)
+        if kwargs:
+            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
+        if not 0 <= curve_left <= 1:
+            raise ValueError('curve_left must be between 0 and 1')
+        if not 0 <= curve_right <= 1:
+            raise ValueError('curve_right must be between 0 and 1')
+        if curve_left != 0 and curve_right != 0:
+            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+        self.left_motor.backward(speed * (1 - curve_left))
+        self.right_motor.backward(speed * (1 - curve_right))
 
     def left(self, speed=1):
         """
@@ -1303,25 +1366,39 @@ class CamJamKitRobot(Robot):
 class PhaseEnableRobot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a dual-motor robot based
-    around a Pololu Phase/Enable motor board.
+    around a Phase/Enable motor board.
 
-    This class is constructed with two tuples representing the power and
-    direction pins of the left and right controllers respectively. By default,
-    the left motor's controller is connected to GPIOs 12 and 5, while the
-    right motor's controller is connected to GPIOs 13 and 6 so the following
-    example will drive the robot forward::
+    This class is constructed with two tuples representing the phase
+    (direction) and enable (speed) pins of the left and right controllers
+    respectively. For example, if the left motor's controller is connected to
+    GPIOs 12 and 5, while the right motor's controller is connected to GPIOs 13
+    and 6 so the following example will drive the robot forward::
 
         from gpiozero import PhaseEnableRobot
 
-        robot = PhaseEnableRobot()
+        robot = PhaseEnableRobot(left=(5, 12), right=(6, 13))
         robot.forward()
 
+    :param tuple left:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the left motor's controller.
+
+    :param tuple right:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the right motor's controller.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self):
+
+    def __init__(self, left=None, right=None, pin_factory=None):
         super(PhaseEnableRobot, self).__init__(
-            left_motor = PhaseEnableMotor(12, 5),
-            right_motor = PhaseEnableMotor(13, 6),
-            _order = ('left_motor', 'right_motor'))
+            left_motor=PhaseEnableMotor(*left, pin_factory=pin_factory),
+            right_motor=PhaseEnableMotor(*right, pin_factory=pin_factory),
+            _order=('left_motor', 'right_motor'),
+            pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -1400,6 +1477,33 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         self.right_motor.stop()
 
 
+class PololuDRV8835Robot(PhaseEnableRobot):
+    """
+    Extends :class:`PhaseEnableRobot` for the `Pololu DRV8835 Dual Motor Driver
+    Kit`_.
+
+    The Pololu DRV8835 pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example drives the robot
+    forward::
+
+        from gpiozero import PololuDRV8835Robot
+
+        robot = PololuDRV8835Robot()
+        robot.forward()
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
+    """
+
+    def __init__(self, pin_factory=None):
+        super(PololuDRV8835Robot, self).__init__(
+            (5, 12), (6, 13), pin_factory=pin_factory
+        )
+
+
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
     def __init__(self, pin_factory=None):
         self._lock = Lock()
@@ -1414,10 +1518,10 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         )
 
     def close(self):
-        if self._lock:
+        if getattr(self, '_lock', None):
             with self._lock:
                 super(_EnergenieMaster, self).close()
-            self._lock = None
+        self._lock = None
 
     @classmethod
     def _shared_key(cls, pin_factory):
@@ -1483,10 +1587,9 @@ class Energenie(SourceMixin, Device):
             self.off()
 
     def close(self):
-        if self._master:
-            m = self._master
-            self._master = None
-            m.close()
+        if getattr(self, '_master', None):
+            self._master.close()
+        self._master = None
 
     @property
     def closed(self):

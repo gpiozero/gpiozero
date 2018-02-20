@@ -19,8 +19,10 @@ def setup_function(function):
     # dirty, but it does the job
     Device.pin_factory.pin_class = MockPWMPin if function.__name__ in (
         'test_robot',
+        'test_phaseenable_robot',
         'test_ryanteck_robot',
         'test_camjam_kit_robot',
+        'test_pololudrv8835_robot',
         'test_led_borg',
         'test_led_board_pwm_value',
         'test_led_board_pwm_bad_value',
@@ -451,24 +453,36 @@ def test_led_bar_graph_value():
         assert graph[2].active_high
         graph.value = 0
         assert graph.value == 0
+        assert graph.lit_count == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
         assert graph.value == 1
+        assert graph.lit_count == 3
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
         assert graph.value == 1/3
+        assert graph.lit_count == 1
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
         assert graph.value == -1/3
+        assert graph.lit_count == -1
         assert pin3.state and not (pin1.state or pin2.state)
         pin1.state = True
         pin2.state = True
         assert graph.value == 1
+        assert graph.lit_count == 3
         pin3.state = False
         assert graph.value == 2/3
+        assert graph.lit_count == 2
         pin3.state = True
         pin1.state = False
         assert graph.value == -2/3
+        graph.lit_count = 2
+        assert graph.value == 2/3
+        graph.lit_count = -1
+        assert graph.value == -1/3
+        graph.lit_count = -3
+        assert graph.value == 1
 
 def test_led_bar_graph_active_low():
     pin1 = Device.pin_factory.pin(2)
@@ -502,22 +516,30 @@ def test_led_bar_graph_pwm_value():
         assert isinstance(graph[2], PWMLED)
         graph.value = 0
         assert graph.value == 0
+        assert graph.lit_count == 0
         assert not any((pin1.state, pin2.state, pin3.state))
         graph.value = 1
         assert graph.value == 1
+        assert graph.lit_count == 3
         assert all((pin1.state, pin2.state, pin3.state))
         graph.value = 1/3
         assert graph.value == 1/3
+        assert graph.lit_count == 1
         assert pin1.state and not (pin2.state or pin3.state)
         graph.value = -1/3
         assert graph.value == -1/3
+        assert graph.lit_count == -1
         assert pin3.state and not (pin1.state or pin2.state)
         graph.value = 1/2
         assert graph.value == 1/2
+        assert graph.lit_count == 1.5
         assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
         pin1.state = 0
         pin3.state = 1
         assert graph.value == -1/2
+        assert graph.lit_count == -1.5
+        graph.lit_count = 1.5
+        assert graph.value == 0.5
 
 def test_led_bar_graph_bad_value():
     pin1 = Device.pin_factory.pin(2)
@@ -528,6 +550,10 @@ def test_led_bar_graph_bad_value():
             graph.value = -2
         with pytest.raises(ValueError):
             graph.value = 2
+        with pytest.raises(ValueError):
+            graph.lit_count = -4
+        with pytest.raises(ValueError):
+            graph.lit_count = 4
 
 def test_led_bar_graph_bad_init():
     pin1 = Device.pin_factory.pin(2)
@@ -700,31 +726,176 @@ def test_traffic_hat():
 
 def test_robot():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
+    def check_pins_and_value(robot, expected_value):
+        # Ensure both forward and back pins aren't both driven simultaneously
+        assert pins[0].state == 0 or pins[1].state == 0
+        assert pins[2].state == 0 or pins[3].state == 0
+        assert robot.value == (pins[0].state - pins[1].state, pins[2].state - pins[3].state) == expected_value
     with Robot((2, 3), (4, 5)) as robot:
+        assert (
+            [device.pin for device in robot.left_motor] +
+            [device.pin for device in robot.right_motor]) == pins
+        check_pins_and_value(robot, (0, 0))
+        robot.forward()
+        check_pins_and_value(robot, (1, 1))
+        robot.backward()
+        check_pins_and_value(robot, (-1, -1))
+        robot.forward(0)
+        check_pins_and_value(robot, (0, 0))
+        robot.forward(0.5)
+        check_pins_and_value(robot, (0.5, 0.5))
+        robot.forward(1)
+        check_pins_and_value(robot, (1, 1))
+        robot.forward(curve_right=0)
+        check_pins_and_value(robot, (1, 1))
+        robot.forward(curve_left=0)
+        check_pins_and_value(robot, (1, 1))
+        robot.forward(curve_left=0, curve_right=0)
+        check_pins_and_value(robot, (1, 1))
+        robot.forward(curve_right=1)
+        check_pins_and_value(robot, (1, 0))
+        robot.forward(curve_left=1)
+        check_pins_and_value(robot, (0, 1))
+        robot.forward(0.5, curve_right=1)
+        check_pins_and_value(robot, (0.5, 0))
+        robot.forward(0.5, curve_left=1)
+        check_pins_and_value(robot, (0, 0.5))
+        robot.forward(curve_right=0.5)
+        check_pins_and_value(robot, (1, 0.5))
+        robot.forward(curve_left=0.5)
+        check_pins_and_value(robot, (0.5, 1))
+        robot.forward(0.5, curve_right=0.5)
+        check_pins_and_value(robot, (0.5, 0.25))
+        robot.forward(0.5, curve_left=0.5)
+        check_pins_and_value(robot, (0.25, 0.5))
+        with pytest.raises(ValueError):
+            robot.forward(-1)
+        with pytest.raises(ValueError):
+            robot.forward(2)
+        with pytest.raises(ValueError):
+            robot.forward(curve_left=-1)
+        with pytest.raises(ValueError):
+            robot.forward(curve_left=2)
+        with pytest.raises(ValueError):
+            robot.forward(curve_right=-1)
+        with pytest.raises(ValueError):
+            robot.forward(curve_right=2)
+        with pytest.raises(ValueError):
+            robot.forward(curve_left=1, curve_right=1)
+        robot.backward()
+        check_pins_and_value(robot, (-1, -1))
+        robot.reverse()
+        check_pins_and_value(robot, (1, 1))
+        robot.backward(0)
+        check_pins_and_value(robot, (0, 0))
+        robot.backward(0.5)
+        check_pins_and_value(robot, (-0.5, -0.5))
+        robot.backward(1)
+        check_pins_and_value(robot, (-1, -1))
+        robot.backward(curve_right=0)
+        check_pins_and_value(robot, (-1, -1))
+        robot.backward(curve_left=0)
+        check_pins_and_value(robot, (-1, -1))
+        robot.backward(curve_left=0, curve_right=0)
+        check_pins_and_value(robot, (-1, -1))
+        robot.backward(curve_right=1)
+        check_pins_and_value(robot, (-1, 0))
+        robot.backward(curve_left=1)
+        check_pins_and_value(robot, (0, -1))
+        robot.backward(0.5, curve_right=1)
+        check_pins_and_value(robot, (-0.5, 0))
+        robot.backward(0.5, curve_left=1)
+        check_pins_and_value(robot, (0, -0.5))
+        robot.backward(curve_right=0.5)
+        check_pins_and_value(robot, (-1, -0.5))
+        robot.backward(curve_left=0.5)
+        check_pins_and_value(robot, (-0.5, -1))
+        robot.backward(0.5, curve_right=0.5)
+        check_pins_and_value(robot, (-0.5, -0.25))
+        robot.backward(0.5, curve_left=0.5)
+        check_pins_and_value(robot, (-0.25, -0.5))
+        with pytest.raises(ValueError):
+            robot.backward(-1)
+        with pytest.raises(ValueError):
+            robot.backward(2)
+        with pytest.raises(ValueError):
+            robot.backward(curve_left=-1)
+        with pytest.raises(ValueError):
+            robot.backward(curve_left=2)
+        with pytest.raises(ValueError):
+            robot.backward(curve_right=-1)
+        with pytest.raises(ValueError):
+            robot.backward(curve_right=2)
+        with pytest.raises(ValueError):
+            robot.backward(curve_left=1, curve_right=1)
+        with pytest.raises(TypeError):
+            robot.forward(curveleft=1)
+        with pytest.raises(TypeError):
+            robot.forward(curveright=1)
+        robot.left()
+        check_pins_and_value(robot, (-1, 1))
+        robot.left(0)
+        check_pins_and_value(robot, (0, 0))
+        robot.left(0.5)
+        check_pins_and_value(robot, (-0.5, 0.5))
+        robot.left(1)
+        check_pins_and_value(robot, (-1, 1))
+        with pytest.raises(ValueError):
+            robot.left(-1)
+        with pytest.raises(ValueError):
+            robot.left(2)
+        robot.right()
+        check_pins_and_value(robot, (1, -1))
+        robot.right(0)
+        check_pins_and_value(robot, (0, 0))
+        robot.right(0.5)
+        check_pins_and_value(robot, (0.5, -0.5))
+        robot.right(1)
+        check_pins_and_value(robot, (1, -1))
+        with pytest.raises(ValueError):
+            robot.right(-1)
+        with pytest.raises(ValueError):
+            robot.right(2)
+        robot.reverse()
+        check_pins_and_value(robot, (-1, 1))
+        robot.stop()
+        check_pins_and_value(robot, (0, 0))
+        robot.stop()
+        check_pins_and_value(robot, (0, 0))
+        robot.value = (-1, -1)
+        check_pins_and_value(robot, (-1, -1))
+        robot.value = (0.5, 1)
+        check_pins_and_value(robot, (0.5, 1))
+        robot.value = (0, -0.5)
+        check_pins_and_value(robot, (0, -0.5))
+
+def test_phaseenable_robot():
+    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+    with PhaseEnableRobot((5, 12), (6, 13)) as robot:
         assert (
             [device.pin for device in robot.left_motor] +
             [device.pin for device in robot.right_motor]) == pins
         assert robot.value == (0, 0)
         robot.forward()
-        assert [pin.state for pin in pins] == [1, 0, 1, 0]
+        assert [pin.state for pin in pins] == [0, 1, 0, 1]
         assert robot.value == (1, 1)
         robot.backward()
-        assert [pin.state for pin in pins] == [0, 1, 0, 1]
+        assert [pin.state for pin in pins] == [1, 1, 1, 1]
         assert robot.value == (-1, -1)
         robot.forward(0.5)
-        assert [pin.state for pin in pins] == [0.5, 0, 0.5, 0]
+        assert [pin.state for pin in pins] == [0, 0.5, 0, 0.5]
         assert robot.value == (0.5, 0.5)
         robot.left()
-        assert [pin.state for pin in pins] == [0, 1, 1, 0]
+        assert [pin.state for pin in pins] == [1, 1, 0, 1]
         assert robot.value == (-1, 1)
         robot.right()
-        assert [pin.state for pin in pins] == [1, 0, 0, 1]
+        assert [pin.state for pin in pins] == [0, 1, 1, 1]
         assert robot.value == (1, -1)
         robot.reverse()
-        assert [pin.state for pin in pins] == [0, 1, 1, 0]
+        assert [pin.state for pin in pins] == [1, 1, 0, 1]
         assert robot.value == (-1, 1)
         robot.stop()
-        assert [pin.state for pin in pins] == [0, 0, 0, 0]
+        assert [pin.state for pin in pins][1::2] == [0, 0]
         assert robot.value == (0, 0)
         robot.value = (-1, -1)
         assert robot.value == (-1, -1)
@@ -743,40 +914,10 @@ def test_camjam_kit_robot():
     with CamJamKitRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
-def test_phaseenable_robot():
-    pins = [MockPWMPin(12), MockPWMPin(5), MockPWMPin(13), MockPWMPin(6)]
-    with PhaseEnableRobot() as robot:
-        assert (
-            [device.pin for device in robot.left_motor] +
-            [device.pin for device in robot.right_motor]) == pins
-        assert robot.value == (0, 0)
-        robot.forward()
-        assert [pin.state for pin in pins] == [1, 1, 1, 1]
-        assert robot.value == (1, 1)
-        robot.backward()
-        assert [pin.state for pin in pins] == [1, 0, 1, 0]
-        assert robot.value == (-1, -1)
-        robot.forward(0.5)
-        assert [pin.state for pin in pins] == [0.5, 1, 0.5, 1]
-        assert robot.value == (0.5, 0.5)
-        robot.left()
-        assert [pin.state for pin in pins] == [1, 0, 1, 1]
-        assert robot.value == (-1, 1)
-        robot.right()
-        assert [pin.state for pin in pins] == [1, 1, 1, 0]
-        assert robot.value == (1, -1)
-        robot.reverse()
-        assert [pin.state for pin in pins] == [1, 0, 1, 1]
-        assert robot.value == (-1, 1)
-        robot.stop()
-        assert [pin.state for pin in pins] == [0, 0, 0, 1]
-        assert robot.value == (0, 0)
-        robot.value = (-1, -1)
-        assert robot.value == (-1, -1)
-        robot.value = (0.5, 1)
-        assert robot.value == (0.5, 1)
-        robot.value = (0, -0.5)
-        assert robot.value == (0, -0.5)
+def test_pololudrv8835_robot():
+    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+    with PololuDRV8835Robot() as board:
+        assert [device.pin for motor in board for device in motor] == pins
 
 def test_energenie_bad_init():
     with pytest.raises(ValueError):

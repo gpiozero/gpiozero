@@ -108,9 +108,9 @@ class SourceMixin(object):
 
     @source.setter
     def source(self, value):
-        if self._source_thread is not None:
+        if getattr(self, '_source_thread', None):
             self._source_thread.stop()
-            self._source_thread = None
+        self._source_thread = None
         self._source = value
         if value is not None:
             self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
@@ -343,9 +343,9 @@ class HoldMixin(EventsMixin):
         self._hold_thread = HoldThread(self)
 
     def close(self):
-        if self._hold_thread:
+        if getattr(self, '_hold_thread', None):
             self._hold_thread.stop()
-            self._hold_thread = None
+        self._hold_thread = None
         try:
             super(HoldMixin, self).close()
         except AttributeError:
