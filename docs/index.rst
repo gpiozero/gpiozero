@@ -12,6 +12,7 @@ Table of Contents
     recipes_advanced
     remote_gpio
     recipes_remote_gpio
+    pi_zero_otg
     source_values
     cli_tools
     faq
@@ -36,4 +37,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
