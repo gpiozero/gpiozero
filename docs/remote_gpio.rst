@@ -258,8 +258,8 @@ pigpio daemon running.
     remotely, only :class:`PiGPIOFactory` can be used, as pigpio is the only
     pin library which supports remote GPIO.
 
-Pin objects
-===========
+Pin factories
+=============
 
 An alternative (or additional) method of configuring gpiozero objects to use
 remote pins is to create instances of :class:`PiGPIOFactory` objects, and use
