@@ -61,8 +61,10 @@ def setup_function(function):
         'test_servo_close',
         'test_servo_pulse_width',
         'test_servo_values',
+        'test_servo_initial_values',
         'test_angular_servo_range',
         'test_angular_servo_angles',
+        'test_angular_servo_initial_angles',
         ) else MockPin
 
 def teardown_function(function):
@@ -1014,7 +1016,7 @@ def test_servo_pins_nonpwm():
 
 def test_servo_close():
     p = Device.pin_factory.pin(2)
-    with Servo(1) as device:
+    with Servo(2) as device:
         device.close()
         assert device.closed
         assert device.pwm_device.pin is None
@@ -1023,7 +1025,7 @@ def test_servo_close():
 
 def test_servo_pulse_width():
     p = Device.pin_factory.pin(2)
-    with Servo(1, min_pulse_width=5/10000, max_pulse_width=25/10000) as device:
+    with Servo(2, min_pulse_width=5/10000, max_pulse_width=25/10000) as device:
         assert isclose(device.min_pulse_width, 5/10000)
         assert isclose(device.max_pulse_width, 25/10000)
         assert isclose(device.frame_width, 20/1000)
@@ -1034,6 +1036,26 @@ def test_servo_pulse_width():
         assert isclose(device.pulse_width, 25/10000)
         device.value = None
         assert device.pulse_width is None
+
+def test_servo_initial_values():
+    p = Device.pin_factory.pin(2)
+    with Servo(2) as device:
+        assert device.value == 0
+    with Servo(2, initial_value=-1) as device:
+        assert device.is_active
+        assert device.value == -1
+        assert isclose(p.state, 0.05)
+    with Servo(2, initial_value=0) as device:
+        assert device.is_active
+        assert device.value == 0
+        assert isclose(p.state, 0.075)
+    with Servo(2, initial_value=1) as device:
+        assert device.is_active
+        assert device.value == 1
+        assert isclose(p.state, 0.1)
+    with Servo(2, initial_value=None) as device:
+        assert not device.is_active
+        assert device.value is None
 
 def test_servo_values():
     p = Device.pin_factory.pin(1)
@@ -1067,6 +1089,22 @@ def test_angular_servo_range():
     with AngularServo(1, initial_angle=15, min_angle=0, max_angle=90) as device:
         assert device.min_angle == 0
         assert device.max_angle == 90
+
+def test_angular_servo_initial_angles():
+    p = Device.pin_factory.pin(1)
+    with AngularServo(1) as device:
+        assert device.angle == 0
+    with AngularServo(1, initial_angle=-90) as device:
+        assert device.angle == -90
+        assert isclose(device.value, -1)
+    with AngularServo(1, initial_angle=0) as device:
+        assert device.angle == 0
+        assert isclose(device.value, 0)
+    with AngularServo(1, initial_angle=90) as device:
+        assert device.angle == 90
+        assert isclose(device.value, 1)
+    with AngularServo(1, initial_angle=None) as device:
+        assert device.angle is None
 
 def test_angular_servo_angles():
     p = Device.pin_factory.pin(1)
