@@ -96,9 +96,10 @@ Preparing the control computer
 ==============================
 
 If the control computer (the computer you're running your Python code from) is
-a Raspberry Pi running Raspbian (or a PC running Raspbian x86), then you have
-everything you need. If you're using another Linux distribution, Mac OS or
-Windows then you'll need to install the ``pigpio`` Python library on the PC.
+a Raspberry Pi running Raspbian (or a PC running `Raspberry Pi Desktop x86`_),
+then you have everything you need. If you're using another Linux distribution,
+Mac OS or Windows then you'll need to install the ``pigpio`` Python library on
+the PC.
 
 Raspberry Pi
 ------------
@@ -319,7 +320,102 @@ to configure the device as (amongst other things) an Ethernet device. In this
 mode, it is possible to control the Pi Zero's GPIO pins over USB from another
 computer using remote pins.
 
-First, configure the boot partition of the SD card:
+GPIO expander method - no SD card required
+------------------------------------------
+
+The GPIO expander method allows you to boot the Pi Zero over USB from the PC,
+without an SD card. Your PC sends the required boot firmware to the Pi over the
+USB cable, launching a mini version of Raspbian and booting it in RAM. The OS
+then starts the pigpio daemon, allowing "remote" access over the USB cable.
+
+At the time of writing, this is only possible using either the Raspberry Pi
+Desktop x86 OS, or Ubuntu (or a derivative), or from another Raspberry Pi. Usage
+from Windows and Mac OS is not supported at present.
+
+Raspberry Pi Desktop x86 setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Download an ISO of the Raspberry Pi Desktop OS from raspberrypi.org (this
+   must be the Stretch release, not the older Jessie image).
+
+2. Write the image to a USB stick or burn to a DVD.
+
+3. Live boot your PC or Mac into the OS (select "Run with persistence" and your
+   computer will be back to normal afterwards).
+
+Raspberry Pi (Raspbian) setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Update your package list and install the ``usbbootgui`` package:
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install usbbootgui
+
+Ubuntu setup
+~~~~~~~~~~~~
+
+1. Add the Raspberry Pi PPA to your system:
+
+.. code-block:: console
+
+    $ sudo add-apt-repository ppa:rpi-distro/ppa
+
+2. If you have previously installed ``gpiozero`` or ``pigpio`` with pip,
+uninstall these first:
+
+.. code-block:: console
+
+    $ sudo pip3 uninstall gpiozero pigpio
+
+3. Install the required packages from the PPA:
+
+.. code-block:: console
+
+    $ sudo apt install usbbootgui pigpio python3-gpiozero python3-pigpio
+
+Access the GPIOs
+~~~~~~~~~~~~~~~~
+
+Once your PC or Pi has the USB Boot GUI tool installed, connecting a Pi Zero
+will automatically launch a prompt to select a role for the device. Select
+"GPIO expansion board" and continue:
+
+.. image:: images/gpio-expansion-prompt.png
+
+It will take 30 seconds or so to flash it, then the dialogue will disappear.
+
+Raspberry Pi Desktop and Raspbian will name your Pi Zero connection ``usb0``. On
+Ubuntu, this will likely be something else. You can ping it (be sure to use
+``ping6`` as it's IPv6 only) using the address ``fe80::1%`` followed by the
+connection string. You can look this up using ``ifconfig``.
+
+Set the ``GPIOZERO_PIN_FACTORY`` and ``PIGPIO_ADDR`` environment variables on
+your PC so GPIO Zero connects to the "remote" Pi Zero:
+
+.. code-block:: console
+
+    $ export GPIOZERO_PIN_FACTORY=pigpio
+    $ export PIGPIO_ADDR=fe80::1%usb0
+
+Now any GPIO Zero code you run on the PC will use the GPIOs of the attached Pi
+Zero:
+
+.. image:: images/gpio-expansion-example.png
+
+Alternatively, you can set the pin factory in-line, as explained above.
+
+Read more on the GPIO expander in blog posts on `raspberrypi.org`_ and
+`bennuttall.com`_.
+
+Legacy method - SD card required
+--------------------------------
+
+The legacy method requires the Pi Zero to have a Raspbian SD card inserted.
+
+Start by creating a Raspbian (desktop or lite) SD card, and then configure the
+boot partition like so:
 
 1. Edit ``config.txt`` and add ``dtoverlay=dwc2`` on a new line, then save the
    file.
@@ -351,10 +447,13 @@ IP address if you know it), for example:
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 .. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
 .. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
+.. _Raspberry Pi Desktop x86: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
 .. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
 .. _Raspberry Pi Zero: https://www.raspberrypi.org/products/raspberry-pi-zero/
 .. _Pi Zero W: https://www.raspberrypi.org/products/raspberry-pi-zero-w/
+.. _raspberrypi.org: https://www.raspberrypi.org/blog/gpio-expander/
+.. _bennuttall.com: http://bennuttall.com/raspberry-pi-zero-gpio-expander/
 .. _blog.gbaman.info: http://blog.gbaman.info/?p=791
 .. _learn.adafruit.com: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget
