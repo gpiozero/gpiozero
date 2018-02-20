@@ -31,28 +31,42 @@ another distribution, you'll need to install pigpio:
 
 Alternatively, pigpio is available from `abyz.me.uk`_.
 
-You'll need to launch the pigpio daemon on the Raspberry Pi to allow remote
-connections. You can do this in three different ways. Most users will find the
-desktop method the easiest (and can skip to the next section).
+You'll need to enable remote connections, and launch the pigpio daemon on the
+Raspberry Pi.
 
-Desktop
--------
+Enable remote connections
+-------------------------
 
-On the Raspbian desktop image, enable **Remote GPIO** in the Raspberry Pi
-configuration tool:
+On the Raspbian desktop image, you can enable **Remote GPIO** in the Raspberry
+Pi configuration tool:
 
 .. image:: images/raspi-config.png
 
-This will launch the pigpio daemon automatically.
-
-Command-line: raspi-config
---------------------------
-
 Alternatively, enter ``sudo raspi-config`` on the command line, and enable
-Remote GPIO. This will also launch the pigpio daemon automatically.
+Remote GPIO. This is functionally equivalent to the desktop method.
 
-Command-line: manual
---------------------
+This will allow remote connections (until disabled) when the pigpio daemon is
+launched using `systemctl` (see below). It will also launch the pigpio daemon
+for the current session. Therefore, nothing further is required for the current
+session, but after a reboot, a `systemctl` command will be required.
+
+Command-line: systemctl
+-----------------------
+
+To automate running the daemon at boot time, run:
+
+.. code-block:: console
+
+    $ sudo systemctl enable pigpiod
+
+To run the daemon once using ``systemctl``, run:
+
+.. code-block:: console
+
+    $ sudo systemctl start pigpiod
+
+Command-line: pigpiod
+---------------------
 
 Another option is to launch the pigpio daemon manually:
 
@@ -60,9 +74,9 @@ Another option is to launch the pigpio daemon manually:
 
     $ sudo pigpiod
 
-This is for single-use and will not persist after a reboot. However, this method
-can be used to allow connections from a specific IP address, using the ``-n``
-flag. For example:
+This is for single-session-use and will not persist after a reboot. However,
+this method can be used to allow connections from a specific IP address, using
+the ``-n`` flag. For example:
 
 .. code-block:: console
 
@@ -70,11 +84,13 @@ flag. For example:
     $ sudo pigpiod -n 192.168.1.65 # allow 192.168.1.65 only
     $ sudo pigpiod -n localhost -n 192.168.1.65 # allow localhost and 192.168.1.65 only
 
-To automate running the daemon at boot time, run:
+.. note::
 
-.. code-block:: console
-
-    $ sudo systemctl enable pigpiod
+    Note that running ``sudo pigpiod`` will not honour the Remote GPIO
+    configuration setting (i.e. without the ``-n`` flag it will allow remote
+    connections even if the remote setting is disabled), but ``sudo systemctl
+    enable pigpiod`` or ``sudo systemctl start pigpiod`` will not allow remote
+    connections unless configured accordingly.
 
 Preparing the control computer
 ==============================
