@@ -5,7 +5,7 @@ Pi Zero USB OTG
 The `Raspberry Pi Zero`_ and `Pi Zero W`_ feature a USB OTG port, allowing users
 to configure the device as (amongst other things) an Ethernet device. In this
 mode, it is possible to control the Pi Zero's GPIO pins over USB from another
-computer using the :doc:`remote_gpio` feature.
+computer using the :doc:`remote GPIO <remote_gpio>` feature.
 
 GPIO expander method - no SD card required
 ==========================================
