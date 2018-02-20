@@ -19,9 +19,10 @@ def setup_function(function):
     # dirty, but it does the job
     Device.pin_factory.pin_class = MockPWMPin if function.__name__ in (
         'test_robot',
+        'test_phaseenable_robot',
         'test_ryanteck_robot',
         'test_camjam_kit_robot',
-        'test_phaseenable_robot',
+        'test_pololudrv8835_robot',
         'test_led_borg',
         'test_led_board_pwm_value',
         'test_led_board_pwm_bad_value',
@@ -734,6 +735,41 @@ def test_robot():
         robot.value = (0, -0.5)
         assert robot.value == (0, -0.5)
 
+def test_phaseenable_robot():
+    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+    with PhaseEnableRobot((5, 12), (6, 13)) as robot:
+        assert (
+            [device.pin for device in robot.left_motor] +
+            [device.pin for device in robot.right_motor]) == pins
+        assert robot.value == (0, 0)
+        robot.forward()
+        assert [pin.state for pin in pins] == [0, 1, 0, 1]
+        assert robot.value == (1, 1)
+        robot.backward()
+        assert [pin.state for pin in pins] == [1, 1, 1, 1]
+        assert robot.value == (-1, -1)
+        robot.forward(0.5)
+        assert [pin.state for pin in pins] == [0, 0.5, 0, 0.5]
+        assert robot.value == (0.5, 0.5)
+        robot.left()
+        assert [pin.state for pin in pins] == [1, 1, 0, 1]
+        assert robot.value == (-1, 1)
+        robot.right()
+        assert [pin.state for pin in pins] == [0, 1, 1, 1]
+        assert robot.value == (1, -1)
+        robot.reverse()
+        assert [pin.state for pin in pins] == [1, 1, 0, 1]
+        assert robot.value == (-1, 1)
+        robot.stop()
+        assert [pin.state for pin in pins][1::2] == [0, 0]
+        assert robot.value == (0, 0)
+        robot.value = (-1, -1)
+        assert robot.value == (-1, -1)
+        robot.value = (0.5, 1)
+        assert robot.value == (0.5, 1)
+        robot.value = (0, -0.5)
+        assert robot.value == (0, -0.5)
+
 def test_ryanteck_robot():
     pins = [Device.pin_factory.pin(n) for n in (17, 18, 22, 23)]
     with RyanteckRobot() as board:
@@ -744,40 +780,10 @@ def test_camjam_kit_robot():
     with CamJamKitRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
-def test_phaseenable_robot():
-    pins = [MockPWMPin(12), MockPWMPin(5), MockPWMPin(13), MockPWMPin(6)]
-    with PhaseEnableRobot() as robot:
-        assert (
-            [device.pin for device in robot.left_motor] +
-            [device.pin for device in robot.right_motor]) == pins
-        assert robot.value == (0, 0)
-        robot.forward()
-        assert [pin.state for pin in pins] == [1, 1, 1, 1]
-        assert robot.value == (1, 1)
-        robot.backward()
-        assert [pin.state for pin in pins] == [1, 0, 1, 0]
-        assert robot.value == (-1, -1)
-        robot.forward(0.5)
-        assert [pin.state for pin in pins] == [0.5, 1, 0.5, 1]
-        assert robot.value == (0.5, 0.5)
-        robot.left()
-        assert [pin.state for pin in pins] == [1, 0, 1, 1]
-        assert robot.value == (-1, 1)
-        robot.right()
-        assert [pin.state for pin in pins] == [1, 1, 1, 0]
-        assert robot.value == (1, -1)
-        robot.reverse()
-        assert [pin.state for pin in pins] == [1, 0, 1, 1]
-        assert robot.value == (-1, 1)
-        robot.stop()
-        assert [pin.state for pin in pins] == [0, 0, 0, 1]
-        assert robot.value == (0, 0)
-        robot.value = (-1, -1)
-        assert robot.value == (-1, -1)
-        robot.value = (0.5, 1)
-        assert robot.value == (0.5, 1)
-        robot.value = (0, -0.5)
-        assert robot.value == (0, -0.5)
+def test_pololudrv8835_robot():
+    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+    with PololuDRV8835Robot() as board:
+        assert [device.pin for motor in board for device in motor] == pins
 
 def test_energenie_bad_init():
     with pytest.raises(ValueError):

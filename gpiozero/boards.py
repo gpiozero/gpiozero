@@ -1303,25 +1303,39 @@ class CamJamKitRobot(Robot):
 class PhaseEnableRobot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a dual-motor robot based
-    around a Pololu Phase/Enable motor board.
+    around a Phase/Enable motor board.
 
-    This class is constructed with two tuples representing the power and
-    direction pins of the left and right controllers respectively. By default,
-    the left motor's controller is connected to GPIOs 12 and 5, while the
-    right motor's controller is connected to GPIOs 13 and 6 so the following
-    example will drive the robot forward::
+    This class is constructed with two tuples representing the phase
+    (direction) and enable (speed) pins of the left and right controllers
+    respectively. For example, if the left motor's controller is connected to
+    GPIOs 12 and 5, while the right motor's controller is connected to GPIOs 13
+    and 6 so the following example will drive the robot forward::
 
         from gpiozero import PhaseEnableRobot
 
-        robot = PhaseEnableRobot()
+        robot = PhaseEnableRobot(left=(5, 12), right=(6, 13))
         robot.forward()
 
+    :param tuple left:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the left motor's controller.
+
+    :param tuple right:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the right motor's controller.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self):
+
+    def __init__(self, left=None, right=None, pin_factory=None):
         super(PhaseEnableRobot, self).__init__(
-            left_motor = PhaseEnableMotor(12, 5),
-            right_motor = PhaseEnableMotor(13, 6),
-            _order = ('left_motor', 'right_motor'))
+            left_motor=PhaseEnableMotor(*left, pin_factory=pin_factory),
+            right_motor=PhaseEnableMotor(*right, pin_factory=pin_factory),
+            _order=('left_motor', 'right_motor'),
+            pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -1398,6 +1412,33 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         """
         self.left_motor.stop()
         self.right_motor.stop()
+
+
+class PololuDRV8835Robot(PhaseEnableRobot):
+    """
+    Extends :class:`PhaseEnableRobot` for the `Pololu DRV8835 Dual Motor Driver
+    Kit`_.
+
+    The Pololu DRV8835 pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example drives the robot
+    forward::
+
+        from gpiozero import PololuDRV8835Robot
+
+        robot = PololuDRV8835Robot()
+        robot.forward()
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
+    """
+
+    def __init__(self, pin_factory=None):
+        super(PololuDRV8835Robot, self).__init__(
+            (5, 12), (6, 13), pin_factory=pin_factory
+        )
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
