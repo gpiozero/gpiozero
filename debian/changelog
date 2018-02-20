@@ -1,3 +1,17 @@
+gpiozero (1.4.1) stable; urgency=low
+
+  * Added "curve_left" and "curve_right" parameters to "Robot.forward" and
+    "Robot.backward" (#306 and #619)
+  * Fixed "DistanceSensor" returning incorrect readings after a long pause,
+    and added a lock to ensure multiple distance sensors can operate
+    simultaneously in a single project (#584, #595, #617, #618)
+  * Added support for phase/enable motor drivers with "PhaseEnableMotor",
+    "PhaseEnableRobot", and descendants, thanks to Ian Harcombe!  (#386)
+  * A variety of other minor enhancements, largely thanks to Andrew Scheller!
+    (#479, #489, #491, #492)
+
+ -- Dave Jones <dave@waveform.org.uk>  Tue, 20 Feb 2018 21:59:28 +0000
+
 gpiozero (1.4.0) stable; urgency=low
 
   * Pin factory is now configurable from device constructors as well as
