@@ -1212,7 +1212,9 @@ class AngularServo(Servo):
             frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        if ((min_angle <= initial_angle <= max_angle) or
+        if initial_angle is None:
+            initial_value = None
+        elif ((min_angle <= initial_angle <= max_angle) or
             (max_angle <= initial_angle <= min_angle)):
             initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
         else:
