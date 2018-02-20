@@ -97,6 +97,7 @@ Other contributors:
 - `Tim Golden`_
 - `Phil Howard`_
 - `Stewart Adcock`_
+- `Ian Harcombe`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -122,3 +123,4 @@ Other contributors:
 .. _Tim Golden: https://github.com/tjguk
 .. _Phil Howard: https://github.com/Gadgetoid
 .. _Stewart Adcock: https://github.com/stewartadcock
+.. _Ian Harcombe: https://github.com/MrHarcombe
