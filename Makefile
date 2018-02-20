@@ -108,7 +108,7 @@ test:
 
 clean:
 	dh_clean
-	rm -fr $(NAME).egg-info/ tags
+	rm -fr dist/ $(NAME).egg-info/ tags
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
