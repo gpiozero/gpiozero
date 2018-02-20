@@ -107,8 +107,7 @@ test:
 
 clean:
 	$(PYTHON) $(PYFLAGS) setup.py clean
-	$(MAKE) -f $(CURDIR)/debian/rules clean
-	$(MAKE) -C docs clean
+	dh_clean
 	rm -fr build/ dist/ $(NAME).egg-info/ tags
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
@@ -140,7 +139,7 @@ $(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
 	rename -f 's/$(NAME)-(.*)\.tar\.gz/$(NAME)_$$1\.orig\.tar\.gz/' ../*
-	debuild -b -i -I -Idist -Ibuild -Idocs/_build -Icoverage -I__pycache__ -I.coverage -Itags -I*.pyc -I*.vim -I*.xcf -rfakeroot
+	debuild -b
 	mkdir -p dist/
 	for f in $(DIST_DEB); do cp ../$${f##*/} dist/; done
 
@@ -149,7 +148,7 @@ $(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
 	rename -f 's/$(NAME)-(.*)\.tar\.gz/$(NAME)_$$1\.orig\.tar\.gz/' ../*
-	debuild -S -i -I -Idist -Ibuild -Idocs/_build -Icoverage -I__pycache__ -I.coverage -Itags -I*.pyc -I*.vim -I*.xcf -rfakeroot
+	debuild -S
 	mkdir -p dist/
 	for f in $(DIST_DSC); do cp ../$${f##*/} dist/; done
 
@@ -158,7 +157,7 @@ changelog: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	# ensure there are no current uncommitted changes
 	test -z "$(shell git status --porcelain)"
 	# update the debian changelog with new release information
-	dch --newversion $(VER)$(DEB_SUFFIX) --controlmaint
+	dch --newversion $(VER)$(DEB_SUFFIX)
 	# commit the changes and add a new tag
 	git commit debian/changelog -m "Updated changelog for release $(VER)"
 

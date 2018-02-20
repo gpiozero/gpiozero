@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = _build
+BUILDDIR      = ../build
 DOT_DIAGRAMS  := $(wildcard images/*.dot)
 MSC_DIAGRAMS  := $(wildcard images/*.mscgen)
 GPI_DIAGRAMS  := $(wildcard images/*.gpi)
@@ -202,4 +202,3 @@ pseudoxml:
 	mscgen -T eps -o - $< | ps2pdf -dEPSCrop - $@
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
-

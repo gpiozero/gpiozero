@@ -1,10 +1,19 @@
 Source: gpiozero
 Maintainer: Ben Nuttall <ben@raspberrypi.org>
-Homepage: http://github.com/RPi-Distro/python-gpiozero
+Homepage: http://gpiozero.readthedocs.io/
 Section: python
 Priority: extra
-Build-Depends: debhelper (>= 8), python-all (>= 2.7), python-setuptools, python3-all, python3-setuptools, python-sphinx (>= 1.0.7+dfsg-1~)
+Build-Depends:
+ debhelper (>= 8),
+ dh-python,
+ python-all (>= 2.7),
+ python-setuptools,
+ python3-all,
+ python3-setuptools,
+ python3-sphinx
 Standards-Version: 3.9.6
+Vcs-Git: https://github.com/RPi-Distro/python-gpiozero.git
+Vcs-Browser: https://github.com/RPi-Distro/python-gpiozero
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.2
 

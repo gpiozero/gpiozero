@@ -4,19 +4,23 @@
 #export DH_VERBOSE=1
 export DH_OPTIONS
 
+export PYBUILD_NAME=gpiozero
+
 %:
-	dh $@ --with python2,python3,sphinxdoc --buildsystem=python_distutils
+	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild
 
 override_dh_auto_install:
-	python setup.py install --root debian/python-gpiozero --install-layout=deb
-	python3 setup.py install --root debian/python3-gpiozero --install-layout=deb
+	dh_auto_install
 	# Strip out binaries from the py2 package
 	rm debian/python-gpiozero/usr/bin/pinout
 
-#override_dh_auto_test:
-#	# Don't run the tests!
+override_dh_auto_test:
+	# Don't run the tests!
 
-override_dh_installdocs:
-	python setup.py build_sphinx -b html
-	dh_installdocs
+#override_dh_installdocs:
+#	python setup.py build_sphinx -b html
+#	dh_installdocs
 
+override_dh_auto_build:
+	dh_auto_build
+	PYTHONPATH=. sphinx-build -N -bhtml docs/ build/html
