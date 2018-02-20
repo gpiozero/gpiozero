@@ -312,11 +312,12 @@ network:
 Note that in this case, the Sense HAT code must be run locally, and the GPIO
 remotely.
 
-Pi Zero USB OTG
-===============
+Remote GPIO usage
+=================
 
 Continue to:
 
+* :doc:`recipes_remote_gpio`
 * :doc:`pi_zero_otg`
 
 
