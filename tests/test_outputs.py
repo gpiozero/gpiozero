@@ -1042,12 +1042,19 @@ def test_servo_initial_values():
     with Servo(2) as device:
         assert device.value == 0
     with Servo(2, initial_value=-1) as device:
+        assert device.is_active
         assert device.value == -1
+        assert isclose(p.state, 0.05)
     with Servo(2, initial_value=0) as device:
+        assert device.is_active
         assert device.value == 0
+        assert isclose(p.state, 0.075)
     with Servo(2, initial_value=1) as device:
+        assert device.is_active
         assert device.value == 1
+        assert isclose(p.state, 0.1)
     with Servo(2, initial_value=None) as device:
+        assert not device.is_active
         assert device.value is None
 
 def test_servo_values():
@@ -1089,10 +1096,13 @@ def test_angular_servo_initial_angles():
         assert device.angle == 0
     with AngularServo(1, initial_angle=-90) as device:
         assert device.angle == -90
+        assert isclose(device.value, -1)
     with AngularServo(1, initial_angle=0) as device:
         assert device.angle == 0
+        assert isclose(device.value, 0)
     with AngularServo(1, initial_angle=90) as device:
         assert device.angle == 90
+        assert isclose(device.value, 1)
     with AngularServo(1, initial_angle=None) as device:
         assert device.angle is None
 
