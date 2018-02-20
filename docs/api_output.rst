@@ -43,7 +43,13 @@ Motor
 =====
 
 .. autoclass:: Motor(forward, backward, \*, pwm=True, pin_factory=None)
-    :members: forward, backward, stop
+    :members: forward, backward, reverse, stop
+
+PhaseEnableMotor
+================
+
+.. autoclass:: PhaseEnableMotor(phase, enable, \*, pwm=True, pin_factory=None)
+    :members: forward, backward, reverse, stop
 
 Servo
 =====

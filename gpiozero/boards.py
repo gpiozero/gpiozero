@@ -29,6 +29,7 @@ from .output_devices import (
     RGBLED,
     Buzzer,
     Motor,
+    PhaseEnableMotor,
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
@@ -1359,6 +1360,147 @@ class CamJamKitRobot(Robot):
     def __init__(self, pin_factory=None):
         super(CamJamKitRobot, self).__init__(
             (9, 10), (7, 8), pin_factory=pin_factory
+        )
+
+
+class PhaseEnableRobot(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` to represent a dual-motor robot based
+    around a Phase/Enable motor board.
+
+    This class is constructed with two tuples representing the phase
+    (direction) and enable (speed) pins of the left and right controllers
+    respectively. For example, if the left motor's controller is connected to
+    GPIOs 12 and 5, while the right motor's controller is connected to GPIOs 13
+    and 6 so the following example will drive the robot forward::
+
+        from gpiozero import PhaseEnableRobot
+
+        robot = PhaseEnableRobot(left=(5, 12), right=(6, 13))
+        robot.forward()
+
+    :param tuple left:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the left motor's controller.
+
+    :param tuple right:
+        A tuple of two GPIO pins representing the phase and enable inputs
+        of the right motor's controller.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+    """
+
+    def __init__(self, left=None, right=None, pin_factory=None):
+        super(PhaseEnableRobot, self).__init__(
+            left_motor=PhaseEnableMotor(*left, pin_factory=pin_factory),
+            right_motor=PhaseEnableMotor(*right, pin_factory=pin_factory),
+            _order=('left_motor', 'right_motor'),
+            pin_factory=pin_factory
+        )
+
+    @property
+    def value(self):
+        """
+        Returns a tuple of two floating point values (-1 to 1) representing the
+        speeds of the robot's two motors (left and right). This property can
+        also be set to alter the speed of both motors.
+        """
+        return super(PhaseEnableRobot, self).value
+
+    @value.setter
+    def value(self, value):
+        self.left_motor.value, self.right_motor.value = value
+
+    def forward(self, speed=1):
+        """
+        Drive the robot forward by running both motors forward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.forward(speed)
+        self.right_motor.forward(speed)
+
+    def backward(self, speed=1):
+        """
+        Drive the robot backward by running both motors backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.backward(speed)
+        self.right_motor.backward(speed)
+
+    def left(self, speed=1):
+        """
+        Make the robot turn left by running the right motor forward and left
+        motor backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.right_motor.forward(speed)
+        self.left_motor.backward(speed)
+
+    def right(self, speed=1):
+        """
+        Make the robot turn right by running the left motor forward and right
+        motor backward.
+
+        :param float speed:
+            Speed at which to drive the motors, as a value between 0 (stopped)
+            and 1 (full speed). The default is 1.
+        """
+        self.left_motor.forward(speed)
+        self.right_motor.backward(speed)
+
+    def reverse(self):
+        """
+        Reverse the robot's current motor directions. If the robot is currently
+        running full speed forward, it will run full speed backward. If the
+        robot is turning left at half-speed, it will turn right at half-speed.
+        If the robot is currently stopped it will remain stopped.
+        """
+        self.left_motor.value = -self.left_motor.value
+        self.right_motor.value = -self.right_motor.value
+
+    def stop(self):
+        """
+        Stop the robot.
+        """
+        self.left_motor.stop()
+        self.right_motor.stop()
+
+
+class PololuDRV8835Robot(PhaseEnableRobot):
+    """
+    Extends :class:`PhaseEnableRobot` for the `Pololu DRV8835 Dual Motor Driver
+    Kit`_.
+
+    The Pololu DRV8835 pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example drives the robot
+    forward::
+
+        from gpiozero import PololuDRV8835Robot
+
+        robot = PololuDRV8835Robot()
+        robot.forward()
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
+    """
+
+    def __init__(self, pin_factory=None):
+        super(PololuDRV8835Robot, self).__init__(
+            (5, 12), (6, 13), pin_factory=pin_factory
         )
 
 

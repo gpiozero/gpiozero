@@ -56,6 +56,11 @@ def setup_function(function):
         'test_motor_value',
         'test_motor_bad_value',
         'test_motor_reverse',
+        'test_phaseenable_motor_pins',
+        'test_phaseenable_motor_close',
+        'test_phaseenable_motor_value',
+        'test_phaseenable_motor_bad_value',
+        'test_phaseenable_motor_reverse',
         'test_servo_pins',
         'test_servo_bad_value',
         'test_servo_close',
@@ -993,6 +998,140 @@ def test_motor_reverse_nonpwm():
         device.reverse()
         assert device.value == -1
         assert b.state == 1 and f.state == 0
+
+def test_phaseenable_motor_pins():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2) as device:
+        assert device.phase_device.pin is p
+        assert isinstance(device.phase_device, OutputDevice)
+        assert device.enable_device.pin is e
+        assert isinstance(device.enable_device, PWMOutputDevice)
+
+def test_phaseenable_motor_pins_nonpwm():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2, pwm=False) as device:
+        assert device.phase_device.pin is p
+        assert isinstance(device.phase_device, OutputDevice)
+        assert device.enable_device.pin is e
+        assert isinstance(device.enable_device, DigitalOutputDevice)
+
+def test_phaseenable_motor_close():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2) as device:
+        device.close()
+        assert device.closed
+        assert device.phase_device.pin is None
+        assert device.enable_device.pin is None
+        device.close()
+        assert device.closed
+
+def test_phaseenable_motor_close_nonpwm():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2, pwm=False) as device:
+        device.close()
+        assert device.closed
+        assert device.phase_device.pin is None
+        assert device.enable_device.pin is None
+
+def test_phaseenable_motor_value():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2) as device:
+        device.value = -1
+        assert device.is_active
+        assert device.value == -1
+        assert p.state == 1 and e.state == 1
+        device.value = 1
+        assert device.is_active
+        assert device.value == 1
+        assert p.state == 0 and e.state == 1
+        device.value = 0.5
+        assert device.is_active
+        assert device.value == 0.5
+        assert p.state == 0 and e.state == 0.5
+        device.value = -0.5
+        assert device.is_active
+        assert device.value == -0.5
+        assert p.state == 1 and e.state == 0.5
+        device.value = 0
+        assert not device.is_active
+        assert not device.value
+        assert e.state == 0
+
+def test_phaseenable_motor_value_nonpwm():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2, pwm=False) as device:
+        device.value = -1
+        assert device.is_active
+        assert device.value == -1
+        assert p.state == 1 and e.state == 1
+        device.value = 1
+        assert device.is_active
+        assert device.value == 1
+        assert p.state == 0 and e.state == 1
+        device.value = 0
+        assert not device.is_active
+        assert not device.value
+        assert e.state == 0
+
+def test_phaseenable_motor_bad_value():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2) as device:
+        with pytest.raises(ValueError):
+            device.value = -2
+        with pytest.raises(ValueError):
+            device.value = 2
+        with pytest.raises(ValueError):
+            device.forward(2)
+        with pytest.raises(ValueError):
+            device.backward(2)
+
+def test_phaseenable_motor_bad_value_nonpwm():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2, pwm=False) as device:
+        with pytest.raises(ValueError):
+            device.value = -2
+        with pytest.raises(ValueError):
+            device.value = 2
+        with pytest.raises(ValueError):
+            device.value = 0.5
+        with pytest.raises(ValueError):
+            device.value = -0.5
+
+def test_phaseenable_motor_reverse():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2) as device:
+        device.forward()
+        assert device.value == 1
+        assert p.state == 0 and e.state == 1
+        device.reverse()
+        assert device.value == -1
+        assert p.state == 1 and e.state == 1
+        device.backward(0.5)
+        assert device.value == -0.5
+        assert p.state == 1 and e.state == 0.5
+        device.reverse()
+        assert device.value == 0.5
+        assert p.state == 0 and e.state == 0.5
+
+def test_phaseenable_motor_reverse_nonpwm():
+    p = Device.pin_factory.pin(1)
+    e = Device.pin_factory.pin(2)
+    with PhaseEnableMotor(1, 2, pwm=False) as device:
+        device.forward()
+        assert device.value == 1
+        assert p.state == 0 and e.state == 1
+        device.reverse()
+        assert device.value == -1
+        assert p.state == 1 and e.state == 1
 
 def test_servo_pins():
     p = Device.pin_factory.pin(1)

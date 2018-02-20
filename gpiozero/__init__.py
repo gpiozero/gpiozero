@@ -64,6 +64,7 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    PhaseEnableMotor,
     Servo,
     AngularServo,
     RGBLED,
@@ -89,6 +90,8 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    PhaseEnableRobot,
+    PololuDRV8835Robot,
     Energenie,
 )
 from .other_devices import (
