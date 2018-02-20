@@ -10,6 +10,10 @@ from __future__ import (
 import warnings
 from time import sleep, time
 from threading import Event, Lock
+try:
+    from statistics import median
+except ImportError:
+    from .compat import median
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho
 from .devices import GPIODevice
@@ -103,13 +107,14 @@ class DigitalInputDevice(EventsMixin, InputDevice):
 
 class SmoothedInputDevice(EventsMixin, InputDevice):
     """
-    Represents a generic input device which takes its value from the mean of a
-    queue of historical values.
+    Represents a generic input device which takes its value from the average of
+    a queue of historical values.
 
     This class extends :class:`InputDevice` with a queue which is filled by a
     background thread which continually polls the state of the underlying
-    device. The mean of the values in the queue is compared to a threshold
-    which is used to determine the state of the :attr:`is_active` property.
+    device. The average (a configurable function) of the values in the queue is
+    compared to a threshold which is used to determine the state of the
+    :attr:`is_active` property.
 
     .. note::
 
@@ -140,19 +145,25 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         filled.  If ``True``, a value will be returned immediately, but be
         aware that this value is likely to fluctuate excessively.
 
+    :param average:
+        The function used to average the values in the internal queue. This
+        defaults to :func:`statistics.median` which a good selection for
+        discarding outliers from jittery sensors. The function specific must
+        accept a sequence of numbers and return a single number.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, threshold=0.5,
-            queue_len=5, sample_wait=0.0, partial=False, pin_factory=None):
+            self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
+            sample_wait=0.0, partial=False, average=median, pin_factory=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
             pin, pull_up, pin_factory=pin_factory
         )
         try:
-            self._queue = GPIOQueue(self, queue_len, sample_wait, partial)
+            self._queue = GPIOQueue(self, queue_len, sample_wait, partial, average)
             self.threshold = float(threshold)
         except:
             self.close()
