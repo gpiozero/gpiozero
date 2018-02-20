@@ -52,9 +52,13 @@ DIST_ZIP=dist/$(NAME)-$(VER).zip
 DIST_DEB=dist/python-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/python3-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/python-$(NAME)-doc_$(VER)$(DEB_SUFFIX)_all.deb \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).build \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).buildinfo \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
 DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.xz \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.build \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.buildinfo \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
 MAN_PAGES=man/pinout.1 man/remote-gpio.7
 
