@@ -5,6 +5,35 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.4.1 (2018-02-20)
+==========================
+
+This release is mostly bug-fixes, but a few enhancements have made it in too:
+
+* Added ``curve_left`` and ``curve_right`` parameters to :meth:`Robot.forward`
+  and :meth:`Robot.backward`.(`#306`_ and `#619`_)
+* Fixed :class:`DistanceSensor` returning incorrect readings after a long
+  pause, and added a lock to ensure multiple distance sensors can operate
+  simultaneously in a single project (`#584`_, `#595`_, `#617`_, `#618`_)
+* Added support for phase/enable motor drivers with :class:`PhaseEnableMotor`,
+  :class:`PhaseEnableRobot`, and descendants, thanks to Ian Harcombe!
+  (`#386`_)
+* A variety of other minor enhancements, largely thanks to Andrew Scheller!
+  (`#479`_, `#489`_, `#491`_, `#492`_)
+
+.. _#306: https://github.com/RPi-Distro/python-gpiozero/issues/306
+.. _#386: https://github.com/RPi-Distro/python-gpiozero/issues/386
+.. _#479: https://github.com/RPi-Distro/python-gpiozero/issues/479
+.. _#489: https://github.com/RPi-Distro/python-gpiozero/issues/489
+.. _#491: https://github.com/RPi-Distro/python-gpiozero/issues/491
+.. _#492: https://github.com/RPi-Distro/python-gpiozero/issues/492
+.. _#584: https://github.com/RPi-Distro/python-gpiozero/issues/584
+.. _#595: https://github.com/RPi-Distro/python-gpiozero/issues/595
+.. _#617: https://github.com/RPi-Distro/python-gpiozero/issues/617
+.. _#618: https://github.com/RPi-Distro/python-gpiozero/issues/618
+.. _#619: https://github.com/RPi-Distro/python-gpiozero/issues/619
+
+
 Release 1.4.0 (2017-07-26)
 ==========================
 
