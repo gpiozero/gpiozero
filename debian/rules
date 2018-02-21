@@ -24,3 +24,4 @@ override_dh_auto_test:
 override_dh_auto_build:
 	dh_auto_build
 	PYTHONPATH=. sphinx-build -N -bhtml docs/ build/html
+	PYTHONPATH=. sphinx-build -N -bman docs/ build/man

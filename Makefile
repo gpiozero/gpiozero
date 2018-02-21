@@ -60,7 +60,6 @@ DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.xz \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.build \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.buildinfo \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
-MAN_PAGES=man/pinout.1 man/remote-gpio.7
 
 
 # Default target
@@ -123,11 +122,6 @@ tags: $(PY_SOURCES)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-$(MAN_PAGES): $(DOC_SOURCES)
-	$(PYTHON) $(PYFLAGS) setup.py build_sphinx -b man
-	mkdir -p man/
-	cp build/sphinx/man/*.[0-9] man/
-
 $(DIST_TAR): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py sdist --formats gztar
 
@@ -137,7 +131,7 @@ $(DIST_ZIP): $(PY_SOURCES) $(SUBDIRS)
 $(DIST_WHEEL): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py bdist_wheel --universal
 
-$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
+$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES)
 	# build the binary package in the parent directory then rename it to
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
@@ -146,7 +140,7 @@ $(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	mkdir -p dist/
 	for f in $(DIST_DEB); do cp ../$${f##*/} dist/; done
 
-$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
+$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES)
 	# build the source package in the parent directory then rename it to
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
