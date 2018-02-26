@@ -176,7 +176,7 @@ LEDBarGraph
 A collection of LEDs can be treated like a bar graph using
 :class:`LEDBarGraph`:
 
-.. literalinclude:: examples/led_bargraph_2.py
+.. literalinclude:: examples/led_bargraph_1.py
 
 Note values are essentially rounded to account for the fact LEDs can only be on
 or off when ``pwm=False`` (the default).
