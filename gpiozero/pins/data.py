@@ -841,7 +841,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
             # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM,
-            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W)
+            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W, 13=3B+)
             # RRRR     - Revision (0, 1, 2, etc.)
             revcode_memory       = (revision & 0x700000) >> 20
             revcode_manufacturer = (revision & 0xf0000)  >> 16
@@ -860,6 +860,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
+                    13:  '3B+',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -896,6 +897,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
                     'CM3':    '2017Q1',
                     'Zero W': '2017Q1',
+                    '3B+':    '2018Q1',
                     }.get(model, 'Unknown')
                 storage = {
                     'A':   'SD',
@@ -923,10 +925,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 wifi = {
                     '3B':     True,
                     'Zero W': True,
+                    '3B+':    True,
                     }.get(model, False)
                 bluetooth = {
                     '3B':     True,
                     'Zero W': True,
+                    '3B+':    True,
                     }.get(model, False)
                 csi = {
                     'Zero':   0 if pcb_revision == '1.0' else 1,
