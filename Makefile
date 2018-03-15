@@ -42,7 +42,14 @@ DEB_SOURCES:=debian/changelog \
 	$(wildcard debian/*.docs) \
 	$(wildcard debian/*.doc-base) \
 	$(wildcard debian/*.desktop)
-DOC_SOURCES:=
+DOC_SOURCES:=docs/conf.py \
+	$(wildcard docs/*.png) \
+	$(wildcard docs/*.svg) \
+	$(wildcard docs/*.dot) \
+	$(wildcard docs/*.mscgen) \
+	$(wildcard docs/*.gpi) \
+	$(wildcard docs/*.rst) \
+	$(wildcard docs/*.pdf)
 SUBDIRS:=
 
 # Calculate the name of all outputs
@@ -168,4 +175,3 @@ release: $(DIST_DEB) $(DIST_DSC) $(DIST_TAR) $(DIST_WHEEL)
 	dput raspberrypi dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
 
 .PHONY: all install develop test doc source egg wheel zip tar deb dist clean tags release upload $(SUBDIRS)
-

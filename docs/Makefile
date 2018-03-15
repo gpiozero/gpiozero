@@ -89,17 +89,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/picraft.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/gpiozero.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/picraft.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/gpiozero.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/picraft"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/picraft"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/gpiozero"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/gpiozero"
 	@echo "# devhelp"
 
 epub:
