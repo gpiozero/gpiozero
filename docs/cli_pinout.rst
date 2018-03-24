@@ -43,7 +43,7 @@ Options
 
 .. option:: -x, --xyz
 
-    Open pinout.xyz in the default web browser
+    Open `pinout.xyz`_ in the default web browser
 
 Examples
 --------
@@ -176,4 +176,5 @@ PIGPIO_PORT
 
         :manpage:`remote-gpio(7)`
 
+.. _pinout.xyz: https://pinout.xyz/
 .. _revision codes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
