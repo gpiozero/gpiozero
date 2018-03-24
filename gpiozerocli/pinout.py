@@ -13,6 +13,7 @@ import argparse
 import sys
 import textwrap
 import warnings
+import webbrowser
 
 class PinoutTool(object):
     def __init__(self):
@@ -37,6 +38,12 @@ class PinoutTool(object):
             dest='color',
             action='store_false',
             help='Force monochrome output. See also --color'
+        )
+        self.parser.add_argument(
+            '-x', '--xyz',
+            dest='xyz',
+            action='store_true',
+            help='Open pinout.xyz in the default web browser'
         )
 
     def __call__(self, args=None):
@@ -69,23 +76,27 @@ class PinoutTool(object):
                 "remotely access your Pi."
             )
             formatter.add_text(
-                "* https://gpiozero.readthedocs.io/en/latest/remote_gpio.html"
+                "* https://gpiozero.readthedocs.io/en/stable/remote_gpio.html"
             )
             sys.stderr.write(formatter.format_help())
         else:
-            if args.revision == '':
-                try:
-                    pi_info().pprint(color=args.color)
-                except IOError:
-                    raise IOError('This device is not a Raspberry Pi')
+            if args.xyz:
+                webbrowser.open('https://pinout.xyz')
             else:
-                pi_info(args.revision).pprint(color=args.color)
-            formatter = self.parser._get_formatter()
-            formatter.add_text(
-                "For further information, please refer to https://pinout.xyz/"
-            )
-            sys.stdout.write('\n')
-            sys.stdout.write(formatter.format_help())
+                if args.revision == '':
+                    try:
+                        pi_info().pprint(color=args.color)
+                    except IOError:
+                        raise IOError('This device is not a Raspberry Pi')
+                else:
+                    pi_info(args.revision).pprint(color=args.color)
+                formatter = self.parser._get_formatter()
+                formatter.add_text(
+                    "For further information, please refer to "
+                    "https://pinout.xyz/"
+                )
+                sys.stdout.write('\n')
+                sys.stdout.write(formatter.format_help())
 
 
 main = PinoutTool()
