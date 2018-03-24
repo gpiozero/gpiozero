@@ -8,7 +8,7 @@ Synopsis
 
 ::
 
-    pinout [-h] [-r REVISION] [-c] [-m]
+    pinout [-h] [-r REVISION] [-c] [-m] [-x]
 
 Description
 -----------
@@ -40,6 +40,10 @@ Options
 .. option:: -m, --monochrome
 
     Force monochrome output. See also :option:`--color`
+
+.. option:: -x, --xyz
+
+    Open pinout.xyz in the default web browser
 
 Examples
 --------
@@ -172,4 +176,4 @@ PIGPIO_PORT
 
         :manpage:`remote-gpio(7)`
 
-.. _revision codes: http://elinux.org/RPi_HardwareHistory
+.. _revision codes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
