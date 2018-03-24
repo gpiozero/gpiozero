@@ -76,7 +76,7 @@ class PinoutTool(object):
                 "remotely access your Pi."
             )
             formatter.add_text(
-                "* https://gpiozero.readthedocs.io/en/latest/remote_gpio.html"
+                "* https://gpiozero.readthedocs.io/en/stable/remote_gpio.html"
             )
             sys.stderr.write(formatter.format_help())
         else:
