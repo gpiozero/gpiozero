@@ -82,19 +82,21 @@ class PinoutTool(object):
         else:
             if args.xyz:
                 webbrowser.open('https://pinout.xyz')
-            elif args.revision == '':
-                try:
-                    pi_info().pprint(color=args.color)
-                except IOError:
-                    raise IOError('This device is not a Raspberry Pi')
             else:
-                pi_info(args.revision).pprint(color=args.color)
-            formatter = self.parser._get_formatter()
-            formatter.add_text(
-                "For further information, please refer to https://pinout.xyz/"
-            )
-            sys.stdout.write('\n')
-            sys.stdout.write(formatter.format_help())
+                if args.revision == '':
+                    try:
+                        pi_info().pprint(color=args.color)
+                    except IOError:
+                        raise IOError('This device is not a Raspberry Pi')
+                else:
+                    pi_info(args.revision).pprint(color=args.color)
+                formatter = self.parser._get_formatter()
+                formatter.add_text(
+                    "For further information, please refer to "
+                    "https://pinout.xyz/"
+                )
+                sys.stdout.write('\n')
+                sys.stdout.write(formatter.format_help())
 
 
 main = PinoutTool()
