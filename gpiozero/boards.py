@@ -1603,6 +1603,10 @@ class Energenie(SourceMixin, Device):
             return "<gpiozero.Energenie object closed>"
 
     @property
+    def socket(self):
+        return self._socket
+
+    @property
     def value(self):
         return self._value
 
