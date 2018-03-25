@@ -59,7 +59,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices on.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.on()
 
     def off(self):
@@ -67,7 +67,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices off.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.off()
 
     def toggle(self):
@@ -76,7 +76,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         off; if it's off, turn it on.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.toggle()
 
     @property
@@ -90,7 +90,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
     @value.setter
     def value(self, value):
         for device, v in zip(self, value):
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.value = v
             # Simply ignore values for non-output devices
 
@@ -1051,6 +1051,71 @@ class SnowPi(LEDBoard):
             _order=('eyes', 'nose', 'arms'),
             pin_factory=pin_factory
         )
+
+
+class RGBLEDBoard(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice`. and represents a generic RGBLED
+    board or collection of LEDs.
+
+    The following example turns on all the LEDs on a board containing 5 LEDs
+    attached to GPIO pins 2 through 6::
+
+        from gpiozero import RGBLEDBoard
+
+        leds = RGBLEDBoard((2, 3, 4), (5, 6, 7), (7, 8, 9))
+
+        leds.value = ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+
+    Note that this class represents simple GPIO RGB LEDs (a GPIO pin per RGB
+    channel) as opposed to smarter LEDs such as neopixels.
+    """
+    def __init__(self, *args, **kwargs):
+        pwm = kwargs.pop('pwm', True)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', False)
+        pin_factory = kwargs.pop('pin_factory', None)
+        order = kwargs.pop('_order', None)
+        super(RGBLEDBoard, self).__init__(
+            *(
+                pins_or_board
+                if isinstance(pins_or_board, RGBLEDBoard) else
+                RGBLED(
+                    *pins_or_board, pwm=pwm, active_high=active_high, initial_value=(initial_value, ) * 3,
+                    pin_factory=pin_factory
+                )
+                for pins_or_board in args
+                ),
+            _order=order,
+            pin_factory=pin_factory,
+            **{
+                name: pins_or_board
+                if isinstance(pins_or_board, RGBLEDBoard) else
+                RGBLED(
+                    *pins_or_board, pwm=pwm, active_high=active_high, initial_value=(initial_value,) * 3,
+                    pin_factory=pin_factory
+                )
+                for name, pins_or_board in kwargs.items()
+            })
+        leds = []
+        for item in self:
+            if isinstance(item, RGBLEDBoard):
+                for subitem in item.leds:
+                    leds.append(subitem)
+            else:
+                leds.append(item)
+        self._leds = tuple(leds)
+
+    @property
+    def leds(self):
+        """
+        A flat tuple of all LEDs contained in this board (and all sub-boards).
+        """
+        return self._leds
+
+    @property
+    def active_high(self):
+        return self[0].active_high
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):
