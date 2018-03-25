@@ -206,7 +206,7 @@ class PiPin(Pin):
     """
     Abstract base class representing a multi-function GPIO pin attached to a
     Raspberry Pi. This overrides several methods in the abstract base
-    :class:`~gpiozero.Pin`. Descendents must override the following methods:
+    :class:`~gpiozero.Pin`. Descendents *must* override the following methods:
 
     * :meth:`_get_function`
     * :meth:`_set_function`
@@ -255,7 +255,7 @@ class PiPin(Pin):
     def factory(self):
         return self._factory
 
-    def _call_when_changed(self):
+    def _call_when_changed(self, ticks):
         """
         Called to fire the :attr:`when_changed` event handler; override this
         in descendents if additional (currently redundant) parameters need
@@ -265,7 +265,7 @@ class PiPin(Pin):
         if method is None:
             self.when_changed = None
         else:
-            method()
+            method(ticks)
 
     def _get_when_changed(self):
         return self._when_changed

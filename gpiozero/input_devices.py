@@ -540,10 +540,11 @@ class LightSensor(SmoothedInputDevice):
         )
         try:
             self._charge_time_limit = charge_time_limit
+            self._charge_time = None
             self._charged = Event()
             self.pin.edges = 'rising'
             self.pin.bounce = None
-            self.pin.when_changed = self._charged.set
+            self.pin.when_changed = self._cap_charged
             self._queue.start()
         except:
             self.close()
@@ -553,20 +554,27 @@ class LightSensor(SmoothedInputDevice):
     def charge_time_limit(self):
         return self._charge_time_limit
 
+    def _cap_charged(self, ticks):
+        self._charge_time = ticks
+        self._charged.set()
+
     def _read(self):
         # Drain charge from the capacitor
         self.pin.function = 'output'
         self.pin.state = False
         sleep(0.1)
         # Time the charging of the capacitor
-        start = time()
+        start = self.pin_factory.ticks()
+        self._charge_time = None
         self._charged.clear()
         self.pin.function = 'input'
         self._charged.wait(self.charge_time_limit)
-        return (
-            1.0 - min(self.charge_time_limit, time() - start) /
-            self.charge_time_limit
-        )
+        if self._charge_time is None:
+            return 0.0
+        else:
+            return 1.0 - (
+                self.pin_factory.ticks_diff(self._charge_time, start) /
+                self.charge_time_limit)
 
 LightSensor.light_detected = LightSensor.is_active
 LightSensor.when_light = LightSensor.when_activated
@@ -753,11 +761,11 @@ class DistanceSensor(SmoothedInputDevice):
         """
         return self.pin
 
-    def _echo_changed(self):
+    def _echo_changed(self, ticks):
         if self._echo_rise is None:
-            self._echo_rise = time()
+            self._echo_rise = ticks
         else:
-            self._echo_fall = time()
+            self._echo_fall = ticks
         self._echo.set()
 
     def _read(self):
@@ -781,7 +789,9 @@ class DistanceSensor(SmoothedInputDevice):
                 # sound divided by two to compensate for travel to and from the
                 # reflector
                 if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
-                    distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
+                    distance = (
+                        self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
+                        self.speed_of_sound / 2.0)
                     self._echo_fall = None
                     self._echo_rise = None
                     return min(1.0, distance / self._max_distance)

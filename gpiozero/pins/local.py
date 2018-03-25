@@ -13,6 +13,10 @@ import struct
 import warnings
 from collections import defaultdict
 from threading import Lock
+try:
+    from time import monotonic
+except ImportError:
+    from time import time as monotonic
 
 try:
     from spidev import SpiDev
@@ -72,13 +76,35 @@ class LocalPiFactory(PiFactory):
                         return int(revision, base=16)
         raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
 
+    def ticks(self):
+        return monotonic()
+
+    def ticks_diff(self, later, earlier):
+        # NOTE: technically the guarantee to always return a positive result
+        # cannot be maintained in versions where monotonic() is not available
+        # and we fall back to time(). However, in that situation we've no
+        # access to a true monotonic source, and no idea how far the clock has
+        # skipped back so this is the best we can do anyway.
+        return later - earlier
+
 
 class LocalPiPin(PiPin):
     """
     Abstract base class representing a multi-function GPIO pin attached to the
     local Raspberry Pi.
     """
-    pass
+    def _call_when_changed(self):
+        """
+        Overridden to provide ticks from the local Pi factory.
+
+        .. warning::
+
+            The local pin factory uses a seconds-based monotonic value for
+            its ticks but you *must not* rely upon this behaviour. Ticks are
+            an opaque value that should only be compared with the associated
+            :meth:`Factory.ticks_diff` method.
+        """
+        super(LocalPiPin, self)._call_when_changed(self._factory.ticks())
 
 
 class LocalPiHardwareSPI(SPI, Device):
