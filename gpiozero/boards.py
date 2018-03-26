@@ -1604,10 +1604,18 @@ class Energenie(SourceMixin, Device):
 
     @property
     def socket(self):
+        """
+        Returns the socket number.
+        """
         return self._socket
 
     @property
     def value(self):
+        """
+        Returns ``True`` if the socket is on and ``False``
+        if the socket is off.  Setting this property changes
+        the state of the socket.
+        """
         return self._value
 
     @value.setter
@@ -1617,7 +1625,13 @@ class Energenie(SourceMixin, Device):
         self._value = value
 
     def on(self):
+        """
+        Turns the socket on.
+        """
         self.value = True
 
     def off(self):
+        """
+        Turns the socket off.
+        """
         self.value = False
