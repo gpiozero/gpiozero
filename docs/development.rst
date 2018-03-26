@@ -33,9 +33,11 @@ within a virtual Python environment:
 .. code-block:: console
 
     $ sudo apt install lsb-release build-essential git git-core \
-    >   exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
-    >   python-dev python3-dev
+        exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
+        python-dev python3-dev
     $ cd
+    $ echo "source /usr/share/virtualenvwrapper/virtualenvwrapper.sh" >> .bashrc
+    $ source .bashrc
     $ mkvirtualenv -p /usr/bin/python3 python-gpiozero
     $ workon python-gpiozero
     (python-gpiozero) $ git clone https://github.com/RPi-Distro/python-gpiozero.git
