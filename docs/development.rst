@@ -90,7 +90,7 @@ command should install all required dependencies:
 .. code-block:: console
 
     $ sudo apt install texlive-latex-recommended texlive-latex-extra \
-        texlive-fonts-recommended graphviz inkscape python-sphinx
+        texlive-fonts-recommended graphviz inkscape python-sphinx latexmk
 
 Once these are installed, you can use the "doc" target to build the
 documentation:
