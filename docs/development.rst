@@ -101,8 +101,8 @@ documentation:
     (python-gpiozero) $ cd ~/python-gpiozero
     (python-gpiozero) $ make doc
 
-The HTML output is written to :file:`docs/_build/html` while the PDF output
-goes to :file:`docs/_build/latex`.
+The HTML output is written to :file:`build/html` while the PDF output
+goes to :file:`build/latex`.
 
 
 Test suite
