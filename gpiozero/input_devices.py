@@ -669,7 +669,7 @@ class DistanceSensor(SmoothedInputDevice):
     ECHO_LOCK = Lock()
 
     def __init__(
-            self, echo=None, trigger=None, queue_len=10, max_distance=1,
+            self, echo=None, trigger=None, queue_len=9, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
