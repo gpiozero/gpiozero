@@ -308,8 +308,10 @@ class EventsMixin(object):
         if self.when_deactivated:
             self.when_deactivated()
 
-    def _fire_events(self, ticks):
+    def _fire_events(self, ticks, state):
         old_state = self._last_state
+        # NOTE: we are interested in the state of the *device*, not the pin
+        # (hence why the state parameter is ignored here)
         new_state = self._last_state = self.is_active
         if old_state is None:
             # Initial "indeterminate" state; set events but don't fire
@@ -319,7 +321,7 @@ class EventsMixin(object):
             else:
                 self._inactive_event.set()
         elif old_state != new_state:
-            self._last_changed = self.pin_factory.ticks()
+            self._last_changed = ticks
             if new_state:
                 self._inactive_event.clear()
                 self._active_event.set()
@@ -510,7 +512,7 @@ class GPIOQueue(GPIOThread):
                 if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
                     self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
-                    self.parent._fire_events(self.parent.pin_factory.ticks())
+                    self.parent._fire_events(self.parent.pin_factory.ticks(), None)
         except ReferenceError:
             # Parent is dead; time to die!
             pass

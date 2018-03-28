@@ -554,7 +554,7 @@ class LightSensor(SmoothedInputDevice):
     def charge_time_limit(self):
         return self._charge_time_limit
 
-    def _cap_charged(self, ticks):
+    def _cap_charged(self, ticks, state):
         self._charge_time = ticks
         self._charged.set()
 
@@ -761,12 +761,12 @@ class DistanceSensor(SmoothedInputDevice):
         """
         return self.pin
 
-    def _echo_changed(self, ticks):
-        if self._echo_rise is None:
+    def _echo_changed(self, ticks, level):
+        if level:
             self._echo_rise = ticks
         else:
             self._echo_fall = ticks
-        self._echo.set()
+            self._echo.set()
 
     def _read(self):
         # Make sure the echo pin is low then ensure the echo event is clear
@@ -780,15 +780,12 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = True
             sleep(0.00001)
             self._trigger.pin.state = False
-            # Wait up to 1 second for the echo pin to rise
+            # Wait up to 1 second for the echo pin to rise and fall (35ms is
+            # the maximum pulse time, but the time before rise is unspecified
+            # in the "datasheet"; 1 second seems sufficiently long to conclude
+            # something has failed).
             if self._echo.wait(1):
-                self._echo.clear()
-                # Wait up to 40ms for the echo pin to fall (35ms is maximum
-                # pulse time so any longer means something's gone wrong).
-                # Calculate distance as time for echo multiplied by speed of
-                # sound divided by two to compensate for travel to and from the
-                # reflector
-                if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
+                if self._echo_fall is not None and self._echo_rise is not None:
                     distance = (
                         self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
                         self.speed_of_sound / 2.0)
@@ -796,8 +793,8 @@ class DistanceSensor(SmoothedInputDevice):
                     self._echo_rise = None
                     return min(1.0, distance / self._max_distance)
                 else:
-                    # If we only saw one edge it means we missed the echo
-                    # because it was too fast; report minimum distance
+                    # If we only saw the falling edge it means we missed the
+                    # echo because it was too fast; report minimum distance
                     return 0.0
             else:
                 # The echo pin never rose or fell; something's gone horribly

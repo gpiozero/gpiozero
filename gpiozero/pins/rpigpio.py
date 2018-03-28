@@ -220,4 +220,3 @@ class RPiGPIOPin(LocalPiPin):
 
     def _disable_event_detect(self):
         GPIO.remove_event_detect(self.number)
-

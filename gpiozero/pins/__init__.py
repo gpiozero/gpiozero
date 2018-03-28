@@ -416,9 +416,20 @@ class Pin(object):
         doc="""\
         A function or bound method to be called when the pin's state changes
         (more specifically when the edge specified by :attr:`edges` is detected
-        on the pin). The function or bound method must accept a single
-        parameter which will report the ticks (from :meth:`Factory.ticks`) when
-        the pin's state changed.
+        on the pin). The function or bound method must accept two parameters:
+        the first will report the ticks (from :meth:`Factory.ticks`) when
+        the pin's state changed, and the second will report the pin's current
+        state.
+
+        .. warning::
+
+            Depending on hardware support, the state is *not guaranteed to be
+            accurate*. For instance, many GPIO implementations will provide
+            an interrupt indicating when a pin's state changed but not what it
+            changed to. In this case the pin driver simply reads the pin's
+            current state to supply this parameter, but the pin's state may
+            have changed *since* the interrupt. Exercise appropriate caution
+            when relying upon this parameter.
 
         If the pin does not support edge detection, attempts to set this
         property will raise :exc:`PinEdgeDetectUnsupported`.

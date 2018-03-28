@@ -140,7 +140,7 @@ class PiGPIOFactory(PiFactory):
         # modulo operator, unlike C's remainder) ensures the result is valid
         # even when later < earlier due to wrap-around (assuming the duration
         # measured is not longer than the period)
-        return (later - earlier) % 0x100000000
+        return ((later - earlier) % 0x100000000) / 1000000
 
 
 class PiGPIOPin(PiPin):
@@ -294,7 +294,7 @@ class PiGPIOPin(PiPin):
             self.when_changed = f
 
     def _call_when_changed(self, gpio, level, ticks):
-        super(PiGPIOPin, self)._call_when_changed(ticks)
+        super(PiGPIOPin, self)._call_when_changed(ticks, level)
 
     def _enable_event_detect(self):
         self._callback = self.factory.connection.callback(
@@ -543,4 +543,3 @@ class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
     def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         return (factory, select_pin)
-

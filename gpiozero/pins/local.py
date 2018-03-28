@@ -104,7 +104,7 @@ class LocalPiPin(PiPin):
             an opaque value that should only be compared with the associated
             :meth:`Factory.ticks_diff` method.
         """
-        super(LocalPiPin, self)._call_when_changed(self._factory.ticks())
+        super(LocalPiPin, self)._call_when_changed(self._factory.ticks(), self.state)
 
 
 class LocalPiHardwareSPI(SPI, Device):

@@ -255,7 +255,7 @@ class PiPin(Pin):
     def factory(self):
         return self._factory
 
-    def _call_when_changed(self, ticks):
+    def _call_when_changed(self, ticks, state):
         """
         Called to fire the :attr:`when_changed` event handler; override this
         in descendents if additional (currently redundant) parameters need
@@ -265,7 +265,7 @@ class PiPin(Pin):
         if method is None:
             self.when_changed = None
         else:
-            method(ticks)
+            method(ticks, state)
 
     def _get_when_changed(self):
         return self._when_changed
@@ -302,4 +302,3 @@ class PiPin(Pin):
         on pin :attr:`number`.
         """
         raise NotImplementedError
-
