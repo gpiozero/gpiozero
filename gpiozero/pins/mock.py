@@ -26,13 +26,12 @@ from ..exc import (
     PinInvalidPull,
     )
 from ..devices import Device
-from .pi import PiPin
-from .local import LocalPiFactory
+from .local import LocalPiPin, LocalPiFactory
 
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
 
-class MockPin(PiPin):
+class MockPin(LocalPiPin):
     """
     A mock pin used primarily for testing. This class does *not* support PWM.
     """
@@ -118,23 +117,23 @@ class MockPin(PiPin):
         assert value in ('none', 'falling', 'rising', 'both')
         self._edges = value
 
-    def _get_when_changed(self):
-        return self._when_changed
+    def _disable_event_detect(self):
+        pass
 
-    def _set_when_changed(self, value):
-        self._when_changed = value
+    def _enable_event_detect(self):
+        pass
 
     def drive_high(self):
         assert self._function == 'input'
         if self._change_state(True):
             if self._edges in ('both', 'rising') and self._when_changed is not None:
-                self._when_changed()
+                self._call_when_changed()
 
     def drive_low(self):
         assert self._function == 'input'
         if self._change_state(False):
             if self._edges in ('both', 'falling') and self._when_changed is not None:
-                self._when_changed()
+                self._call_when_changed()
 
     def clear_states(self):
         self._last_change = time()
@@ -466,4 +465,3 @@ class MockFactory(LocalPiFactory):
             if issubclass(pin_class, MockPWMPin) != isinstance(pin, MockPWMPin):
                 raise ValueError('pin %d is already in use as a %s' % (n, pin.__class__.__name__))
         return pin
-

@@ -157,7 +157,7 @@ def test_mock_pin_edges():
     assert pin.edges == 'both'
     pin.drive_low()
     assert not pin.state
-    def changed():
+    def changed(ticks, state):
         fired.set()
     pin.when_changed = changed
     pin.drive_high()

@@ -107,7 +107,7 @@ class DigitalInputDevice(EventsMixin, InputDevice):
             self.pin.edges = 'both'
             self.pin.when_changed = self._fire_events
             # Call _fire_events once to set initial state of events
-            self._fire_events()
+            self._fire_events(self.pin_factory.ticks(), None)
         except:
             self.close()
             raise
