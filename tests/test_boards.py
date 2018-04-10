@@ -935,6 +935,8 @@ def test_energenie():
         assert repr(device2) == '<gpiozero.Energenie object on socket 2>'
         assert device1.value
         assert not device2.value
+        assert device1.socket == 1
+        assert device2.socket == 2
         [pin.clear_states() for pin in pins]
         device1.on()
         assert device1.value
