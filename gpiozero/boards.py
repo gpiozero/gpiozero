@@ -1073,27 +1073,42 @@ class RGBLEDBoard(CompositeOutputDevice):
     def __init__(self, *args, **kwargs):
         pwm = kwargs.pop('pwm', True)
         active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', False)
+        initial_value = kwargs.pop('initial_value', (0, 0, 0))
         pin_factory = kwargs.pop('pin_factory', None)
         order = kwargs.pop('_order', None)
+
+        if len(args) == 0 and len(kwargs) == 0:
+            raise ValueError(
+                'at least 1 sequence of RGB pins must be provided')
+        else:
+            try:
+                for arg in args:
+                    r, g, b = arg
+                for arg in kwargs.values():
+                    r, g, b = arg
+            except:
+                raise ValueError(
+                    'pins must be provided as a tuple of 3-tuples '
+                    'e.g. RGBLEDBoard((2, 3, 4), (5, 6, 7)')
+
         super(RGBLEDBoard, self).__init__(
             *(
                 pins_or_board
                 if isinstance(pins_or_board, RGBLEDBoard) else
                 RGBLED(
-                    *pins_or_board, pwm=pwm, active_high=active_high, initial_value=(initial_value, ) * 3,
-                    pin_factory=pin_factory
+                    *pins_or_board, pwm=pwm, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
                 )
                 for pins_or_board in args
-                ),
+            ),
             _order=order,
             pin_factory=pin_factory,
             **{
                 name: pins_or_board
                 if isinstance(pins_or_board, RGBLEDBoard) else
                 RGBLED(
-                    *pins_or_board, pwm=pwm, active_high=active_high, initial_value=(initial_value,) * 3,
-                    pin_factory=pin_factory
+                    *pins_or_board, pwm=pwm, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
                 )
                 for name, pins_or_board in kwargs.items()
             })
@@ -1104,18 +1119,45 @@ class RGBLEDBoard(CompositeOutputDevice):
                     leds.append(subitem)
             else:
                 leds.append(item)
+
         self._leds = tuple(leds)
 
-    @property
-    def leds(self):
-        """
-        A flat tuple of all LEDs contained in this board (and all sub-boards).
-        """
-        return self._leds
+        self._blink_thread = None
+        self._blink_leds = []
+        self._blink_lock = Lock()
 
-    @property
-    def active_high(self):
-        return self[0].active_high
+    def on(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].on()
+        else:
+            super(RGBLEDBoard, self).on()
+
+    def off(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].off()
+        else:
+            super(RGBLEDBoard, self).off()
+
+    def toggle(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].toggle()
+        else:
+            super(RGBLEDBoard, self).toggle()
+
+    def _stop_blink(self, led=None):
+        if led is None:
+            if self._blink_thread:
+                self._blink_thread.stop()
+                self._blink_thread = None
+        else:
+            with self._blink_lock:
+                self._blink_leds.remove(led)
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):

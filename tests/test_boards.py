@@ -34,7 +34,11 @@ def setup_function(function):
         'test_led_bar_graph_pwm_initial_value',
         'test_statusboard_kwargs',
         'test_statuszero_kwargs',
+        'test_rgbledboard_bad_init',
+        'test_rgbledboard_good_init',
         'test_rgbledboard',
+        'test_rgbledboard_named',
+        'test_rgbledboard_blink',
         'test_rgbledboard_initial_value',
         ) else MockPin
 
@@ -697,6 +701,44 @@ def test_snow_pi_initial_value_pwm():
         assert [device.pin for device in board.leds] == pins
         assert all(device.pin.state == 0.5 for device in board.leds)
 
+def test_rgbledboard_bad_init():
+    with pytest.raises(ValueError):
+        RGBLEDBoard()
+    with pytest.raises(ValueError):
+        RGBLEDBoard(2)
+    with pytest.raises(ValueError):
+        RGBLEDBoard(pin=2)
+    with pytest.raises(ValueError):
+        RGBLEDBoard(2, 3, 4)
+
+def test_rgbledboard_bad_init_pwm():
+    with pytest.raises(PinPWMUnsupported):
+        RGBLEDBoard((2, 3, 4))
+    with pytest.raises(PinPWMUnsupported):
+        RGBLEDBoard((2, 3, 4), pwm=True)
+
+def test_rgbledboard_good_init():
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7)) as board:
+        assert len(board) == 2
+        assert isinstance(board[0], RGBLED)
+        assert isinstance(board[1], RGBLED)
+        assert board.value == ((0, 0, 0), (0, 0, 0))
+
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), (8, 9, 10)) as board:
+        assert len(board) == 3
+        assert isinstance(board[0], RGBLED)
+        assert isinstance(board[1], RGBLED)
+        assert isinstance(board[2], RGBLED)
+        assert board.value == ((0, 0, 0), (0, 0, 0), (0, 0, 0))
+
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), (8, 9, 10), (11, 12, 13)) as board:
+        assert len(board) == 4
+        assert isinstance(board[0], RGBLED)
+        assert isinstance(board[1], RGBLED)
+        assert isinstance(board[2], RGBLED)
+        assert isinstance(board[3], RGBLED)
+        assert board.value == ((0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0))
+
 def test_rgbledboard():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
     with RGBLEDBoard((2, 3, 4), (5, 6, 7)) as board:
@@ -708,28 +750,65 @@ def test_rgbledboard():
         assert all(pin.state for pin in pins)
         board.off()
         assert not any(pin.state for pin in pins)
+
         board[0].on()
         assert board.value == ((1, 1, 1), (0, 0, 0))
         assert all(pin.state for pin in pins[:3])
         assert not any(pin.state for pin in pins[3:])
+        board[0].off()
+        assert board.value == ((0, 0, 0), (0, 0, 0))
+
+        board.on(0)
+        assert board.value == ((1, 1, 1), (0, 0, 0))
+        assert all(pin.state for pin in pins[:3])
+        assert not any(pin.state for pin in pins[3:])
+        board.off(0)
+        assert board.value == ((0, 0, 0), (0, 0, 0))
+
+        board.value = ((1, 1, 1), (0, 0, 0))
         board.toggle()
         assert board.value == ((0, 0, 0), (1, 1, 1))
-        assert not any(pin.state for pin in pins[:3])
+        assert not all(pin.state for pin in pins[:3])
         assert all(pin.state for pin in pins[3:])
+
+        board.value = ((0.5, 0.2, 0.8), (0.2, 0.4, 0.6))
+        assert board.value == ((0.5, 0.2, 0.8), (0.2, 0.4, 0.6))
+        board.toggle()
+        # account for floating point errors
+        for actual, expected in zip(board[0].value, (0.5, 0.8, 0.2)):
+            assert pytest.approx(actual, 0.1) == expected
+        for actual, expected in zip(board[1].value, (0.8, 0.6, 0.4)):
+            assert pytest.approx(actual, 0.1) == expected
+
         board.value = ((1, 0, 1), (1, 1, 0))
         assert board.value == ((1, 0, 1), (1, 1, 0))
-        board.value = ((0.1, 0.3, 0.5), (0.7, 0.9, 1))
-        assert board.value == ((0.1, 0.3, 0.5), (0.7, 0.9, 1))
+        board.toggle(0)
+        assert board.value == ((0, 1, 0), (1, 1, 0))
+        board.toggle(1)
+        assert board.value == ((0, 1, 0), (0, 0, 1))
+
+def test_rgbledboard_named():
+    with RGBLEDBoard(foo=(2, 3, 4), bar=(5, 6, 7), _order=('foo', 'bar')) as board:
+        assert isinstance(board.foo, RGBLED)
+        assert isinstance(board.bar, RGBLED)
+        board.foo.on()
+        assert board.value == ((1, 1, 1), (0, 0, 0))
+        board.bar.on()
+        assert board.value == ((1, 1, 1), (1, 1, 1))
+        board.foo.red = 0
+        assert board.value == ((0, 1, 1), (1, 1, 1))
+        board[1].off()
+        assert board.value == ((0, 1, 1), (0, 0, 0))
 
 def test_rgbledboard_initial_value():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
-    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=False) as board:
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=(0, 0, 0)) as board:
         assert not any(pin.state for pin in pins)
         assert board.value == ((0, 0, 0), (0, 0, 0))
-    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=True) as board:
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=(1, 1, 1)) as board:
         assert all(pin.state for pin in pins)
         assert board.value == ((1, 1, 1), (1, 1, 1))
-    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=0.5) as board:
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), initial_value=(0.5, 0.5, 0.5)) as board:
         assert all(pin.state for pin in pins)
         assert board.value == ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 
@@ -742,6 +821,14 @@ def test_rgbledboard_initial_value_no_pwm():
         with pytest.raises(ValueError):
             board.value = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         assert board.value == ((0, 0, 0), (0, 0, 0))
+
+def test_rgbledboard_blink():
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7)) as board:
+        board.blink()
+        assert board.value == ((1, 1, 1), (1, 1, 1))
+        board.off()
+        board[0].blink()
+        assert board.value == ((1, 1, 1), (0, 0, 0))
 
 def test_traffic_lights_buzzer():
     red_pin = Device.pin_factory.pin(2)
