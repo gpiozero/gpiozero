@@ -140,9 +140,9 @@ version of gpiozero is available in your Python environment like so:
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
-    [gpiozero 1.4.0 (/usr/lib/python3/dist-packages)]
+    [gpiozero 1.4.1 (/usr/lib/python3/dist-packages)]
     >>> require('gpiozero')[0].version
-    '1.4.0'
+    '1.4.1'
 
 If you have multiple versions installed (e.g. from ``pip`` and ``apt``) they
 will not show up in the list returned by the ``require`` method. However, the
