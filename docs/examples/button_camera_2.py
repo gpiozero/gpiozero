@@ -8,8 +8,8 @@ right_button = Button(3)
 camera = PiCamera()
 
 def capture():
-    datetime = datetime.now().isoformat()
-    camera.capture('/home/pi/%s.jpg' % datetime)
+    timestamp = datetime.now().isoformat()
+    camera.capture('/home/pi/%s.jpg' % timestamp)
 
 left_button.when_pressed = camera.start_preview
 left_button.when_released = camera.stop_preview
