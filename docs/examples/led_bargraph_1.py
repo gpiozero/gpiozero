@@ -1,5 +1,6 @@
 from gpiozero import LEDBarGraph
 from time import sleep
+from __future__ import division
 
 graph = LEDBarGraph(5, 6, 13, 19, 26, 20)
 
