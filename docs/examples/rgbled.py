@@ -1,6 +1,6 @@
 from gpiozero import RGBLED
 from time import sleep
-from __future__ import division
+from __future__ import division  # required for python 2
 
 led = RGBLED(red=9, green=10, blue=11)
 
