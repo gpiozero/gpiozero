@@ -109,6 +109,9 @@ class PinInvalidEdges(PinError, ValueError):
 class PinInvalidBounce(PinError, ValueError):
     "Error raised when attempting to assign an invalid bounce time to a pin"
 
+class PinInvalidPolarity(PinError, ValueError):
+    "Error raised when attempting to assign an invalid polarity to an input pin"
+
 class PinSetInput(PinError, AttributeError):
     "Error raised when attempting to set a read-only pin"
 

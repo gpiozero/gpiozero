@@ -7,12 +7,14 @@ from __future__ import (
 nstr = str
 str = type('')
 
+import logging
 import inspect
 import weakref
 from functools import wraps, partial
-from threading import Event
+from threading import Event, RLock
 from collections import deque
 from time import time
+from types import MethodType
 try:
     from statistics import median
 except ImportError:
@@ -25,6 +27,10 @@ from .exc import (
     BadQueueLen,
     DeviceClosed,
     )
+
+
+LOGGER = logging.getLogger(__name__)
+
 
 class ValuesMixin(object):
     """
@@ -511,3 +517,61 @@ class GPIOQueue(GPIOThread):
             # Parent is dead; time to die!
             pass
 
+
+class WhenChangedMixin(object):
+    """Implements generic state change handling for :class:`.Pin`.
+    """
+
+    def __init__(self):
+        self._when_changed_lock = RLock()
+        self._when_changed = None
+
+    def _call_when_changed(self):
+        """
+        Called to fire the :attr:`when_changed` event handler; override this
+        in descendents if additional (currently redundant) parameters need
+        to be passed.
+        """
+        method = self.when_changed()
+        if method is None:
+            LOGGER.warning('%r lost reference to when_changed callback %r',
+                           self, self._when_changed)
+            self.when_changed = None
+        else:
+            method()
+
+    def _get_when_changed(self):
+        return self._when_changed
+
+    def _set_when_changed(self, value):
+        with self._when_changed_lock:
+            if value is None:
+                if self._when_changed is not None:
+                    self._disable_event_detect()
+                self._when_changed = None
+            else:
+                enabled = self._when_changed is not None
+                # Have to take care, if value is either a closure or a bound
+                # method, not to keep a strong reference to the containing
+                # object
+                if isinstance(value, MethodType):
+                    self._when_changed = weakref.WeakMethod(value)
+                else:
+                    self._when_changed = weakref.ref(value)
+                if not enabled:
+                    self._enable_event_detect()
+
+    def _enable_event_detect(self):
+        """
+        Enables event detection. This is called to activate event detection on
+        pin :attr:`number`, watching for the specified :attr:`edges`. In
+        response, :meth:`_call_when_changed` should be executed.
+        """
+        raise NotImplementedError
+
+    def _disable_event_detect(self):
+        """
+        Disables event detection. This is called to deactivate event detection
+        on pin :attr:`number`.
+        """
+        raise NotImplementedError
