@@ -192,6 +192,7 @@ def test_MCP230xxPin():
     factory.ipol.write = Mock()
     pin = MCP230xxPin(factory, 0)
 
+    # __init__
     assert pin.factory is factory
     assert pin.number == 0
     assert pin.function == 'input'
@@ -203,18 +204,25 @@ def test_MCP230xxPin():
     assert pin.polarity == 'normal'
     factory.ipol.write.assert_called_once_with([0, 0])
 
+    # Ensure changing the pin function results in a write to the IODIR register
     pin.function = 'output'
     assert pin.function == 'output'
     factory.iodir.write.assert_called_with([0, 0])
+    # Exceptions
     with pytest.raises(PinInvalidFunction):
         pin.function = 'foo'
 
+    # Ensure changing the pull resistor status results in a write to the
+    # GPPU register
     pin.pull = 'up'
     assert pin.pull == 'up'
     factory.gppu.write.assert_called_with([1, 0])
+    # Exceptions
     with pytest.raises(PinInvalidPull):
         pin.pull = 'down'
 
+    # Ensure attaching a callback to the pin results in subscribing to events
+    # on the factory side
     factory.subscribe = Mock()
     factory.unsubscribe = Mock()
     pin.edges = 'falling'
@@ -223,6 +231,8 @@ def test_MCP230xxPin():
     pin.when_changed = lambda: 42
     factory.subscribe.assert_called_once_with(
         0, EDGE_FALL, pin._call_when_changed)
+    # Ensure changing the expected edges results in un-subscribing then
+    # re-subscribing with the new edges
     factory.subscribe.reset_mock()
     factory.unsubscribe.reset_mock()
     pin.edges = 'rising'
@@ -230,22 +240,29 @@ def test_MCP230xxPin():
         0, EDGE_FALL, pin._call_when_changed)
     factory.subscribe.assert_called_once_with(
         0, EDGE_RISE, pin._call_when_changed)
+    # Exceptions
     with pytest.raises(PinInvalidEdges):
         pin.edges = 'foo'
 
+    # Check bounce property read/write
     pin.bounce = 100
     assert pin.bounce == 100
     pin.bounce = 200
     assert pin.bounce == 200
+    # Exceptions
     with pytest.raises(PinInvalidBounce):
         pin.bounce = -1
 
+    # Ensure changing the pin input polarity results in a write to the IPOL
+    # register
     pin.polarity = 'reversed'
     assert pin.polarity == 'reversed'
     factory.ipol.write.assert_called_with([1, 0])
+    # Exceptions
     with pytest.raises(PinInvalidPolarity):
         pin.polarity = 'foo'
 
+    # Ensure changing the pin state results in a write to the OLAT register
     factory.olat.read = Mock(side_effect=[[0, 0]])
     factory.olat.write = Mock()
     pin.state = 1
@@ -289,7 +306,7 @@ def test_MCP230xxPoller():
     poller.lock.__enter__.assert_called_once_with()
     poller.lock.__exit__.assert_called_once_with(None, None, None)
     assert poller.subscribers == {}
-    # run
+    # run - Ensure callbacks are approprietely invoked
     factory.iodir.read = Mock(side_effect=[[0xff, 0xff]] * 16)
     factory.gppu.read = Mock(side_effect=[[0, 0]] * 16)
     factory.ipol.read = Mock(side_effect=[[0, 0]] * 16)
@@ -300,11 +317,11 @@ def test_MCP230xxPoller():
     poller.subscribe(0, EDGE_RISE, rise_callback)
     poller.subscribe(0, EDGE_FALL, fall_callback)
     pin = factory.pin(0)
-    assert pin._state is None
+    assert pin._state is None  # Ensure pin state is not managed by poller
     poller.start()
-    assert pin._state is not None
+    assert pin._state is not None  # Ensure pin state is managed by poller
     sleep(0.1)
     poller.stop()
-    assert pin._state is None
+    assert pin._state is None  # Ensure pin state is no longer managed by poller
     rise_callback.assert_called_once_with()
     fall_callback.assert_called_once_with()
