@@ -251,9 +251,19 @@ def test_MCP230xxPin():
     pin.state = 1
     factory.olat.write.assert_called_once_with([1, 0])
 
+    # Ensure pin states are read by default by querying the GPIO register
     factory.gpio.read = Mock(side_effect=[[1, 0], [0, 0]])
-    assert pin.state
-    assert not pin.state
+    pin.bounce = None
+    assert pin.state is True
+    assert factory.gpio.read.call_count == 1
+    # Ensure they use the cached value instead when provided
+    pin._state = False
+    assert pin.state is False
+    assert factory.gpio.read.call_count == 1
+    # Ensure they fall back to the GPIO register when unset
+    pin._state = None
+    assert pin.state is False
+    assert factory.gpio.read.call_count == 2
 
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
@@ -289,8 +299,12 @@ def test_MCP230xxPoller():
     fall_callback = Mock()
     poller.subscribe(0, EDGE_RISE, rise_callback)
     poller.subscribe(0, EDGE_FALL, fall_callback)
+    pin = factory.pin(0)
+    assert pin._state is None
     poller.start()
+    assert pin._state is not None
     sleep(0.1)
     poller.stop()
+    assert pin._state is None
     rise_callback.assert_called_once_with()
     fall_callback.assert_called_once_with()

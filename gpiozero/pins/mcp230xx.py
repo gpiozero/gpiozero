@@ -232,6 +232,7 @@ class MCP230xxPin(WhenChangedMixin, Pin):
         self.bounce = bounce
         self.polarity = polarity
         self.edge_detector = EdgeDetector()
+        self._state = None
 
     def __repr__(self):
         return 'MCP230xxPin(factory=%r, number=%r, function=%r, pull=%r)' % (
@@ -253,7 +254,8 @@ class MCP230xxPin(WhenChangedMixin, Pin):
         self.factory.olat[self.number] = value
 
     def _get_state(self):
-        return self.factory.gpio[self.number]
+        return self.debouncer(self.factory.gpio[self.number]) \
+            if self._state is None else self._state
 
     def _set_pull(self, value):
         if value == 'up':
@@ -469,8 +471,9 @@ class MCP230xxPoller(GPIOThread):
 
             for number in range(self.factory.IO_PIN_COUNT):
                 pin = self.factory.pin(number)
-                state = pin.debouncer(get_bit_state(states, number))
-                edge = pin.edge_detector(state)
+                state = get_bit_state(states, number)
+                pin._state = debounced = pin.debouncer(state)
+                edge = pin.edge_detector(debounced)
 
                 if edge:
                     callbacks = []
@@ -484,6 +487,13 @@ class MCP230xxPoller(GPIOThread):
 
             if self.stopping.wait(self.interval):
                 break
+
+    def stop(self):
+        super(MCP230xxPoller, self).stop()
+        # When shutting down the poller, pin must poll their values
+        # by themselves.
+        for number in range(self.factory.IO_PIN_COUNT):
+            self.factory.pin(number)._state = None
 
 
 class MCP230xxFactory(Factory):
