@@ -320,7 +320,7 @@ def test_MCP230xxPoller():
     assert pin._state is None  # Ensure pin state is not managed by poller
     now = 0
     for index, state in enumerate(states):
-        poller._run_for_pin(0, state, now + index / 1000)
+        poller._run_for_pin(0, state, now + index / 1000.)
     assert pin._state is not None  # Ensure pin state is managed by poller
     rise_callback.assert_called_once_with()
     fall_callback.assert_called_once_with()

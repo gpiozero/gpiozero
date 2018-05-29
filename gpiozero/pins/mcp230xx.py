@@ -277,7 +277,7 @@ class MCP230xxPin(WhenChangedMixin, Pin):
             raise PinInvalidBounce('bounce must be 0 or greater')
 
         if value:
-            value /= 1000
+            value /= 1000.
             if isinstance(self.debouncer, Debouncer):
                 self.debouncer.delay = value
             else:
