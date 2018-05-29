@@ -492,7 +492,11 @@ class MCP230xxPoller(GPIOThread):
                 self._run_for_pin(number, states)
 
     def stop(self):
-        super(MCP230xxPoller, self).stop()
+        """Stop the polling thread.
+        """
+        # Only call parent's stop() when the thread is actually running
+        if self.isAlive():
+            super(MCP230xxPoller, self).stop()
         # When shutting down the poller, pin must poll their values
         # by themselves.
         for number in range(self.factory.IO_PIN_COUNT):

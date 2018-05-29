@@ -324,3 +324,6 @@ def test_MCP230xxPoller():
     assert pin._state is not None  # Ensure pin state is managed by poller
     rise_callback.assert_called_once_with()
     fall_callback.assert_called_once_with()
+    # Ensure pin management by poller ends when poller is shut down
+    poller.stop()
+    assert pin._state is None
