@@ -310,18 +310,17 @@ def test_MCP230xxPoller():
     factory.iodir.read = Mock(side_effect=[[0xff, 0xff]] * 16)
     factory.gppu.read = Mock(side_effect=[[0, 0]] * 16)
     factory.ipol.read = Mock(side_effect=[[0, 0]] * 16)
-    factory.gpio.read = Mock(
-        side_effect=[[0, 0]] * 20 + [[1, 0]] * 40 + [[0, 0]] * 1000)
+    states = [[0, 0]] * 20 + [[1, 0]] * 40 + [[0, 0]] * 40
     rise_callback = Mock()
     fall_callback = Mock()
     poller.subscribe(0, EDGE_RISE, rise_callback)
     poller.subscribe(0, EDGE_FALL, fall_callback)
-    pin = factory.pin(0)
+    pin = factory.pin(0, bounce=15)
+    # (fake) run the poller
     assert pin._state is None  # Ensure pin state is not managed by poller
-    poller.start()
+    now = 0
+    for index, state in enumerate(states):
+        poller._run_for_pin(0, state, now + index / 1000)
     assert pin._state is not None  # Ensure pin state is managed by poller
-    sleep(0.1)
-    poller.stop()
-    assert pin._state is None  # Ensure pin state is no longer managed by poller
     rise_callback.assert_called_once_with()
     fall_callback.assert_called_once_with()

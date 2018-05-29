@@ -269,7 +269,7 @@ class MCP230xxPin(WhenChangedMixin, Pin):
     def _get_pull(self):
         return 'up' if self.factory.gppu[self.number] else 'floating'
 
-    def _dummy_debounce(self, value):
+    def _dummy_debounce(self, value, now=None):
         return value
 
     def _set_bounce(self, value):
@@ -277,6 +277,7 @@ class MCP230xxPin(WhenChangedMixin, Pin):
             raise PinInvalidBounce('bounce must be 0 or greater')
 
         if value:
+            value /= 1000
             if isinstance(self.debouncer, Debouncer):
                 self.debouncer.delay = value
             else:
@@ -286,7 +287,7 @@ class MCP230xxPin(WhenChangedMixin, Pin):
 
     def _get_bounce(self):
         return 0 if self.debouncer == self._dummy_debounce \
-            else self.debouncer.delay
+            else self.debouncer.delay * 1000
 
     def _set_edges(self, value):
         if value not in self.EDGES_NAMES:
@@ -460,33 +461,35 @@ class MCP230xxPoller(GPIOThread):
                 if not self.subscribers[key]:
                     del self.subscribers[key]
 
+    def _run_for_pin(self, number, states, now=None):
+        pin = self.factory.pin(number)
+        state = get_bit_state(states, number)
+        pin._state = debounced = pin.debouncer(state, now)
+        edge = pin.edge_detector(debounced)
+
+        if edge:
+            callbacks = []
+
+            with self.lock:
+                for key in ((number, edge), (number, EDGE_BOTH)):
+                    callbacks.extend(self.subscribers.get(key, []))
+
+            for callback in callbacks:
+                callback()
+
     def run(self):
         """Run the polling loop.
         """
         for value in self.factory.gpio.values:
+            if self.stopping.wait(self.interval):
+                break
             if not self.subscribers:
                 continue
 
             states = self.factory.gpio.read()
 
             for number in range(self.factory.IO_PIN_COUNT):
-                pin = self.factory.pin(number)
-                state = get_bit_state(states, number)
-                pin._state = debounced = pin.debouncer(state)
-                edge = pin.edge_detector(debounced)
-
-                if edge:
-                    callbacks = []
-
-                    with self.lock:
-                        for key in ((number, edge), (number, EDGE_BOTH)):
-                            callbacks.extend(self.subscribers.get(key, []))
-
-                    for callback in callbacks:
-                        callback()
-
-            if self.stopping.wait(self.interval):
-                break
+                self._run_for_pin(number, states)
 
     def stop(self):
         super(MCP230xxPoller, self).stop()
