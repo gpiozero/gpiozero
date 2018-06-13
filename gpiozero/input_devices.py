@@ -390,7 +390,7 @@ class LineSensor(SmoothedInputDevice):
             threshold=0.5, partial=False, pin_factory=None):
         super(LineSensor, self).__init__(
             pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
-            partial, pin_factory=pin_factory)
+            partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -465,7 +465,7 @@ class MotionSensor(SmoothedInputDevice):
             threshold=0.5, partial=False, pin_factory=None):
         super(MotionSensor, self).__init__(
             pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
-            partial, pin_factory=pin_factory)
+            partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
