@@ -7,6 +7,7 @@ from __future__ import (
 
 from threading import Lock
 from itertools import repeat, cycle, chain
+from colorzero import Color, Red, Green, Blue
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing
 from .devices import GPIODevice, Device, CompositeDevice
@@ -539,15 +540,6 @@ class PWMLED(PWMOutputDevice):
 PWMLED.is_lit = PWMLED.is_active
 
 
-def _led_property(index, doc=None):
-    def getter(self):
-        return self._leds[index].value
-    def setter(self, value):
-        self._stop_blink()
-        self._leds[index].value = value
-    return property(getter, setter, doc=doc)
-
-
 class RGBLED(SourceMixin, Device):
     """
     Extends :class:`Device` and represents a full color LED component (composed
@@ -605,10 +597,6 @@ class RGBLED(SourceMixin, Device):
         )
         self.value = initial_value
 
-    red = _led_property(0)
-    green = _led_property(1)
-    blue = _led_property(2)
-
     def close(self):
         if getattr(self, '_leds', None):
             self._stop_blink()
@@ -653,7 +641,56 @@ class RGBLED(SourceMixin, Device):
         return self.value != (0, 0, 0)
 
     is_lit = is_active
-    color = value
+
+    @property
+    def color(self):
+        """
+        Represents the color of the LED as a :class:`~colorzero.`Color` object.
+        """
+        return Color(*self.value)
+
+    @color.setter
+    def color(self, value):
+        if isinstance(value, Color):
+            self.value = value.rgb
+        else:
+            self.value = value
+
+    @property
+    def red(self):
+        return Red(self.value[0])
+
+    @red.setter
+    def red(self, value):
+        self._stop_blink()
+        if isinstance(value, Red):
+            self.value = float(value)
+        else:
+            self._leds[0].value = value
+
+    @property
+    def green(self):
+        return Green(self.value[0])
+
+    @green.setter
+    def green(self, value):
+        self._stop_blink()
+        if isinstance(value, Green):
+            self.value = float(value)
+        else:
+            self._leds[0].value = value
+
+    @property
+    def blue(self):
+        return Blue(self.value[0])
+
+    @blue.setter
+    def blue(self, value):
+        self._stop_blink()
+        if isinstance(value, Blue):
+            self.value = float(value)
+        else:
+            self._leds[0].value = value
 
     def on(self):
         """
