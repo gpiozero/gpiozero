@@ -658,7 +658,7 @@ class RGBLED(SourceMixin, Device):
 
     @property
     def red(self):
-        return Red(self.value[0])
+        return Red(self._leds[0].value)
 
     @red.setter
     def red(self, value):
@@ -670,7 +670,7 @@ class RGBLED(SourceMixin, Device):
 
     @property
     def green(self):
-        return Green(self.value[0])
+        return Green(self._leds[1].value)
 
     @green.setter
     def green(self, value):
@@ -678,11 +678,11 @@ class RGBLED(SourceMixin, Device):
         if isinstance(value, Green):
             self.value = float(value)
         else:
-            self._leds[0].value = value
+            self._leds[1].value = value
 
     @property
     def blue(self):
-        return Blue(self.value[0])
+        return Blue(self._leds[2].value)
 
     @blue.setter
     def blue(self, value):
@@ -690,7 +690,7 @@ class RGBLED(SourceMixin, Device):
         if isinstance(value, Blue):
             self.value = float(value)
         else:
-            self._leds[0].value = value
+            self._leds[2].value = value
 
     def on(self):
         """
