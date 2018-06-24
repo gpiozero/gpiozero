@@ -55,6 +55,26 @@ def test_input_pulled_up():
     with pytest.raises(PinFixedPull):
         InputDevice(2, pull_up=False)
 
+def test_input_is_active_low_externally_pulled_up():
+    pin = Device.pin_factory.pin(4)
+    device = InputDevice(4, pull_up=None, active_state=False)
+    pin.drive_high()
+    assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=False>'
+    assert not device.is_active
+    pin.drive_low()
+    assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=True>'
+    assert device.is_active
+
+def test_input_is_active_low_externally_pulled_down():
+    pin = Device.pin_factory.pin(4)
+    device = InputDevice(4, pull_up=None, active_state=True)
+    pin.drive_high()
+    assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=True>'
+    assert device.is_active
+    pin.drive_low()
+    assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=False>'
+    assert not device.is_active
+
 def test_input_event_activated():
     event = Event()
     pin = Device.pin_factory.pin(4)
