@@ -240,35 +240,43 @@ class MCP230xxPin(WhenChangedMixin, Pin):
 
     def _set_function(self, value):
         if value == 'input':
-            self.factory.iodir[self.number] = 1
+            with self.factory.lock:
+                self.factory.iodir[self.number] = True
         elif value == 'output':
-            self.factory.iodir[self.number] = 0
+            with self.factory.lock:
+                self.factory.iodir[self.number] = False
         else:
             raise PinInvalidFunction('Invalid function %r for pin %s of %r'
                                      % (value, self.number, self.factory))
 
     def _get_function(self):
-        return 'input' if self.factory.iodir[self.number] else 'output'
+        with self.factory.lock:
+            return 'input' if self.factory.iodir[self.number] else 'output'
 
     def _set_state(self, value):
-        self.factory.olat[self.number] = value
+        with self.factory.lock:
+            self.factory.olat[self.number] = value
 
     def _get_state(self):
-        return bool(
-            self.debouncer(self.factory.gpio[self.number])
-            if self._state is None else self._state)
+        with self.factory.lock:
+            return bool(
+                self.debouncer(self.factory.gpio[self.number])
+                if self._state is None else self._state)
 
     def _set_pull(self, value):
         if value == 'up':
-            self.factory.gppu[self.number] = 1
+            with self.factory.lock:
+                self.factory.gppu[self.number] = True
         elif value == 'floating':
-            self.factory.gppu[self.number] = 0
+            with self.factory.lock:
+                self.factory.gppu[self.number] = False
         else:
             raise PinInvalidPull('Invalid pull %r for pin %s of %r'
                                  % (value, self.number, self.factory))
 
     def _get_pull(self):
-        return 'up' if self.factory.gppu[self.number] else 'floating'
+        with self.factory.lock:
+            return 'up' if self.factory.gppu[self.number] else 'floating'
 
     def _dummy_debounce(self, value, now=None):
         return value
@@ -320,15 +328,18 @@ class MCP230xxPin(WhenChangedMixin, Pin):
 
     def _set_polarity(self, value):
         if value == 'normal':
-            self.factory.ipol[self.number] = 0
+            with self.factory.lock:
+                self.factory.ipol[self.number] = 0
         elif value == 'reversed':
-            self.factory.ipol[self.number] = 1
+            with self.factory.lock:
+                self.factory.ipol[self.number] = 1
         else:
             raise PinInvalidPolarity(
                 'Invalid polarity %r for pin %r' % (value, self))
 
     def _get_polarity(self):
-        return 'reversed' if self.factory.ipol[self.number] else 'normal'
+        with self.factory.lock:
+            return 'reversed' if self.factory.ipol[self.number] else 'normal'
 
     polarity = property(
         lambda self: self._get_polarity(),
@@ -514,12 +525,13 @@ class MCP230xxFactory(Factory):
     DEFAULT_ADDRESS = 0x20
 
     def __init__(self, address=None, i2c=None,
-                 pin_class=MCP230xxPin, poller_class=MCP230xxPoller):
+                 pin_class=MCP230xxPin, poller_class=MCP230xxPoller, lock=None):
         super(MCP230xxFactory, self).__init__()
         self.address = self.DEFAULT_ADDRESS if address is None else address
         self.i2c = i2c or I2C()
         self.pin_class = pin_class
         self.poller_class = poller_class
+        self.lock = lock or Lock()
         self.register_size = self.IO_PIN_COUNT // 8
         self.poller = None
         self._pins = {}
