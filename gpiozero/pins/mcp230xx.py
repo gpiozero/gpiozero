@@ -254,8 +254,9 @@ class MCP230xxPin(WhenChangedMixin, Pin):
         self.factory.olat[self.number] = value
 
     def _get_state(self):
-        return self.debouncer(self.factory.gpio[self.number]) \
-            if self._state is None else self._state
+        return bool(
+            self.debouncer(self.factory.gpio[self.number])
+            if self._state is None else self._state)
 
     def _set_pull(self, value):
         if value == 'up':
