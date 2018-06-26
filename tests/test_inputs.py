@@ -75,6 +75,11 @@ def test_input_is_active_high_externally_pulled_down():
     assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=False>'
     assert not device.is_active
 
+def test_input_invalid_external_pull_configuration():
+    with pytest.raises(PinInvalidState) as exc:
+        InputDevice(4, pull_up=None)
+    assert str(exc.value) == 'Pin 4 is defined as floating, but "active_state" is not defined'
+
 def test_input_event_activated():
     event = Event()
     pin = Device.pin_factory.pin(4)
