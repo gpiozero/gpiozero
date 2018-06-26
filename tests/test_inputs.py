@@ -65,7 +65,7 @@ def test_input_is_active_low_externally_pulled_up():
     assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=True>'
     assert device.is_active
 
-def test_input_is_active_low_externally_pulled_down():
+def test_input_is_active_high_externally_pulled_down():
     pin = Device.pin_factory.pin(4)
     device = InputDevice(4, pull_up=None, active_state=True)
     pin.drive_high()
