@@ -135,7 +135,7 @@ Limitations
 """
 
 from copy import copy
-from threading import Lock
+from threading import Lock, Thread
 from time import time
 
 from ..exc import PinInvalidPull, PinFixedPull, PinInvalidState, PinError, \
@@ -435,12 +435,14 @@ class MCP230xxPoller(GPIOThread):
     """Background poller for MCP230xx input pin states.
     """
 
-    def __init__(self, factory, interval=0.001):
+    def __init__(self, factory, interval=0.001, run_callbacks_in_threads=True):
         super(MCP230xxPoller, self).__init__()
         #: MCP230xxFactory
         self.factory = factory
         #: Polling interval (seconds)
         self.interval = interval
+        #: Run callbacks in dedicated threads?
+        self.run_callbacks_in_threads = run_callbacks_in_threads
         #: Callbacks subscribed to state changes
         self.subscribers = {}
         #: Subscribers lock
@@ -486,8 +488,14 @@ class MCP230xxPoller(GPIOThread):
                 for key in ((number, edge), (number, EDGE_BOTH)):
                     callbacks.extend(self.subscribers.get(key, []))
 
-            for callback in callbacks:
-                callback()
+            if self.run_callbacks_in_threads:
+                for callback in callbacks:
+                    # Running callback in a dedicated thread
+                    Thread(target=callback, daemon=True).start()
+            else:
+                for callback in callbacks:
+                    # Running callback in the poller thread
+                    callback()
 
     def run(self):
         """Run the polling loop.
