@@ -987,7 +987,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     number=number, function=function, pull_up=pull_up,
                     row=row + 1, col=col + 1)
                 for number, (function, pull_up) in header_data.items()
-                for row, col in (divmod(number, 2),)
+                for row, col in (divmod(number - 1, 2),)
                 })
             for header, header_data in headers.items()
             }
