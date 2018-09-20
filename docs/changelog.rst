@@ -5,6 +5,89 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 1.4.1 (2018-02-20)
+==========================
+
+This release is mostly bug-fixes, but a few enhancements have made it in too:
+
+* Added ``curve_left`` and ``curve_right`` parameters to :meth:`Robot.forward`
+  and :meth:`Robot.backward`.(`#306`_ and `#619`_)
+* Fixed :class:`DistanceSensor` returning incorrect readings after a long
+  pause, and added a lock to ensure multiple distance sensors can operate
+  simultaneously in a single project (`#584`_, `#595`_, `#617`_, `#618`_)
+* Added support for phase/enable motor drivers with :class:`PhaseEnableMotor`,
+  :class:`PhaseEnableRobot`, and descendants, thanks to Ian Harcombe!
+  (`#386`_)
+* A variety of other minor enhancements, largely thanks to Andrew Scheller!
+  (`#479`_, `#489`_, `#491`_, `#492`_)
+
+.. _#306: https://github.com/RPi-Distro/python-gpiozero/issues/306
+.. _#386: https://github.com/RPi-Distro/python-gpiozero/issues/386
+.. _#479: https://github.com/RPi-Distro/python-gpiozero/issues/479
+.. _#489: https://github.com/RPi-Distro/python-gpiozero/issues/489
+.. _#491: https://github.com/RPi-Distro/python-gpiozero/issues/491
+.. _#492: https://github.com/RPi-Distro/python-gpiozero/issues/492
+.. _#584: https://github.com/RPi-Distro/python-gpiozero/issues/584
+.. _#595: https://github.com/RPi-Distro/python-gpiozero/issues/595
+.. _#617: https://github.com/RPi-Distro/python-gpiozero/issues/617
+.. _#618: https://github.com/RPi-Distro/python-gpiozero/issues/618
+.. _#619: https://github.com/RPi-Distro/python-gpiozero/issues/619
+
+
+Release 1.4.0 (2017-07-26)
+==========================
+
+* Pin factory is now :ref:`configurable from device constructors
+  <changing-pin-factory>` as well as command line. NOTE: this is a backwards
+  incompatible change for manual pin construction but it's hoped this is
+  (currently) a sufficiently rare use case that this won't affect too many
+  people and the benefits of the new system warrant such a change, i.e. the
+  ability to use remote pin factories with HAT classes that don't accept pin
+  assignations (`#279`_)
+* Major work on SPI, primarily to support remote hardware SPI (`#421`_,
+  `#459`_, `#465`_, `#468`_, `#575`_)
+* Pin reservation now works properly between GPIO and SPI devices (`#459`_,
+  `#468`_)
+* Lots of work on the documentation: :doc:`source/values chapter
+  <source_values>`, better charts, more recipes, :doc:`remote GPIO
+  configuration <remote_gpio>`, mock pins, better PDF output (`#484`_, `#469`_,
+  `#523`_, `#520`_, `#434`_, `#565`_, `#576`_)
+* Support for :class:`StatusZero` and :class:`StatusBoard` HATs (`#558`_)
+* Added :program:`pinout` command line tool to provide a simple
+  reference to the GPIO layout and information about the associated Pi
+  (`#497`_, `#504`_) thanks to Stewart Adcock for the initial work
+* :func:`pi_info` made more lenient for new (unknown) Pi models (`#529`_)
+* Fixed a variety of packaging issues (`#535`_, `#518`_, `#519`_)
+* Improved text in factory fallback warnings (`#572`_)
+
+.. _#279: https://github.com/RPi-Distro/python-gpiozero/issues/279
+.. _#421: https://github.com/RPi-Distro/python-gpiozero/issues/421
+.. _#434: https://github.com/RPi-Distro/python-gpiozero/issues/434
+.. _#459: https://github.com/RPi-Distro/python-gpiozero/issues/459
+.. _#465: https://github.com/RPi-Distro/python-gpiozero/issues/465
+.. _#468: https://github.com/RPi-Distro/python-gpiozero/issues/468
+.. _#469: https://github.com/RPi-Distro/python-gpiozero/issues/469
+.. _#484: https://github.com/RPi-Distro/python-gpiozero/issues/484
+.. _#497: https://github.com/RPi-Distro/python-gpiozero/issues/497
+.. _#504: https://github.com/RPi-Distro/python-gpiozero/issues/504
+.. _#518: https://github.com/RPi-Distro/python-gpiozero/issues/518
+.. _#519: https://github.com/RPi-Distro/python-gpiozero/issues/519
+.. _#520: https://github.com/RPi-Distro/python-gpiozero/issues/520
+.. _#523: https://github.com/RPi-Distro/python-gpiozero/issues/523
+.. _#529: https://github.com/RPi-Distro/python-gpiozero/issues/529
+.. _#535: https://github.com/RPi-Distro/python-gpiozero/issues/535
+.. _#558: https://github.com/RPi-Distro/python-gpiozero/issues/558
+.. _#565: https://github.com/RPi-Distro/python-gpiozero/issues/565
+.. _#572: https://github.com/RPi-Distro/python-gpiozero/issues/572
+.. _#575: https://github.com/RPi-Distro/python-gpiozero/issues/575
+.. _#576: https://github.com/RPi-Distro/python-gpiozero/issues/576
+
+Release 1.3.2 (2017-03-03)
+==========================
+
+* Added new Pi models to stop :func:`pi_info` breaking
+* Fix issue with :func:`pi_info` breaking on unknown Pi models
+
 Release 1.3.1 (2016-08-31 ... later)
 ====================================
 
@@ -55,7 +138,7 @@ Release 1.2.0 (2016-04-10)
 * Added support for lots of ADC chips (MCP3xxx family) (`#162`_) - many thanks
   to pcopa and lurch!
 * Added support for pigpiod as a pin implementation with
-  :class:`~gpiozero.pins.pigpiod.PiGPIOPin` (`#180`_)
+  :class:`~gpiozero.pins.pigpio.PiGPIOPin` (`#180`_)
 * Many refinements to the base classes mean more consistency in composite
   devices and several bugs squashed (`#164`_, `#175`_, `#182`_, `#189`_,
   `#193`_, `#229`_)

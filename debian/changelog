@@ -1,3 +1,48 @@
+gpiozero (1.4.1) stable; urgency=low
+
+  * Added "curve_left" and "curve_right" parameters to "Robot.forward" and
+    "Robot.backward" (#306 and #619)
+  * Fixed "DistanceSensor" returning incorrect readings after a long pause,
+    and added a lock to ensure multiple distance sensors can operate
+    simultaneously in a single project (#584, #595, #617, #618)
+  * Added support for phase/enable motor drivers with "PhaseEnableMotor",
+    "PhaseEnableRobot", and descendants, thanks to Ian Harcombe!  (#386)
+  * A variety of other minor enhancements, largely thanks to Andrew Scheller!
+    (#479, #489, #491, #492)
+
+ -- Dave Jones <dave@waveform.org.uk>  Tue, 20 Feb 2018 21:59:28 +0000
+
+gpiozero (1.4.0) stable; urgency=low
+
+  * Pin factory is now configurable from device constructors as well as
+    command line. NOTE: this is a backwards incompatible change for manual pin
+    construction but it's hoped this is (currently) a sufficiently rare use
+    case that this won't affect too many people and the benefits of the new
+    system warrant such a change, i.e. the ability to use remote pin factories
+    with HAT classes that don't accept pin assignations (#279)
+  * Major work on SPI, primarily to support remote hardware SPI (#421, #459,
+    #465, #468, #575)
+  * Pin reservation now works properly between GPIO and SPI devices (#459,
+    #468)
+  * Lots of work on the documentation: source/values chapter, better charts,
+    more recipes, remote GPIO configuration, mock pins, better PDF output
+    (#484, #469, #523, #520, #434, #565, #576)
+  * Support for "StatusZero" and "StatusBoard" HATs (#558)
+  * Added pinout command line tool to provide a simple reference to the GPIO
+    layout and information about the associated Pi (#497, #504) thanks to
+    Stewart Adcock for the initial work
+  * "pi_info" made more lenient for new (unknown) Pi models (#529)
+  * Fixed a variety of packaging issues (#535, #518, #519)
+  * Improved text in factory fallback warnings (#572)
+
+ -- Dave Jones <dave@waveform.org.uk>  Wed, 26 Jul 2017 23:02:35 +0100
+
+gpiozero (1.3.2) stable; urgency=low
+
+  * Added new Pi models to stop "pi_info" breaking
+
+ -- Ben Nuttall <ben@raspberrypi.org>  Fri, 03 Mar 2017 13:18:00 +0100
+
 gpiozero (1.3.1) stable; urgency=low
 
   * Fixed hardware SPI support which Dave broke in 1.3.0. Sorry!

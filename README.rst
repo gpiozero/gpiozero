@@ -56,39 +56,22 @@ together:
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
-colour LEDs, robotics kits and more.
+colour LEDs, robotics kits and more. See the `Recipes`_ chapter of the
+documentation for ideas on how to get started.
 
-Install
-=======
+Installation
+============
 
-First, update your repositories list::
-
-    sudo apt-get update
-
-Then install the package of your choice. Both Python 3 and Python 2 are
-supported. Python 3 is recommended::
-
-    sudo apt-get install python3-gpiozero
-
-or::
-
-    sudo apt-get install python-gpiozero
+GPIO Zero is installed by default in the Raspbian desktop image, available from
+`raspberrypi.org`_. To install on Raspbian Lite or other operating systems,
+including for PCs using remote GPIO, see the `Installing`_ chapter.
 
 Documentation
 =============
 
 Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
-
-Development
-===========
-
-This project is being developed on `GitHub`_. Join in:
-
-* Provide suggestions, report bugs and ask questions as `issues`_
-* Provide examples we can use as `recipes`_
-* `Contribute`_ to the code
-
-Alternatively, email suggestions and feedback to ben@raspberrypi.org
+Please refer to the `Contributing`_ and `Development`_ chapters in the
+documentation for information on contributing to the project.
 
 Contributors
 ============
@@ -113,13 +96,19 @@ Other contributors:
 - `Clare Macrae`_
 - `Tim Golden`_
 - `Phil Howard`_
+- `Stewart Adcock`_
+- `Ian Harcombe`_
+- `Russel Winder`_
+- `Mike Kazantsev`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
-.. _GitHub: https://github.com/RPi-Distro/python-gpiozero
-.. _issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _recipes: https://gpiozero.readthedocs.io/en/latest/recipes.html
-.. _Contribute: https://gpiozero.readthedocs.io/en/latest/contributing.html
+.. _raspberrypi.org: https://www.raspberrypi.org/downloads/
+.. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
+.. _Contributing: https://gpiozero.readthedocs.io/en/stable/contributing.html
+.. _Development: https://gpiozero.readthedocs.io/en/stable/development.html
+.. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
+
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 .. _Andrew Scheller: https://github.com/lurch
@@ -135,4 +124,7 @@ Other contributors:
 .. _Clare Macrae: https://github.com/claremacrae
 .. _Tim Golden: https://github.com/tjguk
 .. _Phil Howard: https://github.com/Gadgetoid
-
+.. _Stewart Adcock: https://github.com/stewartadcock
+.. _Ian Harcombe: https://github.com/MrHarcombe
+.. _Russel Winder: https://github.com/russel
+.. _Mike Kazantsev: https://github.com/mk-fg

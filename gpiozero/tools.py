@@ -21,6 +21,10 @@ try:
     from statistics import mean
 except ImportError:
     from .compat import mean
+try:
+    from math import isclose
+except ImportError:
+    from .compat import isclose
 
 
 def negated(values):
@@ -108,9 +112,9 @@ def clamped(values, output_min=0, output_max=1):
 
         led = PWMLED(4)
         pot = MCP3008(channel=0)
-        
+
         led.source = clamped(pot.values, 0.5, 1.0)
-        
+
         pause()
     """
     if output_min >= output_max:
@@ -131,10 +135,10 @@ def absoluted(values):
         led = PWMLED(4)
         motor = Motor(22, 27)
         pot = MCP3008(channel=0)
-        
+
         motor.source = scaled(pot.values, -1, 1)
         led.source = absoluted(motor.values)
-        
+
         pause()
     """
     for v in values:
@@ -287,9 +291,9 @@ def averaged(*values):
         pot2 = MCP3008(channel=1)
         pot3 = MCP3008(channel=2)
         led = PWMLED(4)
-        
+
         led.source = averaged(pot1.values, pot2.values, pot3.values)
-        
+
         pause()
     """
     for v in zip(*values):
@@ -312,7 +316,7 @@ def summed(*values):
         led = PWMLED(4)
 
         led.source = scaled(summed(pot1.values, pot2.values, pot3.values), 0, 1, 0, 3)
-        
+
         pause()
     """
     for v in zip(*values):
@@ -334,9 +338,9 @@ def multiplied(*values):
         pot2 = MCP3008(channel=1)
         pot3 = MCP3008(channel=2)
         led = PWMLED(4)
-        
+
         led.source = multiplied(pot1.values, pot2.values, pot3.values)
-        
+
         pause()
     """
     def _product(it):
@@ -360,27 +364,27 @@ def queued(values, qsize):
 
         leds = LEDBoard(5, 6, 13, 19, 26)
         btn = Button(17)
-        
+
         for i in range(4):
             leds[i].source = queued(leds[i + 1].values, 5)
             leds[i].source_delay = 0.01
-            
+
         leds[4].source = btn.values
-        
+
         pause()
     """
     if qsize < 1:
         raise ValueError("qsize must be 1 or larger")
     q = []
     it = iter(values)
-    for i in range(qsize):
-        q.append(next(it))
-    for i in cycle(range(qsize)):
-        yield q[i]
-        try:
+    try:
+        for i in range(qsize):
+            q.append(next(it))
+        for i in cycle(range(qsize)):
+            yield q[i]
             q[i] = next(it)
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
 
 
 def smoothed(values, qsize, average=mean):
@@ -395,7 +399,7 @@ def smoothed(values, qsize, average=mean):
         from gpiozero.tools import smoothed
 
         adc = MCP3008(channel=0)
-        
+
         for value in smoothed(adc.values, 5):
             print(value)
     """
@@ -403,14 +407,14 @@ def smoothed(values, qsize, average=mean):
         raise ValueError("qsize must be 1 or larger")
     q = []
     it = iter(values)
-    for i in range(qsize):
-        q.append(next(it))
-    for i in cycle(range(qsize)):
-        yield average(q)
-        try:
+    try:
+        for i in range(qsize):
+            q.append(next(it))
+        for i in cycle(range(qsize)):
+            yield average(q)
             q[i] = next(it)
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
 
 
 def pre_delayed(values, delay):
@@ -445,7 +449,7 @@ def pre_periodic_filtered(values, block, repeat_after):
         from gpiozero.tools import pre_periodic_filtered
 
         adc = MCP3008(channel=0)
-        
+
         for value in pre_periodic_filtered(adc.values, 50, 0):
             print(value)
 
@@ -455,7 +459,7 @@ def pre_periodic_filtered(values, block, repeat_after):
         from gpiozero.tools import pre_periodic_filtered
 
         adc = MCP3008(channel=0)
-        
+
         for value in pre_periodic_filtered(adc.values, 1, 1):
             print(value)
     """
@@ -464,17 +468,20 @@ def pre_periodic_filtered(values, block, repeat_after):
     if repeat_after < 0:
         raise ValueError("repeat_after must be 0 or larger")
     it = iter(values)
-    if repeat_after == 0:
-        for _ in range(block):
-            next(it)
-        while True:
-            yield next(it)
-    else:
-        while True:
+    try:
+        if repeat_after == 0:
             for _ in range(block):
                 next(it)
-            for _ in range(repeat_after):
+            while True:
                 yield next(it)
+        else:
+            while True:
+                for _ in range(block):
+                    next(it)
+                for _ in range(repeat_after):
+                    yield next(it)
+    except StopIteration:
+        pass
 
 
 def post_periodic_filtered(values, repeat_after, block):
@@ -487,7 +494,7 @@ def post_periodic_filtered(values, repeat_after, block):
         from gpiozero.tools import post_periodic_filtered
 
         adc = MCP3008(channel=0)
-        
+
         for value in post_periodic_filtered(adc.values, 9, 1):
             print(value)
     """
@@ -496,11 +503,14 @@ def post_periodic_filtered(values, repeat_after, block):
     if block < 1:
         raise ValueError("block must be 1 or larger")
     it = iter(values)
-    while True:
-        for _ in range(repeat_after):
-            yield next(it)
-        for _ in range(block):
-            next(it)
+    try:
+        while True:
+            for _ in range(repeat_after):
+                yield next(it)
+            for _ in range(block):
+                next(it)
+    except StopIteration:
+        pass
 
 
 def random_values():
@@ -513,9 +523,9 @@ def random_values():
         from signal import pause
 
         led = PWMLED(4)
-        
+
         led.source = random_values()
-        
+
         pause()
 
     If you require a wider range than 0 to 1, see :func:`scaled`.
@@ -536,12 +546,12 @@ def sin_values(period=360):
 
         red = PWMLED(2)
         blue = PWMLED(3)
-        
+
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
         red.source = scaled(sin_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
-        
+
         pause()
 
     If you require a different range than -1 to +1, see :func:`scaled`.
@@ -563,12 +573,12 @@ def cos_values(period=360):
 
         red = PWMLED(2)
         blue = PWMLED(3)
-        
+
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
         red.source = scaled(cos_values(100), 0, 1, -1, 1)
         blue.source = inverted(red.values)
-        
+
         pause()
 
     If you require a different range than -1 to +1, see :func:`scaled`.
@@ -599,3 +609,38 @@ def alternating_values(initial_value=False):
     while True:
         yield value
         value = not value
+
+
+def ramping_values(period=360):
+    """
+    Provides an infinite source of values representing a triangle wave (from 0
+    to 1 and back again) which repeats every *period* values. For example, to
+    pulse an LED once a second::
+
+        from gpiozero import PWMLED
+        from gpiozero.tools import ramping_values
+        from signal import pause
+
+        red = PWMLED(2)
+
+        red.source_delay = 0.01
+        red.source = ramping_values(100)
+
+        pause()
+
+    If you require a wider range than 0 to 1, see :func:`scaled`.
+    """
+    step = 2 / period
+    value = 0
+    while True:
+        yield value
+        value += step
+        if isclose(value, 1, abs_tol=1e-9):
+            value = 1
+            step *= -1
+        elif isclose(value, 0, abs_tol=1e-9):
+            value = 0
+            step *= -1
+        elif value > 1 or value < 0:
+            step *= -1
+            value += step

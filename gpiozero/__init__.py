@@ -6,8 +6,9 @@ from __future__ import (
 )
 
 from .pins import (
+    Factory,
     Pin,
-    LocalPin,
+    SPI,
 )
 from .pins.data import (
     PiBoardInfo,
@@ -15,47 +16,9 @@ from .pins.data import (
     PinInfo,
     pi_info,
 )
-from .exc import (
-    GPIOZeroError,
-    DeviceClosed,
-    BadEventHandler,
-    BadWaitTime,
-    BadQueueLen,
-    CompositeDeviceError,
-    CompositeDeviceBadName,
-    CompositeDeviceBadOrder,
-    CompositeDeviceBadDevice,
-    SPIError,
-    SPIBadArgs,
-    EnergenieSocketMissing,
-    EnergenieBadSocket,
-    GPIODeviceError,
-    GPIODeviceClosed,
-    GPIOPinInUse,
-    GPIOPinMissing,
-    InputDeviceError,
-    OutputDeviceError,
-    OutputDeviceBadValue,
-    PinError,
-    PinInvalidFunction,
-    PinInvalidState,
-    PinInvalidPull,
-    PinInvalidEdges,
-    PinSetInput,
-    PinFixedPull,
-    PinEdgeDetectUnsupported,
-    PinPWMError,
-    PinPWMUnsupported,
-    PinPWMFixedValue,
-    PinUnknownPi,
-    PinMultiplePins,
-    PinNoPins,
-    GPIOZeroWarning,
-    SPIWarning,
-    SPISoftwareFallback,
-    PinWarning,
-    PinNonPhysical,
-)
+# Yes, import * is naughty, but exc imports nothing else so there's no cross
+# contamination here ... and besides, have you *seen* the list lately?!
+from .exc import *
 from .devices import (
     Device,
     GPIODevice,
@@ -101,6 +64,7 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
+    PhaseEnableMotor,
     Servo,
     AngularServo,
     RGBLED,
@@ -117,6 +81,8 @@ from .boards import (
     TrafficLights,
     PiTraffic,
     PiStop,
+    StatusZero,
+    StatusBoard,
     SnowPi,
     TrafficLightsBuzzer,
     FishDish,
@@ -124,6 +90,8 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
+    PhaseEnableRobot,
+    PololuDRV8835Robot,
     Energenie,
 )
 from .other_devices import (

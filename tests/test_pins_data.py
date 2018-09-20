@@ -11,44 +11,42 @@ import re
 import pytest
 from mock import patch, MagicMock
 
-import gpiozero.devices
 import gpiozero.pins.data
-import gpiozero.pins.native
-from gpiozero.pins.data import pi_info, Style, HeaderInfo, PinInfo
-from gpiozero import PinMultiplePins, PinNoPins, PinUnknownPi
+import gpiozero.pins.local
+from gpiozero.pins.local import LocalPiFactory
+from gpiozero.pins.data import Style, HeaderInfo, PinInfo
+from gpiozero import *
 
 
 def test_pi_revision():
-    save_factory = gpiozero.devices.pin_factory
-    try:
+    with patch('gpiozero.devices.Device.pin_factory', LocalPiFactory()):
         # Can't use MockPin for this as we want something that'll actually try
         # and read /proc/cpuinfo (MockPin simply parrots the 2B's data);
-        # NativePin is used as we're guaranteed to be able to import it
-        gpiozero.devices.pin_factory = gpiozero.pins.native.NativePin
+        # LocalPiFactory is used as we can definitely instantiate it (strictly
+        # speaking it's abstract but we're only interested in the pi_info
+        # stuff)
         with patch('io.open') as m:
             m.return_value.__enter__.return_value = ['lots of irrelevant', 'lines', 'followed by', 'Revision: 0002', 'Serial:  xxxxxxxxxxx']
             assert pi_info().revision == '0002'
-            # LocalPin caches the revision (because realistically it isn't going to
-            # change at runtime); we need to wipe it here though
-            gpiozero.pins.native.NativePin._PI_REVISION = None
+            # LocalPiFactory caches the revision (because realistically it
+            # isn't going to change at runtime); we need to wipe it here though
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: a21042']
             assert pi_info().revision == 'a21042'
             # Check over-volting result (some argument over whether this is 7 or
             # 8 character result; make sure both work)
-            gpiozero.pins.native.NativePin._PI_REVISION = None
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: 1000003']
             assert pi_info().revision == '0003'
-            gpiozero.pins.native.NativePin._PI_REVISION = None
+            Device.pin_factory._info = None
             m.return_value.__enter__.return_value = ['Revision: 100003']
             assert pi_info().revision == '0003'
             with pytest.raises(PinUnknownPi):
                 m.return_value.__enter__.return_value = ['nothing', 'relevant', 'at all']
-                gpiozero.pins.native.NativePin._PI_REVISION = None
+                Device.pin_factory._info = None
                 pi_info()
             with pytest.raises(PinUnknownPi):
                 pi_info('0fff')
-    finally:
-        gpiozero.devices.pin_factory = save_factory
 
 def test_pi_info():
     r = pi_info('900011')
@@ -58,29 +56,37 @@ def test_pi_info():
     assert r.manufacturer == 'Sony'
     assert r.storage == 'SD'
     assert r.usb == 2
+    assert r.ethernet == 1
     assert not r.wifi
     assert not r.bluetooth
     assert r.csi == 1
     assert r.dsi == 1
-    with pytest.raises(PinUnknownPi):
-        pi_info('9000f1')
+    r = pi_info('9000f1')
+    assert r.model == '???'
+    assert r.pcb_revision == '1.1'
+    assert r.memory == 512
+    assert r.manufacturer == 'Sony'
+    assert r.storage == 'MicroSD'
+    assert r.usb == 4
+    assert r.ethernet == 1
+    assert not r.wifi
+    assert not r.bluetooth
+    assert r.csi == 1
+    assert r.dsi == 1
 
 def test_pi_info_other_types():
-    with pytest.raises(PinUnknownPi):
-        pi_info(b'9000f1')
-    with pytest.raises(PinUnknownPi):
-        pi_info(0x9000f1)
+    assert pi_info(b'9000f1') == pi_info(0x9000f1)
 
 def test_physical_pins():
     # Assert physical pins for some well-known Pi's; a21041 is a Pi2B
-    assert pi_info('a21041').physical_pins('3V3') == {('P1', 1), ('P1', 17)}
-    assert pi_info('a21041').physical_pins('GPIO2') == {('P1', 3)}
+    assert pi_info('a21041').physical_pins('3V3') == {('J8', 1), ('J8', 17)}
+    assert pi_info('a21041').physical_pins('GPIO2') == {('J8', 3)}
     assert pi_info('a21041').physical_pins('GPIO47') == set()
 
 def test_physical_pin():
     with pytest.raises(PinMultiplePins):
         assert pi_info('a21041').physical_pin('GND')
-    assert pi_info('a21041').physical_pin('GPIO3') == ('P1', 5)
+    assert pi_info('a21041').physical_pin('GPIO3') == ('J8', 5)
     with pytest.raises(PinNoPins):
         assert pi_info('a21041').physical_pin('GPIO47')
 
@@ -114,6 +120,18 @@ def test_pprint_content():
         pi_info('0014').headers['SODIMM'].pprint(color=False)
         assert len(''.join(stdout.output).splitlines()) == 100
 
+def test_format_content():
+    with patch('sys.stdout') as stdout:
+        stdout.output = []
+        stdout.write = lambda buf: stdout.output.append(buf)
+        pi_info('900092').pprint(color=False)
+        s = ''.join(stdout.output)
+        assert '{0:mono}\n'.format(pi_info('900092')) == s
+        stdout.output = []
+        pi_info('900092').pprint(color=True)
+        s = ''.join(stdout.output)
+        assert '{0:color full}\n'.format(pi_info('900092')) == s
+
 def test_pprint_headers():
     assert len(pi_info('0002').headers) == 1
     assert len(pi_info('000e').headers) == 2
@@ -133,7 +151,8 @@ def test_pprint_headers():
         stdout.output = []
         pi_info('900092').pprint()
         s = ''.join(stdout.output)
-        assert 'P1:\n' in s
+        assert 'J8:\n' in s
+        assert 'P1:\n' not in s
         assert 'P5:\n' not in s
 
 def test_pprint_color():
@@ -194,11 +213,12 @@ def test_pprint_missing_pin():
                 assert ('(%d)' % i)
 
 def test_pprint_rows_cols():
-    assert '{0:row1}'.format(pi_info('900092').headers['P1']) == '1o'
-    assert '{0:row2}'.format(pi_info('900092').headers['P1']) == 'oo'
+    assert '{0:row1}'.format(pi_info('900092').headers['J8']) == '1o'
+    assert '{0:row2}'.format(pi_info('900092').headers['J8']) == 'oo'
     assert '{0:col1}'.format(pi_info('0002').headers['P1']) == '1oooooooooooo'
     assert '{0:col2}'.format(pi_info('0002').headers['P1']) == 'ooooooooooooo'
     with pytest.raises(ValueError):
         '{0:row16}'.format(pi_info('0002').headers['P1'])
     with pytest.raises(ValueError):
         '{0:col3}'.format(pi_info('0002').headers['P1'])
+

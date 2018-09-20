@@ -1,10 +1,10 @@
 *.py[cdo]
-pythonhosted/
 
 # Editor detritus
 *.vim
 *.swp
 tags
+.idea
 
 # Packaging detritus
 *.egg
@@ -27,6 +27,4 @@ coverage
 .coverage
 .tox
 .cache
-
-# Generated documentation
-docs/_build
+.pytest_cache

@@ -52,6 +52,24 @@ class SPIBadArgs(SPIError, ValueError):
 class SPIBadChannel(SPIError, ValueError):
     "Error raised when an invalid channel is given to an :class:`AnalogInputDevice`"
 
+class SPIFixedClockMode(SPIError, AttributeError):
+    "Error raised when the SPI clock mode cannot be changed"
+
+class SPIInvalidClockMode(SPIError, ValueError):
+    "Error raised when an invalid clock mode is given to an SPI implementation"
+
+class SPIFixedBitOrder(SPIError, AttributeError):
+    "Error raised when the SPI bit-endianness cannot be changed"
+
+class SPIFixedSelect(SPIError, AttributeError):
+    "Error raised when the SPI select polarity cannot be changed"
+
+class SPIFixedWordSize(SPIError, AttributeError):
+    "Error raised when the number of bits per word cannot be changed"
+
+class SPIInvalidWordSize(SPIError, ValueError):
+    "Error raised when an invalid (out of range) number of bits per word is specified"
+
 class GPIODeviceError(GPIOZeroError):
     "Base class for errors specific to the GPIODevice hierarchy"
 
@@ -62,7 +80,7 @@ class GPIOPinInUse(GPIODeviceError):
     "Error raised when attempting to use a pin already in use by another device"
 
 class GPIOPinMissing(GPIODeviceError, ValueError):
-    "Error raised when a pin number is not specified"
+    "Error raised when a pin specification is not given"
 
 class InputDeviceError(GPIODeviceError):
     "Base class for errors specific to the InputDevice hierarchy"
@@ -100,6 +118,12 @@ class PinFixedPull(PinError, AttributeError):
 class PinEdgeDetectUnsupported(PinError, AttributeError):
     "Error raised when attempting to use edge detection on unsupported pins"
 
+class PinUnsupported(PinError, NotImplementedError):
+    "Error raised when attempting to obtain a pin interface on unsupported pins"
+
+class PinSPIUnsupported(PinError, NotImplementedError):
+    "Error raised when attempting to obtain an SPI interface on unsupported pins"
+
 class PinPWMError(PinError):
     "Base class for errors related to PWM implementations"
 
@@ -118,8 +142,14 @@ class PinMultiplePins(PinError, RuntimeError):
 class PinNoPins(PinError, RuntimeError):
     "Error raised when no pins support the requested function"
 
+class PinInvalidPin(PinError, ValueError):
+    "Error raised when an invalid pin specification is provided"
+
 class GPIOZeroWarning(Warning):
     "Base class for all warnings in GPIO Zero"
+
+class DistanceSensorNoEcho(GPIOZeroWarning):
+    "Warning raised when the distance sensor sees no echo at all"
 
 class SPIWarning(GPIOZeroWarning):
     "Base class for warnings related to the SPI implementation"
@@ -129,6 +159,9 @@ class SPISoftwareFallback(SPIWarning):
 
 class PinWarning(GPIOZeroWarning):
     "Base class for warnings related to pin implementations"
+
+class PinFactoryFallback(PinWarning):
+    "Warning raised when a default pin factory fails to load and a fallback is tried"
 
 class PinNonPhysical(PinWarning):
     "Warning raised when a non-physical pin is specified in a constructor"

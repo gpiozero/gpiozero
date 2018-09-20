@@ -10,15 +10,16 @@ str = type('')
 import os
 import atexit
 import weakref
+import warnings
 from collections import namedtuple
 from itertools import chain
 from types import FunctionType
-from threading import RLock
+from threading import Lock
 
 import pkg_resources
 
+from .pins import Pin
 from .threads import _threads_shutdown
-from .pins import _pins_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
@@ -32,50 +33,9 @@ from .exc import (
     GPIOPinMissing,
     GPIOPinInUse,
     GPIODeviceClosed,
+    PinFactoryFallback,
     )
 from .compat import frozendict
-
-
-def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
-    group = 'gpiozero_pin_factories'
-    if name is None:
-        # If no factory is explicitly specified, try various names in
-        # "preferred" order. Note that in this case we only select from
-        # gpiozero distribution so without explicitly specifying a name (via
-        # the environment) it's impossible to auto-select a factory from
-        # outside the base distribution
-        #
-        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
-        # no third-party libraries are available, however, we fall back to a
-        # pure Python implementation which supports platforms like PyPy
-        dist = pkg_resources.get_distribution('gpiozero')
-        for name in ('RPiGPIOPin', 'RPIOPin', 'PiGPIOPin', 'NativePin'):
-            try:
-                return pkg_resources.load_entry_point(dist, group, name)
-            except ImportError:
-                pass
-        raise BadPinFactory('Unable to locate any default pin factory!')
-    else:
-        for factory in pkg_resources.iter_entry_points(group, name):
-            return factory.load()
-        raise BadPinFactory('Unable to locate pin factory "%s"' % name)
-
-pin_factory = _default_pin_factory()
-
-
-_PINS = set()
-_PINS_LOCK = RLock() # Yes, this needs to be re-entrant
-
-def _shutdown():
-    _threads_shutdown()
-    with _PINS_LOCK:
-        while _PINS:
-            _PINS.pop().close()
-    # Any cleanup routines registered by pins libraries must be called *after*
-    # cleanup of pin objects used by devices
-    _pins_shutdown()
-
-atexit.register(_shutdown)
 
 
 class GPIOMeta(type):
@@ -106,7 +66,7 @@ class GPIOMeta(type):
             # already exists. Only construct the instance if the key's new.
             key = cls._shared_key(*args, **kwargs)
             try:
-                self = cls._INSTANCES[key]
+                self = cls._instances[key]
                 self._refs += 1
             except (KeyError, ReferenceError) as e:
                 self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -122,14 +82,14 @@ class GPIOMeta(type):
                             old_close()
                         finally:
                             try:
-                                del cls._INSTANCES[key]
+                                del cls._instances[key]
                             except KeyError:
                                 # If the _refs go negative (too many closes)
                                 # just ignore the resulting KeyError here -
                                 # it's already gone
                                 pass
                 self.close = close
-                cls._INSTANCES[key] = weakref.proxy(self)
+                cls._instances[key] = weakref.proxy(self)
         else:
             # Construct the instance as normal
             self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -229,12 +189,36 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
 class Device(ValuesMixin, GPIOBase):
     """
     Represents a single device of any type; GPIO-based, SPI-based, I2C-based,
-    etc. This is the base class of the device hierarchy. It defines the
-    basic services applicable to all devices (specifically the :attr:`is_active`
+    etc. This is the base class of the device hierarchy. It defines the basic
+    services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
     """
+    pin_factory = None # instance of a Factory sub-class
+
+    def __init__(self, **kwargs):
+        # Force pin_factory to be keyword-only, even in Python 2
+        pin_factory = kwargs.pop('pin_factory', None)
+        if pin_factory is None:
+            self.pin_factory = Device.pin_factory
+        else:
+            self.pin_factory = pin_factory
+        if kwargs:
+            raise TypeError("Device.__init__() got unexpected keyword "
+                            "argument '%s'" % kwargs.popitem()[0])
+        super(Device, self).__init__()
+
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
+
+    def _conflicts_with(self, other):
+        """
+        Called by :meth:`Factory.reserve_pins` to test whether the *other*
+        :class:`Device` using a common pin conflicts with this device's intent
+        to use it. The default is ``True`` indicating that all devices conflict
+        with common pins.  Sub-classes may override this to permit more nuanced
+        replies.
+        """
+        return True
 
     @property
     def value(self):
@@ -279,23 +263,29 @@ class CompositeDevice(Device):
         self._named = frozendict({})
         self._namedtuple = None
         self._order = kwargs.pop('_order', None)
-        if self._order is None:
-            self._order = sorted(kwargs.keys())
-        else:
-            for missing_name in set(kwargs.keys()) - set(self._order):
-                raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
-        self._order = tuple(self._order)
-        super(CompositeDevice, self).__init__()
-        for name in set(self._order) & set(dir(self)):
-            raise CompositeDeviceBadName('%s is a reserved name' % name)
+        pin_factory = kwargs.pop('pin_factory', None)
+        try:
+            if self._order is None:
+                self._order = sorted(kwargs.keys())
+            else:
+                for missing_name in set(kwargs.keys()) - set(self._order):
+                    raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
+            self._order = tuple(self._order)
+            for name in set(self._order) & set(dir(self)):
+                raise CompositeDeviceBadName('%s is a reserved name' % name)
+            for dev in chain(args, kwargs.values()):
+                if not isinstance(dev, Device):
+                    raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
+            self._named = frozendict(kwargs)
+            self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
+                ('device_%d' % i for i in range(len(args))), self._order))
+        except:
+            for dev in chain(args, kwargs.values()):
+                if isinstance(dev, Device):
+                    dev.close()
+            raise
         self._all = args + tuple(kwargs[v] for v in self._order)
-        for dev in self._all:
-            if not isinstance(dev, Device):
-                raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
-        self._named = frozendict(kwargs)
-        self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
-            (str(i) for i in range(len(args))), self._order),
-            rename=True)
+        super(CompositeDevice, self).__init__(pin_factory=pin_factory)
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
@@ -338,9 +328,11 @@ class CompositeDevice(Device):
         return self._all
 
     def close(self):
-        if self._all:
+        if getattr(self, '_all', None):
             for device in self._all:
-                device.close()
+                if isinstance(device, Device):
+                    device.close()
+            self._all = ()
 
     @property
     def closed(self):
@@ -370,22 +362,17 @@ class GPIODevice(Device):
         this is ``None``, :exc:`GPIOPinMissing` will be raised. If the pin is
         already in use by another device, :exc:`GPIOPinInUse` will be raised.
     """
-    def __init__(self, pin=None):
-        super(GPIODevice, self).__init__()
+    def __init__(self, pin=None, **kwargs):
+        super(GPIODevice, self).__init__(**kwargs)
         # self._pin must be set before any possible exceptions can be raised
         # because it's accessed in __del__. However, it mustn't be given the
         # value of pin until we've verified that it isn't already allocated
         self._pin = None
         if pin is None:
             raise GPIOPinMissing('No pin given')
-        if isinstance(pin, int):
-            pin = pin_factory(pin)
-        with _PINS_LOCK:
-            if pin in _PINS:
-                raise GPIOPinInUse(
-                    'pin %r is already in use by another gpiozero object' % pin
-                )
-            _PINS.add(pin)
+        # Check you can reserve *before* constructing the pin
+        self.pin_factory.reserve_pins(self, pin)
+        pin = self.pin_factory.pin(pin)
         self._pin = pin
         self._active_state = True
         self._inactive_state = False
@@ -402,12 +389,10 @@ class GPIODevice(Device):
 
     def close(self):
         super(GPIODevice, self).close()
-        with _PINS_LOCK:
-            pin = self._pin
-            self._pin = None
-            if pin in _PINS:
-                _PINS.remove(pin)
-                pin.close()
+        if getattr(self, '_pin', None) is not None:
+            self.pin_factory.release_pins(self, self._pin.number)
+            self._pin.close()
+        self._pin = None
 
     @property
     def closed(self):
@@ -441,3 +426,62 @@ class GPIODevice(Device):
         except DeviceClosed:
             return "<gpiozero.%s object closed>" % self.__class__.__name__
 
+
+# Defined last to ensure Device is defined before attempting to load any pin
+# factory; pin factories want to load spi which in turn relies on devices (for
+# the soft-SPI implementation)
+def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+    group = 'gpiozero_pin_factories'
+    if name is None:
+        # If no factory is explicitly specified, try various names in
+        # "preferred" order. Note that in this case we only select from
+        # gpiozero distribution so without explicitly specifying a name (via
+        # the environment) it's impossible to auto-select a factory from
+        # outside the base distribution
+        #
+        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions. If
+        # no third-party libraries are available, however, we fall back to a
+        # pure Python implementation which supports platforms like PyPy
+        dist = pkg_resources.get_distribution('gpiozero')
+        for name in ('rpigpio', 'rpio', 'pigpio', 'native'):
+            try:
+                return pkg_resources.load_entry_point(dist, group, name)()
+            except Exception as e:
+                warnings.warn(
+                    PinFactoryFallback(
+                        'Falling back from %s: %s' % (name, str(e))))
+        raise BadPinFactory('Unable to load any default pin factory!')
+    else:
+        # Try with the name verbatim first. If that fails, attempt with the
+        # lower-cased name (this ensures compatibility names work but we're
+        # still case insensitive for all factories)
+        for factory in pkg_resources.iter_entry_points(group, name):
+            return factory.load()()
+        for factory in pkg_resources.iter_entry_points(group, name.lower()):
+            return factory.load()()
+        raise BadPinFactory('Unable to find pin factory "%s"' % name)
+
+
+def _devices_shutdown():
+    if Device.pin_factory:
+        with Device.pin_factory._res_lock:
+            reserved_devices = {
+                dev
+                for ref_list in Device.pin_factory._reservations.values()
+                for ref in ref_list
+                for dev in (ref(),)
+                if dev is not None
+            }
+        for dev in reserved_devices:
+            dev.close()
+        Device.pin_factory.close()
+        Device.pin_factory = None
+
+
+def _shutdown():
+    _threads_shutdown()
+    _devices_shutdown()
+
+
+Device.pin_factory = _default_pin_factory()
+atexit.register(_shutdown)

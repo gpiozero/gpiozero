@@ -36,9 +36,15 @@ class OutputDevice(SourceMixin, GPIODevice):
         ``None``, the device will be left in whatever state the pin is found in
         when configured for output (warning: this can be on).  If ``True``, the
         device will be switched on initially.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, pin=None, active_high=True, initial_value=False):
-        super(OutputDevice, self).__init__(pin)
+    def __init__(
+            self, pin=None, active_high=True, initial_value=False,
+            pin_factory=None):
+        super(OutputDevice, self).__init__(pin, pin_factory=pin_factory)
         self._lock = Lock()
         self.active_high = active_high
         if initial_value is None:
@@ -126,10 +132,14 @@ class DigitalOutputDevice(OutputDevice):
     uses an optional background thread to handle toggling the device state
     without further interaction.
     """
-    def __init__(self, pin=None, active_high=True, initial_value=False):
+    def __init__(
+            self, pin=None, active_high=True, initial_value=False,
+            pin_factory=None):
         self._blink_thread = None
-        super(DigitalOutputDevice, self).__init__(pin, active_high, initial_value)
         self._controller = None
+        super(DigitalOutputDevice, self).__init__(
+            pin, active_high, initial_value, pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -181,12 +191,12 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread = None
 
     def _stop_blink(self):
-        if self._controller:
+        if getattr(self, '_controller', None):
             self._controller._stop_blink(self)
-            self._controller = None
-        if self._blink_thread:
+        self._controller = None
+        if getattr(self, '_blink_thread', None):
             self._blink_thread.stop()
-            self._blink_thread = None
+        self._blink_thread = None
 
     def _blink_device(self, on_time, off_time, n):
         iterable = repeat(0) if n is None else repeat(0, n)
@@ -217,7 +227,7 @@ class LED(DigitalOutputDevice):
         led.on()
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -230,6 +240,10 @@ class LED(DigitalOutputDevice):
         ``None``, the LED will be left in whatever state the pin is found in
         when configured for output (warning: this can be on).  If ``True``, the
         LED will be switched on initially.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     pass
 
@@ -252,7 +266,7 @@ class Buzzer(DigitalOutputDevice):
         bz.on()
 
     :param int pin:
-        The GPIO pin which the buzzer is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the buzzer is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param bool active_high:
@@ -265,6 +279,10 @@ class Buzzer(DigitalOutputDevice):
         ``None``, the buzzer will be left in whatever state the pin is found in
         when configured for output (warning: this can be on).  If ``True``, the
         buzzer will be switched on initially.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     pass
 
@@ -276,7 +294,7 @@ class PWMOutputDevice(OutputDevice):
     Generic output device configured for pulse-width modulation (PWM).
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param bool active_high:
@@ -293,13 +311,21 @@ class PWMOutputDevice(OutputDevice):
     :param int frequency:
         The frequency (in Hz) of pulses emitted to drive the device. Defaults
         to 100Hz.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100):
+    def __init__(
+            self, pin=None, active_high=True, initial_value=0, frequency=100,
+            pin_factory=None):
         self._blink_thread = None
         self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
-        super(PWMOutputDevice, self).__init__(pin, active_high, initial_value=None)
+        super(PWMOutputDevice, self).__init__(
+            pin, active_high, initial_value=None, pin_factory=pin_factory
+        )
         try:
             # XXX need a way of setting these together
             self.pin.frequency = frequency
@@ -309,7 +335,10 @@ class PWMOutputDevice(OutputDevice):
             raise
 
     def close(self):
-        self._stop_blink()
+        try:
+            self._stop_blink()
+        except AttributeError:
+            pass
         try:
             self.pin.frequency = None
         except AttributeError:
@@ -483,7 +512,7 @@ class PWMLED(PWMOutputDevice):
     an optional resistor to prevent the LED from burning out.
 
     :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin_numbering` for
+        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
         valid pin numbers.
 
     :param bool active_high:
@@ -500,6 +529,10 @@ class PWMLED(PWMOutputDevice):
     :param int frequency:
         The frequency (in Hz) of pulses emitted to drive the LED. Defaults
         to 100Hz.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     pass
 
@@ -552,17 +585,24 @@ class RGBLED(SourceMixin, Device):
         If ``True`` (the default), construct :class:`PWMLED` instances for
         each component of the RGBLED. If ``False``, construct regular
         :class:`LED` instances, which prevents smooth color graduations.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, red=None, green=None, blue=None, active_high=True,
-            initial_value=(0, 0, 0), pwm=True):
+            initial_value=(0, 0, 0), pwm=True, pin_factory=None):
         self._leds = ()
         self._blink_thread = None
         if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         LEDClass = PWMLED if pwm else LED
-        super(RGBLED, self).__init__()
-        self._leds = tuple(LEDClass(pin, active_high) for pin in (red, green, blue))
+        super(RGBLED, self).__init__(pin_factory=pin_factory)
+        self._leds = tuple(
+            LEDClass(pin, active_high, pin_factory=pin_factory)
+            for pin in (red, green, blue)
+        )
         self.value = initial_value
 
     red = _led_property(0)
@@ -570,11 +610,11 @@ class RGBLED(SourceMixin, Device):
     blue = _led_property(2)
 
     def close(self):
-        if self._leds:
+        if getattr(self, '_leds', None):
             self._stop_blink()
             for led in self._leds:
                 led.close()
-            self._leds = ()
+        self._leds = ()
         super(RGBLED, self).close()
 
     @property
@@ -773,7 +813,7 @@ class RGBLED(SourceMixin, Device):
 class Motor(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic motor
-    connected to a bi-directional motor driver circuit (i.e.  an `H-bridge`_).
+    connected to a bi-directional motor driver circuit (i.e. an `H-bridge`_).
 
     Attach an `H-bridge`_ motor controller to your Pi; connect a power source
     (e.g. a battery pack or the 5V pin) to the controller; connect the outputs
@@ -803,17 +843,23 @@ class Motor(SourceMixin, CompositeDevice):
         variable speed control. If ``False``, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, forward=None, backward=None, pwm=True):
+    def __init__(self, forward=None, backward=None, pwm=True, pin_factory=None):
         if not all(p is not None for p in [forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super(Motor, self).__init__(
-                forward_device=PinClass(forward),
-                backward_device=PinClass(backward),
-                _order=('forward_device', 'backward_device'))
+                forward_device=PinClass(forward, pin_factory=pin_factory),
+                backward_device=PinClass(backward, pin_factory=pin_factory),
+                _order=('forward_device', 'backward_device'),
+                pin_factory=pin_factory
+        )
 
     @property
     def value(self):
@@ -899,6 +945,121 @@ class Motor(SourceMixin, CompositeDevice):
         self.backward_device.off()
 
 
+class PhaseEnableMotor(SourceMixin, CompositeDevice):
+    """
+    Extends :class:`CompositeDevice` and represents a generic motor connected
+    to a Phase/Enable motor driver circuit; the phase of the driver controls
+    whether the motor turns forwards or backwards, while enable controls the
+    speed with PWM.
+
+    The following code will make the motor turn "forwards"::
+
+        from gpiozero import PhaseEnableMotor
+        motor = PhaseEnableMotor(12, 5)
+        motor.forward()
+
+    :param int phase:
+        The GPIO pin that the phase (direction) input of the motor driver chip
+        is connected to.
+
+    :param int enable:
+        The GPIO pin that the enable (speed) input of the motor driver chip is
+        connected to.
+
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+    """
+    def __init__(self, phase=None, enable=None, pwm=True, pin_factory=None):
+        if not all([phase, enable]):
+            raise GPIOPinMissing('phase and enable pins must be provided')
+        PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
+        super(PhaseEnableMotor, self).__init__(
+            phase_device=OutputDevice(phase, pin_factory=pin_factory),
+            enable_device=PinClass(enable, pin_factory=pin_factory),
+            _order=('phase_device', 'enable_device'),
+            pin_factory=pin_factory
+        )
+
+    @property
+    def value(self):
+        """
+        Represents the speed of the motor as a floating point value between -1
+        (full speed backward) and 1 (full speed forward).
+        """
+        return -self.enable_device.value if self.phase_device.is_active else self.enable_device.value
+
+    @value.setter
+    def value(self, value):
+        if not -1 <= value <= 1:
+            raise OutputDeviceBadValue("Motor value must be between -1 and 1")
+        if value > 0:
+            self.forward(value)
+        elif value < 0:
+            self.backward(-value)
+        else:
+            self.stop()
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` if the motor is currently running and ``False``
+        otherwise.
+        """
+        return self.value != 0
+
+    def forward(self, speed=1):
+        """
+        Drive the motor forwards.
+
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
+        """
+        if isinstance(self.enable_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
+        self.enable_device.off()
+        self.phase_device.off()
+        self.enable_device.value = speed
+
+    def backward(self, speed=1):
+        """
+        Drive the motor backwards.
+
+        :param float speed:
+            The speed at which the motor should turn. Can be any value between
+            0 (stopped) and the default 1 (maximum speed).
+        """
+        if isinstance(self.enable_device, DigitalOutputDevice):
+            if speed not in (0, 1):
+                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
+        self.enable_device.off()
+        self.phase_device.on()
+        self.enable_device.value = speed
+
+    def reverse(self):
+        """
+        Reverse the current direction of the motor. If the motor is currently
+        idle this does nothing. Otherwise, the motor's direction will be
+        reversed at the current speed.
+        """
+        self.value = -self.value
+
+    def stop(self):
+        """
+        Stop the motor.
+        """
+        self.enable_device.off()
+
+
 class Servo(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a PWM-controlled servo
@@ -926,7 +1087,7 @@ class Servo(SourceMixin, CompositeDevice):
             sleep(1)
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param float initial_value:
@@ -946,11 +1107,15 @@ class Servo(SourceMixin, CompositeDevice):
     :param float frame_width:
         The length of time between servo control pulses measured in seconds.
         This defaults to 20ms which is a common value for servos.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, initial_value=0.0,
             min_pulse_width=1/1000, max_pulse_width=2/1000,
-            frame_width=20/1000):
+            frame_width=20/1000, pin_factory=None):
         if min_pulse_width >= max_pulse_width:
             raise ValueError('min_pulse_width must be less than max_pulse_width')
         if max_pulse_width >= frame_width:
@@ -961,7 +1126,11 @@ class Servo(SourceMixin, CompositeDevice):
         self._min_value = -1
         self._value_range = 2
         super(Servo, self).__init__(
-            pwm_device=PWMOutputDevice(pin, frequency=int(1 / frame_width)))
+            pwm_device=PWMOutputDevice(
+                pin, frequency=int(1 / frame_width), pin_factory=pin_factory
+            ),
+            pin_factory=pin_factory
+        )
         try:
             self.value = initial_value
         except:
@@ -1116,7 +1285,7 @@ class AngularServo(Servo):
         expectations of minimum and maximum.
 
     :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin_numbering`
+        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
     :param float initial_angle:
@@ -1146,17 +1315,31 @@ class AngularServo(Servo):
     :param float frame_width:
         The length of time between servo control pulses measured in seconds.
         This defaults to 20ms which is a common value for servos.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, initial_angle=0.0,
             min_angle=-90, max_angle=90,
             min_pulse_width=1/1000, max_pulse_width=2/1000,
-            frame_width=20/1000):
+            frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
-        initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        if initial_angle is None:
+            initial_value = None
+        elif ((min_angle <= initial_angle <= max_angle) or
+            (max_angle <= initial_angle <= min_angle)):
+            initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (min_angle, max_angle))
         super(AngularServo, self).__init__(
-            pin, initial_value, min_pulse_width, max_pulse_width, frame_width)
+            pin, initial_value, min_pulse_width, max_pulse_width, frame_width,
+            pin_factory=pin_factory
+        )
 
     @property
     def min_angle(self):
@@ -1199,12 +1382,16 @@ class AngularServo(Servo):
                 self._min_angle, 12)
 
     @angle.setter
-    def angle(self, value):
-        if value is None:
+    def angle(self, angle):
+        if angle is None:
             self.value = None
-        else:
+        elif ((self.min_angle <= angle <= self.max_angle) or
+              (self.max_angle <= angle <= self.min_angle)):
             self.value = (
                 self._value_range *
-                ((value - self._min_angle) / self._angular_range) +
+                ((angle - self._min_angle) / self._angular_range) +
                 self._min_value)
-
+        else:
+            raise OutputDeviceBadValue(
+                "AngularServo angle must be between %s and %s, or None" %
+                (self.min_angle, self.max_angle))
