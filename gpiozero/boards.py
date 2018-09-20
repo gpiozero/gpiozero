@@ -243,6 +243,8 @@ class LEDCollection(CompositeOutputDevice):
                 )
                 for name, pin_or_collection in kwargs.items()
                 })
+        if len(self) == 0:
+            raise GPIOPinMissing('No pins given')
         leds = []
         for item in self:
             if isinstance(item, LEDCollection):
