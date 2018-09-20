@@ -92,6 +92,12 @@ def test_led_board_bad_init():
     with pytest.raises(GPIOPinMissing):
         leds = LEDBoard(pwm=True)
 
+def test_led_bar_graph_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBarGraph()
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBarGraph(pwm=True)
+
 def test_led_board_on_off():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
