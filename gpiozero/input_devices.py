@@ -80,6 +80,14 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     straight forward on / off states with (reasonably) clean transitions
     between the two.
 
+    :param int pin:
+        The GPIO pin (in Broadcom numbering) that the device is connected to.
+        If this is ``None`` a :exc:`GPIODeviceError` will be raised.
+
+    :param bool pull_up:
+        If ``True``, the pin will be pulled high with an internal resistor. If
+        ``False`` (the default), the pin will be pulled low.
+
     :param float bounce_time:
         Specifies the length of time (in seconds) that the component will
         ignore changes in state after an initial change. This defaults to
@@ -126,6 +134,14 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     This class is intended for use with devices which either exhibit analog
     behaviour (such as the charging time of a capacitor with an LDR), or those
     which exhibit "twitchy" behaviour (such as certain motion sensors).
+
+    :param int pin:
+        The GPIO pin (in Broadcom numbering) that the device is connected to.
+        If this is ``None`` a :exc:`GPIODeviceError` will be raised.
+
+    :param bool pull_up:
+        If ``True``, the pin will be pulled high with an internal resistor. If
+        ``False`` (the default), the pin will be pulled low.
 
     :param float threshold:
         The value above which the device will be considered "on".
@@ -339,6 +355,10 @@ class LineSensor(SmoothedInputDevice):
         The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
         for valid pin numbers.
 
+    :param bool pull_up:
+        If ``True``, the pin will be pulled high with an internal resistor. If
+        ``False`` (the default), the pin will be pulled low.
+
     :param int queue_len:
         The length of the queue used to store values read from the sensor. This
         defaults to 5.
@@ -366,13 +386,11 @@ class LineSensor(SmoothedInputDevice):
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(
-            self, pin=None, queue_len=5, sample_rate=100, threshold=0.5,
-            partial=False, pin_factory=None):
+            self, pin=None, pull_up=False, queue_len=5, sample_rate=100,
+            threshold=0.5, partial=False, pin_factory=None):
         super(LineSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
-            pin_factory=pin_factory
-        )
+            pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
+            partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -443,13 +461,11 @@ class MotionSensor(SmoothedInputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, queue_len=1, sample_rate=10, threshold=0.5,
-            partial=False, pull_up=False, pin_factory=None):
+            self, pin=None, pull_up=False, queue_len=1, sample_rate=10,
+            threshold=0.5, partial=False, pin_factory=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up=pull_up, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
-            pin_factory=pin_factory
-        )
+            pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
+            partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -787,4 +803,3 @@ DistanceSensor.when_out_of_range = DistanceSensor.when_activated
 DistanceSensor.when_in_range = DistanceSensor.when_deactivated
 DistanceSensor.wait_for_out_of_range = DistanceSensor.wait_for_active
 DistanceSensor.wait_for_in_range = DistanceSensor.wait_for_inactive
-
