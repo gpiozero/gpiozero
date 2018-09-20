@@ -1171,12 +1171,14 @@ class Robot(SourceMixin, CompositeDevice):
         robot.forward()
 
     :param tuple left:
-        A tuple of two GPIO pins representing the forward and backward inputs
-        of the left motor's controller.
+        A tuple of two (or three) GPIO pins representing the forward and
+        backward inputs of the left motor's controller. Use three pins if your
+        motor controller requires an enable pin.
 
     :param tuple right:
-        A tuple of two GPIO pins representing the forward and backward inputs
-        of the right motor's controller.
+        A tuple of two (or three) GPIO pins representing the forward and
+        backward inputs of the left motor's controller. Use three pins if your
+        motor controller requires an enable pin.
 
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
