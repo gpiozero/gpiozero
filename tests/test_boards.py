@@ -80,6 +80,14 @@ def test_composite_output_value():
         assert not device[1].is_active
         assert device[2].is_active
 
+def test_led_board_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBoard()
+    with pytest.raises(GPIOPinMissing):
+        lights = TrafficLights()
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBoard(pwm=True)
+
 def test_led_board_on_off():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
