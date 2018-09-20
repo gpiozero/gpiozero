@@ -254,7 +254,7 @@ class TimeOfDay(InternalDevice):
         from datetime import time
         from signal import pause
 
-        lamp = Energenie(0)
+        lamp = Energenie(1)
         morning = TimeOfDay(time(7), time(8))
 
         lamp.source = morning.values
