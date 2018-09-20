@@ -56,6 +56,9 @@ def setup_function(function):
         'test_motor_value',
         'test_motor_bad_value',
         'test_motor_reverse',
+        'test_motor_enable_pin_bad_init',
+        'test_motor_enable_pin_init',
+        'test_motor_enable_pin',
         'test_phaseenable_motor_pins',
         'test_phaseenable_motor_close',
         'test_phaseenable_motor_value',
@@ -856,6 +859,14 @@ def test_rgbled_close_nonpwm():
 def test_motor_bad_init():
     with pytest.raises(GPIOPinMissing):
         Motor()
+    with pytest.raises(GPIOPinMissing):
+        Motor(2)
+    with pytest.raises(GPIOPinMissing):
+        Motor(forward=2)
+    with pytest.raises(GPIOPinMissing):
+        Motor(backward=2)
+    with pytest.raises(TypeError):
+        Motor(a=2, b=3)
 
 def test_motor_pins():
     f = Device.pin_factory.pin(1)
@@ -998,6 +1009,58 @@ def test_motor_reverse_nonpwm():
         motor.reverse()
         assert motor.value == -1
         assert b.state == 1 and f.state == 0
+
+def test_motor_enable_pin_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        Motor(enable=1)
+    with pytest.raises(GPIOPinMissing):
+        Motor(forward=1, enable=2)
+    with pytest.raises(GPIOPinMissing):
+        Motor(backward=1, enable=2)
+    with pytest.raises(GPIOPinMissing):
+        Motor(backward=1, enable=2, pwm=True)
+
+def test_motor_enable_pin_init():
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
+    e = Device.pin_factory.pin(3)
+    with Motor(forward=1, backward=2, enable=3) as motor:
+        assert motor.forward_device.pin is f
+        assert isinstance(motor.forward_device, PWMOutputDevice)
+        assert motor.backward_device.pin is b
+        assert isinstance(motor.backward_device, PWMOutputDevice)
+        assert motor.enable_device.pin is e
+        assert isinstance(motor.enable_device, DigitalOutputDevice)
+        assert e.state
+    with Motor(1, 2, 3) as motor:
+        assert motor.forward_device.pin is f
+        assert isinstance(motor.forward_device, PWMOutputDevice)
+        assert motor.backward_device.pin is b
+        assert isinstance(motor.backward_device, PWMOutputDevice)
+        assert motor.enable_device.pin is e
+        assert isinstance(motor.enable_device, DigitalOutputDevice)
+        assert e.state
+
+def test_motor_enable_pin_nopwm_init():
+    f = Device.pin_factory.pin(1)
+    b = Device.pin_factory.pin(2)
+    e = Device.pin_factory.pin(3)
+    with Motor(forward=1, backward=2, enable=3, pwm=False) as motor:
+        assert motor.forward_device.pin is f
+        assert isinstance(motor.forward_device, DigitalOutputDevice)
+        assert motor.backward_device.pin is b
+        assert isinstance(motor.backward_device, DigitalOutputDevice)
+        assert motor.enable_device.pin is e
+        assert isinstance(motor.enable_device, DigitalOutputDevice)
+
+def test_motor_enable_pin():
+    with Motor(forward=1, backward=2, enable=3) as motor:
+        motor.forward()
+        assert motor.value == 1
+        motor.backward()
+        assert motor.value == -1
+        motor.stop()
+        assert motor.value == 0
 
 def test_phaseenable_motor_pins():
     p = Device.pin_factory.pin(1)
