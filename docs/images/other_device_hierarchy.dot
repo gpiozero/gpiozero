@@ -17,4 +17,5 @@ digraph classes {
     TimeOfDay->InternalDevice;
     PingServer->InternalDevice;
     CPUTemperature->InternalDevice;
+    LoadAverage->InternalDevice;
 }
