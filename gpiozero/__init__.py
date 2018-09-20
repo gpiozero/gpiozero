@@ -98,5 +98,6 @@ from .other_devices import (
     InternalDevice,
     PingServer,
     CPUTemperature,
+    LoadAverage,
     TimeOfDay,
 )
