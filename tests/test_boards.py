@@ -84,8 +84,6 @@ def test_led_board_bad_init():
     with pytest.raises(GPIOPinMissing):
         leds = LEDBoard()
     with pytest.raises(GPIOPinMissing):
-        lights = TrafficLights()
-    with pytest.raises(GPIOPinMissing):
         leds = LEDBoard(pwm=True)
 
 def test_led_board_on_off():
@@ -644,8 +642,12 @@ def test_traffic_lights():
         assert not amber_pin.state
 
 def test_traffic_lights_bad_init():
-    with pytest.raises(ValueError):
+    with pytest.raises(GPIOPinMissing):
         TrafficLights()
+    with pytest.raises(GPIOPinMissing):
+        TrafficLights(2)
+    with pytest.raises(GPIOPinMissing):
+        TrafficLights(2, 3)
     red_pin = Device.pin_factory.pin(2)
     amber_pin = Device.pin_factory.pin(3)
     green_pin = Device.pin_factory.pin(4)
