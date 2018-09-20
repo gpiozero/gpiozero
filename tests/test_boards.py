@@ -80,6 +80,24 @@ def test_composite_output_value():
         assert not device[1].is_active
         assert device[2].is_active
 
+def test_led_collection_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDCollection()
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDCollection(pwm=True)
+
+def test_led_board_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBoard()
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBoard(pwm=True)
+
+def test_led_bar_graph_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBarGraph()
+    with pytest.raises(GPIOPinMissing):
+        leds = LEDBarGraph(pwm=True)
+
 def test_led_board_on_off():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -636,8 +654,12 @@ def test_traffic_lights():
         assert not amber_pin.state
 
 def test_traffic_lights_bad_init():
-    with pytest.raises(ValueError):
+    with pytest.raises(GPIOPinMissing):
         TrafficLights()
+    with pytest.raises(GPIOPinMissing):
+        TrafficLights(2)
+    with pytest.raises(GPIOPinMissing):
+        TrafficLights(2, 3)
     red_pin = Device.pin_factory.pin(2)
     amber_pin = Device.pin_factory.pin(3)
     green_pin = Device.pin_factory.pin(4)
