@@ -7,6 +7,7 @@ from __future__ import (
 
 from threading import Lock
 from itertools import repeat, cycle, chain
+from collections import OrderedDict
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing
 from .devices import GPIODevice, Device, CompositeDevice
@@ -837,29 +838,36 @@ class Motor(SourceMixin, CompositeDevice):
         The GPIO pin that the backward input of the motor driver chip is
         connected to.
 
+    :param int enable:
+        (Optional) The GPIO pin that enables the motor. Required for some motor
+        controller boards. Defaults to ``None``.
+
     :param bool pwm:
         If ``True`` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
         variable speed control. If ``False``, construct
-        :class:`DigitalOutputDevice` instances, allowing only direction
+        :class:`OutputDevice` instances, allowing only direction
         control.
 
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, forward=None, backward=None, pwm=True, pin_factory=None):
+    def __init__(self, forward=None, backward=None, enable=None, pwm=True,
+                 pin_factory=None):
         if not all(p is not None for p in [forward, backward]):
             raise GPIOPinMissing(
                 'forward and backward pins must be provided'
             )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
-        super(Motor, self).__init__(
-                forward_device=PinClass(forward, pin_factory=pin_factory),
-                backward_device=PinClass(backward, pin_factory=pin_factory),
-                _order=('forward_device', 'backward_device'),
-                pin_factory=pin_factory
-        )
+        devices = OrderedDict((
+            ('forward_device', PinClass(forward)),
+            ('backward_device', PinClass(backward)),
+        ))
+        if enable is not None:
+            devices['enable_device'] = DigitalOutputDevice(enable,
+                                                           initial_value=True)
+        super(Motor, self).__init__(_order=devices.keys(), **devices)
 
     @property
     def value(self):
