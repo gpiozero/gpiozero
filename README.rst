@@ -98,6 +98,7 @@ Other contributors:
 - `Phil Howard`_
 - `Stewart Adcock`_
 - `Ian Harcombe`_
+- `Russel Winder`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -124,3 +125,4 @@ Other contributors:
 .. _Phil Howard: https://github.com/Gadgetoid
 .. _Stewart Adcock: https://github.com/stewartadcock
 .. _Ian Harcombe: https://github.com/MrHarcombe
+.. _Russel Winder: https://github.com/russel
