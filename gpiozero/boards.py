@@ -1180,15 +1180,27 @@ class Robot(SourceMixin, CompositeDevice):
         backward inputs of the right motor's controller. Use three pins if your
         motor controller requires an enable pin.
 
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
 
-    def __init__(self, left=None, right=None, pin_factory=None):
+    def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
+        # *args is a hack to ensure a useful message is shown when pins are
+        # supplied as sequential positional arguments e.g. 2, 3, 4, 5
+        if type(left) is not tuple or type(right) is not tuple:
+            raise GPIOPinMissing('left and right motor pins must be given as '
+                                 'tuples')
         super(Robot, self).__init__(
-            left_motor=Motor(*left, pin_factory=pin_factory),
-            right_motor=Motor(*right, pin_factory=pin_factory),
+            left_motor=Motor(*left, pwm=pwm, pin_factory=pin_factory),
+            right_motor=Motor(*right, pwm=pwm, pin_factory=pin_factory),
             _order=('left_motor', 'right_motor'),
             pin_factory=pin_factory
         )
@@ -1328,6 +1340,13 @@ class RyanteckRobot(Robot):
         robot = RyanteckRobot()
         robot.forward()
 
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
@@ -1335,9 +1354,9 @@ class RyanteckRobot(Robot):
     .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
     """
 
-    def __init__(self, pin_factory=None):
+    def __init__(self, pwm=True, pin_factory=None):
         super(RyanteckRobot, self).__init__(
-            (17, 18), (22, 23), pin_factory=pin_factory
+            left=(17, 18), right=(22, 23), pwm=pwm, pin_factory=pin_factory
         )
 
 
@@ -1354,6 +1373,13 @@ class CamJamKitRobot(Robot):
         robot = CamJamKitRobot()
         robot.forward()
 
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller pins, allowing both direction and
+        variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
@@ -1361,9 +1387,9 @@ class CamJamKitRobot(Robot):
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
 
-    def __init__(self, pin_factory=None):
+    def __init__(self, pwm=True, pin_factory=None):
         super(CamJamKitRobot, self).__init__(
-            (9, 10), (7, 8), pin_factory=pin_factory
+            left=(9, 10), right=(7, 8), pwm=pwm, pin_factory=pin_factory
         )
 
 
@@ -1391,15 +1417,27 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         A tuple of two GPIO pins representing the phase and enable inputs
         of the right motor's controller.
 
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller's enable pins, allowing both
+        direction and variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
 
-    def __init__(self, left=None, right=None, pin_factory=None):
+    def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
+        # *args is a hack to ensure a useful message is shown when pins are
+        # supplied as sequential positional arguments e.g. 2, 3, 4, 5
+        if type(left) is not tuple or type(right) is not tuple:
+            raise GPIOPinMissing('left and right motor pins must be given as '
+                                 'tuples')
         super(PhaseEnableRobot, self).__init__(
-            left_motor=PhaseEnableMotor(*left, pin_factory=pin_factory),
-            right_motor=PhaseEnableMotor(*right, pin_factory=pin_factory),
+            left_motor=PhaseEnableMotor(*left, pwm=pwm, pin_factory=pin_factory),
+            right_motor=PhaseEnableMotor(*right, pwm=pwm, pin_factory=pin_factory),
             _order=('left_motor', 'right_motor'),
             pin_factory=pin_factory
         )
@@ -1495,6 +1533,13 @@ class PololuDRV8835Robot(PhaseEnableRobot):
         robot = PololuDRV8835Robot()
         robot.forward()
 
+    :param bool pwm:
+        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        instances for the motor controller's enable pins, allowing both
+        direction and variable speed control. If ``False``, construct
+        :class:`DigitalOutputDevice` instances, allowing only direction
+        control.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
@@ -1502,9 +1547,9 @@ class PololuDRV8835Robot(PhaseEnableRobot):
     .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
     """
 
-    def __init__(self, pin_factory=None):
+    def __init__(self, pwm=True, pin_factory=None):
         super(PololuDRV8835Robot, self).__init__(
-            (5, 12), (6, 13), pin_factory=pin_factory
+            left=(5, 12), right=(6, 13), pwm=pwm, pin_factory=pin_factory
         )
 
 
