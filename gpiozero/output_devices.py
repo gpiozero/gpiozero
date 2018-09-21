@@ -846,7 +846,7 @@ class Motor(SourceMixin, CompositeDevice):
         If ``True`` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
         variable speed control. If ``False``, construct
-        :class:`OutputDevice` instances, allowing only direction
+        :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
     :param Factory pin_factory:
@@ -990,7 +990,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
             raise GPIOPinMissing('phase and enable pins must be provided')
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super(PhaseEnableMotor, self).__init__(
-            phase_device=OutputDevice(phase, pin_factory=pin_factory),
+            phase_device=DigitalOutputDevice(phase, pin_factory=pin_factory),
             enable_device=PinClass(enable, pin_factory=pin_factory),
             _order=('phase_device', 'enable_device'),
             pin_factory=pin_factory
