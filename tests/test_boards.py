@@ -19,6 +19,7 @@ def setup_function(function):
     # dirty, but it does the job
     Device.pin_factory.pin_class = MockPWMPin if function.__name__ in (
         'test_robot',
+        'test_robots',
         'test_enable_pin_motor_robot',
         'test_phaseenable_robot',
         'test_ryanteck_robot',
@@ -747,6 +748,24 @@ def test_traffic_hat():
     with TrafficHat() as board:
         assert [led.pin for led in board.lights] + [board.buzzer.pin, board.button.pin] == pins
 
+def test_robot_bad_init():
+    with pytest.raises(GPIOPinMissing):
+        Robot()
+    with pytest.raises(GPIOPinMissing):
+        Robot(2)
+    with pytest.raises(GPIOPinMissing):
+        Robot(2, 3)
+    with pytest.raises(GPIOPinMissing):
+        Robot(2, 3, 4)
+    with pytest.raises(GPIOPinMissing):
+        Robot(2, 3, 4, 5)
+    with pytest.raises(GPIOPinMissing):
+        Robot(2, 3, 4, 5, 6, 7)
+    with pytest.raises(GPIOPinMissing):
+        Robot((2, 3))
+    with pytest.raises(GPIOPinMissing):
+        Robot((2, 3), 4)
+
 def test_robot():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
     def check_pins_and_value(robot, expected_value):
@@ -892,6 +911,73 @@ def test_robot():
         robot.value = (0, -0.5)
         check_pins_and_value(robot, (0, -0.5))
 
+def test_robots():
+    with RyanteckRobot() as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert isinstance(left_motor.forward_device, PWMOutputDevice)
+        assert isinstance(left_motor.backward_device, PWMOutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert isinstance(right_motor.forward_device, PWMOutputDevice)
+        assert isinstance(right_motor.backward_device, PWMOutputDevice)
+    with CamJamKitRobot() as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert isinstance(left_motor.forward_device, PWMOutputDevice)
+        assert isinstance(left_motor.backward_device, PWMOutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert isinstance(right_motor.forward_device, PWMOutputDevice)
+        assert isinstance(right_motor.backward_device, PWMOutputDevice)
+    with PololuDRV8835Robot() as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, PhaseEnableMotor)
+        assert isinstance(left_motor.phase_device, DigitalOutputDevice)
+        assert isinstance(left_motor.enable_device, PWMOutputDevice)
+        assert isinstance(right_motor, PhaseEnableMotor)
+        assert isinstance(right_motor.phase_device, DigitalOutputDevice)
+        assert isinstance(right_motor.enable_device, PWMOutputDevice)
+
+def test_robot_nopwm():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
+    with Robot((2, 3), (4, 5), pwm=False) as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert left_motor.forward_device.pin is pins[0]
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert left_motor.backward_device.pin is pins[1]
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert right_motor.forward_device.pin is pins[2]
+        assert isinstance(right_motor.forward_device, DigitalOutputDevice)
+        assert right_motor.backward_device.pin is pins[3]
+        assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+
+def test_robots_nopwm():
+    with RyanteckRobot(pwm=False) as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert isinstance(left_motor.backward_device, DigitalOutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert isinstance(right_motor.forward_device, DigitalOutputDevice)
+        assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+    with CamJamKitRobot(pwm=False) as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert isinstance(left_motor.backward_device, DigitalOutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert isinstance(right_motor.forward_device, DigitalOutputDevice)
+        assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+    with PololuDRV8835Robot(pwm=False) as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, PhaseEnableMotor)
+        assert isinstance(left_motor.phase_device, DigitalOutputDevice)
+        assert isinstance(left_motor.enable_device, DigitalOutputDevice)
+        assert isinstance(right_motor, PhaseEnableMotor)
+        assert isinstance(right_motor.phase_device, DigitalOutputDevice)
+        assert isinstance(right_motor.enable_device, DigitalOutputDevice)
+
 def test_enable_pin_motor_robot():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
     with Robot((2, 3, 4), (5, 6, 7)) as robot:
@@ -902,14 +988,33 @@ def test_enable_pin_motor_robot():
         assert left_motor.backward_device.pin is pins[1]
         assert isinstance(left_motor.forward_device, PWMOutputDevice)
         assert left_motor.enable_device.pin is pins[2]
-        assert isinstance(left_motor.enable_device, OutputDevice)
+        assert isinstance(left_motor.enable_device, DigitalOutputDevice)
         assert isinstance(right_motor, Motor)
         assert right_motor.forward_device.pin is pins[3]
         assert isinstance(right_motor.forward_device, PWMOutputDevice)
         assert right_motor.backward_device.pin is pins[4]
         assert isinstance(right_motor.backward_device, PWMOutputDevice)
         assert right_motor.enable_device.pin is pins[5]
-        assert isinstance(right_motor.enable_device, OutputDevice)
+        assert isinstance(right_motor.enable_device, DigitalOutputDevice)
+
+def test_enable_pin_motor_robot_nopwm():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with Robot((2, 3, 4), (5, 6, 7), pwm=False) as robot:
+        left_motor, right_motor = robot.all
+        assert isinstance(left_motor, Motor)
+        assert left_motor.forward_device.pin is pins[0]
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert left_motor.backward_device.pin is pins[1]
+        assert isinstance(left_motor.forward_device, DigitalOutputDevice)
+        assert left_motor.enable_device.pin is pins[2]
+        assert isinstance(left_motor.enable_device, OutputDevice)
+        assert isinstance(right_motor, Motor)
+        assert right_motor.forward_device.pin is pins[3]
+        assert isinstance(right_motor.forward_device, DigitalOutputDevice)
+        assert right_motor.backward_device.pin is pins[4]
+        assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+        assert right_motor.enable_device.pin is pins[5]
+        assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
 def test_phaseenable_robot():
     pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
