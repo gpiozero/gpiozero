@@ -377,14 +377,14 @@ def queued(values, qsize):
         raise ValueError("qsize must be 1 or larger")
     q = []
     it = iter(values)
-    for i in range(qsize):
-        q.append(next(it))
-    for i in cycle(range(qsize)):
-        yield q[i]
-        try:
+    try:
+        for i in range(qsize):
+            q.append(next(it))
+        for i in cycle(range(qsize)):
+            yield q[i]
             q[i] = next(it)
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
 
 
 def smoothed(values, qsize, average=mean):
@@ -407,14 +407,14 @@ def smoothed(values, qsize, average=mean):
         raise ValueError("qsize must be 1 or larger")
     q = []
     it = iter(values)
-    for i in range(qsize):
-        q.append(next(it))
-    for i in cycle(range(qsize)):
-        yield average(q)
-        try:
+    try:
+        for i in range(qsize):
+            q.append(next(it))
+        for i in cycle(range(qsize)):
+            yield average(q)
             q[i] = next(it)
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
 
 
 def pre_delayed(values, delay):
@@ -468,17 +468,20 @@ def pre_periodic_filtered(values, block, repeat_after):
     if repeat_after < 0:
         raise ValueError("repeat_after must be 0 or larger")
     it = iter(values)
-    if repeat_after == 0:
-        for _ in range(block):
-            next(it)
-        while True:
-            yield next(it)
-    else:
-        while True:
+    try:
+        if repeat_after == 0:
             for _ in range(block):
                 next(it)
-            for _ in range(repeat_after):
+            while True:
                 yield next(it)
+        else:
+            while True:
+                for _ in range(block):
+                    next(it)
+                for _ in range(repeat_after):
+                    yield next(it)
+    except StopIteration:
+        pass
 
 
 def post_periodic_filtered(values, repeat_after, block):
@@ -500,11 +503,14 @@ def post_periodic_filtered(values, repeat_after, block):
     if block < 1:
         raise ValueError("block must be 1 or larger")
     it = iter(values)
-    while True:
-        for _ in range(repeat_after):
-            yield next(it)
-        for _ in range(block):
-            next(it)
+    try:
+        while True:
+            for _ in range(repeat_after):
+                yield next(it)
+            for _ in range(block):
+                next(it)
+    except StopIteration:
+        pass
 
 
 def random_values():

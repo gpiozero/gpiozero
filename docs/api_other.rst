@@ -33,6 +33,11 @@ CPUTemperature
 .. autoclass:: CPUTemperature
     :members: temperature, is_active
 
+LoadAverage
+===========
+
+.. autoclass:: LoadAverage
+
 Base Classes
 ============
 

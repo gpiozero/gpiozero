@@ -90,7 +90,7 @@ command should install all required dependencies:
 .. code-block:: console
 
     $ sudo apt install texlive-latex-recommended texlive-latex-extra \
-        texlive-fonts-recommended graphviz inkscape python-sphinx
+        texlive-fonts-recommended graphviz inkscape python-sphinx latexmk
 
 Once these are installed, you can use the "doc" target to build the
 documentation:
@@ -101,8 +101,8 @@ documentation:
     (python-gpiozero) $ cd ~/python-gpiozero
     (python-gpiozero) $ make doc
 
-The HTML output is written to :file:`docs/_build/html` while the PDF output
-goes to :file:`docs/_build/latex`.
+The HTML output is written to :file:`build/html` while the PDF output
+goes to :file:`build/latex`.
 
 
 Test suite

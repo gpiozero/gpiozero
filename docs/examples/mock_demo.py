@@ -17,7 +17,7 @@ print(led.value)
 # Get a reference to mock pin 16 (used by the button)
 btn_pin = Device.pin_factory.pin(16)
 
-# Drive the pin low (this is what would happen eletrically when the button is
+# Drive the pin low (this is what would happen electrically when the button is
 # pushed)
 btn_pin.drive_low()
 sleep(0.1) # give source some time to re-read the button state

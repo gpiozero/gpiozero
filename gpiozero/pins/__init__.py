@@ -429,7 +429,7 @@ class SPI(object):
         half-duplex communication. See :meth:`transfer` for full duplex
         communication.
         """
-        return self.transfer((0,) * n)
+        return self.transfer([0] * n)
 
     def write(self, data):
         """
