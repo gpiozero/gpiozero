@@ -33,8 +33,8 @@ within a virtual Python environment:
 .. code-block:: console
 
     $ sudo apt install lsb-release build-essential git git-core \
-    >   exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
-    >   python-dev python3-dev
+        exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
+        python-dev python3-dev
     $ cd
     $ mkvirtualenv -p /usr/bin/python3 python-gpiozero
     $ workon python-gpiozero
@@ -109,11 +109,13 @@ Test suite
 ==========
 
 If you wish to run the GPIO Zero test suite, follow the instructions in
-:ref:`dev_install` above and then make the "test" target within the sandbox:
+:ref:`dev_install` above and then make the "test" target within the sandbox.
+You'll also need to install some pip packages:
 
 .. code-block:: console
 
     $ workon python-gpiozero
+    (python-gpiozero) $ pip install coverage mock pytest
     (python-gpiozero) $ cd ~/python-gpiozero
     (python-gpiozero) $ make test
 
