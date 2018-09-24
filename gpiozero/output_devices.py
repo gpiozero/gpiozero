@@ -646,7 +646,7 @@ class RGBLED(SourceMixin, Device):
     @property
     def color(self):
         """
-        Represents the color of the LED as a :class:`~colorzero.`Color` object.
+        Represents the color of the LED as a :class:`~colorzero.Color` object.
         """
         return Color(*self.value)
 
