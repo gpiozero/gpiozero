@@ -15,6 +15,7 @@ except ImportError:
     from gpiozero.compat import isclose
 
 import pytest
+from colorzero import Color, Red, Green, Blue
 
 from gpiozero.pins.mock import MockPin, MockPWMPin
 from gpiozero import *
@@ -43,8 +44,11 @@ def setup_function(function):
         'test_rgbled_value',
         'test_rgbled_bad_value',
         'test_rgbled_toggle',
-        'test_rgbled_bad_color_pwm',
-        'test_rgbled_color_pwm',
+        'test_rgbled_bad_color_value_pwm',
+        'test_rgbled_color_value_pwm',
+        'test_rgbled_bad_rgb_property_pwm',
+        'test_rgbled_rgb_property_pwm',
+        'test_rgbled_color_name_pwm',
         'test_rgbled_blink_background',
         'test_rgbled_blink_foreground',
         'test_rgbled_fade_background',
@@ -554,7 +558,7 @@ def test_rgbled_toggle_nonpwm():
         assert not led.is_active
         assert led.value == (0, 0, 0)
 
-def test_rgbled_bad_color_nopwm():
+def test_rgbled_bad_color_value_nopwm():
     with RGBLED(1, 2, 3, pwm=False) as led:
         with pytest.raises(ValueError):
             led.color = (0.5, 0, 0)
@@ -562,14 +566,19 @@ def test_rgbled_bad_color_nopwm():
             led.color = (0, 1.5, 0)
         with pytest.raises(ValueError):
             led.color = (0, 0, -1)
+
+def test_rgbled_bad_color_value_pwm():
+    with RGBLED(1, 2, 3) as led:
         with pytest.raises(ValueError):
-            led.red = 0.5
+            led.color = (0, 1.5, 0)
+        with pytest.raises(ValueError):
+            led.color = (0, 0, -1)
         with pytest.raises(ValueError):
             led.green = 1.5
         with pytest.raises(ValueError):
             led.blue = -1
 
-def test_rgbled_color_nopwm():
+def test_rgbled_color_value_nopwm():
     with RGBLED(1, 2, 3, pwm=False) as led:
         assert led.value == (0, 0, 0)
         assert led.red == 0
@@ -593,18 +602,7 @@ def test_rgbled_color_nopwm():
         led.blue = 1
         assert led.value == (1, 0, 1)
 
-def test_rgbled_bad_color_pwm():
-    with RGBLED(1, 2, 3) as led:
-        with pytest.raises(ValueError):
-            led.color = (0, 1.5, 0)
-        with pytest.raises(ValueError):
-            led.color = (0, 0, -1)
-        with pytest.raises(ValueError):
-            led.green = 1.5
-        with pytest.raises(ValueError):
-            led.blue = -1
-
-def test_rgbled_color_pwm():
+def test_rgbled_color_value_pwm():
     with RGBLED(1, 2, 3) as led:
         assert led.value == (0, 0, 0)
         assert led.red == 0
@@ -627,6 +625,101 @@ def test_rgbled_color_pwm():
         led.green = 0.9
         led.blue = 0.4
         assert led.value == (0.5, 0.9, 0.4)
+
+def test_rgbled_bad_rgb_property_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        with pytest.raises(ValueError):
+            led.red = 0.1
+        with pytest.raises(ValueError):
+            led.green = 0.5
+        with pytest.raises(ValueError):
+            led.blue = 0.9
+        with pytest.raises(ValueError):
+            led.red = Red(0.1)
+        with pytest.raises(ValueError):
+            led.green = Green(0.5)
+        with pytest.raises(ValueError):
+            led.blue = Blue(0.9)
+
+def test_rgbled_bad_rgb_property_pwm():
+    with RGBLED(1, 2, 3) as led:
+        with pytest.raises(ValueError):
+            led.red = 1.5
+        with pytest.raises(ValueError):
+            led.green = 2
+        with pytest.raises(ValueError):
+            led.blue = -1
+        with pytest.raises(ValueError):
+            led.red = Red(1.5)
+        with pytest.raises(ValueError):
+            led.green = Green(2)
+        with pytest.raises(ValueError):
+            led.blue = Blue(-1)
+
+def test_rgbled_rgb_property_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        assert led.value == (0, 0, 0)
+        led.red = Red(0)
+        assert led.value == (0, 0, 0)
+        led.red = Red(1)
+        assert led.value == (1, 0, 0)
+        led.green = Green(1)
+        assert led.value == (1, 1, 0)
+        led.blue = Blue(1)
+        assert led.value == (1, 1, 1)
+
+def test_rgbled_rgb_property_pwm():
+    with RGBLED(1, 2, 3) as led:
+        assert led.value == (0, 0, 0)
+        led.red = Red(0)
+        assert led.value == (0, 0, 0)
+        led.red = Red(0.5)
+        assert led.value == (0.5, 0, 0)
+        led.green = Green(0.5)
+        assert led.value == (0.5, 0.5, 0)
+        led.blue = Blue(0.5)
+        assert led.value == (0.5, 0.5, 0.5)
+
+def test_rgbled_bad_color_name_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        with pytest.raises(ValueError):
+            led.color = Color('green')  # html 'green' is (0, ~0.5, 0)
+        with pytest.raises(ValueError):
+            led.color = Color(0.5, 0, 0)
+        with pytest.raises(ValueError):
+            led.color = Color(250, 0, 0)
+
+def test_rgbled_color_name_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        assert led.value == (0, 0, 0)
+        led.color = Color('white')
+        assert led.value == (1, 1, 1)
+        led.color = Color('black')
+        assert led.value == (0, 0, 0)
+        led.color = Color('red')
+        assert led.value == (1, 0, 0)
+        led.color = Color('lime')  # html 'green' is (0, 0.5, 0)
+        assert led.value == (0, 1, 0)
+        led.color = Color('blue')
+        assert led.value == (0, 0, 1)
+        led.color = Color('cyan')
+        assert led.value == (0, 1, 1)
+        led.color = Color('magenta')
+        assert led.value == (1, 0, 1)
+        led.color = Color('yellow')
+        assert led.value == (1, 1, 0)
+
+def test_rgbled_color_name_pwm():
+    with RGBLED(1, 2, 3) as led:
+        assert led.value == (0, 0, 0)
+        led.color = Color('white')
+        assert led.value == (1, 1, 1)
+        led.color = Color('green')
+        assert led.value == (0, 0.5019607843137255, 0)
+        led.color = Color('chocolate')
+        assert led.value == (0.8235294117647058, 0.4117647058823529, 0.11764705882352941)
+        led.color = Color('purple')
+        assert led.value == (0.5019607843137255, 0.0, 0.5019607843137255)
 
 def test_rgbled_blink_nonpwm():
     with RGBLED(1, 2, 3, pwm=False) as led:
