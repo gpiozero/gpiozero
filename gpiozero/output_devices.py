@@ -7,6 +7,7 @@ from __future__ import (
 
 from threading import Lock
 from itertools import repeat, cycle, chain
+from colorzero import Color, Red, Green, Blue
 from collections import OrderedDict
 from colorzero import Color, Red, Green, Blue
 
