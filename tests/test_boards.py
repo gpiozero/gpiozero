@@ -261,9 +261,6 @@ def test_led_board_nested():
         assert pin3.state
 
 def test_led_board_bad_blink():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
     with LEDBoard(2, LEDBoard(3, 4)) as board:
         with pytest.raises(ValueError):
             board.blink(fade_in_time=1, fade_out_time=1)
@@ -846,13 +843,179 @@ def test_rgbledboard_initial_value_no_pwm():
             board.value = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         assert board.value == ((0, 0, 0), (0, 0, 0))
 
-def test_rgbledboard_blink():
-    with RGBLEDBoard((2, 3, 4), (5, 6, 7)) as board:
-        board.blink()
-        assert board.value == ((1, 1, 1), (1, 1, 1))
-        board.off()
-        board[0].blink()
-        assert board.value == ((1, 1, 1), (0, 0, 0))
+# start
+def test_rgbledboard_bad_blink():
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        with pytest.raises(ValueError):
+            board.blink(fade_in_time=1, fade_out_time=1)
+        with pytest.raises(ValueError):
+            board.blink(fade_out_time=1)
+        with pytest.raises(ValueError):
+            board.pulse()
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_blink_background():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        # Instantiation takes a long enough time that it throws off our timing
+        # here!
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0.1, 0.1, n=2)
+        board._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
+        test = [
+            (0.0, False),
+            (0.0, True),
+            (0.1, False),
+            (0.1, True),
+            (0.1, False)
+            ]
+        for pin in pins:
+            pin.assert_states_and_times(test)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_blink_foreground():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0.1, 0.1, n=2, background=False)
+        test = [
+            (0.0, False),
+            (0.0, True),
+            (0.1, False),
+            (0.1, True),
+            (0.1, False)
+            ]
+        for pin in pins:
+            pin.assert_states_and_times(test)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_blink_control():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0.1, 0.1, n=2)
+        # make sure the blink thread's started
+        while not board._blink_leds:
+            sleep(0.00001) # pragma: no cover
+        board[1][0].off() # immediately take over the second LED
+        board._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
+        test = [
+            (0.0, False),
+            (0.0, True),
+            (0.1, False),
+            (0.1, True),
+            (0.1, False)
+            ]
+        test2 = [(0.0, False), (0.0, True), (0.0, False)]
+        for pin in pins[:3]:
+            pin.assert_states_and_times(test)
+        for pin in pins[3:]:
+            pin.assert_states_and_times(test2)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_blink_take_over():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board[1].blink(0.1, 0.1, n=2)
+        board.blink(0.1, 0.1, n=2) # immediately take over blinking
+        board[1]._blink_thread.join()
+        board._blink_thread.join()
+        test = [
+            (0.0, False),
+            (0.0, True),
+            (0.1, False),
+            (0.1, True),
+            (0.1, False)
+            ]
+        for pin in pins:
+            pin.assert_states_and_times(test)
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_blink_control_all():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0.1, 0.1, n=2)
+        # make sure the blink thread's started
+        while not board._blink_leds:
+            sleep(0.00001) # pragma: no cover
+        board[0].off() # immediately take over all LEDs
+        board[1].off()
+        board._blink_thread.join() # blink should terminate here anyway
+        test = [
+            (0.0, False),
+            (0.0, True),
+            (0.0, False),
+            ]
+        for pin in pins:
+            pin.assert_states_and_times(test)
+
+def test_rgbledboard_blink_interrupt_on():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        board.blink(1, 0.1)
+        sleep(0.2)
+        board.off() # should interrupt while on
+        for pin in pins:
+            pin.assert_states([False, True, False])
+
+def test_rgbledboard_blink_interrupt_off():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0.1, 1)
+        sleep(0.2)
+        board.off() # should interrupt while off
+        for pin in pins:
+            pin.assert_states([False, True, False])
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbledboard_fade_background():
+    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+    with RGBLEDBoard((2, 3, 4), (5, 6, 7), pwm=False) as board:
+        for pin in pins:
+            pin.clear_states()
+        board.blink(0, 0, 0.2, 0.2, n=2)
+        board._blink_thread.join()
+        test = [
+            (0.0, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            (0.04, 0.2),
+            (0.04, 0.4),
+            (0.04, 0.6),
+            (0.04, 0.8),
+            (0.04, 1),
+            (0.04, 0.8),
+            (0.04, 0.6),
+            (0.04, 0.4),
+            (0.04, 0.2),
+            (0.04, 0),
+            ]
+        for pin in pins:
+            pin.assert_states_and_times(test)
+# end
 
 def test_traffic_lights_buzzer():
     red_pin = Device.pin_factory.pin(2)
