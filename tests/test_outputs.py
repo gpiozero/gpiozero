@@ -43,6 +43,8 @@ def setup_function(function):
         'test_rgbled_value',
         'test_rgbled_bad_value',
         'test_rgbled_toggle',
+        'test_rgbled_bad_color_pwm',
+        'test_rgbled_color_pwm',
         'test_rgbled_blink_background',
         'test_rgbled_blink_foreground',
         'test_rgbled_fade_background',
@@ -467,17 +469,14 @@ def test_rgbled_initial_value_nonpwm():
         assert b.state == 1
 
 def test_rgbled_initial_bad_value():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with pytest.raises(ValueError):
         RGBLED(1, 2, 3, initial_value=(0.1, 0.2, 1.2))
 
 def test_rgbled_initial_bad_value_nonpwm():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with pytest.raises(ValueError):
         RGBLED(1, 2, 3, pwm=False, initial_value=(0.1, 0.2, 0))
 
 def test_rgbled_value():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3) as led:
         assert isinstance(led._leds[0], PWMLED)
         assert isinstance(led._leds[1], PWMLED)
@@ -495,7 +494,6 @@ def test_rgbled_value():
         assert led.value == (0.5, 0.5, 0.5)
 
 def test_rgbled_value_nonpwm():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3, pwm=False) as led:
         assert isinstance(led._leds[0], LED)
         assert isinstance(led._leds[1], LED)
@@ -510,7 +508,6 @@ def test_rgbled_value_nonpwm():
         assert led.value == (0, 0, 0)
 
 def test_rgbled_bad_value():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3) as led:
         with pytest.raises(ValueError):
             led.value = (2, 0, 0)
@@ -519,7 +516,6 @@ def test_rgbled_bad_value():
             led.value = (0, -1, 0)
 
 def test_rgbled_bad_value_nonpwm():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3, pwm=False) as led:
         with pytest.raises(ValueError):
             led.value = (2, 0, 0)
@@ -537,7 +533,6 @@ def test_rgbled_bad_value_nonpwm():
             led.value = (0, 0, 0.5)
 
 def test_rgbled_toggle():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3) as led:
         assert not led.is_active
         assert led.value == (0, 0, 0)
@@ -549,7 +544,6 @@ def test_rgbled_toggle():
         assert led.value == (0, 0, 0)
 
 def test_rgbled_toggle_nonpwm():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3, pwm=False) as led:
         assert not led.is_active
         assert led.value == (0, 0, 0)
@@ -560,8 +554,81 @@ def test_rgbled_toggle_nonpwm():
         assert not led.is_active
         assert led.value == (0, 0, 0)
 
+def test_rgbled_bad_color_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        with pytest.raises(ValueError):
+            led.color = (0.5, 0, 0)
+        with pytest.raises(ValueError):
+            led.color = (0, 1.5, 0)
+        with pytest.raises(ValueError):
+            led.color = (0, 0, -1)
+        with pytest.raises(ValueError):
+            led.red = 0.5
+        with pytest.raises(ValueError):
+            led.green = 1.5
+        with pytest.raises(ValueError):
+            led.blue = -1
+
+def test_rgbled_color_nopwm():
+    with RGBLED(1, 2, 3, pwm=False) as led:
+        assert led.value == (0, 0, 0)
+        assert led.red == 0
+        assert led.green == 0
+        assert led.blue == 0
+        led.on()
+        assert led.value == (1, 1, 1)
+        assert led.color == (1, 1, 1)
+        assert led.red == 1
+        assert led.green == 1
+        assert led.blue == 1
+        led.color = (0, 1, 0)
+        assert led.value == (0, 1, 0)
+        assert led.red == 0
+        led.red = 1
+        assert led.value == (1, 1, 0)
+        assert led.red == 1
+        assert led.green == 1
+        assert led.blue == 0
+        led.green = 0
+        led.blue = 1
+        assert led.value == (1, 0, 1)
+
+def test_rgbled_bad_color_pwm():
+    with RGBLED(1, 2, 3) as led:
+        with pytest.raises(ValueError):
+            led.color = (0, 1.5, 0)
+        with pytest.raises(ValueError):
+            led.color = (0, 0, -1)
+        with pytest.raises(ValueError):
+            led.green = 1.5
+        with pytest.raises(ValueError):
+            led.blue = -1
+
+def test_rgbled_color_pwm():
+    with RGBLED(1, 2, 3) as led:
+        assert led.value == (0, 0, 0)
+        assert led.red == 0
+        assert led.green == 0
+        assert led.blue == 0
+        led.on()
+        assert led.value == (1, 1, 1)
+        assert led.color == (1, 1, 1)
+        assert led.red == 1
+        assert led.green == 1
+        assert led.blue == 1
+        led.color = (0.2, 0.5, 0.8)
+        assert led.value == (0.2, 0.5, 0.8)
+        assert led.red == 0.2
+        led.red = 0.5
+        assert led.value == (0.5, 0.5, 0.8)
+        assert led.red == 0.5
+        assert led.green == 0.5
+        assert led.blue == 0.8
+        led.green = 0.9
+        led.blue = 0.4
+        assert led.value == (0.5, 0.9, 0.4)
+
 def test_rgbled_blink_nonpwm():
-    r, g, b = (Device.pin_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3, pwm=False) as led:
         with pytest.raises(ValueError):
             led.blink(fade_in_time=1)
