@@ -52,6 +52,7 @@ __keywords__ = [
 ]
 
 __requires__ = [
+    'colorzero',
 ]
 
 __extra_requires__ = {
