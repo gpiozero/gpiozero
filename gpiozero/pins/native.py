@@ -193,14 +193,14 @@ class NativeWatchThread(Thread):
         super(NativeWatchThread, self).__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
-        self._stop = Event()
+        self._stop_evt = Event()
         # XXX Make this compatible with BSDs with poll() option?
         self._epoll = select.epoll()
         self._watches = {}
         self.start()
 
     def close(self):
-        self._stop.set()
+        self._stop_evt.set()
         self.join()
         self._epoll.close()
 
@@ -215,7 +215,7 @@ class NativeWatchThread(Thread):
 
     def _run(self, factory, queue):
         ticks = factory.ticks
-        while not self._stop.wait(0):
+        while not self._stop_evt.wait(0):
             for fd, event in self._epoll.poll(0.01):
                 try:
                     queue.put((ticks(), self._watches[fd]))
@@ -228,16 +228,16 @@ class NativeDispatchThread(Thread):
         super(NativeDispatchThread, self).__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
-        self._stop = Event()
+        self._stop_evt = Event()
         self.start()
 
     def close(self):
-        self._stop.set()
+        self._stop_evt.set()
         self.join()
 
     def _run(self, factory, queue):
         pins = factory.pins
-        while not self._stop.wait(0):
+        while not self._stop_evt.wait(0):
             try:
                 ticks, pin = queue.get(timeout=0.1)
             except Empty:
