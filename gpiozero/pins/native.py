@@ -189,6 +189,7 @@ class NativeWatchThread(Thread):
     def __init__(self, factory, queue):
         super(NativeWatchThread, self).__init__(
             target=self._run, args=(factory, queue))
+        self.daemon = True
         self._stop = Event()
         # XXX Make this compatible with BSDs with poll() option?
         self._epoll = select.epoll()
@@ -223,6 +224,7 @@ class NativeDispatchThread(Thread):
     def __init__(self, factory, queue):
         super(NativeDispatchThread, self).__init__(
             target=self._run, args=(factory, queue))
+        self.daemon = True
         self._stop = Event()
         self.start()
 
