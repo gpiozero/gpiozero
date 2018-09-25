@@ -127,6 +127,9 @@ class GPIOFS(object):
     def path_edge(self, pin):
         return self.path('gpio%d/edge' % pin)
 
+    def exported(self, pin):
+        return pin in self._exports
+
     def export(self, pin):
         with self._lock:
             try:
@@ -408,7 +411,9 @@ class NativePin(LocalPiPin):
             with io.open(self.factory.fs.path_edge(self.number), 'w') as f:
                 f.write(value)
         except IOError as e:
-            if e.errno == errno.EINVAL:
+            if e.errno == errno.ENOENT and value == 'none':
+                pass
+            elif e.errno == errno.EINVAL:
                 raise PinInvalidEdges('invalid edge specification "%s" for pin %r' % self)
             else:
                 raise
