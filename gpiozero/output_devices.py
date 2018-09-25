@@ -7,6 +7,7 @@ from __future__ import (
 
 from threading import Lock
 from itertools import repeat, cycle, chain
+from colorzero import Color, Red, Green, Blue
 from collections import OrderedDict
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing
@@ -540,15 +541,6 @@ class PWMLED(PWMOutputDevice):
 PWMLED.is_lit = PWMLED.is_active
 
 
-def _led_property(index, doc=None):
-    def getter(self):
-        return self._leds[index].value
-    def setter(self, value):
-        self._stop_blink()
-        self._leds[index].value = value
-    return property(getter, setter, doc=doc)
-
-
 class RGBLED(SourceMixin, Device):
     """
     Extends :class:`Device` and represents a full color LED component (composed
@@ -606,10 +598,6 @@ class RGBLED(SourceMixin, Device):
         )
         self.value = initial_value
 
-    red = _led_property(0)
-    green = _led_property(1)
-    blue = _led_property(2)
-
     def close(self):
         if getattr(self, '_leds', None):
             self._stop_blink()
@@ -629,10 +617,10 @@ class RGBLED(SourceMixin, Device):
         blue)`` where each value is between 0 and 1 if ``pwm`` was ``True``
         when the class was constructed (and only 0 or 1 if not).
 
-        For example, purple would be ``(1, 0, 1)`` and yellow would be ``(1, 1,
+        For example, red would be ``(1, 0, 0)`` and yellow would be ``(1, 1,
         0)``, while orange would be ``(1, 0.5, 0)``.
         """
-        return (self.red, self.green, self.blue)
+        return tuple(led.value for led in self._leds)
 
     @value.setter
     def value(self, value):
@@ -643,7 +631,8 @@ class RGBLED(SourceMixin, Device):
                 if component not in (0, 1):
                     raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
         self._stop_blink()
-        self.red, self.green, self.blue = value
+        for led, v in zip(self._leds, value):
+            led.value = v
 
     @property
     def is_active(self):
@@ -654,7 +643,59 @@ class RGBLED(SourceMixin, Device):
         return self.value != (0, 0, 0)
 
     is_lit = is_active
-    color = value
+
+    @property
+    def color(self):
+        """
+        Represents the color of the LED as a :class:`~colorzero.Color` object.
+        """
+        return Color(*self.value)
+
+    @color.setter
+    def color(self, value):
+        self.value = value
+
+    @property
+    def red(self):
+        """
+        Represents the red element of the LED as a :class:`~colorzero.Red`
+        object.
+        """
+        return self.color.red
+
+    @red.setter
+    def red(self, value):
+        self._stop_blink()
+        r, g, b = self.value
+        self.value = value, g, b
+
+    @property
+    def green(self):
+        """
+        Represents the green element of the LED as a :class:`~colorzero.Green`
+        object.
+        """
+        return self.color.green
+
+    @green.setter
+    def green(self, value):
+        self._stop_blink()
+        r, g, b = self.value
+        self.value = r, value, b
+
+    @property
+    def blue(self):
+        """
+        Represents the blue element of the LED as a :class:`~colorzero.Blue`
+        object.
+        """
+        return self.color.blue
+
+    @blue.setter
+    def blue(self, value):
+        self._stop_blink()
+        r, g, b = self.value
+        self.value = r, g, value
 
     def on(self):
         """
