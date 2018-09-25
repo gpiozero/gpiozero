@@ -618,10 +618,10 @@ class RGBLED(SourceMixin, Device):
         blue)`` where each value is between 0 and 1 if ``pwm`` was ``True``
         when the class was constructed (and only 0 or 1 if not).
 
-        For example, purple would be ``(1, 0, 1)`` and yellow would be ``(1, 1,
+        For example, red would be ``(1, 0, 0)`` and yellow would be ``(1, 1,
         0)``, while orange would be ``(1, 0.5, 0)``.
         """
-        return (self.red, self.green, self.blue)
+        return tuple(led.value for led in self._leds)
 
     @value.setter
     def value(self, value):
@@ -632,7 +632,8 @@ class RGBLED(SourceMixin, Device):
                 if component not in (0, 1):
                     raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
         self._stop_blink()
-        self.red, self.green, self.blue = value
+        for led, v in zip(self._leds, value):
+            led.value = v
 
     @property
     def is_active(self):
@@ -660,39 +661,45 @@ class RGBLED(SourceMixin, Device):
 
     @property
     def red(self):
-        return Red(self._leds[0].value)
+        """
+        Represents the red element of the LED as a :class:`~colorzero.Red`
+        object.
+        """
+        return self.color.red
 
     @red.setter
     def red(self, value):
         self._stop_blink()
-        if isinstance(value, Red):
-            self.value = float(value)
-        else:
-            self._leds[0].value = value
+        r, g, b = self.value
+        self.value = value, g, b
 
     @property
     def green(self):
-        return Green(self._leds[1].value)
+        """
+        Represents the green element of the LED as a :class:`~colorzero.Green`
+        object.
+        """
+        return self.color.green
 
     @green.setter
     def green(self, value):
         self._stop_blink()
-        if isinstance(value, Green):
-            self.value = float(value)
-        else:
-            self._leds[1].value = value
+        r, g, b = self.value
+        self.value = r, value, b
 
     @property
     def blue(self):
-        return Blue(self._leds[2].value)
+        """
+        Represents the blue element of the LED as a :class:`~colorzero.Blue`
+        object.
+        """
+        return self.color.blue
 
     @blue.setter
     def blue(self, value):
         self._stop_blink()
-        if isinstance(value, Blue):
-            self.value = float(value)
-        else:
-            self._leds[2].value = value
+        r, g, b = self.value
+        self.value = r, g, value
 
     def on(self):
         """
