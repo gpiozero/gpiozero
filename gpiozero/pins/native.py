@@ -139,7 +139,7 @@ class GPIOFS(object):
                 # Dirty hack to wait for udev to set permissions on
                 # gpioN/value; there's no other way around this as there's no
                 # synchronous mechanism for setting permissions on sysfs
-                for i in range(25):
+                for i in range(10):
                     try:
                         # Must be O_NONBLOCK for use with epoll in edge
                         # triggered mode
@@ -158,9 +158,9 @@ class GPIOFS(object):
                         break
                 # Same for gpioN/edge. It must exist by this point but the
                 # chmod -R may not have reached it yet...
-                for i in range(25):
+                for i in range(10):
                     try:
-                        with io.open(self.path_edge(pin), 'rb'):
+                        with io.open(self.path_edge(pin), 'w+b'):
                             pass
                     except IOError as e:
                         if e.errno == errno.EACCES:
