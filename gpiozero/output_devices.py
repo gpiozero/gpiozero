@@ -654,10 +654,7 @@ class RGBLED(SourceMixin, Device):
 
     @color.setter
     def color(self, value):
-        if isinstance(value, Color):
-            self.value = value.rgb
-        else:
-            self.value = value
+        self.value = value
 
     @property
     def red(self):
