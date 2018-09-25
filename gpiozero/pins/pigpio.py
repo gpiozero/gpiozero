@@ -134,7 +134,8 @@ class PiGPIOFactory(PiFactory):
     def ticks(self):
         return self._connection.get_current_tick()
 
-    def ticks_diff(self, later, earlier):
+    @staticmethod
+    def ticks_diff(later, earlier):
         # NOTE: pigpio ticks are unsigned 32-bit quantities that wrap every
         # 71.6 minutes. The modulo below (oh the joys of having an *actual*
         # modulo operator, unlike C's remainder) ensures the result is valid

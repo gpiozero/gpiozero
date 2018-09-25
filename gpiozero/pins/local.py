@@ -76,10 +76,12 @@ class LocalPiFactory(PiFactory):
                         return int(revision, base=16)
         raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
 
-    def ticks(self):
+    @staticmethod
+    def ticks():
         return monotonic()
 
-    def ticks_diff(self, later, earlier):
+    @staticmethod
+    def ticks_diff(later, earlier):
         # NOTE: technically the guarantee to always return a positive result
         # cannot be maintained in versions where monotonic() is not available
         # and we fall back to time(). However, in that situation we've no
@@ -93,9 +95,9 @@ class LocalPiPin(PiPin):
     Abstract base class representing a multi-function GPIO pin attached to the
     local Raspberry Pi.
     """
-    def _call_when_changed(self):
+    def _call_when_changed(self, ticks=None, state=None):
         """
-        Overridden to provide ticks from the local Pi factory.
+        Overridden to provide default ticks from the local Pi factory.
 
         .. warning::
 
@@ -104,7 +106,9 @@ class LocalPiPin(PiPin):
             an opaque value that should only be compared with the associated
             :meth:`Factory.ticks_diff` method.
         """
-        super(LocalPiPin, self)._call_when_changed(self._factory.ticks(), self.state)
+        super(LocalPiPin, self)._call_when_changed(
+            self._factory.ticks() if ticks is None else ticks,
+            self.state if state is None else state)
 
 
 class LocalPiHardwareSPI(SPI, Device):
