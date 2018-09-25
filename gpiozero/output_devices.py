@@ -9,7 +9,6 @@ from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color, Red, Green, Blue
 from collections import OrderedDict
-from colorzero import Color, Red, Green, Blue
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing
 from .devices import GPIODevice, Device, CompositeDevice
