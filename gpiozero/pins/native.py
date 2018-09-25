@@ -228,8 +228,11 @@ class NativeWatchThread(Thread):
         ticks = factory.ticks
         while not self._stop_evt.wait(0):
             for fd, event in self._epoll.poll(0.01):
+                when = ticks()
+                state = os.read(fd, 1) == b'1'
+                os.lseek(fd, 0, 0)
                 try:
-                    queue.put((ticks(), self._watches[fd]))
+                    queue.put((self._watches[fd], when, state))
                 except KeyError:
                     pass
 
@@ -250,11 +253,11 @@ class NativeDispatchThread(Thread):
         pins = factory.pins
         while not self._stop_evt.wait(0):
             try:
-                ticks, pin = queue.get(timeout=0.1)
+                pin, ticks, state = queue.get(timeout=0.1)
             except Empty:
                 continue
             try:
-                pins[pin]._call_when_changed(ticks)
+                pins[pin]._call_when_changed(ticks, state)
             except KeyError:
                 pass
 
