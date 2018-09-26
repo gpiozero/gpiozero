@@ -253,13 +253,20 @@ class NativeDispatchThread(Thread):
         pins = factory.pins
         while not self._stop_evt.wait(0):
             try:
-                pin, ticks, state = queue.get(timeout=0.1)
+                num, ticks, state = queue.get(timeout=0.1)
             except Empty:
                 continue
             try:
-                pins[pin]._call_when_changed(ticks, state)
+                pin = pins[num]
             except KeyError:
                 pass
+            else:
+                if (
+                        pin._last_call is None or pin._bounce is None or
+                        factory.ticks_diff(ticks, pin._last_call) > pin._bounce
+                ):
+                    pin._call_when_changed(ticks, state)
+                    pin._last_call = ticks
 
 
 class NativeFactory(LocalPiFactory):
@@ -347,6 +354,7 @@ class NativePin(LocalPiPin):
         self._rising_shift = number % 32
         self._falling_offset = self.factory.mem.GPFEN_OFFSET + (number // 32)
         self._falling_shift = number % 32
+        self._last_call = None
         self._when_changed = None
         self._change_thread = None
         self._change_event = Event()
@@ -407,6 +415,12 @@ class NativePin(LocalPiPin):
         self.factory.mem[self.factory.mem.GPPUD_OFFSET] = 0
         self.factory.mem[self._pull_offset] = 0
         self._pull = value
+
+    def _get_bounce(self):
+        return self._bounce
+
+    def _set_bounce(self, value):
+        self._bounce = None if value is None else float(value)
 
     def _get_edges(self):
         try:
