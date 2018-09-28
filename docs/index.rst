@@ -27,6 +27,7 @@ Table of Contents
     api_tools
     api_info
     api_pins
+    api_mcp230xx
     api_exc
     changelog
     license

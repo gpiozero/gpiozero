@@ -101,3 +101,4 @@ from .other_devices import (
     LoadAverage,
     TimeOfDay,
 )
+from .pins.mcp230xx import MCP23017Factory, MCP23008Factory

@@ -8,7 +8,6 @@ str = type('')
 
 import io
 from threading import RLock, Lock
-from types import MethodType
 from collections import defaultdict
 try:
     from weakref import ref, WeakMethod
@@ -31,6 +30,7 @@ from ..exc import (
     SPIBadArgs,
     SPISoftwareFallback,
     )
+from ..mixins import WhenChangedMixin
 
 
 SPI_HARDWARE_PINS = {
@@ -202,7 +202,7 @@ class PiFactory(Factory):
         return spi_args, kwargs
 
 
-class PiPin(Pin):
+class PiPin(WhenChangedMixin, Pin):
     """
     Abstract base class representing a multi-function GPIO pin attached to a
     Raspberry Pi. This overrides several methods in the abstract base
@@ -234,8 +234,6 @@ class PiPin(Pin):
     def __init__(self, factory, number):
         super(PiPin, self).__init__()
         self._factory = factory
-        self._when_changed_lock = RLock()
-        self._when_changed = None
         self._number = number
         try:
             factory.pi_info.physical_pin(repr(self))
@@ -254,52 +252,3 @@ class PiPin(Pin):
     @property
     def factory(self):
         return self._factory
-
-    def _call_when_changed(self):
-        """
-        Called to fire the :attr:`when_changed` event handler; override this
-        in descendents if additional (currently redundant) parameters need
-        to be passed.
-        """
-        method = self.when_changed()
-        if method is None:
-            self.when_changed = None
-        else:
-            method()
-
-    def _get_when_changed(self):
-        return self._when_changed
-
-    def _set_when_changed(self, value):
-        with self._when_changed_lock:
-            if value is None:
-                if self._when_changed is not None:
-                    self._disable_event_detect()
-                self._when_changed = None
-            else:
-                enabled = self._when_changed is not None
-                # Have to take care, if value is either a closure or a bound
-                # method, not to keep a strong reference to the containing
-                # object
-                if isinstance(value, MethodType):
-                    self._when_changed = WeakMethod(value)
-                else:
-                    self._when_changed = ref(value)
-                if not enabled:
-                    self._enable_event_detect()
-
-    def _enable_event_detect(self):
-        """
-        Enables event detection. This is called to activate event detection on
-        pin :attr:`number`, watching for the specified :attr:`edges`. In
-        response, :meth:`_call_when_changed` should be executed.
-        """
-        raise NotImplementedError
-
-    def _disable_event_detect(self):
-        """
-        Disables event detection. This is called to deactivate event detection
-        on pin :attr:`number`.
-        """
-        raise NotImplementedError
-

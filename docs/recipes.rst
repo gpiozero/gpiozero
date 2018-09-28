@@ -444,6 +444,25 @@ You can read the Raspberry Pi's own CPU temperature using the built-in
 
 .. literalinclude:: examples/cpu_temperature_bar_graph.py
 
+MCP23008 and MCP23017 I/O expanders
+===================================
+
+The following examples also works with a MCP23008.
+Simply replace :class:`.MCP23017Factory` with :class:`.MCP23008Factory`.
+
+Turn on a LED when a button is pressed
+++++++++++++++++++++++++++++++++++++++
+
+.. image:: images/mcp23017_led_button.*
+
+.. literalinclude:: examples/mcp23017_led_button.py
+
+Bind 8 button states to 8 LEDs
+++++++++++++++++++++++++++++++
+
+.. literalinclude:: examples/mcp23017_8_leds_8_buttons.py
+
+
 More recipes
 ============
 
