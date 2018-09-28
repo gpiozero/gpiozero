@@ -158,16 +158,16 @@ class ButtonBoard(HoldMixin, CompositeDevice):
                 for name, pin in kwargs.items()
                 })
         def get_new_handler(device):
-            def fire_both_events(ticks):
-                device._fire_events(ticks)
-                self._fire_events(ticks)
+            def fire_both_events(ticks, state):
+                device._fire_events(ticks, device._state_to_value(state))
+                self._fire_events(ticks, self.value)
             return fire_both_events
         for button in self:
             button.pin.when_changed = get_new_handler(button)
         self._when_changed = None
         self._last_value = None
         # Call _fire_events once to set initial state of events
-        self._fire_events()
+        self._fire_events(self.pin_factory.ticks(), None)
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
@@ -191,10 +191,9 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         if self.when_changed:
             self.when_changed()
 
-    def _fire_events(self, ticks):
-        super(ButtonBoard, self)._fire_events(ticks)
-        old_value = self._last_value
-        new_value = self._last_value = self.value
+    def _fire_events(self, ticks, new_value):
+        super(ButtonBoard, self)._fire_events(ticks, new_value)
+        old_value, self._last_value = self._last_value, new_value
         if old_value is None:
             # Initial "indeterminate" value; don't do anything
             pass

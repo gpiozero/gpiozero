@@ -105,12 +105,15 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         try:
             self.pin.bounce = bounce_time
             self.pin.edges = 'both'
-            self.pin.when_changed = self._fire_events
+            self.pin.when_changed = self._pin_changed
             # Call _fire_events once to set initial state of events
             self._fire_events(self.pin_factory.ticks(), None)
         except:
             self.close()
             raise
+
+    def _pin_changed(self, ticks, state):
+        self._fire_events(ticks, self._state_to_value(state))
 
 
 class SmoothedInputDevice(EventsMixin, InputDevice):

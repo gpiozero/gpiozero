@@ -262,7 +262,7 @@ class NativeDispatchThread(Thread):
                 pass
             else:
                 if (
-                        pin._last_call is None or pin._bounce is None or
+                        pin._bounce is None or pin._last_call is None or
                         factory.ticks_diff(ticks, pin._last_call) > pin._bounce
                 ):
                     pin._call_when_changed(ticks, state)
@@ -448,6 +448,7 @@ class NativePin(LocalPiPin):
 
     def _enable_event_detect(self):
         self.factory.fs.watch(self.number)
+        self._last_call = None
 
     def _disable_event_detect(self):
         self.factory.fs.unwatch(self.number)

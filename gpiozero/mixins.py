@@ -167,7 +167,7 @@ class EventsMixin(object):
         self._inactive_event = Event()
         self._when_activated = None
         self._when_deactivated = None
-        self._last_state = None
+        self._last_value = None
         self._last_changed = self.pin_factory.ticks()
 
     def wait_for_active(self, timeout=None):
@@ -308,21 +308,21 @@ class EventsMixin(object):
         if self.when_deactivated:
             self.when_deactivated()
 
-    def _fire_events(self, ticks, state):
-        old_state = self._last_state
-        # NOTE: we are interested in the state of the *device*, not the pin
-        # (hence why the state parameter is ignored here)
-        new_state = self._last_state = self.is_active
-        if old_state is None:
+    def _fire_events(self, ticks, new_value):
+        # NOTE: in contrast to the pin when_changed event, this method takes
+        # ticks and *value* (i.e. the device's .value) as opposed to a pin's
+        # *state*.
+        old_value, self._last_value = self._last_value, new_value
+        if old_value is None:
             # Initial "indeterminate" state; set events but don't fire
             # callbacks as there's not necessarily an edge
-            if new_state:
+            if new_value:
                 self._active_event.set()
             else:
                 self._inactive_event.set()
-        elif old_state != new_state:
+        elif old_value != new_value:
             self._last_changed = ticks
-            if new_state:
+            if new_value:
                 self._inactive_event.clear()
                 self._active_event.set()
                 self._fire_activated()

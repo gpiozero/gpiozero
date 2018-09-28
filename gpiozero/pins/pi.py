@@ -261,14 +261,14 @@ class PiPin(Pin):
         in descendents if additional (currently redundant) parameters need
         to be passed.
         """
-        method = self.when_changed()
+        method = self._when_changed()
         if method is None:
             self.when_changed = None
         else:
             method(ticks, state)
 
     def _get_when_changed(self):
-        return self._when_changed
+        return None if self._when_changed is None else self._when_changed()
 
     def _set_when_changed(self, value):
         with self._when_changed_lock:
