@@ -1684,3 +1684,63 @@ class Energenie(SourceMixin, Device):
         Turns the socket off.
         """
         self.value = False
+        
+class PumpkinPi(LEDBoard):
+    """
+    Extends :class: `LEDBoard` for the `ModMyPi Pumpkin Pi` board.
+
+    There are tweleve LEDs connected up to individual pins, so for 
+    the PumpkinPi the pins are fixed.
+
+    Usage:
+        from gpiozero import PumpkinPi
+
+        pumpk = PumpkinPi(pwm=True)
+        pumpk.sides.pulse()
+        pumpk.off()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances to represent each
+        LED. If ``False`` (the default), construct regular :class:`LED`
+        instances
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    :param Factory pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+        
+    .. _ModMyPi PumpkinPi: https://www.modmypi.com/halloween-pumpkin-solder-kit
+
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(PumpkinPi, self).__init__(
+            sides=LEDBoard(
+                left=LEDBoard(
+                    bottom=18, midbottom=17, middle=16, midtop=13, top=24,
+                    pwm=pwm, initial_value=initial_value,
+                    _order=('bottom','midbottom','middle','midtop','top'),
+                    pin_factory=pin_factory),
+                right=LEDBoard(
+                    bottom=19, midbottom=20, middle=21, midtop=22, top=23,
+                    pwm=pwm, initial_value=initial_value,
+                    _order=('bottom','midbottom','middle','midtop','top'),
+                    pin_factory=pin_factory),
+                pwm=pwm, initial_value=initial_value,
+                _order=('left','right'),
+                pin_factory=pin_factory
+                ),
+            eyes=LEDBoard(
+                left=12, right=6,
+                pwm=pwm, initial_value=initial_value,
+                _order=('left','right'),
+                pin_factory=pin_factory
+                ),
+            pwm=pwm, initial_value=initial_value,
+            _order=('eyes','sides'),
+            pin_factory=pin_factory
+        )
