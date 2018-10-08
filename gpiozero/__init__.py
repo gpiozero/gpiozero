@@ -93,6 +93,7 @@ from .boards import (
     PhaseEnableRobot,
     PololuDRV8835Robot,
     Energenie,
+    PumpkinPi,
 )
 from .other_devices import (
     InternalDevice,
