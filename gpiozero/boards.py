@@ -1723,24 +1723,24 @@ class PumpkinPi(LEDBoard):
                 left=LEDBoard(
                     bottom=18, midbottom=17, middle=16, midtop=13, top=24,
                     pwm=pwm, initial_value=initial_value,
-                    _order=('bottom','midbottom','middle','midtop','top'),
+                    _order=('bottom', 'midbottom', 'middle', 'midtop', 'top'),
                     pin_factory=pin_factory),
                 right=LEDBoard(
                     bottom=19, midbottom=20, middle=21, midtop=22, top=23,
                     pwm=pwm, initial_value=initial_value,
-                    _order=('bottom','midbottom','middle','midtop','top'),
+                    _order=('bottom', 'midbottom', 'middle', 'midtop', 'top'),
                     pin_factory=pin_factory),
                 pwm=pwm, initial_value=initial_value,
-                _order=('left','right'),
+                _order=('left', 'right'),
                 pin_factory=pin_factory
                 ),
             eyes=LEDBoard(
                 left=12, right=6,
                 pwm=pwm, initial_value=initial_value,
-                _order=('left','right'),
+                _order=('left', 'right'),
                 pin_factory=pin_factory
                 ),
             pwm=pwm, initial_value=initial_value,
-            _order=('eyes','sides'),
+            _order=('eyes', 'sides'),
             pin_factory=pin_factory
         )
