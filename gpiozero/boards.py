@@ -1695,9 +1695,9 @@ class PumpkinPi(LEDBoard):
     Usage:
         from gpiozero import PumpkinPi
 
-        pumpk = PumpkinPi(pwm=True)
-        pumpk.sides.pulse()
-        pumpk.off()
+        pumpkin = PumpkinPi(pwm=True)
+        pumpkin.sides.pulse()
+        pumpkin.off()
 
     :param bool pwm:
         If ``True``, construct :class:`PWMLED` instances to represent each
@@ -1714,7 +1714,7 @@ class PumpkinPi(LEDBoard):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
         
-    .. _ModMyPi PumpkinPi: https://www.modmypi.com/halloween-pumpkin-solder-kit
+    .. _ModMyPi PumpkinPi: https://www.modmypi.com/halloween-pumpkin-programmable-kit
 
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
