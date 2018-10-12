@@ -36,7 +36,7 @@ def setup_function(function):
         'test_led_bar_graph_pwm_initial_value',
         'test_statusboard_kwargs',
         'test_statuszero_kwargs',
-        #'test_pumpkin_pi_initial_value_pwm',
+        'test_pumpkin_pi_initial_value_pwm',
         ) else MockPin
 
 def teardown_function(function):
@@ -1225,15 +1225,15 @@ def test_pumpkin_pi():
         assert isinstance(board.sides, LEDBoard)
         assert isinstance(board.eyes, LEDBoard)
         board.off()
-        assert board.value == ((False,False), ((False, False, False, False, False), (False, False, False, False, False)))
+        assert board.value == ((False, False), ((False, False, False, False, False), (False, False, False, False, False)))
         board.eyes.on()
-        assert board.value == ((True,True), ((False, False, False, False, False), (False, False, False, False, False)))
+        assert board.value == ((True, True), ((False, False, False, False, False), (False, False, False, False, False)))
         board.sides.left.middle.on()
-        assert board.value == ((True,True), ((False, False, True, False, False), (False, False, False, False, False)))
+        assert board.value == ((True, True), ((False, False, True, False, False), (False, False, False, False, False)))
         board.sides.right.midtop.on()
-        assert board.value == ((True,True), ((False, False, True, False, False), (False, False, False, True, False)))
+        assert board.value == ((True, True), ((False, False, True, False, False), (False, False, False, True, False)))
         board.toggle()
-        assert board.value == ((False,False), ((True, True, False, True, True), (True, True, True, False, True)))
+        assert board.value == ((False, False), ((True, True, False, True, True), (True, True, True, False, True)))
 
 def test_pumpkin_pi_initial_value():
     with PumpkinPi() as board:
@@ -1245,8 +1245,8 @@ def test_pumpkin_pi_initial_value():
     with PumpkinPi(initial_value=0.5) as board:
         assert all(device.pin.state == True for device in board.leds)
 
-#def test_pumpkin_pi_initial_value_pwm():
-#    pins = [Device.pin_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
-#    with PumpkinPi(pwm=True, initial_value=0.5) as board:
-#        assert [device.pin for device in board.leds] == pins
-#        assert all(device.pin.state == 0.5 for device in board.leds)
+def test_pumpkin_pi_initial_value_pwm():
+    pins = [Device.pin_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
+    with PumpkinPi(pwm=True, initial_value=0.5) as board:
+        assert [device.pin for device in board.leds] == pins
+        assert all(device.pin.state == 0.5 for device in board.leds)
