@@ -165,7 +165,7 @@ SnowPi
     :members:
 
 PumpkinPi
-======
+=========
 
 .. autoclass:: PumpkinPi
     :inherited-members:
