@@ -11,6 +11,7 @@ import warnings
 import pytest
 
 from gpiozero import *
+from datetime import time
 
 def test_PingServer_init():
     with PingServer('localhost') as server:
