@@ -56,6 +56,8 @@ class LocalPiFactory(PiFactory):
         # Cache the result as we can reasonably assume it won't change during
         # runtime (this is LocalPin after all; descendents that deal with
         # remote Pis should inherit from Pin instead)
+
+        # Read revision from /proc/cpuinfo
         with io.open('/proc/cpuinfo', 'r') as f:
             for line in f:
                 if line.startswith('Revision'):
@@ -64,7 +66,18 @@ class LocalPiFactory(PiFactory):
                     if overvolted:
                         revision = revision[-4:]
                     return revision
-        raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo')
+
+        # Fallback to reading /proc/device-tree if available to support 64-bit systems
+        try:
+            with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
+                f.seek(1)
+                revision = int.from_bytes(f.read(), byteorder='big', signed=False)
+                if revision != 0:
+                    return hex(revision)[2:]
+        except FileNotFoundError:
+            pass
+
+        raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
 
 
 class LocalPiPin(PiPin):
