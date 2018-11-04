@@ -74,8 +74,10 @@ class LocalPiFactory(PiFactory):
                 revision = int.from_bytes(f.read(), byteorder='big', signed=False)
                 if revision != 0:
                     return hex(revision)[2:]
-        except FileNotFoundError:
-            pass
+        except IOError as e:
+            # Ignore if /proc/device-tree is not available (and raise PinUnknownPi instead)
+            if not e.errno == errno.ENOENT:
+                raise e
 
         raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
 
