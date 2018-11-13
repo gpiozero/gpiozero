@@ -8,7 +8,7 @@ actions = {
     curses.KEY_DOWN:  robot.backward,
     curses.KEY_LEFT:  robot.left,
     curses.KEY_RIGHT: robot.right,
-    }
+}
 
 def main(window):
     next_key = None
@@ -20,7 +20,7 @@ def main(window):
             key = next_key
             next_key = None
         if key != -1:
-            # KEY DOWN
+            # KEY PRESSED
             curses.halfdelay(3)
             action = actions.get(key)
             if action is not None:
@@ -28,7 +28,7 @@ def main(window):
             next_key = key
             while next_key == key:
                 next_key = window.getch()
-            # KEY UP
+            # KEY RELEASED
             robot.stop()
 
 curses.wrapper(main)
