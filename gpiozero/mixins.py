@@ -167,7 +167,7 @@ class EventsMixin(object):
         self._inactive_event = Event()
         self._when_activated = None
         self._when_deactivated = None
-        self._last_value = None
+        self._last_active = None
         self._last_changed = self.pin_factory.ticks()
 
     def wait_for_active(self, timeout=None):
@@ -308,21 +308,21 @@ class EventsMixin(object):
         if self.when_deactivated:
             self.when_deactivated()
 
-    def _fire_events(self, ticks, new_value):
+    def _fire_events(self, ticks, new_active):
         # NOTE: in contrast to the pin when_changed event, this method takes
-        # ticks and *value* (i.e. the device's .value) as opposed to a pin's
-        # *state*.
-        old_value, self._last_value = self._last_value, new_value
-        if old_value is None:
+        # ticks and *is_active* (i.e. the device's .is_active) as opposed to a
+        # pin's *state*.
+        old_active, self._last_active = self._last_active, new_active
+        if old_active is None:
             # Initial "indeterminate" state; set events but don't fire
             # callbacks as there's not necessarily an edge
-            if new_value:
+            if new_active:
                 self._active_event.set()
             else:
                 self._inactive_event.set()
-        elif old_value != new_value:
+        elif old_active != new_active:
             self._last_changed = ticks
-            if new_value:
+            if new_active:
                 self._inactive_event.clear()
                 self._active_event.set()
                 self._fire_activated()
@@ -512,7 +512,7 @@ class GPIOQueue(GPIOThread):
                 if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
                     self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
-                    self.parent._fire_events(self.parent.pin_factory.ticks(), None)
+                    self.parent._fire_events(self.parent.pin_factory.ticks(), self.parent.is_active)
         except ReferenceError:
             # Parent is dead; time to die!
             pass
