@@ -111,6 +111,8 @@ class SourceMixin(object):
         if getattr(self, '_source_thread', None):
             self._source_thread.stop()
         self._source_thread = None
+        if isinstance(value, ValuesMixin):
+            value = value.values
         self._source = value
         if value is not None:
             self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
