@@ -11,6 +11,7 @@ str = type('')
 
 from random import random
 from time import sleep
+from .mixins import ValuesMixin
 try:
     from itertools import izip as zip
 except ImportError:
@@ -27,6 +28,25 @@ except ImportError:
     from .compat import isclose
 
 
+def _normalize(values):
+    """
+    If *values* is a ``ValuesMixin`` derivative, return ``values.values``,
+    otherwise return `values` as provided. Intended to allow support for::
+
+        led.source = foo(btn)
+
+    and::
+
+        led.source = foo(btn.values)
+
+    and::
+
+        led.source = foo(some_iterator)
+    """
+    if isinstance(values, ValuesMixin):
+        return values.values
+    return values
+
 def negated(values):
     """
     Returns the negation of the supplied values (``True`` becomes ``False``,
@@ -38,9 +58,12 @@ def negated(values):
 
         led = LED(4)
         btn = Button(17)
-        led.source = negated(btn.values)
+
+        led.source = negated(btn)
+
         pause()
     """
+    values = _normalize(values)
     for v in values:
         yield not v
 
@@ -59,9 +82,12 @@ def inverted(values, input_min=0, input_max=1):
 
         led = PWMLED(4)
         pot = MCP3008(channel=0)
-        led.source = inverted(pot.values)
+
+        led.source = inverted(pot)
+
         pause()
     """
+    values = _normalize(values)
     if input_min >= input_max:
         raise ValueError('input_min must be smaller than input_max')
     for v in values:
@@ -82,7 +108,9 @@ def scaled(values, output_min, output_max, input_min=0, input_max=1):
 
         motor = Motor(20, 21)
         pot = MCP3008(channel=0)
-        motor.source = scaled(pot.values, -1, 1)
+
+        motor.source = scaled(pot, -1, 1)
+
         pause()
 
     .. warning::
@@ -91,6 +119,7 @@ def scaled(values, output_min, output_max, input_min=0, input_max=1):
         *input_max* (inclusive) then the function will not produce values that
         lie within *output_min* to *output_max* (inclusive).
     """
+    values = _normalize(values)
     if input_min >= input_max:
         raise ValueError('input_min must be smaller than input_max')
     input_size = input_max - input_min
@@ -113,10 +142,11 @@ def clamped(values, output_min=0, output_max=1):
         led = PWMLED(4)
         pot = MCP3008(channel=0)
 
-        led.source = clamped(pot.values, 0.5, 1.0)
+        led.source = clamped(pot, 0.5, 1.0)
 
         pause()
     """
+    values = _normalize(values)
     if output_min >= output_max:
         raise ValueError('output_min must be smaller than output_max')
     for v in values:
@@ -136,11 +166,12 @@ def absoluted(values):
         motor = Motor(22, 27)
         pot = MCP3008(channel=0)
 
-        motor.source = scaled(pot.values, -1, 1)
-        led.source = absoluted(motor.values)
+        motor.source = scaled(pot, -1, 1)
+        led.source = absoluted(motor)
 
         pause()
     """
+    values = _normalize(values)
     for v in values:
         yield abs(v)
 
@@ -160,9 +191,12 @@ def quantized(values, steps, input_min=0, input_max=1):
 
         led = PWMLED(4)
         pot = MCP3008(channel=0)
-        led.source = quantized(pot.values, 4)
+
+        led.source = quantized(pot, 4)
+
         pause()
     """
+    values = _normalize(values)
     if steps < 1:
         raise ValueError("steps must be 1 or larger")
     if input_min >= input_max:
@@ -187,11 +221,14 @@ def booleanized(values, min_value, max_value, hysteresis=0):
 
         led = LED(4)
         pot = MCP3008(channel=0)
-        led.source = booleanized(pot.values, 0.25, 0.75)
+
+        led.source = booleanized(pot, 0.25, 0.75)
+
         pause()
 
     .. _hysteresis: https://en.wikipedia.org/wiki/Hysteresis
     """
+    values = _normalize(values)
     if min_value >= max_value:
         raise ValueError('min_value must be smaller than max_value')
     min_value = float(min_value)
@@ -245,11 +282,15 @@ def all_values(*values):
         led = LED(4)
         btn1 = Button(20)
         btn2 = Button(21)
-        led.source = all_values(btn1.values, btn2.values)
+
+        led.source = all_values(btn1, btn2)
+
         pause()
 
     .. _logical conjunction: https://en.wikipedia.org/wiki/Logical_conjunction
     """
+    print("here")
+    values = [_normalize(v) for v in values]
     for v in zip(*values):
         yield all(v)
 
@@ -268,11 +309,14 @@ def any_values(*values):
         led = LED(4)
         btn1 = Button(20)
         btn2 = Button(21)
-        led.source = any_values(btn1.values, btn2.values)
+
+        led.source = any_values(btn1, btn2)
+
         pause()
 
     .. _logical disjunction: https://en.wikipedia.org/wiki/Logical_disjunction
     """
+    values = [_normalize(v) for v in values]
     for v in zip(*values):
         yield any(v)
 
@@ -292,10 +336,11 @@ def averaged(*values):
         pot3 = MCP3008(channel=2)
         led = PWMLED(4)
 
-        led.source = averaged(pot1.values, pot2.values, pot3.values)
+        led.source = averaged(pot1, pot2, pot3)
 
         pause()
     """
+    values = [_normalize(v) for v in values]
     for v in zip(*values):
         yield mean(v)
 
@@ -315,10 +360,11 @@ def summed(*values):
         pot3 = MCP3008(channel=2)
         led = PWMLED(4)
 
-        led.source = scaled(summed(pot1.values, pot2.values, pot3.values), 0, 1, 0, 3)
+        led.source = scaled(summed(pot1, pot2, pot3), 0, 1, 0, 3)
 
         pause()
     """
+    values = [_normalize(v) for v in values]
     for v in zip(*values):
         yield sum(v)
 
@@ -339,10 +385,11 @@ def multiplied(*values):
         pot3 = MCP3008(channel=2)
         led = PWMLED(4)
 
-        led.source = multiplied(pot1.values, pot2.values, pot3.values)
+        led.source = multiplied(pot1, pot2, pot3)
 
         pause()
     """
+    values = [_normalize(v) for v in values]
     def _product(it):
         p = 1
         for n in it:
@@ -366,13 +413,14 @@ def queued(values, qsize):
         btn = Button(17)
 
         for i in range(4):
-            leds[i].source = queued(leds[i + 1].values, 5)
+            leds[i].source = queued(leds[i + 1], 5)
             leds[i].source_delay = 0.01
 
-        leds[4].source = btn.values
+        leds[4].source = btn
 
         pause()
     """
+    values = [_normalize(v) for v in values]
     if qsize < 1:
         raise ValueError("qsize must be 1 or larger")
     q = []
@@ -400,9 +448,10 @@ def smoothed(values, qsize, average=mean):
 
         adc = MCP3008(channel=0)
 
-        for value in smoothed(adc.values, 5):
+        for value in smoothed(adc, 5):
             print(value)
     """
+    values = _normalize(values)
     if qsize < 1:
         raise ValueError("qsize must be 1 or larger")
     q = []
@@ -421,6 +470,7 @@ def pre_delayed(values, delay):
     """
     Waits for *delay* seconds before returning each item from *values*.
     """
+    values = _normalize(values)
     if delay < 0:
         raise ValueError("delay must be 0 or larger")
     for v in values:
@@ -432,6 +482,7 @@ def post_delayed(values, delay):
     """
     Waits for *delay* seconds after returning each item from *values*.
     """
+    values = _normalize(values)
     if delay < 0:
         raise ValueError("delay must be 0 or larger")
     for v in values:
@@ -450,7 +501,7 @@ def pre_periodic_filtered(values, block, repeat_after):
 
         adc = MCP3008(channel=0)
 
-        for value in pre_periodic_filtered(adc.values, 50, 0):
+        for value in pre_periodic_filtered(adc, 50, 0):
             print(value)
 
     Or to only display every even item read from an ADC::
@@ -460,9 +511,10 @@ def pre_periodic_filtered(values, block, repeat_after):
 
         adc = MCP3008(channel=0)
 
-        for value in pre_periodic_filtered(adc.values, 1, 1):
+        for value in pre_periodic_filtered(adc, 1, 1):
             print(value)
     """
+    values = _normalize(values)
     if block < 1:
         raise ValueError("block must be 1 or larger")
     if repeat_after < 0:
@@ -495,9 +547,10 @@ def post_periodic_filtered(values, repeat_after, block):
 
         adc = MCP3008(channel=0)
 
-        for value in post_periodic_filtered(adc.values, 9, 1):
+        for value in post_periodic_filtered(adc, 9, 1):
             print(value)
     """
+    values = _normalize(values)
     if repeat_after < 1:
         raise ValueError("repeat_after must be 1 or larger")
     if block < 1:
