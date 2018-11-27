@@ -4,6 +4,6 @@ from signal import pause
 led = PWMLED(17)
 pot = MCP3008()
 
-led.source = pot
+led.source = pot.values
 
 pause()

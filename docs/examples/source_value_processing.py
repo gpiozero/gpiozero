@@ -1,13 +1,13 @@
 from gpiozero import Button, LED
 from signal import pause
 
-def opposite(values):
-    for value in values:
+def opposite(device):
+    for value in device.values:
         yield not value
 
 led = LED(4)
 btn = Button(17)
 
-led.source = opposite(btn.values)
+led.source = opposite(btn)
 
 pause()

@@ -52,10 +52,10 @@ class ValuesMixin(object):
 
 class SourceMixin(object):
     """
-    Adds a :attr:`source` property to the class which, given an iterable, sets
-    :attr:`value` to each member of that iterable until it is exhausted.  This
-    mixin is generally included in novel output devices to allow their state to
-    be driven from another device.
+    Adds a :attr:`source` property to the class which, given an iterable or
+    a :class:``ValuesMixin`` descendent, sets :attr:`value` to each member of
+    that iterable until it is exhausted. This mixin is generally included in
+    novel output devices to allow their state to be driven from another device.
 
     .. note::
 
@@ -512,4 +512,3 @@ class GPIOQueue(GPIOThread):
         except ReferenceError:
             # Parent is dead; time to die!
             pass
-

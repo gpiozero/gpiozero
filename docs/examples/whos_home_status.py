@@ -11,8 +11,8 @@ statuses = {
 }
 
 for server, leds in statuses.items():
-    leds.green.source = server.values
+    leds.green.source = server
     leds.green.source_delay = 60
-    leds.red.source = negated(leds.green.values)
+    leds.red.source = negated(leds.green)
 
 pause()

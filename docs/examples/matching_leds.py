@@ -5,7 +5,7 @@ red = LED(14)
 green = LED(15)
 button = Button(17)
 
-red.source = button.values
-green.source = red.values
+red.source = button
+green.source = red
 
 pause()

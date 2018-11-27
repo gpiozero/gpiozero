@@ -5,6 +5,6 @@ from signal import pause
 led = LED(4)
 btn = Button(17)
 
-led.source = negated(btn.values)
+led.source = negated(btn)
 
 pause()

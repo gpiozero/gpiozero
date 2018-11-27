@@ -47,6 +47,7 @@ def _normalize(values):
         return values.values
     return values
 
+
 def negated(values):
     """
     Returns the negation of the supplied values (``True`` becomes ``False``,
@@ -603,7 +604,7 @@ def sin_values(period=360):
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
         red.source = scaled(sin_values(100), 0, 1, -1, 1)
-        blue.source = inverted(red.values)
+        blue.source = inverted(red)
 
         pause()
 
@@ -630,7 +631,7 @@ def cos_values(period=360):
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
         red.source = scaled(cos_values(100), 0, 1, -1, 1)
-        blue.source = inverted(red.values)
+        blue.source = inverted(red)
 
         pause()
 

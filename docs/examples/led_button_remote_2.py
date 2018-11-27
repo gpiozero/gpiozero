@@ -10,6 +10,6 @@ led = LED(17)
 button_1 = Button(17, pin_factory=factory3)
 button_2 = Button(17, pin_factory=factory4)
 
-led.source = all_values(button_1.values, button_2.values)
+led.source = all_values(button_1, button_2)
 
 pause()

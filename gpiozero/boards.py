@@ -492,7 +492,9 @@ class LEDBarGraph(LEDCollection):
 
         graph = LEDBarGraph(2, 3, 4, 5, 6, pwm=True)
         pot = MCP3008(channel=0)
-        graph.source = pot.values
+
+        graph.source = pot
+
         pause()
 
     :param int \*pins:
