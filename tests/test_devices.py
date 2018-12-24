@@ -25,8 +25,6 @@ def test_device_bad_pin():
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(60)
     with pytest.raises(PinInvalidPin):
-        device = GPIODevice(b'BCM60')
-    with pytest.raises(PinInvalidPin):
         device = GPIODevice('WPI32')
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(b'P2:2')
@@ -78,12 +76,8 @@ def test_device_reopen_same_pin():
 
 def test_device_pin_parsing():
     # MockFactory defaults to a Pi 2B layout
-    pin = Device._pin_factory.pin(2)
+    pin = Device.pin_factory.pin(2)
     with GPIODevice('GPIO2') as device:
-        assert device.pin is pin
-    with GPIODevice('BCM2') as device:
-        assert device.pin is pin
-    with GPIODevice('WIPI8') as device:
         assert device.pin is pin
     with GPIODevice('WPI8') as device:
         assert device.pin is pin

@@ -455,7 +455,7 @@ class MockFactory(LocalPiFactory):
         """
         if pin_class is None:
             pin_class = self.pin_class
-        n = self._to_gpio(spec)
+        n = self.pi_info.to_gpio(spec)
         try:
             pin = self.pins[n]
         except KeyError:
