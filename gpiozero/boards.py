@@ -1685,11 +1685,12 @@ class Energenie(SourceMixin, Device):
         """
         self.value = False
         
+        
 class PumpkinPi(LEDBoard):
     """
     Extends :class: `LEDBoard` for the `ModMyPi Pumpkin Pi` board.
 
-    There are tweleve LEDs connected up to individual pins, so for 
+    There are twelve LEDs connected up to individual pins, so for 
     the PumpkinPi the pins are fixed.
 
     Usage:
