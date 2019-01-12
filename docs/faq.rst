@@ -159,3 +159,48 @@ If you receive the error ``No module named pkg_resources``, you need to install
 Alternatively, install pip with `get-pip`_.
 
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
+
+
+I'm getting ``command not found`` when running ``pinout``
+=========================================================
+
+The gpiozero library is available as a Debian package for Python 2 and Python 3,
+but the ``pinout`` tool cannot be made available by both packages, so it's only
+included with the Python 3 version of the package. To make sure the ``pinout``
+tool is available, the ``python3-gpiozero`` package must be installed:
+
+.. code-block:: console
+
+    $ sudo apt install python3-gpiozero
+
+Alternatively, installing gpiozero using ``pip`` will install the command line
+tool:
+
+.. code-block:: console
+
+    $ sudo pip3 install gpiozero
+
+or:
+
+.. code-block:: console
+
+    $ sudo pip install gpiozero
+
+
+The ``pinout`` command line tool incorrectly identifies my Raspberry Pi model
+=============================================================================
+
+If your Raspberry Pi model is new, it's possible it wasn't known about at the
+time of the gpiozero release you are using. Ensure you have the latest version
+installed (remember, the ``pinout`` tool usually comes from the Python 3 version
+of the package as noted in the previous FAQ).
+
+If the Pi model you are using isn't known to gpiozero, it may have been added
+since the last release. You can check the `GitHub issues`_ to see if it's been
+reported before, or check the ``commits``_ on GitHub since the last release to
+see if it's been added. The model determination can be found in
+:file:`gpiozero/pins/data.py`.
+
+
+.. _GitHub issues: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
