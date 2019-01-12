@@ -51,8 +51,8 @@ events to be detected::
     pause()
 
 
-My event handler isn't being called?
-====================================
+My event handler isn't being called
+===================================
 
 When assigning event handlers, don't call the function you're assigning. For
 example::
