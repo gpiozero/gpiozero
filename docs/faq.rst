@@ -175,7 +175,7 @@ installed:
     $ sudo apt install python3-gpiozero
 
 Alternatively, installing gpiozero using ``pip`` will install the command line
-tool:
+tool, regardless of Python version:
 
 .. code-block:: console
 
