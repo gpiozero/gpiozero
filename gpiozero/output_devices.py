@@ -255,7 +255,8 @@ LED.is_lit = LED.is_active
 class Buzzer(DigitalOutputDevice):
     """
     Extends :class:`DigitalOutputDevice` and represents a digital buzzer
-    component.
+    component. Note that this interface is only capable of simple on/off
+    commands, and is not capable of playing a variety of tones.
 
     Connect the cathode (negative pin) of the buzzer to a ground pin; connect
     the other side to any GPIO pin.
