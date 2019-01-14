@@ -205,3 +205,82 @@ see if it's been added. The model determination can be found in
 
 .. _GitHub issues: https://github.com/RPi-Distro/python-gpiozero/issues
 .. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
+
+
+What's the gpiozero equivalent of GPIO.cleanup()?
+=================================================
+
+Many people ask how to do the equivalent of the ``cleanup`` function from
+``RPi.GPIO``. In gpiozero, at the end of your script, cleanup is run
+automatically, restoring your GPIO pins to the state they were found.
+
+To explicitly close a connection to a pin, you can manually call the
+:meth:`Device.close` method on a device object::
+
+    >>> led = LED(2)
+    >>> led.on()
+    >>> led
+    <gpiozero.LED object on pin GPIO2, active_high=True, is_active=True>
+    >>> led.close()
+    >>> led
+    <gpiozero.LED object closed>
+
+This means that you can reuse the pin for another device, and that despite
+turning the LED on (and hence, the pin high), after calling
+:meth:`Device.close` it is restored to its previous state (LED off, pin low).
+
+
+How do I use button.when_pressed and button.when_held together?
+===============================================================
+
+The :class:`Button` class provides a :attr:`Button.when_held` property which is used to
+set a callback for when the button is held down for a set amount of time (as
+determined by the :attr:`Button.hold_time` property). If you want to set
+:attr:`Button.when_held` as well as :attr:`Button.when_pressed`, you'll notice
+that both callbacks will fire. Sometimes, this is acceptable, but often you'll
+want to only fire the :attr:`Button.when_pressed` callback when the button has
+not been held, only pressed.
+
+The way to achieve this is to *not* set a callback on when_pressed, and instead
+use :attr:`Button.when_released` to work out whether it had been held or just
+pressed::
+
+    from gpiozero import Button
+
+    Button.was_held = False
+
+    def held(btn):
+    btn.was_held = True
+    print("button was held not just pressed")
+
+    def released(btn):
+    if not btn.was_held:
+        pressed()
+    btn.was_held = False
+
+    def pressed():
+        print("button was pressed not held")
+
+    btn = Button(2)
+
+    btn.when_held = held
+    btn.when_released = released
+
+
+Why is it called GPIO Zero? Does it only work on Pi Zero?
+=========================================================
+
+gpiozero works on all Raspberry Pi models, not just the Pi Zero.
+
+The "zero" is part of a naming convention for "zero-boilerplate" education
+friendly libraries, which started with `Pygame Zero`_, and has been followed by
+`NetworkZero`_, `guizero`_ and more.
+
+These libraries aim to remove barrier to entry and provide a smooth learning
+curve for beginners by making it easy to get started and easy to build up to
+more advanced projects.
+
+
+.. _Pygame Zero: https://pygame-zero.readthedocs.io/en/stable/
+.. _NetworkZero: https://networkzero.readthedocs.io/en/latest/
+.. _guizero: https://lawsie.github.io/guizero/
