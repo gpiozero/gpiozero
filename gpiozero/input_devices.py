@@ -50,7 +50,7 @@ class InputDevice(GPIODevice):
     :param active_state:
         If ``True``, when the hardware pin state is ``HIGH``,
         the software pin is ``HIGH``.
-        If ``False``, the input polary is reversed:
+        If ``False``, the input polarity is reversed:
         when the hardware pin state is ``HIGH``,
         the software pin state is ``LOW``.
         Use this parameter to set the active state of the underlying pin when
