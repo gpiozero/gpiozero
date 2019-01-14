@@ -43,7 +43,7 @@ class PingServer(InternalDevice):
         led = LED(4)
 
         led.source_delay = 60  # check once per minute
-        led.source = google.values
+        led.source = google
 
         pause()
 
@@ -92,7 +92,7 @@ class CPUTemperature(InternalDevice):
         print('Initial temperature: {}C'.format(cpu.temperature))
 
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
-        graph.source = cpu.values
+        graph.source = cpu
 
         pause()
 
@@ -166,7 +166,7 @@ class LoadAverage(InternalDevice):
         la = LoadAverage(min_load_average=0, max_load_average=2)
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
 
-        graph.source = la.values
+        graph.source = la
 
         pause()
 
@@ -257,7 +257,7 @@ class TimeOfDay(InternalDevice):
         lamp = Energenie(1)
         morning = TimeOfDay(time(7), time(8))
 
-        lamp.source = morning.values
+        lamp.source = morning
 
         pause()
 

@@ -7,8 +7,8 @@ red = LED(18)
 
 google = PingServer('google.com')
 
-green.source = google.values
+green.source = google
 green.source_delay = 60
-red.source = negated(green.values)
+red.source = negated(green)
 
 pause()

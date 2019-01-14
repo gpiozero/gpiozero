@@ -9,6 +9,6 @@ leds = LEDBoard(2, 3, 4, 5)  # leds on this pi
 sensors = [MotionSensor(17, pin_factory=r) for r in remotes]  # remote sensors
 
 for led, sensor in zip(leds, sensors):
-    led.source = sensor.values
+    led.source = sensor
 
 pause()

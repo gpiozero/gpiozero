@@ -15,6 +15,6 @@ green = LED(16)
 
 green.source = build_passed('RPi-Distro/python-gpiozero')
 green.source_delay = 60 * 5  # check every 5 minutes
-red.source = negated(green.values)
+red.source = negated(green)
 
 pause()

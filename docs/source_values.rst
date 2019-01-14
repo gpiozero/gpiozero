@@ -29,8 +29,8 @@ their value set to alter the state of the device::
 Every device also has a :attr:`~ValuesMixin.values` property (a generator
 continuously yielding the device's current value). All output devices have a
 :attr:`~SourceMixin.source` property which can be set to any iterator. The
-device will iterate over the values provided, setting the device's value to
-each element at a rate specified in the :attr:`~SourceMixin.source_delay`
+device will iterate over the values of the device provided, setting the device's
+value to each element at a rate specified in the :attr:`~SourceMixin.source_delay`
 property.
 
 .. image:: images/source_values.*
@@ -42,9 +42,19 @@ example would be a potentiometer controlling the brightness of an LED:
 
 .. literalinclude:: examples/pwmled_pot.py
 
+The way this works is that the device's :attr:`~ValuesMixin.values` property
+is used to feed values into the device. Prior to v1.5, the :attr:`~SourceMixin.source`
+had to be set directly to a device's :attr:`~ValuesMixin.values` property:
+
+.. literalinclude:: examples/pwmled_pot_values.py
+
+.. note::
+
+    Although this method is still supported, the recommended way is now to set
+    the :attr:`~SourceMixin.source` to a device object.
+
 It is also possible to set an output device's :attr:`~SourceMixin.source` to
-the :attr:`~ValuesMixin.values` of another output device, to keep them
-matching:
+another output device, to keep them matching:
 
 .. literalinclude:: examples/matching_leds.py
 
@@ -121,6 +131,12 @@ Some tools take a single source and process its values:
 In this example, the LED is lit only when the button is not pressed:
 
 .. literalinclude:: examples/negated.py
+
+.. note::
+
+    Note that source tools which take one or more ``value`` parameters support
+    passing either :class:`~ValuesMixin` derivatives, or iterators, including a
+    device's :attr:`~ValuesMixin.values` property.
 
 Some tools combine the values of multiple sources:
 
