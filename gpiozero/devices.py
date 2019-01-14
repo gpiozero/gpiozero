@@ -160,7 +160,7 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
             ...
         """
         # This is a placeholder which is simply here to ensure close() can be
-        # safely called from subclasses without worrying whether super-class'
+        # safely called from subclasses without worrying whether super-classes
         # have it (which in turn is useful in conjunction with the SourceMixin
         # class).
         pass
