@@ -30,7 +30,7 @@ keypress_actions = {
 
 for event in keyboard.read_loop():
     if event.type == ecodes.EV_KEY and event.code in keypress_actions:
-        if event.value == 1:  # key down
+        if event.value == 1:  # key pressed
             keypress_actions[event.code]()
-        if event.value == 0:  # key up
+        if event.value == 0:  # key released
             robot.stop()
