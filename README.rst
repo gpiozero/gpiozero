@@ -90,7 +90,7 @@ Other contributors:
 - `Edward Betts`_
 - `Alex Chan`_
 - `Thijs Triemstra`_
-- `Schelto vanDoorn`_
+- `Schelto van Doorn`_
 - `Alex Eames`_
 - `Barry Byford`_
 - `Clare Macrae`_
