@@ -121,6 +121,8 @@ suppress the warnings you've got a couple of options:
 
 2. Suppress the warnings and let the fallback mechanism work::
 
+    .. code-block:: pycon
+
     >>> import warnings
     >>> warnings.simplefilter('ignore')
     >>> import gpiozero
@@ -215,7 +217,9 @@ Many people ask how to do the equivalent of the ``cleanup`` function from
 automatically, restoring your GPIO pins to the state they were found.
 
 To explicitly close a connection to a pin, you can manually call the
-:meth:`Device.close` method on a device object::
+:meth:`Device.close` method on a device object:
+
+.. code-block:: pycon
 
     >>> led = LED(2)
     >>> led.on()
@@ -290,7 +294,9 @@ Why do I get an AttributeError trying to set attributes on a device object?
 ===========================================================================
 
 If you try to add an attribute to a gpiozero device object after its
-initialization, you'll find you can't::
+initialization, you'll find you can't:
+
+.. code-block:: pycon
 
     >>> from gpiozero import Button
     >>> btn = Button(2)
@@ -323,7 +329,9 @@ gpiozero preventing this non-existent attribute from being set, the user would
 likely struggle to see the mistake.
 
 If you really want to set a new attribute on a device object, you need to create
-it in the class before initializing your object::
+it in the class before initializing your object:
+
+.. code-block:: pycon
 
     >>> from gpiozero import Button
     >>> Button.label = ''
