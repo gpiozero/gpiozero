@@ -8,10 +8,10 @@ Release 1.5.0 (unreleased)
 ==========================
 
 * Allow source tools to take device object as well as device.values or just
-  values (`#640`_)
+  values. (`#640`_)
 * Added internal device class :class:`LoadAverage`. (`#532`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
-  dependency) (`#655`_)
+  dependency). (`#655`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
 * Allow non-PWM use of :class:`Robot`). (`#481`_)
