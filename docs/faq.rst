@@ -267,6 +267,25 @@ pressed::
     btn.when_released = released
 
 
+Why do I get "ImportError: cannot import name" when trying to import from gpiozero?
+===================================================================================
+
+It's common to see people name their first gpiozero script ``gpiozero.py``.
+Unfortunately, this will cause your script to try to import itself, rather than
+the gpiozero library from the libraries path. You'll see an error like this::
+
+    Traceback (most recent call last):
+      File "gpiozero.py", line 1, in <module>
+        from gpiozero import LED
+      File "/home/pi/gpiozero.py", line 1, in <module>
+        from gpiozero import LED
+    ImportError: cannot import name 'LED'
+
+Simply rename your script to something else, and run it again. Be sure not to
+name any of your scripts the same name as a Python module you may be importing,
+such as ``picamera.py``.
+
+
 Why is it called GPIO Zero? Does it only work on Pi Zero?
 =========================================================
 
