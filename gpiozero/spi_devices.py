@@ -108,7 +108,7 @@ class AnalogInputDevice(SPIDevice):
 
         pot = MCP3008(0)
         led = PWMLED(17)
-        led.source = pot.values
+        led.source = pot
 
     The :attr:`voltage` attribute reports values between 0.0 and *max_voltage*
     (which defaults to 3.3, the logic level of the GPIO pins).
@@ -544,4 +544,3 @@ class MCP3304(MCP33xx):
         if not 0 <= channel < 8:
             raise SPIBadChannel('channel must be between 0 and 7')
         super(MCP3304, self).__init__(channel, differential, max_voltage, **spi_args)
-

@@ -122,7 +122,7 @@ BPLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
 {style:white on green}|                             {style:black on white}+===={style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}          |{style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}         |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}                 {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}                 {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}                 {style:black on white}+===={style:reset}
@@ -137,7 +137,7 @@ APLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:3s}V{pcb_revision:3s}{style:normal}    |{style:reset}
+{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
 {style:white on green}|      {style:on black}+----+{style:on green}           {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}           {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}           {style:black on white}+===={style:reset}
@@ -365,6 +365,7 @@ CM3_SODIMM.update({
 # http://elinux.org/RPi_HardwareHistory
 # http://elinux.org/RPi_Low-level_peripherals
 # https://git.drogon.net/?p=wiringPi;a=blob;f=wiringPi/wiringPi.c#l807
+# https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
 
 PI_REVISIONS = {
     # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                         board
@@ -838,10 +839,10 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # uuuuuuuu - Unused
             # F        - New flag (1=valid new-style revision, 0=old-style)
             # MMM      - Memory size (0=256, 1=512, 2=1024)
-            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan)
+            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan, 4=Embest, 5=Stadium)
             # PPPP     - Processor (0=2835, 1=2836, 2=2837)
             # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM,
-            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W, 13=3B+)
+            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W, 13=3B+, 14=3A+)
             # RRRR     - Revision (0, 1, 2, etc.)
             revcode_memory       = (revision & 0x700000) >> 20
             revcode_manufacturer = (revision & 0xf0000)  >> 16
@@ -861,6 +862,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     10: 'CM3',
                     12: 'Zero W',
                     13:  '3B+',
+                    14:  '3A+',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -880,6 +882,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     1: 'Egoman',
                     2: 'Embest',
                     3: 'Sony Japan',
+                    4: 'Embest',
+                    5: 'Stadium',
                     }.get(revcode_manufacturer, 'Unknown')
                 memory = {
                     0: 256,
@@ -898,6 +902,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM3':    '2017Q1',
                     'Zero W': '2017Q1',
                     '3B+':    '2018Q1',
+                    '3A+':    '2018Q4',
                     }.get(model, 'Unknown')
                 storage = {
                     'A':   'SD',
@@ -913,6 +918,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'B':      2,
                     'CM':     0,
                     'CM3':    1,
+                    '3A+':    1,
                     }.get(model, 4)
                 ethernet = {
                     'A':      0,
@@ -921,16 +927,19 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': 0,
                     'CM':     0,
                     'CM3':    0,
+                    '3A+':    0,
                     }.get(model, 1)
                 wifi = {
                     '3B':     True,
                     'Zero W': True,
                     '3B+':    True,
+                    '3A+':    True,
                     }.get(model, False)
                 bluetooth = {
                     '3B':     True,
                     'Zero W': True,
                     '3B+':    True,
+                    '3A+':    True,
                     }.get(model, False)
                 csi = {
                     'Zero':   0 if pcb_revision == '1.0' else 1,
@@ -956,6 +965,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM3':    CM_BOARD,
                     'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     'Zero W': ZERO13_BOARD,
+                    '3A+':    APLUS_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)

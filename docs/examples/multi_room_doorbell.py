@@ -9,6 +9,6 @@ button = Button(17)  # button on this pi
 buzzers = [Buzzer(pin, pin_factory=r) for r in remotes]  # buzzers on remote pins
 
 for buzzer in buzzers:
-    buzzer.source = button.values
+    buzzer.source = button
 
 pause()

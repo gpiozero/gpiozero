@@ -4,6 +4,49 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+Release 1.5.0 (unreleased)
+==========================
+
+* Allow source tools to take device object as well as device.values or just
+  values. (`#640`_)
+* Added internal device class :class:`LoadAverage`. (`#532`_)
+* Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
+  dependency). (`#655`_)
+* :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
+  pins.
+* Allow non-PWM use of :class:`Robot`). (`#481`_)
+* Added optional ``enable`` init param to :class:`Motor`. (`#366`_)
+* Added ``--xyz`` option to :program:`pinout` command line tool. (`#604`_)
+* Added 3B+ and 3A+ to Pi model data. (`#627`_, `#704`_)
+* Minor improvements to :class:`Energenie`, thanks to Steve Amor. (`#629`_,
+  `#634`)
+* Allow :class:`SmoothedInputDevice`, :class:`LightSensor` and
+  :class:`MotionSensor` to have pull-up configured. (`#652`_)
+* Minor changes to support Python 3.7, thanks to Russel Winder and Rick Ansell.
+  (`#666`_, `#668`_, `#669`_, `#671`_, `#673`_)
+* Correct row/col numbering logic in :class:`PinInfo`. (`#674`_)
+* Many additional tests.
+* Many documentation corrections and additions.
+
+
+.. _#532: https://github.com/RPi-Distro/python-gpiozero/issues/532
+.. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
+.. _colorzero: https://colorzero.readthedocs.io/en/stable
+.. _#655: https://github.com/RPi-Distro/python-gpiozero/issues/655
+.. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481
+.. _#366: https://github.com/RPi-Distro/python-gpiozero/issues/366
+.. _#604: https://github.com/RPi-Distro/python-gpiozero/issues/604
+.. _#627: https://github.com/RPi-Distro/python-gpiozero/issues/627
+.. _#704: https://github.com/RPi-Distro/python-gpiozero/issues/704
+.. _#629: https://github.com/RPi-Distro/python-gpiozero/issues/629
+.. _#634: https://github.com/RPi-Distro/python-gpiozero/issues/634
+.. _#652: https://github.com/RPi-Distro/python-gpiozero/issues/652
+.. _#666: https://github.com/RPi-Distro/python-gpiozero/issues/666
+.. _#668: https://github.com/RPi-Distro/python-gpiozero/issues/668
+.. _#669: https://github.com/RPi-Distro/python-gpiozero/issues/669
+.. _#671: https://github.com/RPi-Distro/python-gpiozero/issues/671
+.. _#673: https://github.com/RPi-Distro/python-gpiozero/issues/673
+.. _#674: https://github.com/RPi-Distro/python-gpiozero/issues/674
 
 Release 1.4.1 (2018-02-20)
 ==========================
@@ -11,10 +54,10 @@ Release 1.4.1 (2018-02-20)
 This release is mostly bug-fixes, but a few enhancements have made it in too:
 
 * Added ``curve_left`` and ``curve_right`` parameters to :meth:`Robot.forward`
-  and :meth:`Robot.backward`.(`#306`_ and `#619`_)
+  and :meth:`Robot.backward`. (`#306`_ and `#619`_)
 * Fixed :class:`DistanceSensor` returning incorrect readings after a long
   pause, and added a lock to ensure multiple distance sensors can operate
-  simultaneously in a single project (`#584`_, `#595`_, `#617`_, `#618`_)
+  simultaneously in a single project. (`#584`_, `#595`_, `#617`_, `#618`_)
 * Added support for phase/enable motor drivers with :class:`PhaseEnableMotor`,
   :class:`PhaseEnableRobot`, and descendants, thanks to Ian Harcombe!
   (`#386`_)

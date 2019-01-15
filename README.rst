@@ -90,7 +90,7 @@ Other contributors:
 - `Edward Betts`_
 - `Alex Chan`_
 - `Thijs Triemstra`_
-- `Schelto vanDoorn`_
+- `Schelto van Doorn`_
 - `Alex Eames`_
 - `Barry Byford`_
 - `Clare Macrae`_
@@ -100,6 +100,8 @@ Other contributors:
 - `Ian Harcombe`_
 - `Russel Winder`_
 - `Mike Kazantsev`_
+- `Fatih Sarhan`_
+- `Rick Ansell`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -118,7 +120,7 @@ Other contributors:
 .. _Edward Betts: https://github.com/edwardbetts
 .. _Alex Chan: https://github.com/alexwlchan
 .. _Thijs Triemstra: https://github.com/thijstriemstra
-.. _Schelto vanDoorn: https://github.com/goloplo
+.. _Schelto van Doorn: https://github.com/goloplo
 .. _Alex Eames: https://github.com/raspitv
 .. _Barry Byford: https://github.com/ukBaz
 .. _Clare Macrae: https://github.com/claremacrae
@@ -128,3 +130,5 @@ Other contributors:
 .. _Ian Harcombe: https://github.com/MrHarcombe
 .. _Russel Winder: https://github.com/russel
 .. _Mike Kazantsev: https://github.com/mk-fg
+.. _Fatih Sarhan: https://github.com/f9n
+.. _Rick Ansell: https://github.com/ricksbt

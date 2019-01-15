@@ -100,7 +100,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
     Extends :class:`CompositeDevice` and represents a generic button board or
     collection of buttons.
 
-    :param int \*pins:
+    :param int \\*pins:
         Specify the GPIO pins that the buttons of the board are attached to.
         You can designate as many pins as necessary.
 
@@ -133,7 +133,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    :param \*\*named_pins:
+    :param \\*\\*named_pins:
         Specify GPIO pins that buttons of the board are attached to,
         associating each button with a property name. You can designate as
         many pins as necessary and use any names, provided they're not already
@@ -280,7 +280,7 @@ class LEDBoard(LEDCollection):
         leds = LEDBoard(2, 3, 4, 5, 6)
         leds.on()
 
-    :param int \*pins:
+    :param int \\*pins:
         Specify the GPIO pins that the LEDs of the board are attached to. You
         can designate as many pins as necessary. You can also specify
         :class:`LEDBoard` instances to create trees of LEDs.
@@ -307,7 +307,7 @@ class LEDBoard(LEDCollection):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    :param \*\*named_pins:
+    :param \\*\\*named_pins:
         Specify GPIO pins that LEDs of the board are attached to, associating
         each LED with a property name. You can designate as many pins as
         necessary and use any names, provided they're not already in use by
@@ -492,10 +492,12 @@ class LEDBarGraph(LEDCollection):
 
         graph = LEDBarGraph(2, 3, 4, 5, 6, pwm=True)
         pot = MCP3008(channel=0)
-        graph.source = pot.values
+
+        graph.source = pot
+
         pause()
 
-    :param int \*pins:
+    :param int \\*pins:
         Specify the GPIO pins that the LEDs of the bar graph are attached to.
         You can designate as many pins as necessary.
 
@@ -894,7 +896,7 @@ class StatusZero(LEDBoard):
         status.wifi.green.on()
         status.raining.red.on()
 
-    :param str \*labels:
+    :param str \\*labels:
         Specify the names of the labels you wish to designate the strips to.
         You can list up to three labels. If no labels are given, three strips
         will be initialised with names 'one', 'two', and 'three'. If some, but
@@ -950,7 +952,7 @@ class StatusBoard(CompositeOutputDevice):
         status.wifi.lights.green.on()
         status.wifi.button.when_pressed = status.wifi.lights.toggle
 
-    :param str \*labels:
+    :param str \\*labels:
         Specify the names of the labels you wish to designate the strips to.
         You can list up to five labels. If no labels are given, five strips
         will be initialised with names 'one' to 'five'. If some, but not all

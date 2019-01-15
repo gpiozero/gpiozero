@@ -9,7 +9,7 @@ Device.pin_factory = MockFactory()
 # devices
 led = LED(17)
 btn = Button(16)
-led.source = btn.values
+led.source = btn
 
 # Here the button isn't "pushed" so the LED's value should be False
 print(led.value)

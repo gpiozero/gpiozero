@@ -10,10 +10,14 @@ str = type('')
 
 import cmath
 import weakref
-import collections
 import operator
 import functools
 
+# Handles pre 3.3 versions of Python withoout collections.abc
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 # Back-ported from python 3.5; see
 # github.com/PythonCHB/close_pep/blob/master/is_close.py for original
@@ -57,7 +61,7 @@ def median(data):
 
 
 # Copied from the MIT-licensed https://github.com/slezica/python-frozendict
-class frozendict(collections.Mapping):
+class frozendict(Mapping):
     def __init__(self, *args, **kwargs):
         self.__dict = dict(*args, **kwargs)
         self.__hash = None

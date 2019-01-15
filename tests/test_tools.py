@@ -9,9 +9,10 @@ str = type('')
 
 import pytest
 from math import sin, cos, radians
-from time import time
+from time import time, sleep
 from itertools import islice
 
+from gpiozero import Device, LED, Button
 from gpiozero.tools import *
 try:
     from math import isclose
@@ -26,10 +27,71 @@ try:
 except ImportError:
     from gpiozero.compat import median
 
+epsilon = 0.01  # time to sleep after setting source before checking value
+
+def test_set_source_by_value():
+    btn_pin = Device.pin_factory.pin(3)
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = btn.values
+        sleep(epsilon)
+        assert not led.value
+        assert not btn.value
+        btn_pin.drive_low()
+        sleep(epsilon)
+        assert led.value
+        assert btn.value
+
+def test_set_source_by_device():
+    btn_pin = Device.pin_factory.pin(3)
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = btn
+        sleep(epsilon)
+        assert not led.value
+        assert not btn.value
+        btn_pin.drive_low()
+        sleep(epsilon)
+        assert led.value
+        assert btn.value
 
 def test_negated():
     assert list(negated(())) == []
     assert list(negated((True, True, False, False))) == [False, False, True, True]
+
+def test_negated_with_device_values():
+    btn_pin = Device.pin_factory.pin(3)
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = negated(btn.values)
+        sleep(epsilon)
+        assert led.value
+        assert not btn.value
+        btn_pin.drive_low()
+        sleep(epsilon)
+        assert not led.value
+        assert btn.value
+
+def test_negated_with_device():
+    btn_pin = Device.pin_factory.pin(3)
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = negated(btn)
+        sleep(epsilon)
+        assert led.value
+        assert not btn.value
+        btn_pin.drive_low()
+        sleep(epsilon)
+        assert not led.value
+        assert btn.value
 
 def test_inverted():
     with pytest.raises(ValueError):

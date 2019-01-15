@@ -6,6 +6,6 @@ button_a = Button(2)
 button_b = Button(3)
 led = LED(17)
 
-led.source = all_values(button_a.values, button_b.values)
+led.source = all_values(button_a, button_b)
 
 pause()

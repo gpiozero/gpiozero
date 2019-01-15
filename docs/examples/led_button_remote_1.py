@@ -7,6 +7,6 @@ factory = PiGPIOFactory(host='192.168.1.3')
 button = Button(2)
 led = LED(17, pin_factory=factory)
 
-led.source = button.values
+led.source = button
 
 pause()
