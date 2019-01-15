@@ -286,6 +286,54 @@ name any of your scripts the same name as a Python module you may be importing,
 such as ``picamera.py``.
 
 
+Why do I get an AttributeError trying to set attributes on a device object?
+===========================================================================
+
+If you try to add an attribute to a gpiozero device object after its
+initialization, you'll find you can't::
+
+    >>> from gpiozero import Button
+    >>> btn = Button(2)
+    >>> btn.label = 'alarm'
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/usr/lib/python3/dist-packages/gpiozero/devices.py", line 118, in __setattr__
+        self.__class__.__name__, name))
+    AttributeError: 'Button' object has no attribute 'label'
+
+This is in order to prevent users accidentally setting new attributes by
+mistake. Because gpiozero provides functionality through setting attributes via
+properties, such as callbacks on buttons (and often there is no immediate
+feedback when setting a property), this could lead to bugs very difficult to
+find. Consider the following example::
+
+    from gpiozero import Button
+
+    def hello():
+        print("hello")
+
+    btn = Button(2)
+
+    btn.pressed = hello
+
+This is perfectly valid Python code, and no errors would occur, but the program
+would not behave as expected: pressing the button would do nothing, because the
+property for setting a callback is ``when_pressed`` not ``pressed``. But without
+gpiozero preventing this non-existent attribute from being set, the user would
+likely struggle to see the mistake.
+
+If you really want to set a new attribute on a device object, you need to create
+it in the class before initializing your object::
+
+    >>> from gpiozero import Button
+    >>> Button.label = ''
+    >>> btn = Button(2)
+    >>> btn.label = 'alarm'
+    >>> def press(btn):
+    ...:    print(btn.label, "was pressed")
+    >>> btn.when_pressed = press
+
+
 Why is it called GPIO Zero? Does it only work on Pi Zero?
 =========================================================
 
