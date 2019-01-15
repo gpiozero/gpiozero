@@ -7,9 +7,11 @@ Changelog
 Release 1.5.0 (unreleased)
 ==========================
 
+* Allow source tools to take device object as well as device.values or just
+  values (`#640`_)
 * Added internal device class :class:`LoadAverage`. (`#532`_)
-* Add support for `colorzero`_ with :class:`RGBLED` (this adds a new dependency)
-  (`#655`_)
+* Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
+  dependency) (`#655`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
 * Allow non-PWM use of :class:`Robot`). (`#481`_)
@@ -28,6 +30,7 @@ Release 1.5.0 (unreleased)
 
 
 .. _#532: https://github.com/RPi-Distro/python-gpiozero/issues/532
+.. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
 .. _colorzero: https://colorzero.readthedocs.io/en/stable
 .. _#655: https://github.com/RPi-Distro/python-gpiozero/issues/655
 .. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481
