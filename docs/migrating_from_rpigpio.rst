@@ -61,7 +61,7 @@ The :class:`LED` class also supports threaded blinking through the
 :class:`OutputDevice` is the base class for output devices, and can be used in a
 similar way to output devices in RPi.GPIO.
 
-See a full list of supported :ref:`api_output`. Other output devices have
+See a full list of supported :doc:`api_output`. Other output devices have
 similar property and method names. There is commonality in naming at base level,
 such as :attr:`OutputDevice.is_active`, which is aliased in a device class, such
 as :attr:`LED.is_lit`.
@@ -208,7 +208,7 @@ the function.
 :class:`InputDevice` is the base class for input devices, and can be used in a
 similar way to input devices in RPi.GPIO.
 
-See a full list of :ref:`api_input`. Other input devices have similar property
+See a full list of :doc:`api_input`. Other input devices have similar property
 and method names. There is commonality in naming at base level, such as
 :attr:`InputDevice.is_active`, which is aliased in a device class, such as
 :attr:`Button.is_pressed` and :attr:`LightSensor.light_detected`.
@@ -322,7 +322,7 @@ More
 ====
 
 GPIO Zero provides more than just GPIO device support, it includes some support
-for :ref:`api_spi` including a range of analog to digital converters.
+for :doc:`api_spi` including a range of analog to digital converters.
 
 Device classes which are compatible with other GPIO devices, but have no
 relation to GPIO pins, such as :class:`CPUtemperature`, :class:`TimeOfDay`,
@@ -331,7 +331,7 @@ relation to GPIO pins, such as :class:`CPUtemperature`, :class:`TimeOfDay`,
 GPIO Zero features support for multiple pin libraries. The default is to use
 ``RPi.GPIO`` to control the pins, but you can choose to use another library,
 such as ``pigpio``, which supports network controlled GPIO. See
-:ref:`changing-pin-factory` and :ref:`remote_gpio` for more information.
+:ref:`changing-pin-factory` and :doc:`remote_gpio` for more information.
 
 It is possible to run GPIO Zero on your PC, both for remote GPIO and for testing
 purposes, using :ref:`mock-pins`.
@@ -339,4 +339,4 @@ purposes, using :ref:`mock-pins`.
 Another feature of this library is configuring devices to be connected together
 in a logical way, for example in one line you can say that an LED and button are
 "paired", i.e. the button being pressed turns the LED on. Read about this in
-:ref:`source_values`.
+:doc:`source_values`.
