@@ -59,7 +59,10 @@ The :class:`LED` class also supports threaded blinking through the
 :class:`OutputDevice` is the base class for output devices, and can be used in a
 similar way to output devices in RPi.GPIO.
 
-See a full list of supported :ref:`api_output`.
+See a full list of supported :ref:`api_output`. Other output devices have
+similar property and method names. There is commonality in naming at base level,
+such as :attr:`OutputDevice.is_active`, which is aliased in a device class, such
+as :attr:`LED.is_lit`.
 
 Input devices
 =============
@@ -71,16 +74,16 @@ Reading a button press in RPi.GPIO::
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
 
-    GPIO.setup(3, GPIO.IN, GPIO.PUD_UP)
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
 
-    if not GPIO.input(3):
+    if not GPIO.input(4):
         print("button is pressed")
 
 Reading a button press in GPIO Zero::
 
     from gpiozero import Button
 
-    btn = Button(3)
+    btn = Button(4)
 
     if btn.is_pressed:
         print("button is pressed")
@@ -90,16 +93,16 @@ Note that in the RPi.GPIO example, the button is set up with the option
 pressed, the pin is high. When the button is pressed, the pin goes low, so the
 condition requires negation (``if not``). If the button was configured as
 pull-down, the logic is reversed and the condition would become ``if
-GPIO.input(2)``::
+GPIO.input(4)``::
 
     import RPi.GPIO as GPIO
 
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
 
-    GPIO.setup(3, GPIO.IN, GPIO.PUD_DOWN)
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_DOWN)
 
-    if GPIO.input(3):
+    if GPIO.input(4):
         print("button is pressed")
 
 In GPIO Zero, the default configuration for a button is pull-up, but this can be
@@ -112,10 +115,101 @@ configured at initialization, and the rest of the code stays the same::
     if btn.is_pressed:
         print("button is pressed")
 
+RPi.GPIO also supports blocking edge detection.
+
+Wait for a pull-up button to be pressed in RPi.GPIO::
+
+    import RPi.GPIO as GPIO
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
+
+    GPIO.wait_for_edge(4, GPIO.FALLING):
+    print("button was pressed")
+
+The equivalent in GPIO Zero::
+
+    from gpiozero import Buttons
+
+    btn = Button(4)
+
+    btn.wait_for_press()
+    print("button was pressed")
+
+Again, if the button is pulled down, the logic is reversed. Instead of waiting
+for a falling edge, we're waiting for a rising edge::
+
+    import RPi.GPIO as GPIO
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
+
+    GPIO.wait_for_edge(4, GPIO.FALLING):
+    print("button was pressed")
+
+Again, in GPIO Zero, the only difference is in the initialization::
+
+    from gpiozero import Buttons
+
+    btn = Button(4, pull_up=False)
+
+    btn.wait_for_press()
+    print("button was pressed")
+
+RPi.GPIO has threaded callbacks. You create a function (which must take one
+argument), and pass it in to ``add_event_detect``, along with the pin number
+and the edge direction::
+
+    import RPi.GPIO as GPIO
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    def pressed(pin):
+        print("button was pressed")
+
+    def released(pin):
+        print("button was released")
+
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
+
+    GPIO.add_event_detect(4, GPIO.FALLING, pressed)
+    GPIO.add_event_detect(4, GPIO.RISING, released)
+
+In GPIO Zero, you assign the :attr:`Button.when_pressed` and
+:attr:`Button.when_released` properties to set up callbacks on those actions.
+
+    from gpiozero import Buttons
+
+    def pressed():
+        print("button was pressed")
+
+    def released():
+        print("button was released")
+
+    btn = Button(4)
+
+    btn.when_pressed = hello
+    btn.when_released = hello
+
+:attr:`Button.when_held` is also provided, where the length of time considered a
+"hold" is configurable.
+
+The callback functions don't have to take any arguments, but if they take one,
+the button object is passed in, allowing you to determine which button called
+the function.
+
 :class:`InputDevice` is the base class for input devices, and can be used in a
 similar way to input devices in RPi.GPIO.
 
-See a full list of :ref:`api_input`.
+See a full list of :ref:`api_input`. Other input devices have similar property
+and method names. There is commonality in naming at base level, such as
+:attr:`InputDevice.is_active`, which is aliased in a device class, such as
+:attr:`Button.is_pressed` and :attr:`LightSensor.light_detected`.
 
 Composite devices, boards and accessories
 =========================================
