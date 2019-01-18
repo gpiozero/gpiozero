@@ -31,7 +31,7 @@ use the pin number again, as it's stored by the object.
 
 GPIO Zero was originally just a layer on top of RPi.GPIO, but we later added
 support for various other underlying pin libraries. RPi.GPIO is currently the
-default pin library used. Read more about this in :ref:`changing-pin-factory`_.
+default pin library used. Read more about this in :ref:`changing-pin-factory`.
 
 Output devices
 ==============
