@@ -209,6 +209,8 @@ see if it's been added. The model determination can be found in
 .. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
 
 
+.. _gpio-cleanup:
+
 What's the gpiozero equivalent of GPIO.cleanup()?
 =================================================
 

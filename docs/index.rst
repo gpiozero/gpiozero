@@ -16,6 +16,7 @@ Table of Contents
     source_values
     cli_tools
     faq
+    migrating_from_rpigpio
     contributing
     development
     api_input
