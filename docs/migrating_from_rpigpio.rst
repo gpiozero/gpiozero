@@ -325,7 +325,7 @@ GPIO Zero provides more than just GPIO device support, it includes some support
 for :doc:`api_spi` including a range of analog to digital converters.
 
 Device classes which are compatible with other GPIO devices, but have no
-relation to GPIO pins, such as :class:`CPUtemperature`, :class:`TimeOfDay`,
+relation to GPIO pins, such as :class:`CPUTemperature`, :class:`TimeOfDay`,
 :class:`PingServer` and :class:`LoadAverage` are also provided.
 
 GPIO Zero features support for multiple pin libraries. The default is to use
