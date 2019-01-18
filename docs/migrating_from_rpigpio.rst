@@ -297,7 +297,7 @@ Pin state cleanup is explicit in RPi.GPIO, and is done manually with
 pin used, at the end of the script. Manual cleanup is possible by use of the
 :meth:`Device.close` method on the device.
 
-Read more in the relevant FAQ: :ref:`gpio-cleanup`.
+Read more in the relevant FAQ: :ref:`gpio-cleanup`
 
 Pi Information
 ==============
