@@ -4,6 +4,8 @@
 Migrating from RPi.GPIO
 =======================
 
+.. currentmodule:: gpiozero
+
 If you are familiar with the `RPi.GPIO`_ library, you will be used to writing
 code which deals with *pins* and the state of pins. You will see from the
 examples in this documentation that we refer to things like LEDs and Buttons
@@ -34,7 +36,7 @@ default pin library used. Read more about this in :ref:`changing-pin-factory`_.
 Output devices
 ==============
 
-Turning a LED on in RPi.GPIO::
+Turning an LED on in RPi.GPIO::
 
     import RPi.GPIO as GPIO
 
@@ -45,7 +47,7 @@ Turning a LED on in RPi.GPIO::
 
     GPIO.output(2, GPIO.HIGH)
 
-Turning a LED on in GPIO Zero:
+Turning an LED on in GPIO Zero::
 
     from gpiozero import LED
 
@@ -181,7 +183,7 @@ and the edge direction::
     GPIO.add_event_detect(4, GPIO.RISING, released)
 
 In GPIO Zero, you assign the :attr:`Button.when_pressed` and
-:attr:`Button.when_released` properties to set up callbacks on those actions.
+:attr:`Button.when_released` properties to set up callbacks on those actions::
 
     from gpiozero import Buttons
 
@@ -263,7 +265,7 @@ In RPi.GPIO::
         pwm.changeDutyCycle(dc)
         sleep(0.01)
 
-In GPIO Zero:
+In GPIO Zero::
 
     from gpiozero import PWMLED
     from time import sleep
@@ -309,7 +311,7 @@ Zero is the function :func:`pi_info`:
     >>> from gpiozero import pi_info
     >>> pi = pi_info()
     >>> pi
-    PiBoardInfo(revision='a02082', model='3B', pcb_revision='1.2'...
+    PiBoardInfo(revision='a02082', model='3B', pcb_revision='1.2', released='2016Q1', soc='BCM2837', manufacturer='Sony', memory=1024, storage='MicroSD', usb=4, ethernet=1, wifi=True, bluetooth=True, csi=1, dsi=1, headers=..., board=...)
     >>> pi.soc
     'BCM2837'
     >>> pi.wifi
