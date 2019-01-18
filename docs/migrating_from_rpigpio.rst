@@ -244,8 +244,7 @@ PWM (Pulse-width modulation)
 
 Both libraries support software PWM control on any pin. Depending on the pin
 library used, GPIO Zero can also support hardware PWM (using
-:class:`gpiozero.pins.rpigpio.RPIOPin` or
-:class:`gpiozero.pins.rpigpio.PiGPIOPin`).
+:class:`pins.rpigpio.RPIOPin` or :class:`pins.rpigpio.PiGPIOPin`).
 
 A simple example of using PWM is to control the brightness of an LED.
 
