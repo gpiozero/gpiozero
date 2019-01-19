@@ -83,6 +83,8 @@ is the crucial difference between ``my_function`` (a reference to a function)
 and ``my_function()`` (the result of calling a function).
 
 
+.. _pinfactoryfallback-warnings:
+
 Why do I get PinFactoryFallback warnings when I import gpiozero?
 ================================================================
 
@@ -123,9 +125,9 @@ suppress the warnings you've got a couple of options:
 
     .. code-block:: pycon
 
-    >>> import warnings
-    >>> warnings.simplefilter('ignore')
-    >>> import gpiozero
+        >>> import warnings
+        >>> warnings.simplefilter('ignore')
+        >>> import gpiozero
 
    Refer to the :mod:`warnings` module documentation for more refined ways to
    filter out specific warning classes.
