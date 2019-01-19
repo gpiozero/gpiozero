@@ -56,7 +56,7 @@ Turning an LED on in GPIO Zero::
     led.on()
 
 The :class:`LED` class also supports threaded blinking through the
-:meth:`LED.blink` method.
+:meth:`~LED.blink` method.
 
 :class:`OutputDevice` is the base class for output devices, and can be used in a
 similar way to output devices in RPi.GPIO.
@@ -237,7 +237,7 @@ The :class:`LEDBoard` class takes an arbitrary number of pins, each controlling
 a single LED. The resulting :class:`LEDBoard` object can be used to control
 all LEDs together (all on / all off), or individually by index. Also the object
 can be iterated over to turn LEDs on in order. See examples of this (including
-slicing) in the advanced recipes: :ref:`_ledboard-advanced`.
+slicing) in the advanced recipes: :ref:`ledboard-advanced`.
 
 PWM (Pulse-width modulation)
 ============================
