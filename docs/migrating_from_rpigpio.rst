@@ -343,11 +343,11 @@ in a logical way, for example in one line you can say that an LED and button are
 "paired", i.e. the button being pressed turns the LED on. Read about this in
 :doc:`source_values`.
 
-Notes
-=====
+FAQs
+====
 
 Note the following FAQs which may catch out users too familiar with RPi.GPIO:
 
-* :ref:`how-do-i-keep-my-script-running`
+* :ref:`keep-your-script-running`
 * :ref:`pinfactoryfallback-warnings`
 * :ref:`gpio-cleanup`
