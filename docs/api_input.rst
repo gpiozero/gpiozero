@@ -78,11 +78,10 @@ InputDevice
 ===========
 
 .. autoclass:: InputDevice(pin, \*, pull_up=False, pin_factory=None)
-    :members:
+    :members: is_active
 
 GPIODevice
 ==========
 
 .. autoclass:: GPIODevice(pin, pin_factory=None)
     :members:
-

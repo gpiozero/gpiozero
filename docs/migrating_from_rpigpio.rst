@@ -7,9 +7,9 @@ Migrating from RPi.GPIO
 .. currentmodule:: gpiozero
 
 If you are familiar with the `RPi.GPIO`_ library, you will be used to writing
-code which deals with *pins* and the state of pins. You will see from the
-examples in this documentation that we refer to things like LEDs and Buttons
-rather than input pins and output pins.
+code which deals with *pins* and the *state of pins*. You will see from the
+examples in this documentation that we generally refer to things like LEDs and
+Buttons rather than input pins and output pins.
 
 .. _RPi.GPIO: https://pypi.org/project/RPi.GPIO/
 
@@ -276,8 +276,8 @@ In GPIO Zero::
         led.value = b / 100
         sleep(0.01)
 
-:class:`PMWLED` has a :meth:`blink` method which can be used the same was as
-:class:`LED`'s :meth:`LED.blink` method, but its PWM capabilities allow for
+:class:`PWMLED` has a :meth:`PWMLED.blink` method which can be used the same was
+as :class:`LED`'s :meth:`LED.blink` method, but its PWM capabilities allow for
 ``fade_in`` and ``fade_out`` options to be provided. There is also the
 :meth:`PWMLED.pulse` method which provides a neat way to have an LED fade in and
 out repeatedly.
@@ -323,7 +323,8 @@ More
 ====
 
 GPIO Zero provides more than just GPIO device support, it includes some support
-for :doc:`api_spi` including a range of analog to digital converters.
+for :doc:`SPI devices <api_spi>` including a range of analog to digital
+converters.
 
 Device classes which are compatible with other GPIO devices, but have no
 relation to GPIO pins, such as :class:`CPUTemperature`, :class:`TimeOfDay`,
