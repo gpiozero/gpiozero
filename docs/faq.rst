@@ -123,8 +123,6 @@ suppress the warnings you've got a couple of options:
 
 2. Suppress the warnings and let the fallback mechanism work::
 
-    .. code-block:: pycon
-
         >>> import warnings
         >>> warnings.simplefilter('ignore')
         >>> import gpiozero

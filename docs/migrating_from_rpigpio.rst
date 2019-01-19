@@ -182,8 +182,8 @@ and the edge direction::
     GPIO.add_event_detect(4, GPIO.FALLING, pressed)
     GPIO.add_event_detect(4, GPIO.RISING, released)
 
-In GPIO Zero, you assign the :attr:`Button.when_pressed` and
-:attr:`Button.when_released` properties to set up callbacks on those actions::
+In GPIO Zero, you assign the :attr:`~Button.when_pressed` and
+:attr:`~Button.when_released` properties to set up callbacks on those actions::
 
     from gpiozero import Buttons
 
@@ -198,8 +198,8 @@ In GPIO Zero, you assign the :attr:`Button.when_pressed` and
     btn.when_pressed = hello
     btn.when_released = hello
 
-:attr:`Button.when_held` is also provided, where the length of time considered a
-"hold" is configurable.
+:attr:`~Button.when_held` is also provided, where the length of time considered
+a "hold" is configurable.
 
 The callback functions don't have to take any arguments, but if they take one,
 the button object is passed in, allowing you to determine which button called
@@ -244,8 +244,7 @@ PWM (Pulse-width modulation)
 
 Both libraries support software PWM control on any pin. Depending on the pin
 library used, GPIO Zero can also support hardware PWM (using
-:class:`gpiozero.pins.rpigpio.RPIOPin` or
-:class:`gpiozero.pins.rpigpio.PiGPIOPin`).
+:class:`~pins.rpigpio.RPIOPin` or :class:`~pins.rpigpio.PiGPIOPin`).
 
 A simple example of using PWM is to control the brightness of an LED.
 
@@ -276,11 +275,11 @@ In GPIO Zero::
         led.value = b / 100
         sleep(0.01)
 
-:class:`PWMLED` has a :meth:`PWMLED.blink` method which can be used the same was
-as :class:`LED`'s :meth:`LED.blink` method, but its PWM capabilities allow for
-``fade_in`` and ``fade_out`` options to be provided. There is also the
-:meth:`PWMLED.pulse` method which provides a neat way to have an LED fade in and
-out repeatedly.
+:class:`PWMLED` has a :meth:`~PWMLED.blink` method which can be used the same
+was as :class:`LED`'s :meth:`~LED.blink` method, but its PWM capabilities allow
+for ``fade_in`` and ``fade_out`` options to be provided. There is also the
+:meth:`~PWMLED.pulse` method which provides a neat way to have an LED fade in
+and out repeatedly.
 
 Other devices can make use of PWM, such as motors (for variable speed) and
 servos. See the :class:`Motor`, :class:`Servo` and :class:`AngularServo` classes
@@ -296,7 +295,7 @@ Cleanup
 Pin state cleanup is explicit in RPi.GPIO, and is done manually with
 ``GPIO.cleanup()`` but in GPIO Zero, cleanup is automatically performed on every
 pin used, at the end of the script. Manual cleanup is possible by use of the
-:meth:`Device.close` method on the device.
+:meth:`~Device.close` method on the device.
 
 Read more in the relevant FAQ: :ref:`gpio-cleanup`
 
