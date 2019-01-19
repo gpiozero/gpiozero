@@ -139,6 +139,8 @@ Like the ``GPIOZERO_PIN_FACTORY`` value, these can be exported from your
     Sensible uses of multiple pin factories are given in :doc:`remote_gpio`.
 
 
+.. _mock-pins:
+
 Mock pins
 =========
 
@@ -244,4 +246,3 @@ Mock
 .. autoclass:: gpiozero.pins.mock.MockChargingPin
 
 .. autoclass:: gpiozero.pins.mock.MockTriggerPin
-

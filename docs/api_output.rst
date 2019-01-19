@@ -94,7 +94,7 @@ OutputDevice
 ============
 
 .. autoclass:: OutputDevice(pin, \*, active_high=True, initial_value=False, pin_factory=None)
-    :members:
+    :members: is_active
 
 GPIODevice
 ==========
@@ -102,4 +102,3 @@ GPIODevice
 .. autoclass:: GPIODevice(pin, \*, pin_factory=None)
     :members:
     :noindex:
-
