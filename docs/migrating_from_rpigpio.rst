@@ -61,10 +61,10 @@ The :class:`LED` class also supports threaded blinking through the
 :class:`OutputDevice` is the base class for output devices, and can be used in a
 similar way to output devices in RPi.GPIO.
 
-See a full list of supported :doc:`api_output`. Other output devices have
-similar property and method names. There is commonality in naming at base level,
-such as :attr:`OutputDevice.is_active`, which is aliased in a device class, such
-as :attr:`LED.is_lit`.
+See a full list of supported :doc:`output devices <api_output>`. Other output
+devices have similar property and method names. There is commonality in naming
+at base level, such as :attr:`OutputDevice.is_active`, which is aliased in a
+device class, such as :attr:`LED.is_lit`.
 
 Input devices
 =============
@@ -208,10 +208,10 @@ the function.
 :class:`InputDevice` is the base class for input devices, and can be used in a
 similar way to input devices in RPi.GPIO.
 
-See a full list of :doc:`api_input`. Other input devices have similar property
-and method names. There is commonality in naming at base level, such as
-:attr:`InputDevice.is_active`, which is aliased in a device class, such as
-:attr:`Button.is_pressed` and :attr:`LightSensor.light_detected`.
+See a full list of :doc:`input devices <api_input>`. Other input devices have
+similar property and method names. There is commonality in naming at base level,
+such as :attr:`InputDevice.is_active`, which is aliased in a device class, such
+as :attr:`Button.is_pressed` and :attr:`LightSensor.light_detected`.
 
 Composite devices, boards and accessories
 =========================================
@@ -244,7 +244,8 @@ PWM (Pulse-width modulation)
 
 Both libraries support software PWM control on any pin. Depending on the pin
 library used, GPIO Zero can also support hardware PWM (using
-:class:`pins.rpigpio.RPIOPin` or :class:`pins.rpigpio.PiGPIOPin`).
+:class:`gpiozero.pins.rpigpio.RPIOPin` or
+:class:`gpiozero.pins.rpigpio.PiGPIOPin`).
 
 A simple example of using PWM is to control the brightness of an LED.
 
@@ -316,7 +317,7 @@ Zero is the function :func:`pi_info`:
     >>> pi.wifi
     True
 
-Read more about what :class:`PiInfo` provides.
+Read more about what :class:`PiBoardInfo` provides.
 
 More
 ====
