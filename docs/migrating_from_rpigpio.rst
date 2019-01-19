@@ -237,7 +237,7 @@ The :class:`LEDBoard` class takes an arbitrary number of pins, each controlling
 a single LED. The resulting :class:`LEDBoard` object can be used to control
 all LEDs together (all on / all off), or individually by index. Also the object
 can be iterated over to turn LEDs on in order. See examples of this (including
-slicing) in the advanced recipes: :ref:`ledboard-advanced`.
+slicing) in the :ref:`advanced recipes <ledboard-advanced>`.
 
 PWM (Pulse-width modulation)
 ============================
