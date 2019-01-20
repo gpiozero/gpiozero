@@ -16,13 +16,6 @@ Given that :attr:`~gpiozero.SourceMixin.source` and
 excellent source of utilities is the :mod:`itertools` module in the standard
 library.
 
-.. warning::
-
-    While the devices API is now considered stable and won't change in
-    backwards incompatible ways, the tools API is *not* yet considered stable.
-    It is potentially subject to change in future versions. We welcome any
-    comments from testers!
-
 Single source conversions
 =========================
 
