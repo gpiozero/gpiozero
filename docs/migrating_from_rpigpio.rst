@@ -195,8 +195,8 @@ In GPIO Zero, you assign the :attr:`~Button.when_pressed` and
 
     btn = Button(4)
 
-    btn.when_pressed = hello
-    btn.when_released = hello
+    btn.when_pressed = pressed
+    btn.when_released = released
 
 :attr:`~Button.when_held` is also provided, where the length of time considered
 a "hold" is configurable.
