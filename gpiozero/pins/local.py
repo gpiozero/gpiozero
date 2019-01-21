@@ -4,9 +4,12 @@ from __future__ import (
     print_function,
     division,
     )
+nstr = str
 str = type('')
 
 import io
+import errno
+import struct
 import warnings
 from collections import defaultdict
 from threading import Lock
@@ -53,32 +56,20 @@ class LocalPiFactory(PiFactory):
         self._res_lock = LocalPiFactory._res_lock
 
     def _get_revision(self):
-        # Cache the result as we can reasonably assume it won't change during
-        # runtime (this is LocalPin after all; descendents that deal with
-        # remote Pis should inherit from Pin instead)
-
-        # Read revision from /proc/cpuinfo
-        with io.open('/proc/cpuinfo', 'r') as f:
-            for line in f:
-                if line.startswith('Revision'):
-                    revision = line.split(':')[1].strip().lower()
-                    overvolted = revision.startswith('100')
-                    if overvolted:
-                        revision = revision[-4:]
-                    return revision
-
-        # Fallback to reading /proc/device-tree if available to support 64-bit systems
         try:
             with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-                f.seek(1)
-                revision = int.from_bytes(f.read(), byteorder='big', signed=False)
-                if revision != 0:
-                    return hex(revision)[2:]
+                return struct.unpack(nstr('>L'), f.read(4))[0]
         except IOError as e:
-            # Ignore if /proc/device-tree is not available (and raise PinUnknownPi instead)
-            if not e.errno == errno.ENOENT:
+            if e.errno != errno.ENOENT:
                 raise e
-
+            with io.open('/proc/cpuinfo', 'r') as f:
+                for line in f:
+                    if line.startswith('Revision'):
+                        revision = line.split(':')[1].strip().lower()
+                        overvolted = revision.startswith('100')
+                        if overvolted:
+                            revision = revision[-4:]
+                        return int(revision, base=16)
         raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
 
 
