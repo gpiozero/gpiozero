@@ -7,6 +7,7 @@ from __future__ import (
 str = type('')
 
 
+import io
 import re
 import pytest
 from mock import patch, MagicMock
@@ -26,24 +27,27 @@ def test_pi_revision():
         # speaking it's abstract but we're only interested in the pi_info
         # stuff)
         with patch('io.open') as m:
-            m.return_value.__enter__.return_value = ['lots of irrelevant', 'lines', 'followed by', 'Revision: 0002', 'Serial:  xxxxxxxxxxx']
+            m.return_value.__enter__.return_value = lambda path, mode: ['lots of irrelevant', 'lines', 'followed by', 'Revision: 0002', 'Serial:  xxxxxxxxxxx']
             assert pi_info().revision == '0002'
             # LocalPiFactory caches the revision (because realistically it
             # isn't going to change at runtime); we need to wipe it here though
             Device.pin_factory._info = None
-            m.return_value.__enter__.return_value = ['Revision: a21042']
+            m.return_value.__enter__.return_value = lambda path, mode: ['Revision: a21042']
             assert pi_info().revision == 'a21042'
             # Check over-volting result (some argument over whether this is 7 or
             # 8 character result; make sure both work)
             Device.pin_factory._info = None
-            m.return_value.__enter__.return_value = ['Revision: 1000003']
+            m.return_value.__enter__.return_value = lambda path, mode: ['Revision: 1000003']
             assert pi_info().revision == '0003'
             Device.pin_factory._info = None
-            m.return_value.__enter__.return_value = ['Revision: 100003']
+            m.return_value.__enter__.return_value = lambda path, mode: ['Revision: 100003']
             assert pi_info().revision == '0003'
+            Device.pin_factory._info = None
+            m.return_value.__enter__.return_value = lambda path, mode: ['nothing', 'relevant'] if path == '/proc/cpuinfo' else io.BytesIO(b"\x00\xa2\x20\xd3")
+            assert pi_info().revision == 'a220d3'
             with pytest.raises(PinUnknownPi):
-                m.return_value.__enter__.return_value = ['nothing', 'relevant', 'at all']
                 Device.pin_factory._info = None
+                m.return_value.__enter__.return_value = ['nothing', 'relevant'] if path == '/proc/cpuinfo' else io.BytesIO(b"")
                 pi_info()
             with pytest.raises(PinUnknownPi):
                 pi_info('0fff')
