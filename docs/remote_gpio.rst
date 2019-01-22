@@ -18,6 +18,9 @@ from another Raspberry Pi, or even from a PC.
 See the :doc:`recipes_remote_gpio` page for examples on how remote pins can be
 used.
 
+.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+.. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
+
 Preparing the Raspberry Pi
 ==========================
 
@@ -33,6 +36,8 @@ Alternatively, pigpio is available from `abyz.me.uk`_.
 
 You'll need to enable remote connections, and launch the pigpio daemon on the
 Raspberry Pi.
+
+.. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
 
 Enable remote connections
 -------------------------
@@ -100,6 +105,8 @@ a Raspberry Pi running Raspbian (or a PC running `Raspberry Pi Desktop x86`_),
 then you have everything you need. If you're using another Linux distribution,
 Mac OS or Windows then you'll need to install the ``pigpio`` Python library on
 the PC.
+
+.. _Raspberry Pi Desktop x86: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
 
 Raspberry Pi
 ------------
@@ -187,6 +194,8 @@ Or for Python 2:
 
     $ pip install gpiozero pigpio
 
+.. _get-pip: https://pip.pypa.io/en/stable/installing/
+
 Windows
 -------
 
@@ -196,6 +205,8 @@ pigpio with pip:
 .. code-block:: doscon
 
     C:\Users\user1> pip install gpiozero pigpio
+
+.. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
 
 Environment variables
 =====================
@@ -268,6 +279,16 @@ variables set:
 
 .. literalinclude:: examples/led_remote_1.py
 
+.. note::
+
+    Note that currently, it is only possible to import from gpiozero if a valid
+    pin factory is available. This means that if you are running on a PC, you
+    will need to set a pin factory in an environment variable, for example
+    ``GPIOZERO_PIN_FACTORY=mock``. This is a bug which is being discussed in
+    `Issue #600`_ and will be addressed in a future release.
+
+.. _Issue #600: https://github.com/RPi-Distro/python-gpiozero/issues/600
+
 This allows devices on multiple Raspberry Pis to be used in the same script:
 
 .. literalinclude:: examples/led_remote_2.py
@@ -312,6 +333,8 @@ network:
 Note that in this case, the Sense HAT code must be run locally, and the GPIO
 remotely.
 
+.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
+
 Remote GPIO usage
 =================
 
@@ -319,12 +342,3 @@ Continue to:
 
 * :doc:`recipes_remote_gpio`
 * :doc:`pi_zero_otg`
-
-
-.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
-.. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
-.. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
-.. _Raspberry Pi Desktop x86: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
-.. _get-pip: https://pip.pypa.io/en/stable/installing/
-.. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
-.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
