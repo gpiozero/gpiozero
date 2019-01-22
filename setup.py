@@ -66,7 +66,11 @@ if sys.version_info[:2] == (3, 2):
         'Jinja2<2.7',
         'MarkupSafe<0.16',
         ])
+    __extra_requires__['test'][0] = 'pytest<3.0dev'
     __extra_requires__['test'][1] = 'coverage<4.0dev'
+elif sys.version_info[:2] == (3, 3):
+    # Particular versions are required for Python 3.3 compatibility
+    __extra_requires__['test'][0] = 'pytest<3.3dev'
 
 __entry_points__ = {
     'gpiozero_pin_factories': [
