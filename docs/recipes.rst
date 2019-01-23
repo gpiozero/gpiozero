@@ -39,11 +39,10 @@ In this case, all references to items within GPIO Zero must be prefixed::
 Pin Numbering
 =============
 
-This library uses Broadcom (BCM) pin numbering for the GPIO pins, as opposed
-to physical (BOARD) numbering. Unlike in the `RPi.GPIO`_ library, this is not
-configurable.
-
-.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+This library uses Broadcom (BCM) pin numbering for the GPIO pins, as opposed to
+physical (BOARD) numbering. Unlike in the `RPi.GPIO`_ library, this is not
+configurable. However, translation from other schemes can be used by providing
+prefixes to pin numbers (see below).
 
 Any pin marked "GPIO" in the diagram below can be used as a pin number.  For
 example, if an LED was attached to "GPIO17" you would specify the pin number as
@@ -51,6 +50,36 @@ example, if an LED was attached to "GPIO17" you would specify the pin number as
 
 .. image:: images/pin_layout.*
     :align: center
+
+If you wish to use physical (BOARD) numbering you can specify the pin number as
+"BOARD11". If you are familiar with the `wiringPi`_ pin numbers (another
+physical layout) you could use "WPI0" instead. Finally, you can specify pins as
+"header:number", e.g. "J8:11" meaning physical pin 11 on header J8 (the GPIO
+header on modern Pis). Hence, the following lines are all equivalent:
+
+.. code-block:: pycon
+
+    >>> led = LED(17)
+    >>> led = LED("BCM17")
+    >>> led = LED("BOARD11")
+    >>> led = LED("WPI0")
+    >>> led = LED("J8:11")
+
+Note that these alternate schemes are merely translations. If you request the
+state of a device on the command line, the associated pin number will *always*
+be reported in the Broadcom (BCM) scheme:
+
+.. code-block:: pycon
+
+    >>> led = LED("BOARD11")
+    >>> led
+    <gpiozero.LED object on pin GPIO17, active_high=True, is_active=False>
+
+Throughout this manual we will use the default integer pin numbers, in the
+Broadcom (BCM) layout shown above.
+
+.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+.. _wiringPi: https://projects.drogon.net/raspberry-pi/wiringpi/pins/
 
 LED
 ===

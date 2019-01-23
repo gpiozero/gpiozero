@@ -25,6 +25,8 @@ def test_device_bad_pin():
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(60)
     with pytest.raises(PinInvalidPin):
+        device = GPIODevice('BCM60')
+    with pytest.raises(PinInvalidPin):
         device = GPIODevice('WPI32')
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(b'P2:2')
@@ -79,9 +81,11 @@ def test_device_pin_parsing():
     pin = Device.pin_factory.pin(2)
     with GPIODevice('GPIO2') as device:
         assert device.pin is pin
+    with GPIODevice('BCM2') as device:
+        assert device.pin is pin
     with GPIODevice('WPI8') as device:
         assert device.pin is pin
-    with GPIODevice('PHYS3') as device:
+    with GPIODevice('BOARD3') as device:
         assert device.pin is pin
     with GPIODevice('J8:3') as device:
         assert device.pin is pin

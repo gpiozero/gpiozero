@@ -1089,7 +1089,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         * An integer, which will be accepted as a GPIO number
         * 'GPIOn' where n is the GPIO number
         * 'WPIn' where n is the `wiringPi`_ pin number
-        * 'PHYSn' where n is the physical pin number on the main header
+        * 'BCMn' where n is the GPIO number (alias of GPIOn)
+        * 'BOARDn' where n is the physical pin number on the main header
         * 'h:n' where h is the header name and n is the physical pin number
           (for example J8:5 is physical pin 5 on header J8, which is the main
           header on modern Raspberry Pis)
@@ -1109,6 +1110,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 return self.to_gpio(int(spec))
             if spec.startswith('GPIO') and spec[4:].isdigit():
                 return self.to_gpio(int(spec[4:]))
+            elif spec.startswith('BCM') and spec[3:].isdigit():
+                return self.to_gpio(int(spec[3:]))
             elif spec.startswith('WPI') and spec[3:].isdigit():
                 main_head = 'P1' if 'P1' in self.headers else 'J8'
                 try:
@@ -1165,9 +1168,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                         return self.to_gpio(int(function[4:]))
                     else:
                         raise PinInvalidPin('%s is not a GPIO pin' % spec)
-            elif spec.startswith('PHYS') and spec[4:].isdigit():
-                main_head = 'P1' if 'P1' in self.headers else 'J8'
-                return self.to_gpio('%s:%s' % (main_head, spec[4:]))
+            elif spec.startswith('BOARD') and spec[5:].isdigit():
+                main_head = ({'P1', 'J8', 'SODIMM'} & set(self.headers)).pop()
+                return self.to_gpio('%s:%s' % (main_head, spec[5:]))
             raise PinInvalidPin('%s is not a valid pin spec' % spec)
 
     def __repr__(self):
