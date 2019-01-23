@@ -118,8 +118,11 @@ class CPUTemperature(InternalDevice):
             min_temp=0.0, max_temp=100.0, threshold=80.0):
         self.sensor_file = sensor_file
         super(CPUTemperature, self).__init__()
+        if min_temp >= max_temp:
+            raise ValueError('min_temp must be less than max_temp')
         self.min_temp = min_temp
         self.max_temp = max_temp
+        self._temp_range = self.max_temp - self.min_temp
         self.threshold = threshold
         self._fire_events()
 
@@ -142,8 +145,7 @@ class CPUTemperature(InternalDevice):
         *max_temp* value). These default to 0.0 and 100.0 respectively, hence
         :attr:`value` is :attr:`temperature` divided by 100 by default.
         """
-        temp_range = self.max_temp - self.min_temp
-        return (self.temperature - self.min_temp) / temp_range
+        return (self.temperature - self.min_temp) / self._temp_range
 
     @property
     def is_active(self):
