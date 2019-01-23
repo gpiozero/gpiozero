@@ -59,7 +59,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices on.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.on()
 
     def off(self):
@@ -67,7 +67,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         Turn all the output devices off.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.off()
 
     def toggle(self):
@@ -76,7 +76,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         off; if it's off, turn it on.
         """
         for device in self:
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.toggle()
 
     @property
@@ -90,7 +90,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
     @value.setter
     def value(self, value):
         for device, v in zip(self, value):
-            if isinstance(device, (OutputDevice, CompositeOutputDevice)):
+            if isinstance(device, (OutputDevice, CompositeOutputDevice, RGBLED)):
                 device.value = v
             # Simply ignore values for non-output devices
 
@@ -1055,6 +1055,201 @@ class SnowPi(LEDBoard):
             _order=('eyes', 'nose', 'arms'),
             pin_factory=pin_factory
         )
+
+
+class RGBLEDBoard(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice`. and represents a generic RGB LED
+    board or collection of RGB LEDs.
+
+    The following example creates a device containing three RGB LEDs and turns
+    them on red, green and blue respectfully:
+
+        from gpiozero import RGBLEDBoard
+
+        leds = RGBLEDBoard((2, 3, 4), (5, 6, 7), (8, 9, 10))
+
+        leds.value = ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+
+    Note that this class represents simple GPIO RGB LEDs (a GPIO pin per RGB
+    channel) as opposed to smarter LEDs such as neopixels.
+    """
+    def __init__(self, *args, **kwargs):
+        pwm = kwargs.pop('pwm', True)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', (0, 0, 0))
+        pin_factory = kwargs.pop('pin_factory', None)
+        order = kwargs.pop('_order', None)
+
+        if len(args) == 0 and len(kwargs) == 0:
+            raise GPIOPinMissing(
+                'at least 1 sequence of RGB pins must be provided')
+        else:
+            try:
+                for arg in args:
+                    r, g, b = arg
+                for arg in kwargs.values():
+                    r, g, b = arg
+            except:
+                raise GPIOPinMissing(
+                    'pins must be provided as a tuple of 3-tuples '
+                    'e.g. RGBLEDBoard((2, 3, 4), (5, 6, 7)')
+
+        super(RGBLEDBoard, self).__init__(
+            *(
+                pins_or_board
+                if isinstance(pins_or_board, RGBLEDBoard) else
+                RGBLED(
+                    *pins_or_board, pwm=pwm, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
+                )
+                for pins_or_board in args
+            ),
+            _order=order,
+            pin_factory=pin_factory,
+            **{
+                name: pins_or_board
+                if isinstance(pins_or_board, RGBLEDBoard) else
+                RGBLED(
+                    *pins_or_board, pwm=pwm, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
+                )
+                for name, pins_or_board in kwargs.items()
+            })
+        leds = []
+        for item in self:
+            if isinstance(item, RGBLEDBoard):
+                for subitem in item.leds:
+                    leds.append(subitem)
+            else:
+                leds.append(item)
+
+        self._leds = tuple(leds)
+
+        self._blink_thread = None
+        self._blink_leds = []
+        self._blink_lock = Lock()
+
+    def on(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].on()
+        else:
+            super(RGBLEDBoard, self).on()
+
+    def off(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].off()
+        else:
+            super(RGBLEDBoard, self).off()
+
+    def toggle(self, *args):
+        self._stop_blink()
+        if args:
+            for index in args:
+                self[index].toggle()
+        else:
+            super(RGBLEDBoard, self).toggle()
+
+    def blink(self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+              on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+        """
+        Make all the LEDs in the device turn on and off repeatedly.
+
+        :param float on_time:
+            Number of seconds on. Defaults to 1 second.
+
+        :param float off_time:
+            Number of seconds off. Defaults to 1 second.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 0. Must be 0 if
+            ``pwm`` was ``False`` when the class was constructed
+            (:exc:`ValueError` will be raised if not).
+
+        :param tuple on_color:
+            The color to use when the LED is "on". Defaults to white.
+
+        :param tuple off_color:
+            The color to use when the LED is "off". Defaults to black.
+
+        :param int n:
+            Number of times to blink; ``None`` (the default) means forever.
+
+        :param bool background:
+            If ``True`` (the default), start a background thread to continue
+            blinking and return immediately. If ``False``, only return when the
+            blink is finished (warning: the default value of *n* will result in
+            this method never returning).
+        """
+        if isinstance(self._leds[0]._leds[0], LED):
+            if fade_in_time:
+                raise ValueError('fade_in_time must be 0 with non-PWM RGBLEDs')
+            if fade_out_time:
+                raise ValueError('fade_out_time must be 0 with non-PWM RGBLEDs')
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_device,
+            args=(
+                on_time, off_time, fade_in_time, fade_out_time,
+                on_color, off_color, n
+            )
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self, led=None):
+        if led is None:
+            if self._blink_thread:
+                self._blink_thread.stop()
+                self._blink_thread = None
+        else:
+            with self._blink_lock:
+                self._blink_leds.remove(led)
+
+    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n,
+                      on_color, off_color, nfps=25):
+        sequence = []
+        if fade_in_time > 0:
+            sequence += [
+                (i * (1 / fps) / fade_in_time, 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
+        sequence.append((1, on_time))
+        if fade_out_time > 0:
+            sequence += [
+                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
+                for i in range(int(fps * fade_out_time))
+                ]
+        sequence.append((0, off_time))
+        sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        with self._blink_lock:
+            self._blink_leds = list(self.leds)
+            for led in self._blink_leds:
+                if led._controller not in (None, self):
+                    led._controller._stop_blink(led)
+                led._controller = self
+        for value, delay in sequence:
+            with self._blink_lock:
+                if not self._blink_leds:
+                    break
+                for led in self._blink_leds:
+                    led._write(value)
+            if self._blink_thread.stopping.wait(delay):
+                break
 
 
 class TrafficLightsBuzzer(CompositeOutputDevice):

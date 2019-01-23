@@ -84,6 +84,7 @@ from .boards import (
     StatusZero,
     StatusBoard,
     SnowPi,
+    RGBLEDBoard,
     TrafficLightsBuzzer,
     FishDish,
     TrafficHat,
