@@ -30,6 +30,7 @@ from .output_devices import (
     Buzzer,
     Motor,
     PhaseEnableMotor,
+    PWMBuzzer,
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
@@ -1686,3 +1687,52 @@ class Energenie(SourceMixin, Device):
         Turns the socket off.
         """
         self.value = False
+
+
+class JamHat(CompositeOutputDevice):
+    """
+    Extends :class: `CompositeOutputDevice` for the `ModMyPi JamHat` board.
+
+    There are 6 LEDs, two buttons and a tonal buzzer. The pins are fixed.
+
+    Usage:
+        from gpiozero import JamHat
+
+        hat = JamHat()
+        hat.lights_1.on()
+        hat.buzzer.play(2000)
+        hat.off()
+
+    :param bool pwm:
+    If ``True``, construct :class: PWMLED instances to represent each LED 
+    on the board. If ``False`` (the default), construct regular :class: 
+    LED instances.
+
+    :param bool initial_value:
+    If ``False`` (the default), all LEDs will be off initially. If
+    ``None``, each device will be left in whatever state the pin is found
+    in when configured for output (warning: this can be on). If ``True``,
+    the device will be switched on initially.
+
+    :param Factory pin_factory:
+    See :doc:`api_pins` for more information (this is an advanced feature
+    which most users can ignore).
+
+    .. _ModMyPi JamHat: https://www.modmypi.com/jam-hat
+
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(JamHat, self).__init__(
+            lights_1=LEDBoard(red=5, yellow=12, green=16,
+                              pwm=pwm, initial_value=initial_value,
+                              _order=('red', 'yellow', 'green'),
+                              pin_factory=pin_factory),
+            lights_2=LEDBoard(red=6, yellow=13, green=17,
+                              pwm=pwm, initial_value=initial_value,
+                              _order=('red', 'yellow', 'green'),
+                              pin_factory=pin_factory),
+            button_1=Button(19, pull_up=False, pin_factory=pin_factory),
+            button_2=Button(18, pull_up=False, pin_factory=pin_factory),
+            buzzer=PWMBuzzer(20, pin_factory=pin_factory),
+            pin_factory=pin_factory
+        )
