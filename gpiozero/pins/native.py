@@ -56,7 +56,7 @@ class GPIOMemory(object):
     GPPUD_OFFSET    = 0x94 >> 2
     GPPUDCLK_OFFSET = 0x98 >> 2
 
-    def __init__(self, rev):
+    def __init__(self, soc):
         try:
             self.fd = os.open('/dev/gpiomem', os.O_RDWR | os.O_SYNC)
         except OSError:
@@ -67,7 +67,7 @@ class GPIOMemory(object):
                     'unable to open /dev/gpiomem or /dev/mem; '
                     'upgrade your kernel or run as root')
             else:
-                offset = self.peripheral_base(rev) + self.GPIO_BASE_OFFSET
+                offset = self.peripheral_base(soc) + self.GPIO_BASE_OFFSET
         else:
             offset = 0
         self.mem = mmap.mmap(self.fd, 4096, offset=offset)
@@ -76,7 +76,7 @@ class GPIOMemory(object):
         self.mem.close()
         os.close(self.fd)
 
-    def peripheral_base(self, rev):
+    def peripheral_base(self, soc):
         try:
             with io.open('/proc/device-tree/soc/ranges', 'rb') as f:
                 f.seek(4)
@@ -84,7 +84,7 @@ class GPIOMemory(object):
                 return struct.unpack(nstr('>L'), f.read(4))[0]
         except IOError:
             try:
-                return self.PERI_BASE_OFFSET[rev]
+                return self.PERI_BASE_OFFSET[soc]
             except KeyError:
                 pass
         raise IOError('unable to determine peripheral base')

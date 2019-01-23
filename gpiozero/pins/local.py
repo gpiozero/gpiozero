@@ -87,7 +87,7 @@ class LocalPiFactory(PiFactory):
         # and we fall back to time(). However, in that situation we've no
         # access to a true monotonic source, and no idea how far the clock has
         # skipped back so this is the best we can do anyway.
-        return later - earlier
+        return max(0, later - earlier)
 
 
 class LocalPiPin(PiPin):
