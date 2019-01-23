@@ -60,6 +60,7 @@ from .output_devices import (
     OutputDevice,
     DigitalOutputDevice,
     PWMOutputDevice,
+    PWMBuzzer,
     PWMLED,
     LED,
     Buzzer,
@@ -95,6 +96,7 @@ from .boards import (
     PololuDRV8835Robot,
     Energenie,
     PumpkinPi,
+    JamHat,
 )
 from .internal_devices import (
     InternalDevice,
