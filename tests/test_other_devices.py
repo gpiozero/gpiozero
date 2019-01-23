@@ -34,3 +34,6 @@ def test_timeofday_init():
         morning.utc = True
         assert morning.utc == True
         
+def test_cputemperature_invalid_val():
+    with pytest.raises(ValueError):
+        CPUTemperature(min_temp=100.00)

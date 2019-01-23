@@ -118,6 +118,8 @@ class CPUTemperature(InternalDevice):
             min_temp=0.0, max_temp=100.0, threshold=80.0):
         self.sensor_file = sensor_file
         super(CPUTemperature, self).__init__()
+        if min_temp >= max_temp:
+            raise ValueError('min_temp must be less than max_temp')
         self.min_temp = min_temp
         self.max_temp = max_temp
         self.threshold = threshold
