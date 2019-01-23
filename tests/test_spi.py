@@ -8,6 +8,7 @@ nstr = str
 str = type('')
 
 
+import io
 import sys
 import pytest
 from array import array
@@ -32,7 +33,7 @@ def teardown_function(function):
 def test_spi_hardware_params():
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
         mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
-        io_open.return_value.__enter__.return_value = ['Revision: a21042']
+        io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
         factory = NativeFactory()
         with patch('gpiozero.pins.local.SpiDev'):
             with factory.spi() as device:
@@ -63,7 +64,7 @@ def test_spi_hardware_params():
 def test_spi_software_params():
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
         mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
-        io_open.return_value.__enter__.return_value = ['Revision: a21042']
+        io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
         factory = NativeFactory()
         with patch('gpiozero.pins.local.SpiDev'):
             with factory.spi(select_pin=6) as device:
