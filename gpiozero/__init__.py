@@ -94,7 +94,7 @@ from .boards import (
     PololuDRV8835Robot,
     Energenie,
 )
-from .other_devices import (
+from .internal_devices import (
     InternalDevice,
     PingServer,
     CPUTemperature,

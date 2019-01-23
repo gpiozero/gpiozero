@@ -23,7 +23,7 @@ Table of Contents
     api_output
     api_spi
     api_boards
-    api_other
+    api_internal
     api_generic
     api_tools
     api_info
