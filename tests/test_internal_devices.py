@@ -35,6 +35,8 @@ def test_timeofday_bad_init():
         TimeOfDay('7:00', '8:00')
     with pytest.raises(ValueError):
         TimeOfDay(7.00, 8.00)
+    with pytest.raises(ValueError):
+        TimeOfDay(datetime(2019, 1, 24, 19), time(19))  # lurch edge case
 
 def test_timeofday_init():
     TimeOfDay(time(7), time(8), utc=False)
@@ -45,6 +47,7 @@ def test_timeofday_init():
     TimeOfDay(time(23), time(1))
     TimeOfDay(time(6), time(18))
     TimeOfDay(time(18), time(6))
+    TimeOfDay(datetime(2019, 1, 24, 19), time(19, 1))  # lurch edge case
 
 def test_timeofday_value():
     with TimeOfDay(time(7), time(8), utc=False) as tod:

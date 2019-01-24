@@ -291,10 +291,10 @@ class TimeOfDay(InternalDevice):
         self._end_time = None
         self._utc = True
         super(TimeOfDay, self).__init__()
-        if start_time == end_time:
-            raise ValueError('end_time cannot equal start_time')
         self._start_time = self._validate_time(start_time)
         self._end_time = self._validate_time(end_time)
+        if self.start_time == self.end_time:
+            raise ValueError('end_time cannot equal start_time')
         self._utc = utc
         self._fire_events(self.pin_factory.ticks(), None)
 
