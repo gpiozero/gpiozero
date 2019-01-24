@@ -7,7 +7,7 @@ from __future__ import (
 str = type('')
 
 import warnings
-from mock import Mock, patch
+from mock import patch
 import io
 import errno
 from subprocess import CalledProcessError
