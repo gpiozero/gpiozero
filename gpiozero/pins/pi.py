@@ -65,6 +65,14 @@ class PiFactory(Factory):
             pin.close()
         self.pins.clear()
 
+    def reserve_pins(self, requester, *pins):
+        super(PiFactory, self).reserve_pins(
+            requester, *(self.pi_info.to_gpio(pin) for pin in pins))
+
+    def release_pins(self, reserver, *pins):
+        super(PiFactory, self).release_pins(
+            reserver, *(self.pi_info.to_gpio(pin) for pin in pins))
+
     def pin(self, spec):
         n = self.pi_info.to_gpio(spec)
         try:

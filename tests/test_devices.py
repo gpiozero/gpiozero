@@ -54,6 +54,11 @@ def test_device_init_twice_same_pin():
         with pytest.raises(GPIOPinInUse):
             GPIODevice(2)
 
+def test_device_init_twice_same_pin_different_spec():
+    with GPIODevice(2) as device:
+        with pytest.raises(GPIOPinInUse):
+            GPIODevice("BOARD3")
+
 def test_device_init_twice_different_pin():
     with GPIODevice(2) as device:
         with GPIODevice(3) as device2:
