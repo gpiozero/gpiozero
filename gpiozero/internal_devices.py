@@ -213,6 +213,10 @@ class LoadAverage(InternalDevice):
         self.load_average_file = load_average_file
         self.min_load_average = min_load_average
         self.max_load_average = max_load_average
+        if not min_load_average <= threshold <= max_load_average:
+            warnings.warn(ThresholdOutOfRange(
+                'threshold is outside of the range (min_load_average, '
+                'max_load_average)'))
         self.threshold = threshold
         if minutes not in (1, 5, 15):
             raise ValueError('minutes must be 1, 5 or 15')

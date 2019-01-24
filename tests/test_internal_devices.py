@@ -216,3 +216,9 @@ def test_loadaverage():
             assert la.load_average == 1.4
             assert la.value == 0.6
             assert la.is_active
+        with warnings.catch_warnings(record=True) as w:
+            with LoadAverage(min_load_average=1, max_load_average=2,
+                         threshold=0.8, minutes=5) as la:
+                assert len(w) == 1
+                assert w[0].category == ThresholdOutOfRange
+                assert la.load_average == 1.4
