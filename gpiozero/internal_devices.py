@@ -299,7 +299,6 @@ class TimeOfDay(InternalDevice):
 
     def _validate_time(self, value):
         if isinstance(value, datetime):
-            print("dt", value)
             value = value.time()
         if not isinstance(value, time):
             raise ValueError(
