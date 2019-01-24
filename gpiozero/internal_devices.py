@@ -13,9 +13,11 @@ import os
 import io
 import subprocess
 from datetime import datetime, time
+import warnings
 
 from .devices import Device
 from .mixins import EventsMixin
+from .exc import ThresholdOutOfRange
 
 
 class InternalDevice(EventsMixin, Device):
@@ -51,12 +53,16 @@ class PingServer(InternalDevice):
         The hostname or IP address to attempt to ping.
     """
     def __init__(self, host):
-        self.host = host
+        self._host = host
         super(PingServer, self).__init__()
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
         return '<gpiozero.PingServer host="%s">' % self.host
+
+    @property
+    def host(self):
+        return self._host
 
     @property
     def value(self):
@@ -119,9 +125,12 @@ class CPUTemperature(InternalDevice):
         self.sensor_file = sensor_file
         super(CPUTemperature, self).__init__()
         if min_temp >= max_temp:
-            raise ValueError('min_temp must be less than max_temp')
+            raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
         self.max_temp = max_temp
+        if not min_temp <= threshold <= max_temp:
+            warnings.warn(ThresholdOutOfRange(
+                'threshold is outside of the range (min_temp, max_temp)'))
         self.threshold = threshold
         self._fire_events(self.pin_factory.ticks(), None)
 
@@ -198,9 +207,16 @@ class LoadAverage(InternalDevice):
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
         max_load_average=1.0, threshold=0.8, minutes=5):
+        if min_load_average >= max_load_average:
+            raise ValueError(
+                'max_load_average must be greater than min_load_average')
         self.load_average_file = load_average_file
         self.min_load_average = min_load_average
         self.max_load_average = max_load_average
+        if not min_load_average <= threshold <= max_load_average:
+            warnings.warn(ThresholdOutOfRange(
+                'threshold is outside of the range (min_load_average, '
+                'max_load_average)'))
         self.threshold = threshold
         if minutes not in (1, 5, 15):
             raise ValueError('minutes must be 1, 5 or 15')
@@ -279,14 +295,24 @@ class TimeOfDay(InternalDevice):
         self._end_time = None
         self._utc = True
         super(TimeOfDay, self).__init__()
-        self.start_time = start_time
-        self.end_time = end_time
-        self.utc = utc
+        self._start_time = self._validate_time(start_time)
+        self._end_time = self._validate_time(end_time)
+        if self.start_time == self.end_time:
+            raise ValueError('end_time cannot equal start_time')
+        self._utc = utc
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
         return '<gpiozero.TimeOfDay active between %s and %s %s>' % (
                 self.start_time, self.end_time, ('local', 'UTC')[self.utc])
+
+    def _validate_time(self, value):
+        if isinstance(value, datetime):
+            value = value.time()
+        if not isinstance(value, time):
+            raise ValueError(
+                'start_time and end_time must be a datetime, or time instance')
+        return value
 
     @property
     def start_time(self):
@@ -295,28 +321,12 @@ class TimeOfDay(InternalDevice):
         """
         return self._start_time
 
-    @start_time.setter
-    def start_time(self, value):
-        if isinstance(value, datetime):
-            value = value.time()
-        if not isinstance(value, time):
-            raise ValueError('start_time must be a datetime, or time instance')
-        self._start_time = value
-
     @property
     def end_time(self):
         """
         The time of day after which the device will be considered inactive.
         """
         return self._end_time
-
-    @end_time.setter
-    def end_time(self, value):
-        if isinstance(value, datetime):
-            value = value.time()
-        if not isinstance(value, time):
-            raise ValueError('end_time must be a datetime, or time instance')
-        self._end_time = value
 
     @property
     def utc(self):
@@ -326,13 +336,10 @@ class TimeOfDay(InternalDevice):
         """
         return self._utc
 
-    @utc.setter
-    def utc(self, value):
-        self._utc = bool(value)
-
     @property
     def value(self):
-        if self.utc:
-            return self.start_time <= datetime.utcnow().time() <= self.end_time
+        now = datetime.utcnow().time() if self.utc else datetime.now().time()
+        if self.start_time < self.end_time:
+            return self.start_time <= now <= self.end_time
         else:
-            return self.start_time <= datetime.now().time() <= self.end_time
+            return not self.end_time < now < self.start_time

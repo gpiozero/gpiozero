@@ -21,11 +21,13 @@ TimeOfDay
 =========
 
 .. autoclass:: TimeOfDay
+    :members: is_active
 
 PingServer
 ==========
 
 .. autoclass:: PingServer
+    :members: is_active
 
 CPUTemperature
 ==============
@@ -37,6 +39,7 @@ LoadAverage
 ===========
 
 .. autoclass:: LoadAverage
+    :members: load_average, is_active
 
 Base Classes
 ============
@@ -55,4 +58,3 @@ InternalDevice
 ==============
 
 .. autoclass:: InternalDevice()
-    :members:
