@@ -1078,6 +1078,101 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         else:
             return self.headers[header].pins[number].pull_up
 
+    def to_gpio(self, spec):
+        """
+        Parses a pin *spec*, returning the equivalent Broadcom GPIO port number
+        or raising a :exc:`ValueError` exception if the spec does not represent
+        a GPIO port.
+
+        The *spec* may be given in any of the following forms:
+
+        * An integer, which will be accepted as a GPIO number
+        * 'GPIOn' where n is the GPIO number
+        * 'WPIn' where n is the `wiringPi`_ pin number
+        * 'BCMn' where n is the GPIO number (alias of GPIOn)
+        * 'BOARDn' where n is the physical pin number on the main header
+        * 'h:n' where h is the header name and n is the physical pin number
+          (for example J8:5 is physical pin 5 on header J8, which is the main
+          header on modern Raspberry Pis)
+
+        .. _wiringPi: http://wiringpi.com/pins/
+        """
+        if isinstance(spec, int):
+            if not 0 <= spec < 54:
+                raise PinInvalidPin('invalid GPIO port %d specified '
+                                    '(range 0..53) ' % spec)
+            return spec
+        else:
+            if isinstance(spec, bytes):
+                spec = spec.decode('ascii')
+            spec = spec.upper()
+            if spec.isdigit():
+                return self.to_gpio(int(spec))
+            if spec.startswith('GPIO') and spec[4:].isdigit():
+                return self.to_gpio(int(spec[4:]))
+            elif spec.startswith('BCM') and spec[3:].isdigit():
+                return self.to_gpio(int(spec[3:]))
+            elif spec.startswith('WPI') and spec[3:].isdigit():
+                main_head = 'P1' if 'P1' in self.headers else 'J8'
+                try:
+                    return self.to_gpio({
+                        0:  '%s:11' % main_head,
+                        1:  '%s:12' % main_head,
+                        2:  '%s:13' % main_head,
+                        3:  '%s:15' % main_head,
+                        4:  '%s:16' % main_head,
+                        5:  '%s:18' % main_head,
+                        6:  '%s:22' % main_head,
+                        7:  '%s:7'  % main_head,
+                        8:  '%s:3'  % main_head,
+                        9:  '%s:5'  % main_head,
+                        10: '%s:24' % main_head,
+                        11: '%s:26' % main_head,
+                        12: '%s:19' % main_head,
+                        13: '%s:21' % main_head,
+                        14: '%s:23' % main_head,
+                        15: '%s:8'  % main_head,
+                        16: '%s:10' % main_head,
+                        17: 'P5:3',
+                        18: 'P5:4',
+                        19: 'P5:5',
+                        20: 'P5:6',
+                        21: '%s:29' % main_head,
+                        22: '%s:31' % main_head,
+                        23: '%s:33' % main_head,
+                        24: '%s:35' % main_head,
+                        25: '%s:37' % main_head,
+                        26: '%s:32' % main_head,
+                        27: '%s:36' % main_head,
+                        28: '%s:38' % main_head,
+                        29: '%s:40' % main_head,
+                        30: '%s:27' % main_head,
+                        31: '%s:28' % main_head,
+                        }[int(spec[3:])])
+                except KeyError:
+                    raise PinInvalidPin('%s is not a valid wiringPi pin' % spec)
+            elif ':' in spec:
+                header, pin = spec.split(':', 1)
+                if pin.isdigit():
+                    try:
+                        header = self.headers[header]
+                    except KeyError:
+                        raise PinInvalidPin(
+                            'there is no %s header on this Pi' % header)
+                    try:
+                        function = header.pins[int(pin)].function
+                    except KeyError:
+                        raise PinInvalidPin(
+                            'no such pin %s on header %s' % (pin, header.name))
+                    if function.startswith('GPIO') and function[4:].isdigit():
+                        return self.to_gpio(int(function[4:]))
+                    else:
+                        raise PinInvalidPin('%s is not a GPIO pin' % spec)
+            elif spec.startswith('BOARD') and spec[5:].isdigit():
+                main_head = ({'P1', 'J8', 'SODIMM'} & set(self.headers)).pop()
+                return self.to_gpio('%s:%s' % (main_head, spec[5:]))
+            raise PinInvalidPin('%s is not a valid pin spec' % spec)
+
     def __repr__(self):
         return '{cls}({fields})'.format(
             cls=self.__class__.__name__,

@@ -66,21 +66,13 @@ class PiFactory(Factory):
         self.pins.clear()
 
     def pin(self, spec):
-        n = self._to_gpio(spec)
+        n = self.pi_info.to_gpio(spec)
         try:
             pin = self.pins[n]
         except KeyError:
             pin = self.pin_class(self, n)
             self.pins[n] = pin
         return pin
-
-    def _to_gpio(self, spec):
-        """
-        Converts the pin *spec* to a GPIO port number.
-        """
-        if not 0 <= spec < 54:
-            raise PinInvalidPin('invalid GPIO port %d specified (range 0..53) ' % spec)
-        return spec
 
     def _get_revision(self):
         raise NotImplementedError
@@ -173,7 +165,7 @@ class PiFactory(Factory):
             spi_args = pin_defaults
         elif set(spi_args) <= set(pin_defaults):
             spi_args = {
-                key: self._to_gpio(spi_args.get(key, default))
+                key: self.pi_info.to_gpio(spi_args.get(key, default))
                 for key, default in pin_defaults.items()
                 }
         elif set(spi_args) <= set(dev_defaults):
