@@ -128,22 +128,23 @@ def test_pingserver_init():
             assert server.host == '2001:4860:4860::8888'
 
 def test_pingserver_value():
-    with patch('gpiozero.internal_devices.subprocess') as sp:
+    with patch('gpiozero.internal_devices.subprocess.check_call') as check_call:
         with PingServer('example.com') as server:
-            sp.check_call.return_value = True
             assert server.is_active
-            sp.return_value.__enter__.side_effect = bad_ping
+            check_call.side_effect = bad_ping
             assert not server.is_active
-            sp.return_value.__enter__.side_effect = None
+            check_call.side_effect = None
             assert server.is_active
 
 def test_cputemperature_bad_init():
     with patch('io.open') as m:
         m.return_value.__enter__.side_effect = file_not_found
-        with pytest.raises(FileNotFoundError):
-            CPUTemperature('')
-        with pytest.raises(FileNotFoundError):
-            CPUTemperature('badfile')
+        with pytest.raises(IOError):
+            with CPUTemperature('') as temp:
+                temp.value
+        with pytest.raises(IOError):
+            with CPUTemperature('badfile') as temp:
+                temp.value
         m.return_value.__enter__.return_value.readline.return_value = '37000'
         with pytest.raises(ValueError):
             CPUTemperature(min_temp=100)
@@ -169,10 +170,12 @@ def test_loadaverage_bad_init():
     with patch('io.open') as m:
         foo = m.return_value.__enter__
         foo.side_effect = file_not_found
-        with pytest.raises(FileNotFoundError):
-            LoadAverage('')
-        with pytest.raises(FileNotFoundError):
-            LoadAverage('badfile')
+        with pytest.raises(IOError):
+            with LoadAverage('') as load:
+                load.value
+        with pytest.raises(IOError):
+            with LoadAverage('badfile') as load:
+                load.value
         foo.return_value.readline.return_value = '0.09 0.10 0.09 1/292 20758'
         with pytest.raises(ValueError):
             LoadAverage(min_load_average=1)
