@@ -166,3 +166,5 @@ class PinFactoryFallback(PinWarning):
 class PinNonPhysical(PinWarning):
     "Warning raised when a non-physical pin is specified in a constructor"
 
+class ThresholdOutOfRange(GPIOZeroWarning):
+    "Warning raised when a threshold is out of range specified by min and max values"

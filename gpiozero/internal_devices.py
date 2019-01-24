@@ -13,9 +13,11 @@ import os
 import io
 import subprocess
 from datetime import datetime, time
+import warnings
 
 from .devices import Device
 from .mixins import EventsMixin
+from .exc import ThresholdOutOfRange
 
 
 class InternalDevice(EventsMixin, Device):
@@ -126,6 +128,9 @@ class CPUTemperature(InternalDevice):
             raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
         self.max_temp = max_temp
+        if not min_temp <= threshold <= max_temp:
+            warnings.warn(ThresholdOutOfRange(
+                'threshold is outside of the range (min_temp, max_temp)'))
         self.threshold = threshold
         self._fire_events(self.pin_factory.ticks(), None)
 
