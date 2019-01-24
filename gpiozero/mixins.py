@@ -12,7 +12,6 @@ import weakref
 from functools import wraps, partial
 from threading import Event
 from collections import deque
-from time import time
 try:
     from statistics import median
 except ImportError:
@@ -168,8 +167,8 @@ class EventsMixin(object):
         self._inactive_event = Event()
         self._when_activated = None
         self._when_deactivated = None
-        self._last_state = None
-        self._last_changed = time()
+        self._last_active = None
+        self._last_changed = self.pin_factory.ticks()
 
     def wait_for_active(self, timeout=None):
         """
@@ -240,7 +239,8 @@ class EventsMixin(object):
         When the device is inactive, this is ``None``.
         """
         if self._active_event.is_set():
-            return time() - self._last_changed
+            return self.pin_factory.ticks_diff(self.pin_factory.ticks(),
+                                               self._last_changed)
         else:
             return None
 
@@ -251,7 +251,8 @@ class EventsMixin(object):
         When the device is active, this is ``None``.
         """
         if self._inactive_event.is_set():
-            return time() - self._last_changed
+            return self.pin_factory.ticks_diff(self.pin_factory.ticks(),
+                                               self._last_changed)
         else:
             return None
 
@@ -307,19 +308,21 @@ class EventsMixin(object):
         if self.when_deactivated:
             self.when_deactivated()
 
-    def _fire_events(self):
-        old_state = self._last_state
-        new_state = self._last_state = self.is_active
-        if old_state is None:
+    def _fire_events(self, ticks, new_active):
+        # NOTE: in contrast to the pin when_changed event, this method takes
+        # ticks and *is_active* (i.e. the device's .is_active) as opposed to a
+        # pin's *state*.
+        old_active, self._last_active = self._last_active, new_active
+        if old_active is None:
             # Initial "indeterminate" state; set events but don't fire
             # callbacks as there's not necessarily an edge
-            if new_state:
+            if new_active:
                 self._active_event.set()
             else:
                 self._inactive_event.set()
-        elif old_state != new_state:
-            self._last_changed = time()
-            if new_state:
+        elif old_active != new_active:
+            self._last_changed = ticks
+            if new_active:
                 self._inactive_event.clear()
                 self._active_event.set()
                 self._fire_activated()
@@ -431,7 +434,8 @@ class HoldMixin(EventsMixin):
         this is ``None``.
         """
         if self._held_from is not None:
-            return time() - self._held_from
+            return self.pin_factory.ticks_diff(self.pin_factory.ticks(),
+                                               self._held_from)
         else:
             return None
 
@@ -458,7 +462,7 @@ class HoldThread(GPIOThread):
                             parent._inactive_event.wait(parent.hold_time)
                             ):
                         if parent._held_from is None:
-                            parent._held_from = time()
+                            parent._held_from = parent.pin_factory.ticks()
                         parent._fire_held()
                         if not parent.hold_repeat:
                             break
@@ -508,7 +512,7 @@ class GPIOQueue(GPIOThread):
                 if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
                     self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
-                    self.parent._fire_events()
+                    self.parent._fire_events(self.parent.pin_factory.ticks(), self.parent.is_active)
         except ReferenceError:
             # Parent is dead; time to die!
             pass

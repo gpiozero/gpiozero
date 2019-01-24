@@ -131,6 +131,18 @@ class PiGPIOFactory(PiFactory):
         self._spis.append(intf)
         return intf
 
+    def ticks(self):
+        return self._connection.get_current_tick()
+
+    @staticmethod
+    def ticks_diff(later, earlier):
+        # NOTE: pigpio ticks are unsigned 32-bit quantities that wrap every
+        # 71.6 minutes. The modulo below (oh the joys of having an *actual*
+        # modulo operator, unlike C's remainder) ensures the result is valid
+        # even when later < earlier due to wrap-around (assuming the duration
+        # measured is not longer than the period)
+        return ((later - earlier) % 0x100000000) / 1000000
+
 
 class PiGPIOPin(PiPin):
     """
@@ -282,8 +294,8 @@ class PiGPIOPin(PiPin):
         finally:
             self.when_changed = f
 
-    def _call_when_changed(self, gpio, level, tick):
-        super(PiGPIOPin, self)._call_when_changed()
+    def _call_when_changed(self, gpio, level, ticks):
+        super(PiGPIOPin, self)._call_when_changed(ticks, level)
 
     def _enable_event_detect(self):
         self._callback = self.factory.connection.callback(
@@ -532,4 +544,3 @@ class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
     def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         return (factory, select_pin)
-

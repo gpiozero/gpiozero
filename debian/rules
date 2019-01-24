@@ -17,10 +17,6 @@ override_dh_auto_install:
 override_dh_auto_test:
 	# Don't run the tests!
 
-#override_dh_installdocs:
-#	python setup.py build_sphinx -b html
-#	dh_installdocs
-
 override_dh_auto_build:
 	dh_auto_build
 	PYTHONPATH=. sphinx-build -N -bhtml docs/ build/html

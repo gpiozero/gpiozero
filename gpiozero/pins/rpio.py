@@ -214,4 +214,3 @@ class RPIOPin(LocalPiPin):
             # simply means RPIO's built-in cleanup has already run and
             # removed the handler
             pass
-

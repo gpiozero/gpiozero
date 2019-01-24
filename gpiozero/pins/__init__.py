@@ -31,8 +31,13 @@ from ..exc import (
 class Factory(object):
     """
     Generates pins and SPI interfaces for devices. This is an abstract
-    base class for pin factories. Descendents *may* override the following
-    methods, if applicable:
+    base class for pin factories. Descendents *must* override the following
+    methods:
+
+    * :meth:`ticks`
+    * :meth:`ticks_diff`
+
+    Descendents *may* override the following methods, if applicable:
 
     * :meth:`close`
     * :meth:`reserve_pins`
@@ -122,6 +127,28 @@ class Factory(object):
         raise :exc:`SPIBadArgs`.
         """
         raise PinSPIUnsupported('SPI not supported by this pin factory')
+
+    def ticks(self):
+        """
+        Return the current ticks, according to the factory. The reference point
+        is undefined and thus the result of this method is only meaningful when
+        compared to another value returned by this method.
+
+        The format of the time is also arbitrary, as is whether the time wraps
+        after a certain duration. Ticks should only be compared using the
+        :meth:`ticks_diff` method.
+        """
+        raise NotImplementedError
+
+    def ticks_diff(self, later, earlier):
+        """
+        Return the time in seconds between two :meth:`ticks` results. The
+        arguments are specified in the same order as they would be in the
+        formula *later* - *earlier* but the result is guaranteed to be in
+        seconds, and to be positive even if the ticks "wrapped" between calls
+        to :meth:`ticks`.
+        """
+        raise NotImplementedError
 
     def _get_pi_info(self):
         return None
@@ -389,7 +416,20 @@ class Pin(object):
         doc="""\
         A function or bound method to be called when the pin's state changes
         (more specifically when the edge specified by :attr:`edges` is detected
-        on the pin). The function or bound method must take no parameters.
+        on the pin). The function or bound method must accept two parameters:
+        the first will report the ticks (from :meth:`Factory.ticks`) when
+        the pin's state changed, and the second will report the pin's current
+        state.
+
+        .. warning::
+
+            Depending on hardware support, the state is *not guaranteed to be
+            accurate*. For instance, many GPIO implementations will provide
+            an interrupt indicating when a pin's state changed but not what it
+            changed to. In this case the pin driver simply reads the pin's
+            current state to supply this parameter, but the pin's state may
+            have changed *since* the interrupt. Exercise appropriate caution
+            when relying upon this parameter.
 
         If the pin does not support edge detection, attempts to set this
         property will raise :exc:`PinEdgeDetectUnsupported`.
@@ -693,5 +733,3 @@ class SPI(object):
 
         Several implementations do not support non-byte-sized words.
         """)
-
-

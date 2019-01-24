@@ -105,12 +105,15 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         try:
             self.pin.bounce = bounce_time
             self.pin.edges = 'both'
-            self.pin.when_changed = self._fire_events
+            self.pin.when_changed = self._pin_changed
             # Call _fire_events once to set initial state of events
-            self._fire_events()
+            self._fire_events(self.pin_factory.ticks(), self.is_active)
         except:
             self.close()
             raise
+
+    def _pin_changed(self, ticks, state):
+        self._fire_events(ticks, self._state_to_value(state))
 
 
 class SmoothedInputDevice(EventsMixin, InputDevice):
@@ -540,10 +543,11 @@ class LightSensor(SmoothedInputDevice):
         )
         try:
             self._charge_time_limit = charge_time_limit
+            self._charge_time = None
             self._charged = Event()
             self.pin.edges = 'rising'
             self.pin.bounce = None
-            self.pin.when_changed = self._charged.set
+            self.pin.when_changed = self._cap_charged
             self._queue.start()
         except:
             self.close()
@@ -553,20 +557,27 @@ class LightSensor(SmoothedInputDevice):
     def charge_time_limit(self):
         return self._charge_time_limit
 
+    def _cap_charged(self, ticks, state):
+        self._charge_time = ticks
+        self._charged.set()
+
     def _read(self):
         # Drain charge from the capacitor
         self.pin.function = 'output'
         self.pin.state = False
         sleep(0.1)
         # Time the charging of the capacitor
-        start = time()
+        start = self.pin_factory.ticks()
+        self._charge_time = None
         self._charged.clear()
         self.pin.function = 'input'
         self._charged.wait(self.charge_time_limit)
-        return (
-            1.0 - min(self.charge_time_limit, time() - start) /
-            self.charge_time_limit
-        )
+        if self._charge_time is None:
+            return 0.0
+        else:
+            return 1.0 - (
+                self.pin_factory.ticks_diff(self._charge_time, start) /
+                self.charge_time_limit)
 
 LightSensor.light_detected = LightSensor.is_active
 LightSensor.when_light = LightSensor.when_activated
@@ -661,7 +672,7 @@ class DistanceSensor(SmoothedInputDevice):
     ECHO_LOCK = Lock()
 
     def __init__(
-            self, echo=None, trigger=None, queue_len=10, max_distance=1,
+            self, echo=None, trigger=None, queue_len=9, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
         if max_distance <= 0:
             raise ValueError('invalid maximum distance (must be positive)')
@@ -753,12 +764,12 @@ class DistanceSensor(SmoothedInputDevice):
         """
         return self.pin
 
-    def _echo_changed(self):
-        if self._echo_rise is None:
-            self._echo_rise = time()
+    def _echo_changed(self, ticks, level):
+        if level:
+            self._echo_rise = ticks
         else:
-            self._echo_fall = time()
-        self._echo.set()
+            self._echo_fall = ticks
+            self._echo.set()
 
     def _read(self):
         # Make sure the echo pin is low then ensure the echo event is clear
@@ -772,22 +783,21 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = True
             sleep(0.00001)
             self._trigger.pin.state = False
-            # Wait up to 1 second for the echo pin to rise
+            # Wait up to 1 second for the echo pin to rise and fall (35ms is
+            # the maximum pulse time, but the time before rise is unspecified
+            # in the "datasheet"; 1 second seems sufficiently long to conclude
+            # something has failed).
             if self._echo.wait(1):
-                self._echo.clear()
-                # Wait up to 40ms for the echo pin to fall (35ms is maximum
-                # pulse time so any longer means something's gone wrong).
-                # Calculate distance as time for echo multiplied by speed of
-                # sound divided by two to compensate for travel to and from the
-                # reflector
-                if self._echo.wait(0.04) and self._echo_fall is not None and self._echo_rise is not None:
-                    distance = (self._echo_fall - self._echo_rise) * self.speed_of_sound / 2.0
+                if self._echo_fall is not None and self._echo_rise is not None:
+                    distance = (
+                        self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
+                        self.speed_of_sound / 2.0)
                     self._echo_fall = None
                     self._echo_rise = None
                     return min(1.0, distance / self._max_distance)
                 else:
-                    # If we only saw one edge it means we missed the echo
-                    # because it was too fast; report minimum distance
+                    # If we only saw the falling edge it means we missed the
+                    # echo because it was too fast; report minimum distance
                     return 0.0
             else:
                 # The echo pin never rose or fell; something's gone horribly
