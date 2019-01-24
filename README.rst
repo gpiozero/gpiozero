@@ -102,6 +102,7 @@ Other contributors:
 - `Mike Kazantsev`_
 - `Fatih Sarhan`_
 - `Rick Ansell`_
+- `Jeevan M R`_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -132,3 +133,4 @@ Other contributors:
 .. _Mike Kazantsev: https://github.com/mk-fg
 .. _Fatih Sarhan: https://github.com/f9n
 .. _Rick Ansell: https://github.com/ricksbt
+.. _Jeevan M R: https://github.com/jee1mr
