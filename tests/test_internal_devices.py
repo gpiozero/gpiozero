@@ -166,13 +166,11 @@ def test_cputemperature():
             with CPUTemperature(min_temp=30, max_temp=40) as cpu:
                 assert cpu.value == 0.7
                 assert not cpu.is_active
+            assert len(w) == 1
+            assert w[0].category == ThresholdOutOfRange
+            assert cpu.temperature == 37.0
         with CPUTemperature(min_temp=30, max_temp=40, threshold=35) as cpu:
             assert cpu.is_active
-        with warnings.catch_warnings(record=True) as w:
-            with CPUTemperature(min_temp=30, max_temp=40, threshold=50) as cpu:
-                assert len(w) == 1
-                assert w[0].category == ThresholdOutOfRange
-                assert cpu.temperature == 37.0
 
 def test_loadaverage_bad_init():
     with patch('io.open') as m:
