@@ -60,6 +60,7 @@ header on modern Pis). Hence, the following lines are all equivalent:
 .. code-block:: pycon
 
     >>> led = LED(17)
+    >>> led = LED("GPIO17")
     >>> led = LED("BCM17")
     >>> led = LED("BOARD11")
     >>> led = LED("WPI0")
