@@ -55,7 +55,7 @@ some of which are effectively abstract. The classes form the (partial)
 hierarchy displayed in the graph below (abstract classes are shaded lighter
 than concrete classes):
 
-.. image:: images/other_device_hierarchy.*
+.. image:: images/internal_device_hierarchy.*
 
 The following sections document these base classes for advanced users that wish
 to construct classes for their own devices.

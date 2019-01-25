@@ -18,4 +18,5 @@ digraph classes {
     PingServer->InternalDevice;
     CPUTemperature->InternalDevice;
     LoadAverage->InternalDevice;
+    DiskUsage->InternalDevice;
 }
