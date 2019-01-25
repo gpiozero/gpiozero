@@ -605,8 +605,7 @@ class LEDBarGraph(LEDCollection):
 class PiHutXmasTree(LEDBoard):
     """
     Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a 3D Christmas
-    tree board with 3 red LEDs on each of 8 faces, and a white LED as a star on
-    top.
+    tree board with 24 red LEDs and a white LED as a star on top.
 
     The Xmas Tree board pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example turns all the LEDs
@@ -652,10 +651,9 @@ class PiHutXmasTree(LEDBoard):
     """
 
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        pins = (
-            4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26,
-            9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24)
         pins_dict = OrderedDict(star=2)
+        pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
+                24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
         for i, pin in enumerate(pins):
             pins_dict['led%d' % (i+1)] = pin
         super(PiHutXmasTree, self).__init__(

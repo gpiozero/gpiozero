@@ -721,12 +721,12 @@ def test_snow_pi_initial_value_pwm():
         assert all(device.pin.state == 0.5 for device in board.leds)
 
 def test_pihut_xmas_tree():
-    led_pins = (
-        2, 4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26,
-        9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24)
+    led_pins = (2, 4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
+                24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
     pins = [Device.pin_factory.pin(n) for n in led_pins]
     with PiHutXmasTree() as tree:
         assert [led.pin for led in tree.leds] == pins
+        assert len(tree) == 25
         assert isinstance(tree.star, LED)
         assert isinstance(tree.led1, LED)
         assert isinstance(tree.led24, LED)
