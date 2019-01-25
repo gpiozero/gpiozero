@@ -659,10 +659,10 @@ class PiHutXmasTree(LEDBoard):
         for i, pin in enumerate(pins):
             pins_dict['led%d' % (i+1)] = pin
         super(PiHutXmasTree, self).__init__(
-            **pins_dict,
             pwm=pwm, initial_value=initial_value,
             _order=pins_dict.keys(),
-            pin_factory=pin_factory
+            pin_factory=pin_factory,
+            **pins_dict
 		)
 
 
