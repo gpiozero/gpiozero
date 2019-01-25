@@ -636,9 +636,6 @@ class PWMBuzzer(PWMOutputDevice):
         }
 
         self.midi_notes = {
-            """
-            Dictionary containing MIDI notes which can be played through the PWMBuzzer.
-            """
             21: 27.50,
             22: 29.14,
             23: 30.87,
@@ -729,17 +726,15 @@ class PWMBuzzer(PWMOutputDevice):
             108: 4186.01,
         }
 
-        def play(self, note):
-            """
-            PWMBuzzer function to play a given note from the two available dictionaries.
-            """
-            if type(note) == int:
-                self.frequency = self.midi_notes[note]
-            else:
-                self.frequency = self.notes[note]
-            self.value = 0.5
-
-
+    def play(self, note):
+        """
+        PWMBuzzer function to play a given note from the two available dictionaries.
+        """
+        if type(note) == int:
+            self.frequency = self.midi_notes[note]
+        else:
+            self.frequency = self.notes[note]
+        self.value = 0.5
 
 
 class PWMLED(PWMOutputDevice):
