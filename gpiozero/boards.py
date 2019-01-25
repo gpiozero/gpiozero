@@ -602,6 +602,68 @@ class LEDBarGraph(LEDCollection):
         self.value = value / len(self)
 
 
+class PiHutXmasTree(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a 3D Christmas
+    tree board with 24 red LEDs and a white LED as a star on top.
+
+    The Xmas Tree board pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example turns all the LEDs
+    on one at a time::
+
+        from gpiozero import PiHutXmasTree
+        from time import sleep
+
+        tree = PiHutXmasTree()
+
+        for light in tree:
+            light.on()
+            sleep(1)
+
+    The following example turns the star LED on and sets all the red LEDs to
+    flicker randomly::
+
+        from gpiozero import PiHutXmasTree
+        from gpiozero.tools import random_values
+        from signal import pause
+
+        tree = PiHutXmasTree(pwm=True)
+
+        tree.star.on()
+
+        for led in tree[1:]:
+            led.source_delay = 0.1
+            led.source = random_values()
+
+        pause()
+
+    :param bool pwm:
+        If ``True``, construct :class:`PWMLED` instances for each pin. If
+        ``False`` (the default), construct regular :class:`LED` instances.
+
+    :param bool initial_value:
+        If ``False`` (the default), all LEDs will be off initially. If
+        ``None``, each device will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If ``True``,
+        the device will be switched on initially.
+
+    .. _The Pi Hut's Xmas board: https://thepihut.com/xmas
+    """
+
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        pins_dict = OrderedDict(star=2)
+        pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
+                24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
+        for i, pin in enumerate(pins):
+            pins_dict['led%d' % (i+1)] = pin
+        super(PiHutXmasTree, self).__init__(
+            pwm=pwm, initial_value=initial_value,
+            _order=pins_dict.keys(),
+            pin_factory=pin_factory,
+            **pins_dict
+		)
+
+
 class LedBorg(RGBLED):
     """
     Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board

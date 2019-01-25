@@ -45,6 +45,13 @@ TrafficLights
     :inherited-members:
     :members:
 
+Pi Hut Xmas Tree
+================
+
+.. autoclass:: PiHutXmasTree
+    :inherited-members:
+    :members:
+
 LedBorg
 =======
 

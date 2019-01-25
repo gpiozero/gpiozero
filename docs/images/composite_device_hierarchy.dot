@@ -22,6 +22,7 @@ digraph classes {
     LEDBarGraph->LEDCollection;
 
     PiLiter->LEDBoard;
+    PiHutXmasTree->LEDBoard;
     PiLiterBarGraph->LEDBarGraph;
     TrafficLights->LEDBoard;
     SnowPi->LEDBoard;
