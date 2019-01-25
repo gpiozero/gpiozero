@@ -343,3 +343,70 @@ class TimeOfDay(InternalDevice):
             return self.start_time <= now <= self.end_time
         else:
             return not self.end_time < now < self.start_time
+
+
+class DiskUsage(InternalDevice):
+    """
+    Extends :class:`InternalDevice` to provide a device which is active when
+    the disk space used exceeds the *threshold* value.
+
+    The following example plots the disk usage on an LED bar graph::
+
+        from gpiozero import LEDBarGraph, DiskUsage
+        from signal import pause
+
+        disk = DiskUsage()
+
+        print('Current disk usage: {}%'.format(disk.usage))
+
+        graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
+        graph.source = disk
+
+        pause()
+
+    :param str filesystem:
+        The filesystem for which the disk usage needs to be computed. This
+        defaults to `/`, which is the root filesystem.
+
+    :param float threshold:
+        The disk usage percentage above which the device will be considered "active".
+        This defaults to 90.0.
+    """
+    def __init__(self, filesystem='/', threshold=90.0):
+        super(DiskUsage, self).__init__()
+        if not os.path.ismount(filesystem):
+            raise ValueError('invalid filesystem')
+        if not 0 <= threshold <= 100:
+            warnings.warn(ThresholdOutOfRange(
+                'threshold is outside of the range (0, 100)'))
+        self.filesystem = filesystem
+        self.threshold = threshold
+        self._fire_events(self.pin_factory.ticks(), None)
+
+    def __repr__(self):
+        return '<gpiozero.DiskUsage usage=%.2f>' % self.usage
+
+    @property
+    def usage(self):
+        """
+        Returns the current disk usage in percentage.
+        """
+        df = subprocess.Popen(['df', '--output=pcent', self.filesystem], stdout=subprocess.PIPE)
+        output = df.communicate()[0].split(b'\n')[1].split()[0]
+        return float(output.decode('UTF-8').rstrip('%'))
+
+    @property
+    def value(self):
+        """
+        Returns the current disk usage as a value between 0.0 and 1.0
+        by dividing :attr:`temperature` by 100.
+        """
+        return self.usage / 100.0
+
+    @property
+    def is_active(self):
+        """
+        Returns ``True`` when the disk :attr:`usage` exceeds the
+        :attr:`threshold`.
+        """
+        return self.usage > self.threshold

@@ -100,4 +100,5 @@ from .internal_devices import (
     CPUTemperature,
     LoadAverage,
     TimeOfDay,
+    DiskUsage,
 )
