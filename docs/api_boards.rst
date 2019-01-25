@@ -45,10 +45,10 @@ TrafficLights
     :inherited-members:
     :members:
 
-Xmas Tree
-=========
+Pi Hut Xmas Tree
+================
 
-.. autoclass:: XmasTree
+.. autoclass:: PiHutXmasTree
     :inherited-members:
     :members:
 

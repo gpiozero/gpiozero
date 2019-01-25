@@ -602,20 +602,20 @@ class LEDBarGraph(LEDCollection):
         self.value = value / len(self)
 
 
-class XmasTree(LEDBoard):
+class PiHutXmasTree(LEDBoard):
     """
-    Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a Christmas tree
-    board with 3 red LEDs on each of 8 faces, and a white LED as a star on
+    Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a 3D Christmas
+    tree board with 3 red LEDs on each of 8 faces, and a white LED as a star on
     top.
 
     The Xmas Tree board pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example turns all the LEDs
-    on one at a time, ending in the star::
+    on one at a time::
 
-        from gpiozero import XmasTree
+        from gpiozero import PiHutXmasTree
         from time import sleep
 
-        tree = XmasTree()
+        tree = PiHutXmasTree()
 
         for light in tree:
             light.on()
@@ -624,17 +624,17 @@ class XmasTree(LEDBoard):
     The following example turns the star LED on and sets all the red LEDs to
     flicker randomly::
 
-        from gpiozero import XmasTree
+        from gpiozero import PiHutXmasTree
         from gpiozero.tools import random_values
         from signal import pause
 
-        tree = XmasTree(pwm=True)
+        tree = PiHutXmasTree(pwm=True)
 
         tree.star.on()
 
-        for bauble in tree.baubles.values():
-            bauble.source_delay = 0.1
-            bauble.source = random_values()
+        for led in tree[1:]:
+            led.source_delay = 0.1
+            led.source = random_values()
 
         pause()
 
@@ -651,19 +651,19 @@ class XmasTree(LEDBoard):
     .. _The Pi Hut's Xmas board: https://thepihut.com/xmas
     """
 
-    def __init__(self, pwm=False, initial_value=False):
-        pins = (4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26, 9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24, 2)
-        super(XmasTree, self).__init__(*pins, pwm=pwm, initial_value=initial_value)
-        baubles = self[:-1]
-        self._baubles = {i+1: led for i, led in enumerate(baubles)}
-
-    @property
-    def star(self):
-        return self[-1]
-
-    @property
-    def baubles(self):
-        return self._baubles
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        pins = (
+            4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26,
+            9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24)
+        pins_dict = OrderedDict(star=2)
+        for i, pin in enumerate(pins):
+            pins_dict['led%d' % (i+1)] = pin
+        super(PiHutXmasTree, self).__init__(
+            **pins_dict,
+            pwm=pwm, initial_value=initial_value,
+            _order=pins_dict.keys(),
+            pin_factory=pin_factory
+		)
 
 
 class LedBorg(RGBLED):

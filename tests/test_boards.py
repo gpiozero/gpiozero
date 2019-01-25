@@ -29,6 +29,7 @@ def setup_function(function):
         'test_led_board_pwm_value',
         'test_led_board_pwm_bad_value',
         'test_snow_pi_initial_value_pwm',
+        'test_pihut_xmas_tree_pwm',
         'test_led_board_pwm_initial_value',
         'test_led_board_pwm_bad_initial_value',
         'test_led_board_fade_background',
@@ -718,6 +719,46 @@ def test_snow_pi_initial_value_pwm():
     with SnowPi(pwm=True, initial_value=0.5) as board:
         assert [device.pin for device in board.leds] == pins
         assert all(device.pin.state == 0.5 for device in board.leds)
+
+def test_pihut_xmas_tree():
+    led_pins = (
+        2, 4, 15, 13, 21, 22, 6, 12, 25, 16, 17, 27, 26,
+        9, 23, 11, 5, 20, 19, 14, 18, 7, 8, 10, 24)
+    pins = [Device.pin_factory.pin(n) for n in led_pins]
+    with PiHutXmasTree() as tree:
+        assert [led.pin for led in tree.leds] == pins
+        assert isinstance(tree.star, LED)
+        assert isinstance(tree.led1, LED)
+        assert isinstance(tree.led24, LED)
+
+def test_pihut_xmas_tree_init():
+    with PiHutXmasTree(pwm=False) as tree:
+        assert isinstance(tree.star, LED)
+        assert isinstance(tree.led1, LED)
+        assert isinstance(tree.led24, LED)
+    with PiHutXmasTree(initial_value=True) as tree:
+        assert all(led.value for led in tree)
+
+def test_pihut_xmas_tree_pwm():
+    with PiHutXmasTree(pwm=True) as tree:
+        assert isinstance(tree.star, PWMLED)
+        assert isinstance(tree.led1, PWMLED)
+        assert isinstance(tree.led24, PWMLED)
+    with PiHutXmasTree(pwm=True, initial_value=0.5) as tree:
+        assert all(led.value == 0.5 for led in tree)
+
+def test_pihut_xmas_tree_leds():
+    with PiHutXmasTree() as tree:
+        tree.star.on()
+        assert sum(tree.value) == 1
+        tree.led1.on()
+        assert sum(tree.value) == 2
+        tree.on()
+        assert sum(tree.value) == 25
+        tree.off()
+        assert sum(tree.value) == 0
+        tree.toggle()
+        assert sum(tree.value) == 25
 
 def test_traffic_lights_buzzer():
     red_pin = Device.pin_factory.pin(2)
