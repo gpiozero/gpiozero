@@ -220,3 +220,32 @@ def test_loadaverage():
                 assert len(w) == 1
                 assert w[0].category == ThresholdOutOfRange
                 assert la.load_average == 1.4
+
+def test_diskusage_bad_init():
+    with pytest.raises(ValueError):
+        DiskUsage(filesystem='badfilesystem')
+
+def test_diskusage_init():
+    with patch('gpiozero.internal_devices.os.path') as ospath:
+        ospath.ismount.return_value = True
+        with DiskUsage('/home') as disk:
+            assert disk.filesystem == '/home'
+            assert disk.threshold == 90.0
+
+def test_diskusage():
+    with patch('gpiozero.internal_devices.subprocess.Popen.communicate') as communicate:
+        communicate.return_value = (b'Use%\n 52%\n', None)
+        with DiskUsage() as disk:
+            assert disk.filesystem == '/'
+            assert disk.usage == 52.0
+            assert disk.is_active == False
+            assert disk.value == 0.52
+        with DiskUsage(threshold=50.0) as disk:
+            assert disk.is_active == True
+        with warnings.catch_warnings(record=True) as w:
+            with DiskUsage(threshold=125) as disk:
+                assert disk.threshold == 125
+                assert not disk.is_active
+            assert len(w) == 1
+            assert w[0].category == ThresholdOutOfRange
+            assert disk.usage == 52.0
