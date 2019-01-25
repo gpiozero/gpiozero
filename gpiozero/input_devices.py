@@ -170,19 +170,25 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         discarding outliers from jittery sensors. The function specific must
         accept a sequence of numbers and return a single number.
 
+    :param set ignore:
+        The set of values which the queue should ignore, if returned from
+        querying the device's value.
+
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
-            sample_wait=0.0, partial=False, average=median, pin_factory=None):
+            sample_wait=0.0, partial=False, average=median, ignore=None,
+            pin_factory=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
             pin, pull_up, pin_factory=pin_factory
         )
         try:
-            self._queue = GPIOQueue(self, queue_len, sample_wait, partial, average)
+            self._queue = GPIOQueue(self, queue_len, sample_wait, partial,
+                                    average, ignore)
             self.threshold = float(threshold)
         except:
             self.close()
@@ -680,7 +686,7 @@ class DistanceSensor(SmoothedInputDevice):
         super(DistanceSensor, self).__init__(
             echo, pull_up=False, threshold=threshold_distance / max_distance,
             queue_len=queue_len, sample_wait=0.06, partial=partial,
-            pin_factory=pin_factory
+            ignore={None}, pin_factory=pin_factory
         )
         try:
             self.speed_of_sound = 343.26 # m/s
@@ -772,38 +778,41 @@ class DistanceSensor(SmoothedInputDevice):
             self._echo.set()
 
     def _read(self):
-        # Make sure the echo pin is low then ensure the echo event is clear
-        while self.pin.state:
-            sleep(0.00001)
+        # Wait up to 1 second for the echo pin to fall to low; if it doesn't
+        # something is horribly wrong (most likely at the hardware level)
+        if self.pin.state:
+            if not self._echo.wait(1):
+                warnings.warn(DistanceSensorNoEcho('echo pin set high'))
+                return None
         self._echo.clear()
-        # Obtain ECHO_LOCK to ensure multiple distance sensors don't listen
-        # for each other's "pings"
+        self._echo_fall = None
+        self._echo_rise = None
+        # Obtain the class-level ECHO_LOCK to ensure multiple distance sensors
+        # don't listen for each other's "pings"
         with DistanceSensor.ECHO_LOCK:
             # Fire the trigger
             self._trigger.pin.state = True
             sleep(0.00001)
             self._trigger.pin.state = False
             # Wait up to 1 second for the echo pin to rise and fall (35ms is
-            # the maximum pulse time, but the time before rise is unspecified
-            # in the "datasheet"; 1 second seems sufficiently long to conclude
-            # something has failed).
+            # the maximum pulse time, but the pre-rise time is unspecified in
+            # the "datasheet"; 1 second seems sufficiently long to conclude
+            # something has failed)
             if self._echo.wait(1):
                 if self._echo_fall is not None and self._echo_rise is not None:
                     distance = (
                         self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
                         self.speed_of_sound / 2.0)
-                    self._echo_fall = None
-                    self._echo_rise = None
                     return min(1.0, distance / self._max_distance)
                 else:
-                    # If we only saw the falling edge it means we missed the
-                    # echo because it was too fast; report minimum distance
-                    return 0.0
+                    # If we only saw the falling edge it means we missed
+                    # the echo because it was too fast
+                    return None
             else:
                 # The echo pin never rose or fell; something's gone horribly
                 # wrong
                 warnings.warn(DistanceSensorNoEcho('no echo received'))
-                return 1.0
+                return None
 
     @property
     def in_range(self):

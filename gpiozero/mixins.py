@@ -481,19 +481,22 @@ class GPIOQueue(GPIOThread):
     """
     def __init__(
             self, parent, queue_len=5, sample_wait=0.0, partial=False,
-            average=median):
+            average=median, ignore=None):
         assert callable(average)
         super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:
             raise BadQueueLen('queue_len must be at least one')
         if sample_wait < 0:
             raise BadWaitTime('sample_wait must be 0 or greater')
+        if ignore is None:
+            ignore = set()
         self.queue = deque(maxlen=queue_len)
         self.partial = bool(partial)
         self.sample_wait = float(sample_wait)
         self.full = Event()
         self.parent = weakref.proxy(parent)
         self.average = average
+        self.ignore = ignore
 
     @property
     def value(self):
@@ -508,7 +511,9 @@ class GPIOQueue(GPIOThread):
     def fill(self):
         try:
             while not self.stopping.wait(self.sample_wait):
-                self.queue.append(self.parent._read())
+                value = self.parent._read()
+                if value not in self.ignore:
+                    self.queue.append(value)
                 if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
                     self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
