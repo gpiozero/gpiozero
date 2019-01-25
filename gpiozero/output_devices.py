@@ -549,15 +549,22 @@ class RGBLED(SourceMixin, Device):
 
     Connect the common cathode (longest leg) to a ground pin; connect each of
     the other legs (representing the red, green, and blue anodes) to any GPIO
-    pins.  You can either use three limiting resistors (one per anode) or a
-    single limiting resistor on the cathode.
+    pins.  You should use three limiting resistors (one per anode).
 
-    The following code will make the LED purple::
+    The following code will make the LED yellow::
 
         from gpiozero import RGBLED
 
         led = RGBLED(2, 3, 4)
-        led.color = (1, 0, 1)
+        led.color = (1, 1, 0)
+
+    The `colorzero`_ library is also supported::
+
+        from gpiozero import RGBLED
+        from colorzero import Color
+
+        led = RGBLED(2, 3, 4)
+        led.color = Color('yellow')
 
     :param int red:
         The GPIO pin that controls the red component of the RGB LED.
@@ -583,6 +590,8 @@ class RGBLED(SourceMixin, Device):
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. _colorzero: https://colorzero.readthedocs.io/
     """
     def __init__(
             self, red=None, green=None, blue=None, active_high=True,
@@ -627,10 +636,13 @@ class RGBLED(SourceMixin, Device):
     def value(self, value):
         for component in value:
             if not 0 <= component <= 1:
-                raise OutputDeviceBadValue('each RGB color component must be between 0 and 1')
+                raise OutputDeviceBadValue(
+                    'each RGB color component must be between 0 and 1')
             if isinstance(self._leds[0], LED):
                 if component not in (0, 1):
-                    raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
+                    raise OutputDeviceBadValue(
+                        'each RGB color component must be 0 or 1 with non-PWM '
+                        'RGBLEDs')
         self._stop_blink()
         for led, v in zip(self._leds, value):
             led.value = v
