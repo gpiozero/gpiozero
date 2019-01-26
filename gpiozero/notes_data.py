@@ -1,7 +1,4 @@
 notes = {
-    """
-    Dictionary containing musical notes which can be played through the PWMBuzzer.
-    """
     'A0': 27.50,
     'AS0': 29.14,
     'B0': 30.87,
@@ -93,9 +90,6 @@ notes = {
 }
 
 midi_notes = {
-    """
-    Dictionary to play MIDI notes which can be played through the PWMBuzzer.
-    """
     21: 27.50,
     22: 29.14,
     23: 30.87,
