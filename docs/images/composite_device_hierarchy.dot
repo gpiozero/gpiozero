@@ -29,6 +29,7 @@ digraph classes {
     PiTraffic->TrafficLights;
     PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
+    JamHat->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
     Robot->CompositeDevice;
@@ -36,6 +37,7 @@ digraph classes {
     CamJamKitRobot->Robot;
     Motor->CompositeDevice;
     Servo->CompositeDevice;
+    TonalBuzzer->CompositeDevice;
     AngularServo->Servo;
     Energenie->Device;
     ButtonBoard->CompositeDevice;

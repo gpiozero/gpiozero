@@ -93,10 +93,12 @@ digraph classes {
     StatusZero->LEDBoard;
     TrafficLights->LEDBoard;
     SnowPi->LEDBoard;
+    PiHutXmasTree->LEDBoard;
     PiTraffic->TrafficLights;
     PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
     StatusBoard->CompositeOutputDevice;
+    JamHat->CompositeOutputDevice;
     FishDish->TrafficLightsBuzzer;
     TrafficHat->TrafficLightsBuzzer;
     Robot->CompositeDevice;
@@ -109,6 +111,8 @@ digraph classes {
     Motor->SourceMixin;
     Servo->CompositeDevice;
     Servo->SourceMixin;
+    TonalBuzzer->CompositeDevice;
+    TonalBuzzer->SourceMixin;
     AngularServo->Servo;
 
     InternalDevice->Device;

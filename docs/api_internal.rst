@@ -33,19 +33,19 @@ CPUTemperature
 ==============
 
 .. autoclass:: CPUTemperature
-    :members: temperature, is_active, threshold
+    :members: temperature, is_active
 
 LoadAverage
 ===========
 
 .. autoclass:: LoadAverage
-    :members: load_average, is_active, threshold
+    :members: load_average, is_active
 
 DiskUsage
 =========
 
 .. autoclass:: DiskUsage
-    :members: usage, is_active, threshold
+    :members: usage, is_active
 
 Base Classes
 ============

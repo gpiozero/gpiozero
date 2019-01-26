@@ -108,6 +108,13 @@ Traffic HAT
     :inherited-members:
     :members:
 
+Jam HAT
+=======
+
+.. autoclass:: JamHat
+    :inherited-members:
+    :members:
+
 Robot
 =====
 

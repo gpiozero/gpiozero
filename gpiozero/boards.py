@@ -30,7 +30,7 @@ from .output_devices import (
     Buzzer,
     Motor,
     PhaseEnableMotor,
-    PWMBuzzer,
+    TonalBuzzer,
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
@@ -527,7 +527,6 @@ class LEDBarGraph(LEDCollection):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-
     def __init__(self, *pins, **kwargs):
         # Don't allow graphs to contain collections
         for pin in pins:
@@ -656,7 +655,6 @@ class PiHutXmasTree(LEDBoard):
 
     .. _The Pi Hut's Xmas board: https://thepihut.com/xmas
     """
-
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         pins_dict = OrderedDict(star=2)
         pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
@@ -1144,7 +1142,6 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-
     def __init__(self, lights, buzzer, button, pin_factory=None):
         super(TrafficLightsBuzzer, self).__init__(
             lights=lights, buzzer=buzzer, button=button,
@@ -1179,7 +1176,6 @@ class FishDish(TrafficLightsBuzzer):
 
     .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
-
     def __init__(self, pwm=False, pin_factory=None):
         super(FishDish, self).__init__(
             TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
@@ -1215,7 +1211,6 @@ class TrafficHat(TrafficLightsBuzzer):
 
     .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
     """
-
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
             TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
@@ -1261,7 +1256,6 @@ class Robot(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
         # supplied as sequential positional arguments e.g. 2, 3, 4, 5
@@ -1456,7 +1450,6 @@ class CamJamKitRobot(Robot):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
-
     def __init__(self, pwm=True, pin_factory=None):
         super(CamJamKitRobot, self).__init__(
             left=(9, 10), right=(7, 8), pwm=pwm, pin_factory=pin_factory
@@ -1498,7 +1491,6 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
         # supplied as sequential positional arguments e.g. 2, 3, 4, 5
@@ -1616,7 +1608,6 @@ class PololuDRV8835Robot(PhaseEnableRobot):
 
     .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
     """
-
     def __init__(self, pwm=True, pin_factory=None):
         super(PololuDRV8835Robot, self).__init__(
             left=(5, 12), right=(6, 13), pwm=pwm, pin_factory=pin_factory
@@ -1690,7 +1681,6 @@ class Energenie(SourceMixin, Device):
 
     .. _Energenie socket: https://energenie4u.co.uk/index.php/catalogue/product/ENER002-2PI
     """
-
     def __init__(self, socket=None, initial_value=False, pin_factory=None):
         if socket is None:
             raise EnergenieSocketMissing('socket number must be provided')
@@ -1819,37 +1809,33 @@ class PumpkinPi(LEDBoard):
 
 class JamHat(CompositeOutputDevice):
     """
-    Extends :class: `CompositeOutputDevice` for the `ModMyPi JamHat` board.
+    Extends :class:`CompositeOutputDevice` for the `ModMyPi JamHat`_ board.
 
     There are 6 LEDs, two buttons and a tonal buzzer. The pins are fixed.
 
-    Usage:
+    Usage::
+
         from gpiozero import JamHat
 
         hat = JamHat()
+
         hat.lights_1.on()
-        hat.buzzer.play(2000)
+        hat.buzzer.play(60)
+
         hat.off()
 
     :param bool pwm:
-    If ``True``, construct :class: PWMLED instances to represent each LED 
-    on the board. If ``False`` (the default), construct regular :class: 
-    LED instances.
-
-    :param bool initial_value:
-    If ``False`` (the default), all LEDs will be off initially. If
-    ``None``, each device will be left in whatever state the pin is found
-    in when configured for output (warning: this can be on). If ``True``,
-    the device will be switched on initially.
+        If ``True``, construct :class: PWMLED instances to represent each LED on
+        the board. If ``False`` (the default), construct regular :class:`LED`
+        instances.
 
     :param Factory pin_factory:
-    See :doc:`api_pins` for more information (this is an advanced feature
-    which most users can ignore).
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
 
     .. _ModMyPi JamHat: https://www.modmypi.com/jam-hat
-
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, pwm=False, pin_factory=None):
         super(JamHat, self).__init__(
             lights_1=LEDBoard(red=5, yellow=12, green=16,
                               pwm=pwm, initial_value=initial_value,
@@ -1861,6 +1847,7 @@ class JamHat(CompositeOutputDevice):
                               pin_factory=pin_factory),
             button_1=Button(19, pull_up=False, pin_factory=pin_factory),
             button_2=Button(18, pull_up=False, pin_factory=pin_factory),
-            buzzer=PWMBuzzer(20, pin_factory=pin_factory),
+            buzzer=TonalBuzzer(20, pin_factory=pin_factory),
+            _order=('lights_1', 'lights_2', 'button_1', 'button_2', 'buzzer'),
             pin_factory=pin_factory
         )

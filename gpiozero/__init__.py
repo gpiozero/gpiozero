@@ -60,7 +60,6 @@ from .output_devices import (
     OutputDevice,
     DigitalOutputDevice,
     PWMOutputDevice,
-    PWMBuzzer,
     PWMLED,
     LED,
     Buzzer,
@@ -69,6 +68,7 @@ from .output_devices import (
     Servo,
     AngularServo,
     RGBLED,
+    TonalBuzzer,
 )
 from .boards import (
     CompositeOutputDevice,

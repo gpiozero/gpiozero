@@ -39,6 +39,12 @@ Buzzer
 .. autoclass:: Buzzer(pin, \*, active_high=True, initial_value=False, pin_factory=None)
     :members: on, off, toggle, beep, pin, is_active
 
+TonalBuzzer
+===========
+
+.. autoclass:: TonalBuzzer(pin, \*, initial_value=None, min_note=21, max_note=108, pin_factory=None)
+    :members: play, stop, toggle, note_value, is_active
+
 Motor
 =====
 

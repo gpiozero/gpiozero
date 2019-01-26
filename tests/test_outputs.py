@@ -1437,3 +1437,120 @@ def test_angular_servo_angles(mock_factory, pwm):
         servo.angle = -15
         assert servo.angle == -15
         assert isclose(servo.value, 1/3)
+
+def test_tonalbuzzer_bad_init(mock_factory, pwm):
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, initial_value=-2)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, initial_value=2)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, mid_note=11)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, octaves=0)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, octaves=0)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, mid_note='B0', octaves=2)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, mid_note='B1', octaves=3)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, mid_note='B2', octaves=4)
+
+def test_tonalbuzzer_init(mock_factory, pwm):
+    pin = mock_factory.pin(2)
+    with TonalBuzzer(2) as tb:
+        assert tb.pwm_device.pin == pin
+        assert tb.value is None
+        assert tb.pwm_device.frequency is None
+    with TonalBuzzer(2, mid_note='C4') as tb:
+        assert tb.pwm_device.frequency is None
+    with TonalBuzzer(2, mid_note='C4', initial_value=0) as tb:
+        assert isclose(tb.pwm_device.frequency, 261.626, abs_tol=1/100)
+    with TonalBuzzer(2, initial_value=-1) as tb:
+        assert isclose(tb.pwm_device.frequency, 220)
+    with TonalBuzzer(2, initial_value=0) as tb:
+        assert isclose(tb.pwm_device.frequency, 440)
+    with TonalBuzzer(2, initial_value=1) as tb:
+        assert isclose(tb.pwm_device.frequency, 880)
+    with TonalBuzzer(2, octaves=2, initial_value=-1) as tb:
+        assert isclose(tb.pwm_device.frequency, 110)
+    with TonalBuzzer(2, octaves=2, initial_value=0) as tb:
+        assert isclose(tb.pwm_device.frequency, 440)
+    with TonalBuzzer(2, octaves=2, initial_value=1) as tb:
+        assert isclose(tb.pwm_device.frequency, 1760)
+
+def test_tonalbuzzer_play(mock_factory, pwm):
+    with TonalBuzzer(2) as tb:
+        tb.play(60)
+        assert isclose(tb.pwm_device.frequency, 261.626, abs_tol=1/100)
+        tb.play(None)
+        assert tb.value is None
+        assert tb.pwm_device.frequency is None
+        tb.play('C5')
+        assert isclose(tb.pwm_device.frequency, 523.25, abs_tol=1/100)
+        tb.play('A#4')
+        assert isclose(tb.pwm_device.frequency, 466.16, abs_tol=1/100)
+        tb.stop()
+        assert tb.value is None
+        assert tb.pwm_device.frequency is None
+        with pytest.raises(ValueError):
+            tb.play('GS3')
+        with pytest.raises(ValueError):
+            tb.play('AS5')
+
+def test_tonalbuzzer_set_value():
+    with TonalBuzzer(2) as tb:
+        assert tb.pwm_device.frequency is None
+        tb.value = -1
+        assert isclose(tb.pwm_device.frequency, 220)
+        tb.value = 1
+        assert isclose(tb.pwm_device.frequency, 880)
+    with TonalBuzzer(2, octaves=2) as tb:
+        assert tb.pwm_device.frequency is None
+        tb.value = -1
+        assert isclose(tb.pwm_device.frequency, 110)
+        tb.value = 1
+        assert isclose(tb.pwm_device.frequency, 1760)
+
+def test_tonalbuzzer_read_value():
+    with TonalBuzzer(2) as tb:
+        assert tb.value is None
+        tb.play('A3')
+        assert isclose(tb.value, -1)
+        tb.play('A4')
+        assert isclose(tb.value, 0)
+        tb.play('A5')
+        assert isclose(tb.value, 1)
+    with TonalBuzzer(2, octaves=2) as tb:
+        assert tb.value is None
+        tb.play('A2')
+        assert isclose(tb.value, -1)
+        tb.play('A3')
+        assert isclose(tb.value, -0.5)
+        tb.play('A4')
+        assert isclose(tb.value, 0)
+        tb.play('A5')
+        assert isclose(tb.value, 0.5)
+        tb.play('A6')
+        assert isclose(tb.value, 1)
+
+def test_tonalbuzzer_note_value(mock_factory, pwm):
+    with TonalBuzzer(2) as tb:
+        assert tb.note_value(None) is None
+        assert tb.note_value(57) == tb.note_value('A3') == -1
+        assert tb.note_value(69) == tb.note_value('A4') == 0
+        assert tb.note_value(81) == tb.note_value('A5') == 1
+    with TonalBuzzer(2, octaves=2) as tb:
+        assert tb.note_value(None) is None
+        assert tb.note_value(45) == tb.note_value('A2') == -1
+        assert tb.note_value(57) == tb.note_value('A3') == -0.5
+        assert tb.note_value(69) == tb.note_value('A4') == 0
+        assert tb.note_value(81) == tb.note_value('A5') == 0.5
+        assert tb.note_value(93) == tb.note_value('A6') == 1
+    with TonalBuzzer(2, mid_note='C4', octaves=2) as tb:
+        assert tb.note_value(None) is None
+        assert tb.note_value(36) == tb.note_value('C2') == -1
+        assert tb.note_value(48) == tb.note_value('C3') == -0.5
+        assert tb.note_value(60) == tb.note_value('C4') == 0
+        assert tb.note_value(72) == tb.note_value('C5') == 0.5
+        assert tb.note_value(84) == tb.note_value('C6') == 1
