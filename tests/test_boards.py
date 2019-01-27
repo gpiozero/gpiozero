@@ -15,29 +15,17 @@ from gpiozero import *
 from gpiozero.pins.mock import MockPWMPin, MockPin
 
 
+pwm_tests = set()
+def needs_pwm(fn):
+    # Decorator for tests that require PWM-capable pins
+    pwm_tests.add(fn)
+    return fn
+
 def setup_function(function):
-    # dirty, but it does the job
-    Device.pin_factory.pin_class = MockPWMPin if function.__name__ in (
-        'test_robot',
-        'test_robots',
-        'test_enable_pin_motor_robot',
-        'test_phaseenable_robot',
-        'test_ryanteck_robot',
-        'test_camjam_kit_robot',
-        'test_pololudrv8835_robot',
-        'test_led_borg',
-        'test_led_board_pwm_value',
-        'test_led_board_pwm_bad_value',
-        'test_snow_pi_initial_value_pwm',
-        'test_pihut_xmas_tree_pwm',
-        'test_led_board_pwm_initial_value',
-        'test_led_board_pwm_bad_initial_value',
-        'test_led_board_fade_background',
-        'test_led_bar_graph_pwm_value',
-        'test_led_bar_graph_pwm_initial_value',
-        'test_statusboard_kwargs',
-        'test_statuszero_kwargs',
-        ) else MockPin
+    if function in pwm_tests:
+        Device.pin_factory.pin_class = MockPWMPin
+    else:
+        Device.pin_factory.pin_class = MockPin
 
 def teardown_function(function):
     Device.pin_factory.reset()
@@ -193,6 +181,7 @@ def test_led_board_value():
         board.value = (1, 0, 1)
         assert board.value == (1, 0, 1)
 
+@needs_pwm
 def test_led_board_pwm_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -204,6 +193,7 @@ def test_led_board_pwm_value():
         board.value = (0.5, 0, 0.75)
         assert board.value == (0.5, 0, 0.75)
 
+@needs_pwm
 def test_led_board_pwm_bad_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -223,6 +213,7 @@ def test_led_board_initial_value():
     with LEDBoard(2, 3, foo=4, initial_value=1) as board:
         assert board.value == (1, 1, 1)
 
+@needs_pwm
 def test_led_board_pwm_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -234,6 +225,7 @@ def test_led_board_pwm_initial_value():
     with LEDBoard(2, 3, foo=4, pwm=True, initial_value=0.5) as board:
         assert board.value == (0.5, 0.5, 0.5)
 
+@needs_pwm
 def test_led_board_pwm_bad_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -423,6 +415,7 @@ def test_led_board_blink_interrupt_off():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
+@needs_pwm
 def test_led_board_fade_background():
     pin1 = Device.pin_factory.pin(4)
     pin2 = Device.pin_factory.pin(5)
@@ -527,6 +520,7 @@ def test_led_bar_graph_active_low():
         assert graph.value == -1/3
         assert not pin3.state and pin1.state and pin2.state
 
+@needs_pwm
 def test_led_bar_graph_pwm_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -598,6 +592,7 @@ def test_led_bar_graph_initial_value():
         assert graph.value == -1/3
         assert pin3.state and not (pin1.state or pin2.state)
 
+@needs_pwm
 def test_led_bar_graph_pwm_initial_value():
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(3)
@@ -609,6 +604,7 @@ def test_led_bar_graph_pwm_initial_value():
         assert graph.value == -0.5
         assert (pin1.state, pin2.state, pin3.state) == (0, 0.5, 1)
 
+@needs_pwm
 def test_led_borg():
     pins = [Device.pin_factory.pin(n) for n in (17, 27, 22)]
     with LedBorg() as board:
@@ -714,6 +710,7 @@ def test_snow_pi_initial_value():
     with SnowPi(initial_value=0.5) as board:
         assert all(device.pin.state == True for device in board.leds)
 
+@needs_pwm
 def test_snow_pi_initial_value_pwm():
     pins = [Device.pin_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi(pwm=True, initial_value=0.5) as board:
@@ -739,6 +736,7 @@ def test_pihut_xmas_tree_init():
     with PiHutXmasTree(initial_value=True) as tree:
         assert all(led.value for led in tree)
 
+@needs_pwm
 def test_pihut_xmas_tree_pwm():
     with PiHutXmasTree(pwm=True) as tree:
         assert isinstance(tree.star, PWMLED)
@@ -807,6 +805,7 @@ def test_robot_bad_init():
     with pytest.raises(GPIOPinMissing):
         Robot((2, 3), 4)
 
+@needs_pwm
 def test_robot():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
     def check_pins_and_value(robot, expected_value):
@@ -952,6 +951,7 @@ def test_robot():
         robot.value = (0, -0.5)
         check_pins_and_value(robot, (0, -0.5))
 
+@needs_pwm
 def test_robots():
     with RyanteckRobot() as robot:
         left_motor, right_motor = robot.all
@@ -1019,6 +1019,7 @@ def test_robots_nopwm():
         assert isinstance(right_motor.phase_device, DigitalOutputDevice)
         assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
+@needs_pwm
 def test_enable_pin_motor_robot():
     pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
     with Robot((2, 3, 4), (5, 6, 7)) as robot:
@@ -1057,6 +1058,7 @@ def test_enable_pin_motor_robot_nopwm():
         assert right_motor.enable_device.pin is pins[5]
         assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
+@needs_pwm
 def test_phaseenable_robot():
     pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
     with PhaseEnableRobot((5, 12), (6, 13)) as robot:
@@ -1092,16 +1094,19 @@ def test_phaseenable_robot():
         robot.value = (0, -0.5)
         assert robot.value == (0, -0.5)
 
+@needs_pwm
 def test_ryanteck_robot():
     pins = [Device.pin_factory.pin(n) for n in (17, 18, 22, 23)]
     with RyanteckRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
+@needs_pwm
 def test_camjam_kit_robot():
     pins = [Device.pin_factory.pin(n) for n in (9, 10, 7, 8)]
     with CamJamKitRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
+@needs_pwm
 def test_pololudrv8835_robot():
     pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
     with PololuDRV8835Robot() as board:
@@ -1177,6 +1182,7 @@ def test_statuszero():
         sz.one.green.off()
         assert sz.one.value == (True, False)
 
+@needs_pwm
 def test_statuszero_kwargs():
     with StatusZero(pwm=True, initial_value=True) as sz:
         assert isinstance(sz.one, LEDBoard)
@@ -1232,6 +1238,7 @@ def test_statusboard():
         sb.one.lights.green.off()
         assert sb.one.value == (False, (True, False))
 
+@needs_pwm
 def test_statusboard_kwargs():
     with StatusBoard(pwm=True, initial_value=True) as sb:
         assert isinstance(sb.one, CompositeOutputDevice)

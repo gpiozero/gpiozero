@@ -11,12 +11,10 @@ import os
 import atexit
 import weakref
 import warnings
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from itertools import chain
 from types import FunctionType
 from threading import Lock
-
-import pkg_resources
 
 from .pins import Pin
 from .threads import _threads_shutdown
@@ -199,6 +197,8 @@ class Device(ValuesMixin, GPIOBase):
         # Force pin_factory to be keyword-only, even in Python 2
         pin_factory = kwargs.pop('pin_factory', None)
         if pin_factory is None:
+            if Device.pin_factory is None:
+                Device.pin_factory = Device._default_pin_factory()
             self.pin_factory = Device.pin_factory
         else:
             self.pin_factory = pin_factory
@@ -206,6 +206,54 @@ class Device(ValuesMixin, GPIOBase):
             raise TypeError("Device.__init__() got unexpected keyword "
                             "argument '%s'" % kwargs.popitem()[0])
         super(Device, self).__init__()
+
+    @staticmethod
+    def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
+        # no third-party libraries are available, however, we fall back to a
+        # pure Python implementation which supports platforms like PyPy
+        #
+        # NOTE: If the built-in pin factories are expanded, this dict must be
+        # updated along with the entry-points in setup.py.
+        default_factories = OrderedDict({
+            'rpigpio': 'gpiozero.pins.rpigpio:RPiGPIOFactory',
+            'rpio':    'gpiozero.pins.rpio:RPIOFactory',
+            'pigpio':  'gpiozero.pins.pigpio:PiGPIOFactory',
+            'native':  'gpiozero.pins.native:NativeFactory',
+        })
+        if name is None:
+            # If no factory is explicitly specified, try various names in
+            # "preferred" order. For speed, we select from the dictionary above
+            # rather than importing pkg_resources and using load_entry_point
+            for name, entry_point in default_factories.items():
+                try:
+                    mod_name, cls_name = entry_point.split(':', 1)
+                    module = __import__(mod_name, fromlist=(cls_name,))
+                    return getattr(module, cls_name)()
+                except Exception as e:
+                    warnings.warn(
+                        PinFactoryFallback(
+                            'Falling back from %s: %s' % (name, str(e))))
+            raise BadPinFactory('Unable to load any default pin factory!')
+        elif name in default_factories:
+            # As above, this is a fast-path optimization to avoid loading
+            # pkg_resources (which it turns out was 80% of gpiozero's import
+            # time!)
+            mod_name, cls_name = default_factories[name].split(':', 1)
+            module = __import__(mod_name, fromlist=(cls_name,))
+            return getattr(module, cls_name)()
+        else:
+            # Slow path: load pkg_resources and try and find the specified
+            # entry-point. Try with the name verbatim first. If that fails,
+            # attempt with the lower-cased name (this ensures compatibility
+            # names work but we're still case insensitive for all factories)
+            import pkg_resources
+            group = 'gpiozero_pin_factories'
+            for factory in pkg_resources.iter_entry_points(group, name):
+                return factory.load()()
+            for factory in pkg_resources.iter_entry_points(group, name.lower()):
+                return factory.load()()
+            raise BadPinFactory('Unable to find pin factory "%s"' % name)
 
     def __repr__(self):
         return "<gpiozero.%s object>" % (self.__class__.__name__)
@@ -427,43 +475,8 @@ class GPIODevice(Device):
             return "<gpiozero.%s object closed>" % self.__class__.__name__
 
 
-# Defined last to ensure Device is defined before attempting to load any pin
-# factory; pin factories want to load spi which in turn relies on devices (for
-# the soft-SPI implementation)
-def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
-    group = 'gpiozero_pin_factories'
-    if name is None:
-        # If no factory is explicitly specified, try various names in
-        # "preferred" order. Note that in this case we only select from
-        # gpiozero distribution so without explicitly specifying a name (via
-        # the environment) it's impossible to auto-select a factory from
-        # outside the base distribution
-        #
-        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions. If
-        # no third-party libraries are available, however, we fall back to a
-        # pure Python implementation which supports platforms like PyPy
-        dist = pkg_resources.get_distribution('gpiozero')
-        for name in ('rpigpio', 'rpio', 'pigpio', 'native'):
-            try:
-                return pkg_resources.load_entry_point(dist, group, name)()
-            except Exception as e:
-                warnings.warn(
-                    PinFactoryFallback(
-                        'Falling back from %s: %s' % (name, str(e))))
-        raise BadPinFactory('Unable to load any default pin factory!')
-    else:
-        # Try with the name verbatim first. If that fails, attempt with the
-        # lower-cased name (this ensures compatibility names work but we're
-        # still case insensitive for all factories)
-        for factory in pkg_resources.iter_entry_points(group, name):
-            return factory.load()()
-        for factory in pkg_resources.iter_entry_points(group, name.lower()):
-            return factory.load()()
-        raise BadPinFactory('Unable to find pin factory "%s"' % name)
-
-
 def _devices_shutdown():
-    if Device.pin_factory:
+    if Device.pin_factory is not None:
         with Device.pin_factory._res_lock:
             reserved_devices = {
                 dev
@@ -482,6 +495,4 @@ def _shutdown():
     _threads_shutdown()
     _devices_shutdown()
 
-
-Device.pin_factory = _default_pin_factory()
 atexit.register(_shutdown)

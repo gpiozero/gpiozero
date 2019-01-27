@@ -25,6 +25,9 @@ class BadQueueLen(GPIOZeroError, ValueError):
 class BadPinFactory(GPIOZeroError, ImportError):
     "Error raised when an unknown pin factory name is specified"
 
+class ZombieThread(GPIOZeroError, RuntimeError):
+    "Error raised when a thread fails to die within a given timeout"
+
 class CompositeDeviceError(GPIOZeroError):
     "Base class for errors specific to the CompositeDevice hierarchy"
 
