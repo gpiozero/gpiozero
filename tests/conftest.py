@@ -6,5 +6,8 @@ from __future__ import (
     )
 str = type('')
 
-import os
-os.environ['GPIOZERO_PIN_FACTORY'] = 'mock'
+
+from gpiozero import Device
+from gpiozero.pins.mock import MockFactory
+
+Device.pin_factory = MockFactory()

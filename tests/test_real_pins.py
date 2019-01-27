@@ -39,7 +39,7 @@ TEST_PIN = int(os.getenv('GPIOZERO_TEST_PIN', '22'))
 INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
 
 
-@pytest.fixture(
+@pytest.yield_fixture(
     scope='module',
     params=[
         name
@@ -53,13 +53,11 @@ def pin_factory(request):
         pytest.skip("skipped factory %s: %s" % (request.param, str(e)))
     else:
         Device.pin_factory = factory
-        def fin():
-            Device.pin_factory = MockFactory()
-        request.addfinalizer(fin)
-        return factory
+        yield factory
+        Device.pin_factory = MockFactory()
 
 
-@pytest.fixture(scope='function')
+@pytest.yield_fixture(scope='function')
 def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
@@ -71,11 +69,9 @@ def pins(request, pin_factory):
         test_pin = pin_factory.pin(TEST_PIN, pin_class=MockConnectedPin, input_pin=input_pin)
     else:
         test_pin = pin_factory.pin(TEST_PIN)
-    def fin():
-        test_pin.close()
-        input_pin.close()
-    request.addfinalizer(fin)
-    return test_pin, input_pin
+    yield test_pin, input_pin
+    test_pin.close()
+    input_pin.close()
 
 
 def test_pin_numbers(pins):
