@@ -10,45 +10,25 @@ str = type('')
 import sys
 import pytest
 from time import sleep
+from threading import Event
 
 from gpiozero import *
-from gpiozero.pins.mock import MockPWMPin, MockPin
 
 
-pwm_tests = set()
-def needs_pwm(fn):
-    # Decorator for tests that require PWM-capable pins
-    pwm_tests.add(fn)
-    return fn
-
-def setup_function(function):
-    if function in pwm_tests:
-        Device.pin_factory.pin_class = MockPWMPin
-    else:
-        Device.pin_factory.pin_class = MockPin
-
-def teardown_function(function):
-    Device.pin_factory.reset()
-
-def teardown_module(module):
-    # make sure we reset the default
-    Device.pin_factory.pwm = False
-
-
-def test_composite_output_on_off():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_composite_output_on_off(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         device.on()
         assert all((pin1.state, pin2.state, pin3.state))
         device.off()
         assert not any((pin1.state, pin2.state, pin3.state))
 
-def test_composite_output_toggle():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_composite_output_toggle(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         device.toggle()
         assert all((pin1.state, pin2.state, pin3.state))
@@ -58,10 +38,10 @@ def test_composite_output_toggle():
         assert not pin2.state
         assert not pin3.state
 
-def test_composite_output_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_composite_output_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
         assert device.value == (0, 0, 0)
         device.toggle()
@@ -71,28 +51,87 @@ def test_composite_output_value():
         assert not device[1].is_active
         assert device[2].is_active
 
-def test_led_collection_bad_init():
+def test_button_board_bad_init(mock_factory):
+    with pytest.raises(GPIOPinMissing):
+        buttons = ButtonBoard()
+    with pytest.raises(GPIOPinMissing):
+        buttons = ButtonBoard(hold_repeat=True)
+
+def test_button_board_pressed_released(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
+    with ButtonBoard(4, 5, foo=6) as board:
+        assert isinstance(board[0], Button)
+        assert isinstance(board[1], Button)
+        assert isinstance(board[2], Button)
+        assert board.pull_up
+        assert board[0].pull_up
+        assert board[1].pull_up
+        assert board[2].pull_up
+        assert board.value == (False, False, False)
+        assert board.wait_for_release(1)
+        assert not board.is_active
+        pin1.drive_low()
+        pin3.drive_low()
+        assert board.value == (True, False, True)
+        assert board.wait_for_press(1)
+        assert board.is_active
+        pin3.drive_high()
+        assert board.value == (True, False, False)
+        assert board.is_active
+
+def test_button_board_when_pressed(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
+    evt = Event()
+    evt1 = Event()
+    evt2 = Event()
+    evt3 = Event()
+    with ButtonBoard(4, 5, foo=6) as board:
+        board.when_changed = evt.set
+        board[0].when_pressed = evt1.set
+        board[1].when_pressed = evt2.set
+        board[2].when_pressed = evt3.set
+        pin1.drive_low()
+        assert evt.wait(1)
+        assert evt1.wait(1)
+        assert not evt2.wait(0)
+        assert not evt3.wait(0)
+        evt.clear()
+        evt1.clear()
+        pin1.drive_high()
+        assert evt.wait(1)
+        evt.clear()
+        pin2.drive_low()
+        assert evt.wait(1)
+        assert evt2.wait(1)
+        assert not evt1.wait(0)
+        assert not evt3.wait(0)
+
+def test_led_collection_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         leds = LEDCollection()
     with pytest.raises(GPIOPinMissing):
         leds = LEDCollection(pwm=True)
 
-def test_led_board_bad_init():
+def test_led_board_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         leds = LEDBoard()
     with pytest.raises(GPIOPinMissing):
         leds = LEDBoard(pwm=True)
 
-def test_led_bar_graph_bad_init():
+def test_led_bar_graph_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         leds = LEDBarGraph()
     with pytest.raises(GPIOPinMissing):
         leds = LEDBarGraph(pwm=True)
 
-def test_led_board_on_off():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_on_off(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4) as board:
         assert isinstance(board[0], LED)
         assert isinstance(board[1], LED)
@@ -146,10 +185,10 @@ def test_led_board_on_off():
         assert pin2.state
         assert pin3.state
 
-def test_led_board_active_low():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_active_low(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4, active_high=False) as board:
         assert not board.active_high
         assert not board[0].active_high
@@ -170,10 +209,10 @@ def test_led_board_active_low():
         assert not pin2.state
         assert not pin3.state
 
-def test_led_board_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4) as board:
         assert board.value == (0, 0, 0)
         board.value = (0, 1, 0)
@@ -181,11 +220,10 @@ def test_led_board_value():
         board.value = (1, 0, 1)
         assert board.value == (1, 0, 1)
 
-@needs_pwm
-def test_led_board_pwm_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_pwm_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4, pwm=True) as board:
         assert board.value == (0, 0, 0)
         board.value = (0, 1, 0)
@@ -193,31 +231,29 @@ def test_led_board_pwm_value():
         board.value = (0.5, 0, 0.75)
         assert board.value == (0.5, 0, 0.75)
 
-@needs_pwm
-def test_led_board_pwm_bad_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_pwm_bad_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4, pwm=True) as board:
         with pytest.raises(ValueError):
             board.value = (-1, 0, 0)
         with pytest.raises(ValueError):
             board.value = (0, 2, 0)
 
-def test_led_board_initial_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_initial_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4, initial_value=0) as board:
         assert board.value == (0, 0, 0)
     with LEDBoard(2, 3, foo=4, initial_value=1) as board:
         assert board.value == (1, 1, 1)
 
-@needs_pwm
-def test_led_board_pwm_initial_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_pwm_initial_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4, pwm=True, initial_value=0) as board:
         assert board.value == (0, 0, 0)
     with LEDBoard(2, 3, foo=4, pwm=True, initial_value=1) as board:
@@ -225,20 +261,19 @@ def test_led_board_pwm_initial_value():
     with LEDBoard(2, 3, foo=4, pwm=True, initial_value=0.5) as board:
         assert board.value == (0.5, 0.5, 0.5)
 
-@needs_pwm
-def test_led_board_pwm_bad_initial_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_pwm_bad_initial_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with pytest.raises(ValueError):
         LEDBoard(2, 3, foo=4, pwm=True, initial_value=-1)
     with pytest.raises(ValueError):
         LEDBoard(2, 3, foo=4, pwm=True, initial_value=2)
 
-def test_led_board_nested():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_nested(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, LEDBoard(3, 4)) as board:
         assert list(led.pin for led in board.leds) == [pin1, pin2, pin3]
         assert board.value == (0, (0, 0))
@@ -247,10 +282,10 @@ def test_led_board_nested():
         assert not pin2.state
         assert pin3.state
 
-def test_led_board_bad_blink():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_board_bad_blink(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBoard(2, LEDBoard(3, 4)) as board:
         with pytest.raises(ValueError):
             board.blink(fade_in_time=1, fade_out_time=1)
@@ -261,10 +296,10 @@ def test_led_board_bad_blink():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-def test_led_board_blink_background():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_background(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         # Instantiation takes a long enough time that it throws off our timing
         # here!
@@ -286,10 +321,10 @@ def test_led_board_blink_background():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-def test_led_board_blink_foreground():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_foreground(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -308,10 +343,10 @@ def test_led_board_blink_foreground():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-def test_led_board_blink_control():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_control(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -336,10 +371,10 @@ def test_led_board_blink_control():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-def test_led_board_blink_take_over():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_take_over(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -361,10 +396,10 @@ def test_led_board_blink_take_over():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-def test_led_board_blink_control_all():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_control_all(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -386,10 +421,10 @@ def test_led_board_blink_control_all():
         pin2.assert_states_and_times(test)
         pin3.assert_states_and_times(test)
 
-def test_led_board_blink_interrupt_on():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_interrupt_on(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         board.blink(1, 0.1)
         sleep(0.2)
@@ -398,10 +433,10 @@ def test_led_board_blink_interrupt_on():
         pin2.assert_states([False, True, False])
         pin3.assert_states([False, True, False])
 
-def test_led_board_blink_interrupt_off():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_blink_interrupt_off(mock_factory):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6)) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -415,11 +450,10 @@ def test_led_board_blink_interrupt_off():
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
-@needs_pwm
-def test_led_board_fade_background():
-    pin1 = Device.pin_factory.pin(4)
-    pin2 = Device.pin_factory.pin(5)
-    pin3 = Device.pin_factory.pin(6)
+def test_led_board_fade_background(mock_factory, pwm):
+    pin1 = mock_factory.pin(4)
+    pin2 = mock_factory.pin(5)
+    pin3 = mock_factory.pin(6)
     with LEDBoard(4, LEDBoard(5, 6, pwm=True), pwm=True) as board:
         pin1.clear_states()
         pin2.clear_states()
@@ -453,10 +487,10 @@ def test_led_board_fade_background():
         pin2.assert_states_and_times(test)
         pin3.assert_states_and_times(test)
 
-def test_led_bar_graph_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4) as graph:
         assert isinstance(graph[0], LED)
         assert isinstance(graph[1], LED)
@@ -498,10 +532,10 @@ def test_led_bar_graph_value():
         graph.lit_count = -3
         assert graph.value == 1
 
-def test_led_bar_graph_active_low():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_active_low(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4, active_high=False) as graph:
         assert not graph.active_high
         assert not graph[0].active_high
@@ -520,11 +554,10 @@ def test_led_bar_graph_active_low():
         assert graph.value == -1/3
         assert not pin3.state and pin1.state and pin2.state
 
-@needs_pwm
-def test_led_bar_graph_pwm_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_pwm_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4, pwm=True) as graph:
         assert isinstance(graph[0], PWMLED)
         assert isinstance(graph[1], PWMLED)
@@ -556,10 +589,10 @@ def test_led_bar_graph_pwm_value():
         graph.lit_count = 1.5
         assert graph.value == 0.5
 
-def test_led_bar_graph_bad_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_bad_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4) as graph:
         with pytest.raises(ValueError):
             graph.value = -2
@@ -570,10 +603,10 @@ def test_led_bar_graph_bad_value():
         with pytest.raises(ValueError):
             graph.lit_count = 4
 
-def test_led_bar_graph_bad_init():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_bad_init(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with pytest.raises(TypeError):
         LEDBarGraph(2, 3, foo=4)
     with pytest.raises(ValueError):
@@ -581,10 +614,10 @@ def test_led_bar_graph_bad_init():
     with pytest.raises(ValueError):
         LEDBarGraph(2, 3, 4, initial_value=2)
 
-def test_led_bar_graph_initial_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_initial_value(mock_factory):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4, initial_value=1/3) as graph:
         assert graph.value == 1/3
         assert pin1.state and not (pin2.state or pin3.state)
@@ -592,11 +625,10 @@ def test_led_bar_graph_initial_value():
         assert graph.value == -1/3
         assert pin3.state and not (pin1.state or pin2.state)
 
-@needs_pwm
-def test_led_bar_graph_pwm_initial_value():
-    pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(3)
-    pin3 = Device.pin_factory.pin(4)
+def test_led_bar_graph_pwm_initial_value(mock_factory, pwm):
+    pin1 = mock_factory.pin(2)
+    pin2 = mock_factory.pin(3)
+    pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4, pwm=True, initial_value=0.5) as graph:
         assert graph.value == 0.5
         assert (pin1.state, pin2.state, pin3.state) == (1, 0.5, 0)
@@ -604,29 +636,28 @@ def test_led_bar_graph_pwm_initial_value():
         assert graph.value == -0.5
         assert (pin1.state, pin2.state, pin3.state) == (0, 0.5, 1)
 
-@needs_pwm
-def test_led_borg():
-    pins = [Device.pin_factory.pin(n) for n in (17, 27, 22)]
+def test_led_borg(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (17, 27, 22)]
     with LedBorg() as board:
         assert [device.pin for device in board._leds] == pins
 
-def test_pi_liter():
-    pins = [Device.pin_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
+def test_pi_liter(mock_factory):
+    pins = [mock_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
     with PiLiter() as board:
         assert [device.pin for device in board] == pins
 
-def test_pi_liter_graph():
-    pins = [Device.pin_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
+def test_pi_liter_graph(mock_factory):
+    pins = [mock_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
     with PiLiterBarGraph() as board:
         board.value = 0.5
         assert [pin.state for pin in pins] == [1, 1, 1, 1, 0, 0, 0, 0]
         pins[4].state = 1
         assert board.value == 5/8
 
-def test_traffic_lights():
-    red_pin = Device.pin_factory.pin(2)
-    amber_pin = Device.pin_factory.pin(3)
-    green_pin = Device.pin_factory.pin(4)
+def test_traffic_lights(mock_factory):
+    red_pin = mock_factory.pin(2)
+    amber_pin = mock_factory.pin(3)
+    green_pin = mock_factory.pin(4)
     with TrafficLights(2, 3, 4) as board:
         board.red.on()
         assert board.red.value
@@ -652,55 +683,55 @@ def test_traffic_lights():
         board.amber.off()
         assert not amber_pin.state
 
-def test_traffic_lights_bad_init():
+def test_traffic_lights_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         TrafficLights()
     with pytest.raises(GPIOPinMissing):
         TrafficLights(2)
     with pytest.raises(GPIOPinMissing):
         TrafficLights(2, 3)
-    red_pin = Device.pin_factory.pin(2)
-    amber_pin = Device.pin_factory.pin(3)
-    green_pin = Device.pin_factory.pin(4)
-    yellow_pin = Device.pin_factory.pin(5)
+    red_pin = mock_factory.pin(2)
+    amber_pin = mock_factory.pin(3)
+    green_pin = mock_factory.pin(4)
+    yellow_pin = mock_factory.pin(5)
     with pytest.raises(ValueError):
         TrafficLights(red=2, amber=3, yellow=5, green=4)
 
-def test_pi_traffic():
-    pins = [Device.pin_factory.pin(n) for n in (9, 10, 11)]
+def test_pi_traffic(mock_factory):
+    pins = [mock_factory.pin(n) for n in (9, 10, 11)]
     with PiTraffic() as board:
         assert [device.pin for device in board] == pins
 
-def test_pi_stop():
+def test_pi_stop(mock_factory):
     with pytest.raises(ValueError):
         PiStop()
     with pytest.raises(ValueError):
         PiStop('E')
-    pins_a = [Device.pin_factory.pin(n) for n in (7, 8, 25)]
+    pins_a = [mock_factory.pin(n) for n in (7, 8, 25)]
     with PiStop('A') as board:
         assert [device.pin for device in board] == pins_a
-    pins_aplus = [Device.pin_factory.pin(n) for n in (21, 20, 16)]
+    pins_aplus = [mock_factory.pin(n) for n in (21, 20, 16)]
     with PiStop('A+') as board:
         assert [device.pin for device in board] == pins_aplus
-    pins_b = [Device.pin_factory.pin(n) for n in (10, 9, 11)]
+    pins_b = [mock_factory.pin(n) for n in (10, 9, 11)]
     with PiStop('B') as board:
         assert [device.pin for device in board] == pins_b
-    pins_bplus = [Device.pin_factory.pin(n) for n in (13, 19, 26)]
+    pins_bplus = [mock_factory.pin(n) for n in (13, 19, 26)]
     with PiStop('B+') as board:
         assert [device.pin for device in board] == pins_bplus
-    pins_c = [Device.pin_factory.pin(n) for n in (18, 15, 14)]
+    pins_c = [mock_factory.pin(n) for n in (18, 15, 14)]
     with PiStop('C') as board:
         assert [device.pin for device in board] == pins_c
-    pins_d = [Device.pin_factory.pin(n) for n in (2, 3, 4)]
+    pins_d = [mock_factory.pin(n) for n in (2, 3, 4)]
     with PiStop('D') as board:
         assert [device.pin for device in board] == pins_d
 
-def test_snow_pi():
-    pins = [Device.pin_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
+def test_snow_pi(mock_factory):
+    pins = [mock_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi() as board:
         assert [device.pin for device in board.leds] == pins
 
-def test_snow_pi_initial_value():
+def test_snow_pi_initial_value(mock_factory):
     with SnowPi() as board:
         assert all(device.pin.state == False for device in board.leds)
     with SnowPi(initial_value=False) as board:
@@ -710,17 +741,16 @@ def test_snow_pi_initial_value():
     with SnowPi(initial_value=0.5) as board:
         assert all(device.pin.state == True for device in board.leds)
 
-@needs_pwm
-def test_snow_pi_initial_value_pwm():
-    pins = [Device.pin_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
+def test_snow_pi_initial_value_pwm(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi(pwm=True, initial_value=0.5) as board:
         assert [device.pin for device in board.leds] == pins
         assert all(device.pin.state == 0.5 for device in board.leds)
 
-def test_pihut_xmas_tree():
+def test_pihut_xmas_tree(mock_factory):
     led_pins = (2, 4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
-    pins = [Device.pin_factory.pin(n) for n in led_pins]
+    pins = [mock_factory.pin(n) for n in led_pins]
     with PiHutXmasTree() as tree:
         assert [led.pin for led in tree.leds] == pins
         assert len(tree) == 25
@@ -728,7 +758,7 @@ def test_pihut_xmas_tree():
         assert isinstance(tree.led1, LED)
         assert isinstance(tree.led24, LED)
 
-def test_pihut_xmas_tree_init():
+def test_pihut_xmas_tree_init(mock_factory):
     with PiHutXmasTree(pwm=False) as tree:
         assert isinstance(tree.star, LED)
         assert isinstance(tree.led1, LED)
@@ -736,8 +766,7 @@ def test_pihut_xmas_tree_init():
     with PiHutXmasTree(initial_value=True) as tree:
         assert all(led.value for led in tree)
 
-@needs_pwm
-def test_pihut_xmas_tree_pwm():
+def test_pihut_xmas_tree_pwm(mock_factory, pwm):
     with PiHutXmasTree(pwm=True) as tree:
         assert isinstance(tree.star, PWMLED)
         assert isinstance(tree.led1, PWMLED)
@@ -745,7 +774,7 @@ def test_pihut_xmas_tree_pwm():
     with PiHutXmasTree(pwm=True, initial_value=0.5) as tree:
         assert all(led.value == 0.5 for led in tree)
 
-def test_pihut_xmas_tree_leds():
+def test_pihut_xmas_tree_leds(mock_factory):
     with PiHutXmasTree() as tree:
         tree.star.on()
         assert sum(tree.value) == 1
@@ -758,12 +787,12 @@ def test_pihut_xmas_tree_leds():
         tree.toggle()
         assert sum(tree.value) == 25
 
-def test_traffic_lights_buzzer():
-    red_pin = Device.pin_factory.pin(2)
-    amber_pin = Device.pin_factory.pin(3)
-    green_pin = Device.pin_factory.pin(4)
-    buzzer_pin = Device.pin_factory.pin(5)
-    button_pin = Device.pin_factory.pin(6)
+def test_traffic_lights_buzzer(mock_factory):
+    red_pin = mock_factory.pin(2)
+    amber_pin = mock_factory.pin(3)
+    green_pin = mock_factory.pin(4)
+    buzzer_pin = mock_factory.pin(5)
+    button_pin = mock_factory.pin(6)
     with TrafficLightsBuzzer(
             TrafficLights(2, 3, 4),
             Buzzer(5),
@@ -776,18 +805,29 @@ def test_traffic_lights_buzzer():
         assert buzzer_pin.state
         button_pin.drive_low()
         assert board.button.is_active
+        board.toggle()
+        assert not red_pin.state
+        assert amber_pin.state
+        assert green_pin.state
+        assert not buzzer_pin.state
+        assert board.value == ((0, 1, 1), 0, 1)
+        board.value = ((0, 0, 0), 1, 0)
+        assert not red_pin.state
+        assert not amber_pin.state
+        assert not green_pin.state
+        assert buzzer_pin.state
 
-def test_fish_dish():
-    pins = [Device.pin_factory.pin(n) for n in (9, 22, 4, 8, 7)]
+def test_fish_dish(mock_factory):
+    pins = [mock_factory.pin(n) for n in (9, 22, 4, 8, 7)]
     with FishDish() as board:
         assert [led.pin for led in board.lights] + [board.buzzer.pin, board.button.pin] == pins
 
-def test_traffic_hat():
-    pins = [Device.pin_factory.pin(n) for n in (24, 23, 22, 5, 25)]
+def test_traffic_hat(mock_factory):
+    pins = [mock_factory.pin(n) for n in (24, 23, 22, 5, 25)]
     with TrafficHat() as board:
         assert [led.pin for led in board.lights] + [board.buzzer.pin, board.button.pin] == pins
 
-def test_robot_bad_init():
+def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         Robot()
     with pytest.raises(GPIOPinMissing):
@@ -805,9 +845,8 @@ def test_robot_bad_init():
     with pytest.raises(GPIOPinMissing):
         Robot((2, 3), 4)
 
-@needs_pwm
-def test_robot():
-    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
+def test_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4, 5)]
     def check_pins_and_value(robot, expected_value):
         # Ensure both forward and back pins aren't both driven simultaneously
         assert pins[0].state == 0 or pins[1].state == 0
@@ -913,7 +952,7 @@ def test_robot():
         with pytest.raises(TypeError):
             robot.forward(curveleft=1)
         with pytest.raises(TypeError):
-            robot.forward(curveright=1)
+            robot.backward(curveleft=1)
         robot.left()
         check_pins_and_value(robot, (-1, 1))
         robot.left(0)
@@ -951,8 +990,7 @@ def test_robot():
         robot.value = (0, -0.5)
         check_pins_and_value(robot, (0, -0.5))
 
-@needs_pwm
-def test_robots():
+def test_robots(mock_factory, pwm):
     with RyanteckRobot() as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -978,8 +1016,8 @@ def test_robots():
         assert isinstance(right_motor.phase_device, DigitalOutputDevice)
         assert isinstance(right_motor.enable_device, PWMOutputDevice)
 
-def test_robot_nopwm():
-    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5)]
+def test_robot_nopwm(mock_factory):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4, 5)]
     with Robot((2, 3), (4, 5), pwm=False) as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -993,7 +1031,7 @@ def test_robot_nopwm():
         assert right_motor.backward_device.pin is pins[3]
         assert isinstance(right_motor.backward_device, DigitalOutputDevice)
 
-def test_robots_nopwm():
+def test_robots_nopwm(mock_factory):
     with RyanteckRobot(pwm=False) as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -1019,9 +1057,8 @@ def test_robots_nopwm():
         assert isinstance(right_motor.phase_device, DigitalOutputDevice)
         assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
-@needs_pwm
-def test_enable_pin_motor_robot():
-    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+def test_enable_pin_motor_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
     with Robot((2, 3, 4), (5, 6, 7)) as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -1039,8 +1076,8 @@ def test_enable_pin_motor_robot():
         assert right_motor.enable_device.pin is pins[5]
         assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
-def test_enable_pin_motor_robot_nopwm():
-    pins = [Device.pin_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
+def test_enable_pin_motor_robot_nopwm(mock_factory):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4, 5, 6, 7)]
     with Robot((2, 3, 4), (5, 6, 7), pwm=False) as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -1058,9 +1095,26 @@ def test_enable_pin_motor_robot_nopwm():
         assert right_motor.enable_device.pin is pins[5]
         assert isinstance(right_motor.enable_device, DigitalOutputDevice)
 
-@needs_pwm
-def test_phaseenable_robot():
-    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+def test_phaseenable_robot_bad_init(mock_factory):
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot()
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot(2)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot(2, 3)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot(2, 3, 4)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot(2, 3, 4, 5)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot(2, 3, 4, 5, 6, 7)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot((2, 3))
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableRobot((2, 3), 4)
+
+def test_phaseenable_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (5, 12, 6, 13)]
     with PhaseEnableRobot((5, 12), (6, 13)) as robot:
         assert (
             [device.pin for device in robot.left_motor] +
@@ -1094,25 +1148,22 @@ def test_phaseenable_robot():
         robot.value = (0, -0.5)
         assert robot.value == (0, -0.5)
 
-@needs_pwm
-def test_ryanteck_robot():
-    pins = [Device.pin_factory.pin(n) for n in (17, 18, 22, 23)]
+def test_ryanteck_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (17, 18, 22, 23)]
     with RyanteckRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
-@needs_pwm
-def test_camjam_kit_robot():
-    pins = [Device.pin_factory.pin(n) for n in (9, 10, 7, 8)]
+def test_camjam_kit_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (9, 10, 7, 8)]
     with CamJamKitRobot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
-@needs_pwm
-def test_pololudrv8835_robot():
-    pins = [Device.pin_factory.pin(n) for n in (5, 12, 6, 13)]
+def test_pololudrv8835_robot(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (5, 12, 6, 13)]
     with PololuDRV8835Robot() as board:
         assert [device.pin for motor in board for device in motor] == pins
 
-def test_energenie_bad_init():
+def test_energenie_bad_init(mock_factory):
     with pytest.raises(ValueError):
         Energenie()
     with pytest.raises(ValueError):
@@ -1120,8 +1171,8 @@ def test_energenie_bad_init():
     with pytest.raises(ValueError):
         Energenie(5)
 
-def test_energenie():
-    pins = [Device.pin_factory.pin(n) for n in (17, 22, 23, 27, 24, 25)]
+def test_energenie(mock_factory):
+    pins = [mock_factory.pin(n) for n in (17, 22, 23, 27, 24, 25)]
     with Energenie(1, initial_value=True) as device1, \
             Energenie(2, initial_value=False) as device2:
         assert repr(device1) == '<gpiozero.Energenie object on socket 1>'
@@ -1151,7 +1202,7 @@ def test_energenie():
         device1.close()
         assert repr(device1) == '<gpiozero.Energenie object closed>'
 
-def test_statuszero_init():
+def test_statuszero_init(mock_factory):
     with StatusZero() as sz:
         assert sz.namedtuple._fields == ('one', 'two', 'three')
     with StatusZero('a') as sz:
@@ -1169,7 +1220,7 @@ def test_statuszero_init():
     with pytest.raises(ValueError):
         StatusZero('foo', 'foo')
 
-def test_statuszero():
+def test_statuszero(mock_factory):
     with StatusZero() as sz:
         assert isinstance(sz.one, LEDBoard)
         assert isinstance(sz.two, LEDBoard)
@@ -1182,8 +1233,7 @@ def test_statuszero():
         sz.one.green.off()
         assert sz.one.value == (True, False)
 
-@needs_pwm
-def test_statuszero_kwargs():
+def test_statuszero_kwargs(mock_factory, pwm):
     with StatusZero(pwm=True, initial_value=True) as sz:
         assert isinstance(sz.one, LEDBoard)
         assert isinstance(sz.two, LEDBoard)
@@ -1194,14 +1244,14 @@ def test_statuszero_kwargs():
         sz.off()
         assert sz.value == ((0, 0), (0, 0), (0, 0))
 
-def test_statuszero_named():
+def test_statuszero_named(mock_factory):
     with StatusZero('a') as sz:
         assert isinstance(sz.a, LEDBoard)
         assert isinstance(sz.a.red, LED)
         with pytest.raises(AttributeError):
             sz.one
 
-def test_statusboard_init():
+def test_statusboard_init(mock_factory):
     with StatusBoard() as sb:
         assert sb.namedtuple._fields == ('one', 'two', 'three', 'four', 'five')
     with StatusBoard('a') as sb:
@@ -1219,7 +1269,7 @@ def test_statusboard_init():
     with pytest.raises(ValueError):
         StatusBoard('foo', 'foo')
 
-def test_statusboard():
+def test_statusboard(mock_factory):
     with StatusBoard() as sb:
         assert isinstance(sb.one, CompositeOutputDevice)
         assert isinstance(sb.two, CompositeOutputDevice)
@@ -1238,8 +1288,7 @@ def test_statusboard():
         sb.one.lights.green.off()
         assert sb.one.value == (False, (True, False))
 
-@needs_pwm
-def test_statusboard_kwargs():
+def test_statusboard_kwargs(mock_factory, pwm):
     with StatusBoard(pwm=True, initial_value=True) as sb:
         assert isinstance(sb.one, CompositeOutputDevice)
         assert isinstance(sb.two, CompositeOutputDevice)
@@ -1254,7 +1303,7 @@ def test_statusboard_kwargs():
         assert sb.value == ((False, (0, 0)), (False, (0, 0)), (False, (0, 0)),
                             (False, (0, 0)), (False, (0, 0)))
 
-def test_statusboard_named():
+def test_statusboard_named(mock_factory):
     with StatusBoard('a') as sb:
         assert isinstance(sb.a, CompositeOutputDevice)
         assert isinstance(sb.a.button, Button)

@@ -17,13 +17,7 @@ from time import sleep
 import pytest
 import pkg_resources
 
-from gpiozero import (
-    PinFixedPull,
-    PinInvalidPull,
-    PinInvalidFunction,
-    PinPWMUnsupported,
-    Device,
-    )
+from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory
 try:
     from math import isclose
@@ -39,23 +33,42 @@ TEST_PIN = int(os.getenv('GPIOZERO_TEST_PIN', '22'))
 INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
 
 
-@pytest.yield_fixture(
+@pytest.fixture(
     scope='module',
     params=[
         name
-        for name in pkg_resources.get_distribution('gpiozero').get_entry_map('gpiozero_pin_factories').keys()
+        for name in pkg_resources.\
+            get_distribution('gpiozero').\
+            get_entry_map('gpiozero_pin_factories').keys()
         if not name.endswith('Pin') # leave out compatibility names
     ])
-def pin_factory(request):
-    try:
-        factory = pkg_resources.load_entry_point('gpiozero', 'gpiozero_pin_factories', request.param)()
-    except Exception as e:
-        pytest.skip("skipped factory %s: %s" % (request.param, str(e)))
-    else:
-        Device.pin_factory = factory
-        yield factory
-        Device.pin_factory = MockFactory()
+def pin_factory_name(request):
+    return request.param
 
+@pytest.yield_fixture()
+def pin_factory(request, pin_factory_name):
+    try:
+        factory = pkg_resources.load_entry_point(
+            'gpiozero', 'gpiozero_pin_factories', pin_factory_name)()
+    except Exception as e:
+        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+    else:
+        yield factory
+        factory.close()
+
+@pytest.yield_fixture()
+def default_factory(request, pin_factory):
+    save_pin_factory = Device.pin_factory
+    Device.pin_factory = pin_factory
+    yield pin_factory
+    Device.pin_factory = save_pin_factory
+
+@pytest.yield_fixture()
+def no_default_factory(request):
+    save_pin_factory = Device.pin_factory
+    Device.pin_factory = None
+    yield None
+    Device.pin_factory = save_pin_factory
 
 @pytest.yield_fixture(scope='function')
 def pins(request, pin_factory):
@@ -65,7 +78,7 @@ def pins(request, pin_factory):
     input_pin = pin_factory.pin(INPUT_PIN)
     input_pin.function = 'input'
     input_pin.pull = 'down'
-    if pin_factory.__class__.__name__ == 'MockFactory':
+    if isinstance(pin_factory, MockFactory):
         test_pin = pin_factory.pin(TEST_PIN, pin_class=MockConnectedPin, input_pin=input_pin)
     else:
         test_pin = pin_factory.pin(TEST_PIN)
@@ -175,3 +188,15 @@ def test_duty_cycles(pins):
         finally:
             test_pin.frequency = None
 
+def test_explicit_factory(no_default_factory, pin_factory):
+    with GPIODevice(TEST_PIN, pin_factory=pin_factory) as device:
+        assert Device.pin_factory is None
+        assert device.pin_factory is pin_factory
+        assert device.pin.number == TEST_PIN
+
+def test_default_factory(no_default_factory, pin_factory_name):
+    os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
+    with GPIODevice(TEST_PIN) as device:
+        assert Device.pin_factory is not None
+        assert Device.pin_factory is device.pin_factory
+        assert device.pin.number == TEST_PIN

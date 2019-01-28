@@ -6,20 +6,16 @@ from __future__ import (
     )
 str = type('')
 
+import os
 import warnings
 
 import pytest
 
 from gpiozero import *
+from gpiozero.pins.mock import MockFactory
 
 
-def teardown_function(function):
-    Device.pin_factory.reset()
-
-
-# TODO add more devices tests!
-
-def test_device_bad_pin():
+def test_device_bad_pin(mock_factory):
     with pytest.raises(GPIOPinMissing):
         device = GPIODevice()
     with pytest.raises(PinInvalidPin):
@@ -37,42 +33,44 @@ def test_device_bad_pin():
     with pytest.raises(PinInvalidPin):
         device = GPIODevice('foo')
 
-def test_device_non_physical():
+def test_device_non_physical(mock_factory):
     with warnings.catch_warnings(record=True) as w:
         device = GPIODevice('GPIO37')
         assert len(w) == 1
         assert w[0].category == PinNonPhysical
 
-def test_device_init():
-    pin = Device.pin_factory.pin(2)
+def test_device_init(mock_factory):
+    pin = mock_factory.pin(2)
     with GPIODevice(2) as device:
         assert not device.closed
-        assert device.pin == pin
+        assert device.pin is pin
+    with pytest.raises(TypeError):
+        GPIODevice(2, foo='bar')
 
-def test_device_init_twice_same_pin():
+def test_device_init_twice_same_pin(mock_factory):
     with GPIODevice(2) as device:
         with pytest.raises(GPIOPinInUse):
             GPIODevice(2)
 
-def test_device_init_twice_same_pin_different_spec():
+def test_device_init_twice_same_pin_different_spec(mock_factory):
     with GPIODevice(2) as device:
         with pytest.raises(GPIOPinInUse):
             GPIODevice("BOARD3")
 
-def test_device_init_twice_different_pin():
+def test_device_init_twice_different_pin(mock_factory):
     with GPIODevice(2) as device:
         with GPIODevice(3) as device2:
             pass
 
-def test_device_close():
+def test_device_close(mock_factory):
     device = GPIODevice(2)
     # Don't use "with" here; we're testing close explicitly
     device.close()
     assert device.closed
     assert device.pin is None
 
-def test_device_reopen_same_pin():
-    pin = Device.pin_factory.pin(2)
+def test_device_reopen_same_pin(mock_factory):
+    pin = mock_factory.pin(2)
     with GPIODevice(2) as device:
         pass
     with GPIODevice(2) as device2:
@@ -81,9 +79,9 @@ def test_device_reopen_same_pin():
         assert device.closed
         assert device.pin is None
 
-def test_device_pin_parsing():
+def test_device_pin_parsing(mock_factory):
     # MockFactory defaults to a Pi 2B layout
-    pin = Device.pin_factory.pin(2)
+    pin = mock_factory.pin(2)
     with GPIODevice('GPIO2') as device:
         assert device.pin is pin
     with GPIODevice('BCM2') as device:
@@ -95,47 +93,43 @@ def test_device_pin_parsing():
     with GPIODevice('J8:3') as device:
         assert device.pin is pin
 
-def test_device_repr():
+def test_device_repr(mock_factory):
     with GPIODevice(4) as device:
-        assert repr(device) == '<gpiozero.GPIODevice object on pin %s, is_active=False>' % device.pin
+        assert repr(device) == (
+            '<gpiozero.GPIODevice object on pin %s, '
+            'is_active=False>' % device.pin)
 
-def test_device_repr_after_close():
+def test_device_repr_after_close(mock_factory):
     with GPIODevice(2) as device:
         pass
     assert repr(device) == '<gpiozero.GPIODevice object closed>'
 
-def test_device_unknown_attr():
+def test_device_unknown_attr(mock_factory):
     with GPIODevice(2) as device:
         with pytest.raises(AttributeError):
             device.foo = 1
 
-def test_device_context_manager():
+def test_device_context_manager(mock_factory):
     with GPIODevice(2) as device:
         assert not device.closed
     assert device.closed
 
-def test_composite_device_sequence():
-    with CompositeDevice(
-            InputDevice(4),
-            InputDevice(5)
-            ) as device:
+def test_composite_device_sequence(mock_factory):
+    with CompositeDevice(InputDevice(4), InputDevice(5)) as device:
         assert len(device) == 2
         assert device[0].pin.number == 4
         assert device[1].pin.number == 5
         assert device.namedtuple._fields == ('device_0', 'device_1')
 
-def test_composite_device_values():
-    with CompositeDevice(
-            InputDevice(4),
-            InputDevice(5)
-            ) as device:
+def test_composite_device_values(mock_factory):
+    with CompositeDevice(InputDevice(4), InputDevice(5)) as device:
         assert device.value == (0, 0)
         assert not device.is_active
         device[0].pin.drive_high()
         assert device.value == (1, 0)
         assert device.is_active
 
-def test_composite_device_named():
+def test_composite_device_named(mock_factory):
     with CompositeDevice(
             foo=InputDevice(4),
             bar=InputDevice(5),
@@ -145,7 +139,7 @@ def test_composite_device_named():
         assert device.value == (0, 0)
         assert not device.is_active
 
-def test_composite_device_bad_init():
+def test_composite_device_bad_init(mock_factory):
     with pytest.raises(ValueError):
         CompositeDevice(foo=1, bar=2, _order=('foo',))
     with pytest.raises(ValueError):
@@ -153,13 +147,9 @@ def test_composite_device_bad_init():
     with pytest.raises(ValueError):
         CompositeDevice(2)
     with pytest.raises(ValueError):
-        CompositeDevice(Device.pin_factory.pin(2))
+        CompositeDevice(mock_factory.pin(2))
 
-def test_composite_device_read_only():
-    with CompositeDevice(
-        foo=InputDevice(4),
-        bar=InputDevice(5)
-        ) as device:
+def test_composite_device_read_only(mock_factory):
+    with CompositeDevice(foo=InputDevice(4), bar=InputDevice(5)) as device:
         with pytest.raises(AttributeError):
             device.foo = 1
-

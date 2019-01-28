@@ -7,11 +7,32 @@ from __future__ import (
 str = type('')
 
 
+import gc
 import pytest
 import random
+import weakref
 
 from gpiozero.compat import *
 
+
+def test_frozendict():
+    d = {1: 'a', 2: 'b'}
+    e = {1: 'a', 2: 'b', 'foo': 'bar'}
+    f = frozendict(d)
+    assert f[1] == 'a'
+    assert f[2] == 'b'
+    with pytest.raises(KeyError):
+        f[3]
+    with pytest.raises(TypeError):
+        f[3] = 'c'
+    assert d == f
+    assert d == f.copy()
+    assert e == f.copy(foo='bar')
+    assert len(f) == 2
+    assert {k: v for k, v in f.items()} == d
+    h = hash(f)
+    assert h is not None
+    assert hash(f) == h
 
 # ported from the official test cases; see
 # https://github.com/python/cpython/blob/master/Lib/test/test_math.py for original
@@ -147,3 +168,165 @@ def test_median_empty():
     with pytest.raises(ValueError):
         median(())
 
+# ported from the official test cases; see
+# https://github.com/python/cpython/blob/master/Lib/test/test_weakref.py for
+# original
+
+class Object(object):
+    def __init__(self, arg):
+        self.arg = arg
+    def __repr__(self):
+        return "<Object %r>" % self.arg
+    def __eq__(self, other):
+        if isinstance(other, Object):
+            return self.arg == other.arg
+        return NotImplemented
+    def __ne__(self, other):
+        if isinstance(other, Object):
+            return self.arg != other.arg
+        return NotImplemented
+    def __lt__(self, other):
+        if isinstance(other, Object):
+            return self.arg < other.arg
+        return NotImplemented
+    def __hash__(self):
+        return hash(self.arg)
+    def some_method(self):
+        return 4
+    def other_method(self):
+        return 5
+
+@pytest.fixture()
+def subclass(request):
+    class C(Object):
+        def some_method(self):
+            return 6
+    return C
+
+
+def test_weakmethod_alive():
+    o = Object(1)
+    r = WeakMethod(o.some_method)
+    assert isinstance(r, weakref.ReferenceType)
+    assert isinstance(r(), type(o.some_method))
+    assert r().__self__ is o
+    assert r().__func__ is o.some_method.__func__
+    assert r()() == 4
+
+def test_weakmethod_object_dead():
+    o = Object(1)
+    r = WeakMethod(o.some_method)
+    del o
+    gc.collect()
+    assert r() is None
+
+def test_weakmethod_method_dead(subclass):
+    o = subclass(1)
+    r = WeakMethod(o.some_method)
+    del subclass.some_method
+    gc.collect()
+    assert r() is None
+
+def test_weakmethod_callback_when_object_dead(subclass):
+    calls = []
+    def cb(arg):
+        calls.append(arg)
+    o = subclass(1)
+    r = WeakMethod(o.some_method, cb)
+    del o
+    gc.collect()
+    assert calls == [r]
+    # Callback is only called once
+    subclass.some_method = Object.some_method
+    gc.collect()
+    assert calls == [r]
+
+def test_weakmethod_callback_when_method_dead(subclass):
+    calls = []
+    def cb(arg):
+        calls.append(arg)
+    o = subclass(1)
+    r = WeakMethod(o.some_method, cb)
+    del subclass.some_method
+    gc.collect()
+    assert calls == [r]
+    # Callback is only called once
+    del o
+    gc.collect()
+    assert calls == [r]
+
+def test_weakmethod_no_cycles():
+    o = Object(1)
+    def cb(_):
+        pass
+    r = WeakMethod(o.some_method, cb)
+    wr = weakref.ref(r)
+    del r
+    assert wr() is None
+
+def test_weakmethod_equality():
+    def _eq(a, b):
+        assert a == b
+        assert not (a != b)
+    def _ne(a, b):
+        assert not (a == b)
+        assert a != b
+    x = Object(1)
+    y = Object(1)
+    a = WeakMethod(x.some_method)
+    b = WeakMethod(y.some_method)
+    c = WeakMethod(x.other_method)
+    d = WeakMethod(y.other_method)
+    # Objects equal, same method
+    _eq(a, b)
+    _eq(c, d)
+    # Objects equal, different method
+    _ne(a, c)
+    _ne(a, d)
+    _ne(b, c)
+    _ne(b, d)
+    # Objects unequal, same or different method
+    z = Object(2)
+    e = WeakMethod(z.some_method)
+    f = WeakMethod(z.other_method)
+    _ne(a, e)
+    _ne(a, f)
+    _ne(b, e)
+    _ne(b, f)
+    del x, y, z
+    gc.collect()
+    # Dead WeakMethods compare by identity
+    refs = a, b, c, d, e, f
+    for q in refs:
+        for r in refs:
+            assert (q == r) == (q is r)
+            assert (q != r) == (q is not r)
+
+def test_weakmethod_hashing():
+    x = Object(1)
+    y = Object(1)
+    a = WeakMethod(x.some_method)
+    b = WeakMethod(y.some_method)
+    c = WeakMethod(y.other_method)
+    # Since WeakMethod objects are equal, the hashes should be equal
+    assert hash(a) == hash(b)
+    ha = hash(a)
+    # Dead WeakMethods retain their old hash value
+    del x, y
+    gc.collect()
+    assert hash(a) == ha
+    assert hash(b) == ha
+    # If it wasn't hashed when alive, a dead WeakMethod cannot be hashed
+    with pytest.raises(TypeError):
+        hash(c)
+
+def test_weakmethod_bad_method():
+    with pytest.raises(TypeError):
+        WeakMethod('foo')
+
+def test_weakmethod_other_equality():
+    x = Object(1)
+    a = WeakMethod(x.some_method)
+    b = WeakMethod(x.other_method)
+    assert not a == 1
+    assert a != 1
