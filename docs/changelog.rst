@@ -21,7 +21,7 @@ Release 1.5.0 (unreleased)
 * Added support for various pin numbering mechanisms. (`#470`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
-* Allow non-PWM use of :class:`Robot`). (`#481`_)
+* Allow non-PWM use of :class:`Robot`. (`#481`_)
 * Added optional ``enable`` init param to :class:`Motor`. (`#366`_)
 * Added ``--xyz`` option to :program:`pinout` command line tool to open
   `pinout.xyz`_ in a web browser. (`#604`_)
