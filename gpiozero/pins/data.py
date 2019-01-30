@@ -863,6 +863,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     12: 'Zero W',
                     13:  '3B+',
                     14:  '3A+',
+                    16: 'CM3+',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -903,12 +904,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': '2017Q1',
                     '3B+':    '2018Q1',
                     '3A+':    '2018Q4',
+                    'CM3+':   '2019Q1',
                     }.get(model, 'Unknown')
                 storage = {
-                    'A':   'SD',
-                    'B':   'SD',
-                    'CM':  'eMMC',
-                    'CM3': 'eMMC / off-board',
+                    'A':    'SD',
+                    'B':    'SD',
+                    'CM':   'eMMC',
+                    'CM3':  'eMMC / off-board',
+                    'CM3+': 'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
                     'A':      1,
@@ -916,9 +919,10 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero':   1,
                     'Zero W': 1,
                     'B':      2,
-                    'CM':     0,
+                    'CM':     1,
                     'CM3':    1,
                     '3A+':    1,
+                    'CM3+':   1,
                     }.get(model, 4)
                 ethernet = {
                     'A':      0,
@@ -928,6 +932,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':     0,
                     'CM3':    0,
                     '3A+':    0,
+                    'CM3+':   0,
                     }.get(model, 1)
                 wifi = {
                     '3B':     True,
@@ -946,26 +951,31 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': 1,
                     'CM':     2,
                     'CM3':    2,
+                    'CM3+':   2,
                     }.get(model, 1)
                 dsi = {
                     'Zero':   0,
                     'Zero W': 0,
+                    'CM3':    2,
+                    'CM3+':   2,
                     }.get(model, csi)
                 headers = {
-                    'A':   {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':   {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
-                    'CM':  {'SODIMM': CM_SODIMM},
-                    'CM3': {'SODIMM': CM3_SODIMM},
+                    'A':    {'P1': REV2_P1, 'P5': REV2_P5},
+                    'B':    {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                    'CM':   {'SODIMM': CM_SODIMM},
+                    'CM3':  {'SODIMM': CM3_SODIMM},
+                    'CM3+': {'SODIMM': CM3_SODIMM},
                     }.get(model, {'J8': PLUS_J8})
                 board = {
                     'A':      A_BOARD,
                     'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
                     'A+':     APLUS_BOARD,
                     'CM':     CM_BOARD,
-                    'CM3':    CM_BOARD,
+                    'CM3':    CM_BOARD.replace('Compute Module  ', 'Compute Module 3'),
                     'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     'Zero W': ZERO13_BOARD,
                     '3A+':    APLUS_BOARD,
+                    'CM3+':   CM_BOARD.replace('Compute Module   ', 'Compute Module 3+'),
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
@@ -1263,4 +1273,3 @@ def pi_info(revision=None):
             # be nice to people passing an int (or something numeric anyway)
             revision = int(revision)
         return PiBoardInfo.from_revision(revision)
-
