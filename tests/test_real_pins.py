@@ -193,10 +193,3 @@ def test_explicit_factory(no_default_factory, pin_factory):
         assert Device.pin_factory is None
         assert device.pin_factory is pin_factory
         assert device.pin.number == TEST_PIN
-
-def test_default_factory(no_default_factory, pin_factory_name):
-    os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
-    with GPIODevice(TEST_PIN) as device:
-        assert Device.pin_factory is not None
-        assert Device.pin_factory is device.pin_factory
-        assert device.pin.number == TEST_PIN

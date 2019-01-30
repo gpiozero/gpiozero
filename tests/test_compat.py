@@ -8,6 +8,7 @@ str = type('')
 
 
 import gc
+import sys
 import pytest
 import random
 import weakref
@@ -220,6 +221,7 @@ def test_weakmethod_object_dead():
     gc.collect()
     assert r() is None
 
+@pytest.mark.xfail(sys.version_info[:2] == (3, 2), reason='fails on py3.2')
 def test_weakmethod_method_dead(subclass):
     o = subclass(1)
     r = WeakMethod(o.some_method)
@@ -241,6 +243,7 @@ def test_weakmethod_callback_when_object_dead(subclass):
     gc.collect()
     assert calls == [r]
 
+@pytest.mark.xfail(sys.version_info[:2] == (3, 2), reason='fails on py3.2')
 def test_weakmethod_callback_when_method_dead(subclass):
     calls = []
     def cb(arg):

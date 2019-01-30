@@ -24,6 +24,6 @@ def mock_factory(request):
     Device.pin_factory.reset()
     Device.pin_factory = save_factory
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def pwm(request, mock_factory):
     mock_factory.pin_class = MockPWMPin
