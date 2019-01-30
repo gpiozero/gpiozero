@@ -956,6 +956,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 dsi = {
                     'Zero':   0,
                     'Zero W': 0,
+                    'CM':     2,
                     'CM3':    2,
                     'CM3+':   2,
                     }.get(model, csi)
