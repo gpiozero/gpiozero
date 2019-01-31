@@ -193,3 +193,36 @@ def test_explicit_factory(no_default_factory, pin_factory):
         assert Device.pin_factory is None
         assert device.pin_factory is pin_factory
         assert device.pin.number == TEST_PIN
+
+def test_envvar_factory(no_default_factory, pin_factory_name):
+    os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
+    assert Device.pin_factory is None
+    try:
+        device = GPIODevice(TEST_PIN)
+    except Exception as e:
+        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+    else:
+        try:
+            group = 'gpiozero_pin_factories'
+            for factory in pkg_resources.iter_entry_points(group, pin_factory_name):
+                factory_class = factory.load()
+            assert isinstance(Device.pin_factory, factory_class)
+            assert device.pin_factory is Device.pin_factory
+            assert device.pin.number == TEST_PIN
+        finally:
+            device.close()
+            Device.pin_factory.close()
+
+def test_default_factory(no_default_factory):
+    assert Device.pin_factory is None
+    try:
+        device = GPIODevice(TEST_PIN)
+    except Exception as e:
+        pytest.skip("no default factories")
+    else:
+        try:
+            assert device.pin_factory is Device.pin_factory
+            assert device.pin.number == TEST_PIN
+        finally:
+            device.close()
+            Device.pin_factory.close()
