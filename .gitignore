@@ -25,7 +25,7 @@ get-pip.py
 
 # Unit test / coverage reports
 coverage
-.coverage
+.coverage*
 .tox
 .cache
 .pytest_cache
