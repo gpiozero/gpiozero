@@ -109,6 +109,12 @@ def test_device_unknown_attr(mock_factory):
         with pytest.raises(AttributeError):
             device.foo = 1
 
+def test_device_broken_attr(mock_factory):
+    with GPIODevice(2) as device:
+        del device._active_state
+        with pytest.raises(AttributeError):
+            device.value
+
 def test_device_context_manager(mock_factory):
     with GPIODevice(2) as device:
         assert not device.closed
@@ -153,3 +159,12 @@ def test_composite_device_read_only(mock_factory):
     with CompositeDevice(foo=InputDevice(4), bar=InputDevice(5)) as device:
         with pytest.raises(AttributeError):
             device.foo = 1
+
+def test_shutdown(mock_factory):
+    from gpiozero.devices import _shutdown
+    ds = DistanceSensor(17, 19)
+    f = Device.pin_factory
+    _shutdown()
+    assert ds.closed
+    assert not f.pins
+    assert Device.pin_factory is None

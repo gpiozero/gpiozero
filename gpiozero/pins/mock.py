@@ -417,10 +417,12 @@ class MockFactory(LocalPiFactory):
     by the :meth:`pin` method by default. This can be changed after
     construction by modifying the :attr:`pin_class` attribute.
     """
-    def __init__(
-            self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a02082'),
-            pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
+    def __init__(self, revision=None, pin_class=None):
         super(MockFactory, self).__init__()
+        if revision is None:
+            revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
+        if pin_class is None:
+            pin_class = os.environ.get('GPIOZERO_MOCK_PIN_CLASS', MockPin)
         self._revision = revision
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')

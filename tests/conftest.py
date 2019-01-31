@@ -21,7 +21,8 @@ def mock_factory(request):
     # This reset() may seem redundant given we're re-constructing the factory
     # for each function that requires is but MockFactory (via LocalFactory)
     # stores some info at the class level which reset() clears.
-    Device.pin_factory.reset()
+    if Device.pin_factory is not None:
+        Device.pin_factory.reset()
     Device.pin_factory = save_factory
 
 @pytest.fixture()

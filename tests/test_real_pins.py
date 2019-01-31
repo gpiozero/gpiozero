@@ -19,6 +19,7 @@ import pkg_resources
 
 from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory
+from gpiozero.pins.native import NativeFactory
 try:
     from math import isclose
 except ImportError:
@@ -29,8 +30,8 @@ except ImportError:
 # can be re-configured via the listed environment variables (useful for when
 # your testing rig requires different pins because the defaults interfere with
 # attached hardware).
-TEST_PIN = int(os.getenv('GPIOZERO_TEST_PIN', '22'))
-INPUT_PIN = int(os.getenv('GPIOZERO_TEST_INPUT_PIN', '27'))
+TEST_PIN = int(os.environ.get('GPIOZERO_TEST_PIN', '22'))
+INPUT_PIN = int(os.environ.get('GPIOZERO_TEST_INPUT_PIN', '27'))
 
 
 @pytest.fixture(
@@ -213,8 +214,31 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             device.close()
             Device.pin_factory.close()
 
+def test_compatibility_names(no_default_factory):
+    os.environ['GPIOZERO_PIN_FACTORY'] = 'NATIVE'
+    try:
+        device = GPIODevice(TEST_PIN)
+    except Exception as e:
+        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+    else:
+        try:
+            assert isinstance(Device.pin_factory, NativeFactory)
+            assert device.pin_factory is Device.pin_factory
+            assert device.pin.number == TEST_PIN
+        finally:
+            device.close()
+            Device.pin_factory.close()
+
+def test_bad_factory(no_default_factory):
+    os.environ['GPIOZERO_PIN_FACTORY'] = 'foobarbaz'
+    # Waits for someone to implement the foobarbaz pin factory just to
+    # mess with our tests ...
+    with pytest.raises(BadPinFactory):
+        GPIODevice(TEST_PIN)
+
 def test_default_factory(no_default_factory):
     assert Device.pin_factory is None
+    os.environ.pop('GPIOZERO_PIN_FACTORY', None)
     try:
         device = GPIODevice(TEST_PIN)
     except Exception as e:
