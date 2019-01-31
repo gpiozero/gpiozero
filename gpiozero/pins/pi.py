@@ -131,14 +131,6 @@ class PiFactory(Factory):
                             'failed to initialize hardware SPI, falling back to '
                             'software (error was: %s)' % str(e)))
                     break
-        # Convert all pin arguments to integer GPIO numbers. This is necessary
-        # to ensure the shared-key for shared implementations get matched
-        # correctly, and is a bit of a hack for the pigpio bit-bang
-        # implementation which just wants the pin numbers too.
-        spi_args = {
-            key: pin.number if isinstance(pin, Pin) else pin
-            for key, pin in spi_args.items()
-            }
         return self.spi_classes[('software', shared)](self, **spi_args)
 
     def _extract_spi_args(self, **kwargs):
@@ -181,9 +173,11 @@ class PiFactory(Factory):
                 key: spi_args.get(key, default)
                 for key, default in dev_defaults.items()
                 }
-            if spi_args['port'] != 0:
-                raise SPIBadArgs('port 0 is the only valid SPI port')
-            selected_hw = SPI_HARDWARE_PINS[spi_args['port']]
+            try:
+                selected_hw = SPI_HARDWARE_PINS[spi_args['port']]
+            except KeyError:
+                raise SPIBadArgs(
+                    'port %d is not a valid SPI port' % spi_args['port'])
             try:
                 selected_hw['select'][spi_args['device']]
             except IndexError:

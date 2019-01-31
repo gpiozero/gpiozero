@@ -132,7 +132,7 @@ class LocalPiHardwareSPI(SPI, Device):
         self._interface.max_speed_hz = 500000
 
     def close(self):
-        if getattr(self, '_interface', None):
+        if self._interface is not None:
             self._interface.close()
         self._interface = None
         self.pin_factory.release_all(self)
@@ -203,7 +203,7 @@ class LocalPiSoftwareSPI(SPI, OutputDevice):
             )
 
     def close(self):
-        if getattr(self, '_bus', None):
+        if self._bus is not None:
             self._bus.close()
         self._bus = None
         super(LocalPiSoftwareSPI, self).close()
