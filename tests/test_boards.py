@@ -1358,16 +1358,14 @@ def test_pumpkin_pi(mock_factory):
 
 def test_pumpkin_pi_initial_value(mock_factory):
     with PumpkinPi() as board:
-        assert all(device.pin.state == False for device in board.leds)
+        assert not any(device.pin.state for device in board.leds)
     with PumpkinPi(initial_value=False) as board:
-        assert all(device.pin.state == False for device in board.leds)
+        assert not any(device.pin.state for device in board.leds)
     with PumpkinPi(initial_value=True) as board:
-        assert all(device.pin.state == True for device in board.leds)
+        assert all(device.pin.state for device in board.leds)
     with PumpkinPi(initial_value=0.5) as board:
-        assert all(device.pin.state == True for device in board.leds)
+        assert all(device.pin.state for device in board.leds)
 
 def test_pumpkin_pi_initial_value_pwm(mock_factory, pwm):
-    pins = [mock_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
     with PumpkinPi(pwm=True, initial_value=0.5) as board:
-        assert [device.pin for device in board.leds] == pins
         assert all(device.pin.state == 0.5 for device in board.leds)
