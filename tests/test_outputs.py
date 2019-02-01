@@ -1498,7 +1498,7 @@ def test_tonalbuzzer_play(mock_factory, pwm):
         with pytest.raises(ValueError):
             tb.play('AS5')
 
-def test_tonalbuzzer_set_value():
+def test_tonalbuzzer_set_value(mock_factory, pwm):
     with TonalBuzzer(2) as tb:
         assert tb.pwm_device.frequency is None
         tb.value = -1
@@ -1512,7 +1512,7 @@ def test_tonalbuzzer_set_value():
         tb.value = 1
         assert isclose(tb.pwm_device.frequency, 1760)
 
-def test_tonalbuzzer_read_value():
+def test_tonalbuzzer_read_value(mock_factory, pwm):
     with TonalBuzzer(2) as tb:
         assert tb.value is None
         tb.play('A3')
