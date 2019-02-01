@@ -15,7 +15,8 @@ try:
 except ImportError:
     from .compat import median
 
-from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho
+from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
+    PinInvalidState
 from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
 
@@ -34,26 +35,52 @@ class InputDevice(GPIODevice):
         The GPIO pin (in Broadcom numbering) that the device is connected to.
         If this is ``None`` a :exc:`GPIODeviceError` will be raised.
 
-    :param bool pull_up:
+    :param pull_up:
         If ``True``, the pin will be pulled high with an internal resistor. If
         ``False`` (the default), the pin will be pulled low.
+        If ``None``, the pin will be floating. As gpiozero cannot automatically
+        guess the active state when not pulling the pin, the ``active_state``
+        parameter must be passed.
+    :type pull_up: ``bool`` or ``None``
 
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    :param active_state:
+        If ``True``, when the hardware pin state is ``HIGH``,
+        the software pin is ``HIGH``.
+        If ``False``, the input polarity is reversed:
+        when the hardware pin state is ``HIGH``,
+        the software pin state is ``LOW``.
+        Use this parameter to set the active state of the underlying pin when
+        configuring it as not pulled (``pull_up=None``).
+        When ``pull_up`` is ``True`` or ``False``, the active state is
+        automatically set to the proper value.
+
     """
-    def __init__(self, pin=None, pull_up=False, pin_factory=None):
+    def __init__(self, pin=None, pull_up=False, pin_factory=None,
+                 active_state=None):
         super(InputDevice, self).__init__(pin, pin_factory=pin_factory)
         try:
             self.pin.function = 'input'
-            pull = 'up' if pull_up else 'down'
-            if self.pin.pull != pull:
-                self.pin.pull = pull
+            if pull_up is None:
+                self.pin.pull = 'floating'
+            else:
+                self.pin.pull = 'up' if pull_up else 'down'
         except:
             self.close()
             raise
-        self._active_state = False if pull_up else True
-        self._inactive_state = True if pull_up else False
+
+        if pull_up is None:
+            if active_state is None:
+                raise PinInvalidState(
+                    'Pin %d is defined as floating, but "active_state" is not '
+                    'defined' % self.pin.number)
+            self._active_state = bool(active_state)
+        else:
+            self._active_state = False if pull_up else True
+        self._inactive_state = not self._active_state
 
     @property
     def pull_up(self):
@@ -61,7 +88,11 @@ class InputDevice(GPIODevice):
         If ``True``, the device uses a pull-up resistor to set the GPIO pin
         "high" by default.
         """
-        return self.pin.pull == 'up'
+        pull = self.pin.pull
+        if pull == 'floating':
+            return None
+        else:
+            return pull == 'up'
 
     def __repr__(self):
         try:
@@ -98,9 +129,10 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, bounce_time=None, pin_factory=None):
+            self, pin=None, pull_up=False, bounce_time=None, pin_factory=None,
+            active_state=None):
         super(DigitalInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory
+            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
         )
         try:
             self.pin.bounce = bounce_time
@@ -181,10 +213,10 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     def __init__(
             self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
             sample_wait=0.0, partial=False, average=median, ignore=None,
-            pin_factory=None):
+            pin_factory=None, active_state=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory
+            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
         )
         try:
             self._queue = GPIOQueue(self, queue_len, sample_wait, partial,
@@ -301,6 +333,8 @@ class Button(HoldMixin, DigitalInputDevice):
         In this case, connect the other side of the button to ground. If
         ``False``, the GPIO pin will be pulled low by default. In this case,
         connect the other side of the button to 3V3.
+        If ``None``, the pin will be floating, so it must be externally pulled
+        up or down and the ``active_state`` parameter must be set accordingly.
 
     :param float bounce_time:
         If ``None`` (the default), no software bounce compensation will be
@@ -320,12 +354,26 @@ class Button(HoldMixin, DigitalInputDevice):
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    :param active_state:
+        If ``True``, when the hardware pin state is ``HIGH``,
+        the software pin is ``HIGH``.
+        If ``False``, the input polarity is reversed:
+        when the hardware pin state is ``HIGH``,
+        the software pin state is ``LOW``.
+        Use this parameter to set the active state of the underlying pin when
+        configuring it as not pulled (``pull_up=None``).
+        When ``pull_up`` is ``True`` or ``False``, the active state is
+        automatically set to the proper value.
+
     """
     def __init__(
             self, pin=None, pull_up=True, bounce_time=None,
-            hold_time=1, hold_repeat=False, pin_factory=None):
+            hold_time=1, hold_repeat=False, pin_factory=None,
+            active_state=None):
         super(Button, self).__init__(
-            pin, pull_up, bounce_time, pin_factory=pin_factory
+            pin, pull_up, bounce_time, pin_factory=pin_factory,
+            active_state=active_state,
         )
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
@@ -464,6 +512,8 @@ class MotionSensor(SmoothedInputDevice):
     :param bool pull_up:
         If ``False`` (the default), the GPIO pin will be pulled low by default.
         If ``True``, the GPIO pin will be pulled high by the sensor.
+        If ``None``, the pin must be externally be pulled up or down, and
+        the ``active_state`` parameter must be set accordingly.
 
     :param Factory pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
@@ -471,10 +521,12 @@ class MotionSensor(SmoothedInputDevice):
     """
     def __init__(
             self, pin=None, pull_up=False, queue_len=1, sample_rate=10,
-            threshold=0.5, partial=False, pin_factory=None):
+            threshold=0.5, partial=False, pin_factory=None, active_state=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
-            partial=partial, pin_factory=pin_factory)
+            pin, pull_up=pull_up, threshold=threshold,
+            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
+            pin_factory=pin_factory, active_state=active_state,
+        )
         try:
             self._queue.start()
         except:
