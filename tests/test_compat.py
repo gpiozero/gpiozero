@@ -260,6 +260,8 @@ def test_weakmethod_callback_when_method_dead(subclass):
     gc.collect()
     assert calls == [r]
 
+@pytest.mark.xfail(hasattr(sys, 'pypy_version_info'),
+                   reason='pypy memory management is different')
 def test_weakmethod_no_cycles():
     o = Object(1)
     def cb(_):
