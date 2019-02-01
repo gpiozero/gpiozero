@@ -1838,12 +1838,10 @@ class JamHat(CompositeOutputDevice):
     def __init__(self, pwm=False, pin_factory=None):
         super(JamHat, self).__init__(
             lights_1=LEDBoard(red=5, yellow=12, green=16,
-                              pwm=pwm, initial_value=initial_value,
-                              _order=('red', 'yellow', 'green'),
+                              pwm=pwm, _order=('red', 'yellow', 'green'),
                               pin_factory=pin_factory),
             lights_2=LEDBoard(red=6, yellow=13, green=17,
-                              pwm=pwm, initial_value=initial_value,
-                              _order=('red', 'yellow', 'green'),
+                              pwm=pwm, _order=('red', 'yellow', 'green'),
                               pin_factory=pin_factory),
             button_1=Button(19, pull_up=False, pin_factory=pin_factory),
             button_2=Button(18, pull_up=False, pin_factory=pin_factory),

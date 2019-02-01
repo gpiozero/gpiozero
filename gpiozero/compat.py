@@ -8,6 +8,7 @@ from __future__ import (
     )
 str = type('')
 
+import math
 import cmath
 import weakref
 import operator
@@ -58,6 +59,10 @@ def median(data):
     else:
         i = n // 2
         return (data[i - 1] + data[i]) / 2
+
+
+def log2(x):
+    return math.log(x, 2)
 
 
 # Copied from the MIT-licensed https://github.com/slezica/python-frozendict

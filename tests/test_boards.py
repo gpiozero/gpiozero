@@ -1369,3 +1369,34 @@ def test_pumpkin_pi_initial_value(mock_factory):
 def test_pumpkin_pi_initial_value_pwm(mock_factory, pwm):
     with PumpkinPi(pwm=True, initial_value=0.5) as board:
         assert all(device.pin.state == 0.5 for device in board.leds)
+
+def test_jamhat(mock_factory, pwm):
+    with JamHat() as jh:
+        assert isinstance(jh.lights_1, LEDBoard)
+        assert isinstance(jh.lights_2, LEDBoard)
+        assert isinstance(jh.button_1, Button)
+        assert isinstance(jh.button_2, Button)
+        assert isinstance(jh.buzzer, TonalBuzzer)
+        assert isinstance(jh.lights_1.red, LED)
+        assert jh.value == (
+            (False, False, False),
+            (False, False, False),
+            False, False,
+            None
+        )
+        jh.on()
+        assert jh.value == (
+            (True, True, True),
+            (True, True, True),
+            False, False,
+            None
+        )
+
+def test_jamhat_pwm(mock_factory, pwm):
+    with JamHat(pwm=True) as jh:
+        assert isinstance(jh.lights_1, LEDBoard)
+        assert isinstance(jh.lights_1.red, PWMLED)
+        assert isinstance(jh.lights_2, LEDBoard)
+        assert isinstance(jh.button_1, Button)
+        assert isinstance(jh.button_2, Button)
+        assert isinstance(jh.buzzer, TonalBuzzer)
