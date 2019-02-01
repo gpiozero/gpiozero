@@ -27,10 +27,11 @@ try:
 except ImportError:
     from gpiozero.compat import median
 
+
 epsilon = 0.01  # time to sleep after setting source before checking value
 
-def test_set_source_by_value():
-    btn_pin = Device.pin_factory.pin(3)
+def test_set_source_by_value(mock_factory):
+    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -44,8 +45,8 @@ def test_set_source_by_value():
         assert led.value
         assert btn.value
 
-def test_set_source_by_device():
-    btn_pin = Device.pin_factory.pin(3)
+def test_set_source_by_device(mock_factory):
+    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -59,12 +60,12 @@ def test_set_source_by_device():
         assert led.value
         assert btn.value
 
-def test_negated():
+def test_negated(mock_factory):
     assert list(negated(())) == []
     assert list(negated((True, True, False, False))) == [False, False, True, True]
 
-def test_negated_with_device_values():
-    btn_pin = Device.pin_factory.pin(3)
+def test_negated_with_device_values(mock_factory):
+    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -78,8 +79,8 @@ def test_negated_with_device_values():
         assert not led.value
         assert btn.value
 
-def test_negated_with_device():
-    btn_pin = Device.pin_factory.pin(3)
+def test_negated_with_device(mock_factory):
+    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -149,7 +150,7 @@ def test_clamped():
     assert list(clamped((-2, -1, -0.5, 0, 0.5, 1, 2), -1, 1)) == [-1, -1, -0.5, 0, 0.5, 1, 1]
     assert list(clamped((-2, -1, -0.5, 0, 0.5, 1, 2), -2, 2)) == [-2, -1, -0.5, 0, 0.5, 1, 2]
 
-def test_absoluted():
+def test_absoluted(mock_factory):
     assert list(absoluted(())) == []
     assert list(absoluted((-2, -1, 0, 1, 2))) == [2, 1, 0, 1, 2]
 

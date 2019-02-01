@@ -208,7 +208,7 @@ class Device(ValuesMixin, GPIOBase):
         super(Device, self).__init__()
 
     @staticmethod
-    def _default_pin_factory(name=os.getenv('GPIOZERO_PIN_FACTORY', None)):
+    def _default_pin_factory():
         # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
         # no third-party libraries are available, however, we fall back to a
         # pure Python implementation which supports platforms like PyPy
@@ -221,6 +221,7 @@ class Device(ValuesMixin, GPIOBase):
             'pigpio':  'gpiozero.pins.pigpio:PiGPIOFactory',
             'native':  'gpiozero.pins.native:NativeFactory',
         })
+        name = os.environ.get('GPIOZERO_PIN_FACTORY')
         if name is None:
             # If no factory is explicitly specified, try various names in
             # "preferred" order. For speed, we select from the dictionary above

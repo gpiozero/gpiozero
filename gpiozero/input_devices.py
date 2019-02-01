@@ -200,7 +200,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         except AttributeError:
             # If the queue isn't initialized (it's None), or _queue hasn't been
             # set ignore the error because we're trying to close anyway
-            if getattr(self, '_queue', None) is not None:
+            if self._queue is not None:
                 raise
         except RuntimeError:
             # Cannot join thread before it starts; we don't care about this
@@ -680,17 +680,17 @@ class DistanceSensor(SmoothedInputDevice):
     def __init__(
             self, echo=None, trigger=None, queue_len=9, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
-        if max_distance <= 0:
-            raise ValueError('invalid maximum distance (must be positive)')
         self._trigger = None
         super(DistanceSensor, self).__init__(
-            echo, pull_up=False, threshold=threshold_distance / max_distance,
-            queue_len=queue_len, sample_wait=0.06, partial=partial,
-            ignore={None}, pin_factory=pin_factory
+            echo, pull_up=False, queue_len=queue_len, sample_wait=0.06,
+            partial=partial, ignore=frozenset({None}), pin_factory=pin_factory
         )
         try:
-            self.speed_of_sound = 343.26 # m/s
+            if max_distance <= 0:
+                raise ValueError('invalid maximum distance (must be positive)')
             self._max_distance = max_distance
+            self.threshold = threshold_distance / max_distance
+            self.speed_of_sound = 343.26 # m/s
             self._trigger = GPIODevice(trigger)
             self._echo = Event()
             self._echo_rise = None
@@ -709,7 +709,7 @@ class DistanceSensor(SmoothedInputDevice):
         try:
             self._trigger.close()
         except AttributeError:
-            if getattr(self, '_trigger', None) is not None:
+            if self._trigger is not None:
                 raise
         self._trigger = None
         super(DistanceSensor, self).close()
@@ -778,10 +778,11 @@ class DistanceSensor(SmoothedInputDevice):
             self._echo.set()
 
     def _read(self):
-        # Wait up to 1 second for the echo pin to fall to low; if it doesn't
-        # something is horribly wrong (most likely at the hardware level)
+        # Wait up to 50ms for the echo pin to fall to low (the maximum echo
+        # pulse is 35ms so this gives some leeway); if it doesn't something is
+        # horribly wrong (most likely at the hardware level)
         if self.pin.state:
-            if not self._echo.wait(1):
+            if not self._echo.wait(0.05):
                 warnings.warn(DistanceSensorNoEcho('echo pin set high'))
                 return None
         self._echo.clear()
@@ -794,11 +795,11 @@ class DistanceSensor(SmoothedInputDevice):
             self._trigger.pin.state = True
             sleep(0.00001)
             self._trigger.pin.state = False
-            # Wait up to 1 second for the echo pin to rise and fall (35ms is
-            # the maximum pulse time, but the pre-rise time is unspecified in
-            # the "datasheet"; 1 second seems sufficiently long to conclude
-            # something has failed)
-            if self._echo.wait(1):
+            # Wait up to 100ms for the echo pin to rise and fall (35ms is the
+            # maximum pulse time, but the pre-rise time is unspecified in the
+            # "datasheet"; 100ms seems sufficiently long to conclude something
+            # has failed)
+            if self._echo.wait(0.1):
                 if self._echo_fall is not None and self._echo_rise is not None:
                     distance = (
                         self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *

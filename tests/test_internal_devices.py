@@ -20,7 +20,7 @@ from datetime import datetime, time
 file_not_found = IOError(errno.ENOENT, 'File not found')
 bad_ping = CalledProcessError(1, 'returned non-zero exit status 1')
 
-def test_timeofday_bad_init():
+def test_timeofday_bad_init(mock_factory):
     with pytest.raises(TypeError):
          TimeOfDay()
     with pytest.raises(ValueError):
@@ -38,7 +38,7 @@ def test_timeofday_bad_init():
     with pytest.raises(ValueError):
         TimeOfDay(datetime(2019, 1, 24, 19), time(19))  # lurch edge case
 
-def test_timeofday_init():
+def test_timeofday_init(mock_factory):
     TimeOfDay(time(7), time(8), utc=False)
     TimeOfDay(time(7), time(8), utc=True)
     TimeOfDay(time(0), time(23, 59))
@@ -49,7 +49,7 @@ def test_timeofday_init():
     TimeOfDay(time(18), time(6))
     TimeOfDay(datetime(2019, 1, 24, 19), time(19, 1))  # lurch edge case
 
-def test_timeofday_value():
+def test_timeofday_value(mock_factory):
     with TimeOfDay(time(7), time(8), utc=False) as tod:
         assert tod.start_time == time(7)
         assert tod.end_time == time(8)
@@ -114,11 +114,11 @@ def test_timeofday_value():
             dt.utcnow.return_value = datetime(2018, 1, 2, 6, 0, 0)
             assert tod.is_active
 
-def test_pingserver_bad_init():
+def test_pingserver_bad_init(mock_factory):
     with pytest.raises(TypeError):
          PingServer()
 
-def test_pingserver_init():
+def test_pingserver_init(mock_factory):
     with patch('gpiozero.internal_devices.subprocess') as sp:
         sp.check_call.return_value = True
         with PingServer('example.com') as server:
@@ -130,7 +130,7 @@ def test_pingserver_init():
         with PingServer('2001:4860:4860::8888') as server:
             assert server.host == '2001:4860:4860::8888'
 
-def test_pingserver_value():
+def test_pingserver_value(mock_factory):
     with patch('gpiozero.internal_devices.subprocess.check_call') as check_call:
         with PingServer('example.com') as server:
             assert server.is_active
@@ -139,7 +139,7 @@ def test_pingserver_value():
             check_call.side_effect = None
             assert server.is_active
 
-def test_cputemperature_bad_init():
+def test_cputemperature_bad_init(mock_factory):
     with patch('io.open') as m:
         m.return_value.__enter__.side_effect = file_not_found
         with pytest.raises(IOError):
@@ -156,7 +156,7 @@ def test_cputemperature_bad_init():
         with pytest.raises(ValueError):
             CPUTemperature(min_temp=20, max_temp=10)
 
-def test_cputemperature():
+def test_cputemperature(mock_factory):
     with patch('io.open') as m:
         m.return_value.__enter__.return_value.readline.return_value = '37000'
         with CPUTemperature() as cpu:
@@ -172,7 +172,7 @@ def test_cputemperature():
         with CPUTemperature(min_temp=30, max_temp=40, threshold=35) as cpu:
             assert cpu.is_active
 
-def test_loadaverage_bad_init():
+def test_loadaverage_bad_init(mock_factory):
     with patch('io.open') as m:
         foo = m.return_value.__enter__
         foo.side_effect = file_not_found
@@ -194,7 +194,7 @@ def test_loadaverage_bad_init():
         with pytest.raises(ValueError):
             LoadAverage(minutes=10)
 
-def test_loadaverage():
+def test_loadaverage(mock_factory):
     with patch('io.open') as m:
         foo = m.return_value.__enter__
         foo.return_value.readline.return_value = '0.09 0.10 0.09 1/292 20758'
@@ -221,18 +221,18 @@ def test_loadaverage():
                 assert w[0].category == ThresholdOutOfRange
                 assert la.load_average == 1.4
 
-def test_diskusage_bad_init():
+def test_diskusage_bad_init(mock_factory):
     with pytest.raises(ValueError):
         DiskUsage(filesystem='badfilesystem')
 
-def test_diskusage_init():
+def test_diskusage_init(mock_factory):
     with patch('gpiozero.internal_devices.os.path') as ospath:
         ospath.ismount.return_value = True
         with DiskUsage('/home') as disk:
             assert disk.filesystem == '/home'
             assert disk.threshold == 90.0
 
-def test_diskusage():
+def test_diskusage(mock_factory):
     with patch('gpiozero.internal_devices.subprocess.Popen.communicate') as communicate:
         communicate.return_value = (b'Use%\n 52%\n', None)
         with DiskUsage() as disk:

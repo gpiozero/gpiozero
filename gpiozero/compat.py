@@ -13,7 +13,7 @@ import weakref
 import operator
 import functools
 
-# Handles pre 3.3 versions of Python withoout collections.abc
+# Handles pre 3.3 versions of Python without collections.abc
 try:
     from collections.abc import Mapping
 except ImportError:
@@ -141,4 +141,3 @@ class WeakMethod(weakref.ref):
         return True
 
     __hash__ = weakref.ref.__hash__
-

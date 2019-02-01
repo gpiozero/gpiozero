@@ -87,14 +87,13 @@ class Factory(object):
         Releases all pin reservations taken out by *reserver*. See
         :meth:`release_pins` for further information).
         """
-        with self._res_lock:
-            self._reservations = defaultdict(list, {
-                pin: [
-                    ref for ref in conflictors
-                    if ref() not in (reserver, None)
-                    ]
-                for pin, conflictors in self._reservations.items()
-                })
+        # Yes, this would be more efficient if it simply regenerated the
+        # reservations list without any references to reserver instead of
+        # (in release_pins) looping over each pin individually. However, this
+        # then causes a subtle bug in LocalPiFactory which does something
+        # horribly naughty (with good reason) and makes its _reservations
+        # dictionary equivalent to a class-level one.
+        self.release_pins(reserver, *self._reservations)
 
     def close(self):
         """

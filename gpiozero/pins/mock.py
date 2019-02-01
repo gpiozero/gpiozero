@@ -24,6 +24,7 @@ from ..exc import (
     PinFixedPull,
     PinInvalidFunction,
     PinInvalidPull,
+    PinInvalidBounce,
     )
 from ..devices import Device
 from .local import LocalPiPin, LocalPiFactory
@@ -108,6 +109,11 @@ class MockPin(LocalPiPin):
 
     def _set_bounce(self, value):
         # XXX Need to implement this
+        if value is not None:
+            try:
+                value = float(value)
+            except ValueError:
+                raise PinInvalidBounce('bounce must be None or a float')
         self._bounce = value
 
     def _get_edges(self):
@@ -417,10 +423,12 @@ class MockFactory(LocalPiFactory):
     by the :meth:`pin` method by default. This can be changed after
     construction by modifying the :attr:`pin_class` attribute.
     """
-    def __init__(
-            self, revision=os.getenv('GPIOZERO_MOCK_REVISION', 'a02082'),
-            pin_class=os.getenv('GPIOZERO_MOCK_PIN_CLASS', MockPin)):
+    def __init__(self, revision=None, pin_class=None):
         super(MockFactory, self).__init__()
+        if revision is None:
+            revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
+        if pin_class is None:
+            pin_class = os.environ.get('GPIOZERO_MOCK_PIN_CLASS', MockPin)
         self._revision = revision
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')

@@ -157,17 +157,23 @@ class ButtonBoard(HoldMixin, CompositeDevice):
                 name: Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
                 for name, pin in kwargs.items()
                 })
+        if len(self) == 0:
+            raise GPIOPinMissing('No pins given')
         def get_new_handler(device):
             def fire_both_events(ticks, state):
                 device._fire_events(ticks, device._state_to_value(state))
                 self._fire_events(ticks, self.value)
             return fire_both_events
-        for button in self:
-            button.pin.when_changed = get_new_handler(button)
+        # _handlers only exists to ensure that we keep a reference to the
+        # generated fire_both_events handler for each Button (remember that
+        # pin.when_changed only keeps a weak reference to handlers)
+        self._handlers = tuple(get_new_handler(device) for device in self)
+        for button, handler in zip(self, self._handlers):
+            button.pin.when_changed = handler
         self._when_changed = None
         self._last_value = None
         # Call _fire_events once to set initial state of events
-        self._fire_events(self.pin_factory.ticks(), None)
+        self._fire_events(self.pin_factory.ticks(), self.is_active)
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
@@ -661,7 +667,7 @@ class PiHutXmasTree(LEDBoard):
             _order=pins_dict.keys(),
             pin_factory=pin_factory,
             **pins_dict
-		)
+        )
 
 
 class LedBorg(RGBLED):
@@ -1258,7 +1264,7 @@ class Robot(SourceMixin, CompositeDevice):
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
         # supplied as sequential positional arguments e.g. 2, 3, 4, 5
-        if type(left) is not tuple or type(right) is not tuple:
+        if not isinstance(left, tuple) or not isinstance(right, tuple):
             raise GPIOPinMissing('left and right motor pins must be given as '
                                  'tuples')
         super(Robot, self).__init__(
@@ -1495,7 +1501,7 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
         # supplied as sequential positional arguments e.g. 2, 3, 4, 5
-        if type(left) is not tuple or type(right) is not tuple:
+        if not isinstance(left, tuple) or not isinstance(right, tuple):
             raise GPIOPinMissing('left and right motor pins must be given as '
                                  'tuples')
         super(PhaseEnableRobot, self).__init__(

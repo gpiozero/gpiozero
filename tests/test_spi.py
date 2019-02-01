@@ -26,11 +26,7 @@ from gpiozero.pins.mock import MockSPIDevice
 from gpiozero import *
 
 
-def teardown_function(function):
-    Device.pin_factory.reset()
-
-
-def test_spi_hardware_params():
+def test_spi_hardware_params(mock_factory):
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
         mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
         io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
@@ -61,7 +57,7 @@ def test_spi_hardware_params():
             with pytest.raises(ValueError):
                 factory.spi(foo='bar')
 
-def test_spi_software_params():
+def test_spi_software_params(mock_factory):
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
         mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
         io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
@@ -80,47 +76,47 @@ def test_spi_software_params():
             with factory.spi(select_pin=6, shared=True) as device:
                 assert isinstance(device, LocalPiSoftwareSPIShared)
         with patch('gpiozero.pins.local.SpiDev', None):
-            # Clear out the old factory's caches (this is only necessary because
-            # we're being naughty switching out patches)
+            # Clear out the old factory's caches (this is only necessary
+            # because we're being naughty switching out patches)
             factory.pins.clear()
             factory._reservations.clear()
             # Ensure software fallback works when SpiDev isn't present
             with factory.spi() as device:
                 assert isinstance(device, LocalPiSoftwareSPI)
 
-def test_spi_hardware_conflict():
+def test_spi_hardware_conflict(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:
         with LED(11) as led:
             with pytest.raises(GPIOPinInUse):
-                Device.pin_factory.spi(port=0, device=0)
+                mock_factory.spi(port=0, device=0)
     with patch('gpiozero.pins.local.SpiDev') as spidev:
-        with Device.pin_factory.spi(port=0, device=0) as spi:
+        with mock_factory.spi(port=0, device=0) as spi:
             with pytest.raises(GPIOPinInUse):
                 LED(11)
 
-def test_spi_hardware_read():
+def test_spi_hardware_read(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
-        with Device.pin_factory.spi() as device:
+        with mock_factory.spi() as device:
             assert device.read(3) == [0, 1, 2]
             assert device.read(6) == list(range(6))
 
-def test_spi_hardware_write():
+def test_spi_hardware_write(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
-        with Device.pin_factory.spi() as device:
+        with mock_factory.spi() as device:
             assert device.write([0, 1, 2]) == 3
             assert spidev.return_value.xfer2.called_with([0, 1, 2])
             assert device.write(list(range(6))) == 6
             assert spidev.return_value.xfer2.called_with(list(range(6)))
 
-def test_spi_hardware_modes():
+def test_spi_hardware_modes(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.mode = 0
         spidev.return_value.lsbfirst = False
         spidev.return_value.cshigh = True
         spidev.return_value.bits_per_word = 8
-        with Device.pin_factory.spi() as device:
+        with mock_factory.spi() as device:
             assert device.clock_mode == 0
             assert not device.clock_polarity
             assert not device.clock_phase
@@ -140,7 +136,7 @@ def test_spi_hardware_modes():
             assert spidev.return_value.lsbfirst
             assert spidev.return_value.bits_per_word == 12
 
-def test_spi_software_read():
+def test_spi_software_read(mock_factory):
     class SPISlave(MockSPIDevice):
         def on_start(self):
             super(SPISlave, self).on_start()
@@ -148,7 +144,7 @@ def test_spi_software_read():
                 self.tx_word(i)
     with patch('gpiozero.pins.local.SpiDev', None), \
             SPISlave(11, 10, 9, 8) as slave, \
-            Device.pin_factory.spi() as master:
+            mock_factory.spi() as master:
         assert master.read(3) == [0, 1, 2]
         assert master.read(6) == [0, 1, 2, 3, 4, 5]
         slave.clock_phase = True
@@ -156,10 +152,10 @@ def test_spi_software_read():
         assert master.read(3) == [0, 1, 2]
         assert master.read(6) == [0, 1, 2, 3, 4, 5]
 
-def test_spi_software_write():
+def test_spi_software_write(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None), \
             MockSPIDevice(11, 10, 9, 8) as test_device, \
-            Device.pin_factory.spi() as master:
+            mock_factory.spi() as master:
         master.write([0])
         assert test_device.rx_word() == 0
         master.write([2, 0])
@@ -167,9 +163,9 @@ def test_spi_software_write():
         master.write([0, 1, 1])
         assert test_device.rx_word() == 257
 
-def test_spi_software_clock_mode():
+def test_spi_software_clock_mode(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None), \
-            Device.pin_factory.spi() as master:
+            mock_factory.spi() as master:
         assert master.clock_mode == 0
         assert not master.clock_polarity
         assert not master.clock_phase
@@ -185,9 +181,9 @@ def test_spi_software_clock_mode():
         with pytest.raises(ValueError):
             master.clock_mode = 5
 
-def test_spi_software_attr():
+def test_spi_software_attr(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None), \
-            Device.pin_factory.spi() as master:
+            mock_factory.spi() as master:
         assert not master.lsb_first
         assert not master.select_high
         assert master.bits_per_word == 8
