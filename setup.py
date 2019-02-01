@@ -71,8 +71,9 @@ if sys.version_info[:2] == (3, 2):
     __extra_requires__['test'][0] = 'pytest<3.0dev'
     __extra_requires__['test'][1] = 'coverage<4.0dev'
 elif sys.version_info[:2] == (3, 3):
-    # Particular versions are required for Python 3.3 compatibility
     __extra_requires__['test'][0] = 'pytest<3.3dev'
+elif sys.version_info[:2] == (3, 4):
+    __extra_requires__['test'][0] = 'pytest<5.0dev'
 
 try:
     # If we're executing on a Raspberry Pi, install all GPIO libraries for

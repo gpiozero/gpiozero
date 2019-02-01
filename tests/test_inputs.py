@@ -9,10 +9,15 @@ str = type('')
 
 import sys
 import pytest
+import warnings
+from time import sleep
 from threading import Event
 from functools import partial
 
+import mock
+
 from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
+from gpiozero.threads import GPIOThread
 from gpiozero import *
 
 
@@ -99,6 +104,22 @@ def test_input_wait_inactive(mock_factory):
         assert device.wait_for_inactive(1)
         assert not device.wait_for_active(0)
 
+def test_input_init_fail(mock_factory):
+    with pytest.raises(ValueError):
+        DigitalInputDevice(4, bounce_time='foo')
+    with pytest.raises(ValueError):
+        SmoothedInputDevice(4, threshold='foo')
+    with mock.patch('gpiozero.threads.GPIOThread.start') as start:
+        start.side_effect = RuntimeError('failed to start thread')
+        with pytest.raises(RuntimeError):
+            LineSensor(4)
+        with pytest.raises(RuntimeError):
+            MotionSensor(4)
+        with pytest.raises(RuntimeError):
+            LightSensor(4)
+        with pytest.raises(RuntimeError):
+            DistanceSensor(4, 5)
+
 def test_input_smoothed_attrib(mock_factory):
     pin = mock_factory.pin(4)
     with SmoothedInputDevice(4, threshold=0.5, queue_len=5, partial=False) as device:
@@ -110,6 +131,10 @@ def test_input_smoothed_attrib(mock_factory):
         assert not device.is_active
         with pytest.raises(InputDeviceError):
             device.threshold = 1
+    with pytest.raises(BadQueueLen):
+        SmoothedInputDevice(4, queue_len=-1)
+    with pytest.raises(BadWaitTime):
+        SmoothedInputDevice(4, sample_wait=-1)
 
 def test_input_smoothed_values(mock_factory):
     pin = mock_factory.pin(4)
@@ -132,6 +157,36 @@ def test_input_button(mock_factory):
         pin.drive_high()
         assert not button.is_pressed
         assert button.wait_for_release(1)
+
+def test_input_button_hold(mock_factory):
+    pin = mock_factory.pin(2)
+    evt = Event()
+    evt2 = Event()
+    with Button(2) as button:
+        with pytest.raises(ValueError):
+            button.hold_time = -1
+        button.hold_time = 0.1
+        assert button.hold_time == 0.1
+        assert not button.hold_repeat
+        assert button.when_held is None
+        button.when_held = evt.set
+        assert button.when_held is not None
+        pin.drive_low()
+        assert evt.wait(1)
+        assert button.is_held
+        assert button.held_time >= 0.0
+        pin.drive_high()
+        evt.clear()
+        assert button.held_time is None
+        assert not button.is_held
+        button.hold_repeat = True
+        pin.drive_low()
+        assert evt.wait(1)
+        evt.clear()
+        assert evt.wait(1)
+        pin.drive_high()
+        evt.clear()
+        assert not evt.wait(0.1)
 
 def test_input_line_sensor(mock_factory):
     pin = mock_factory.pin(4)
@@ -194,3 +249,26 @@ def test_input_distance_sensor(mock_factory):
         sensor.max_distance = 20
         assert sensor.max_distance == 20
         assert sensor.threshold_distance == 0.1
+
+def test_input_distance_sensor_edge_cases(mock_factory):
+    echo_pin = mock_factory.pin(4)
+    trig_pin = mock_factory.pin(5)  # note: normal pin
+    with warnings.catch_warnings(record=True) as w:
+        with DistanceSensor(4, 5, queue_len=5, max_distance=1, partial=True) as sensor:
+            # Test we get a warning about the echo pin being set high
+            echo_pin.drive_high()
+            sleep(0.5)
+            assert sensor.value == 0
+            # Test we get a warning about receiving no echo
+            echo_pin.drive_low()
+            sleep(0.5)
+        for rec in w:
+            if str(rec.message) == 'echo pin set high':
+                break
+        else:
+            assert False
+        for rec in w:
+            if str(rec.message) == 'no echo received':
+                break
+        else:
+            assert False

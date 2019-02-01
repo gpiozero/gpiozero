@@ -24,6 +24,7 @@ from ..exc import (
     PinFixedPull,
     PinInvalidFunction,
     PinInvalidPull,
+    PinInvalidBounce,
     )
 from ..devices import Device
 from .local import LocalPiPin, LocalPiFactory
@@ -108,6 +109,11 @@ class MockPin(LocalPiPin):
 
     def _set_bounce(self, value):
         # XXX Need to implement this
+        if value is not None:
+            try:
+                value = float(value)
+            except ValueError:
+                raise PinInvalidBounce('bounce must be None or a float')
         self._bounce = value
 
     def _get_edges(self):

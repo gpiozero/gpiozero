@@ -68,14 +68,8 @@ class SourceMixin(object):
         super(SourceMixin, self).__init__(*args, **kwargs)
 
     def close(self):
-        try:
-            self.source = None
-        except AttributeError:
-            pass
-        try:
-            super(SourceMixin, self).close()
-        except AttributeError:
-            pass
+        self.source = None
+        super(SourceMixin, self).close()
 
     def _copy_values(self, source):
         for v in source:
@@ -348,13 +342,10 @@ class HoldMixin(EventsMixin):
         self._hold_thread = HoldThread(self)
 
     def close(self):
-        if getattr(self, '_hold_thread', None):
+        if self._hold_thread is not None:
             self._hold_thread.stop()
         self._hold_thread = None
-        try:
-            super(HoldMixin, self).close()
-        except AttributeError:
-            pass
+        super(HoldMixin, self).close()
 
     def _fire_activated(self):
         super(HoldMixin, self)._fire_activated()
@@ -504,7 +495,7 @@ class GPIOQueue(GPIOThread):
             self.full.wait()
         try:
             return self.average(self.queue)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, ValueError):
             # No data == inactive value
             return 0.0
 

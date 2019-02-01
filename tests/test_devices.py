@@ -9,6 +9,7 @@ str = type('')
 import os
 import warnings
 
+import mock
 import pytest
 
 from gpiozero import *
@@ -168,3 +169,5 @@ def test_shutdown(mock_factory):
     assert ds.closed
     assert not f.pins
     assert Device.pin_factory is None
+    # Shutdown must be idempotent
+    _shutdown()
