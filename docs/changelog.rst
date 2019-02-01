@@ -4,20 +4,22 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 1.5.0 (unreleased)
+Release 1.5.0 (2019-02-01)
 ==========================
 
 * Allow source tools to take device object as well as device.values or just
   values. (`#640`_)
-* Introduced pin event timing to increase accuracy of certain devices such as the
-  HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
+* Introduced pin event timing to increase accuracy of certain devices such as
+  the HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
 * Further improvements to :class:`DistanceSensor` (ignoring missed edges).
   (`#719`_)
 * Added internal device classes :class:`LoadAverage` and :class:`DiskUsage`
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`PiHutXmasTree` class. (`#502`_)
+* Added :class:`TonalBuzzer` class with musical notation API. (`#681`_, `#717`_)
+* Added :class:`PiHutXmasTree`, :class:`PumpkinPi` and :class:`JamHat` (thanks
+  to Claire Pollard). (`#502`_, `#680`_, `#681`_, `#717`_)
 * Added support for various pin numbering mechanisms. (`#470`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
@@ -25,7 +27,7 @@ Release 1.5.0 (unreleased)
 * Added optional ``enable`` init param to :class:`Motor`. (`#366`_)
 * Added ``--xyz`` option to :program:`pinout` command line tool to open
   `pinout.xyz`_ in a web browser. (`#604`_)
-* Added 3B+ and 3A+ to Pi model data. (`#627`_, `#704`_)
+* Added 3B+, 3A+ and CM3+ to Pi model data. (`#627`_, `#704`_)
 * Minor improvements to :class:`Energenie`, thanks to Steve Amor. (`#629`_,
   `#634`)
 * Allow :class:`SmoothedInputDevice`, :class:`LightSensor` and
@@ -45,6 +47,9 @@ Release 1.5.0 (unreleased)
 .. _#714: https://github.com/RPi-Distro/python-gpiozero/issues/714
 .. _colorzero: https://colorzero.readthedocs.io/en/stable
 .. _#655: https://github.com/RPi-Distro/python-gpiozero/issues/655
+.. _#681: https://github.com/RPi-Distro/python-gpiozero/issues/681
+.. _#717: https://github.com/RPi-Distro/python-gpiozero/issues/717
+.. _#680: https://github.com/RPi-Distro/python-gpiozero/issues/680
 .. _#502: https://github.com/RPi-Distro/python-gpiozero/issues/502
 .. _#470: https://github.com/RPi-Distro/python-gpiozero/issues/470
 .. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481

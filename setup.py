@@ -24,7 +24,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.4.1'
+__version__      = '1.5.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
 __url__          = 'https://github.com/RPi-Distro/python-gpiozero'
@@ -45,6 +45,7 @@ __classifiers__ = [
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 

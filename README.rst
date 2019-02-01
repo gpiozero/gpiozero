@@ -103,6 +103,7 @@ Other contributors:
 - `Fatih Sarhan`_
 - `Rick Ansell`_
 - `Jeevan M R`_
+- `Claire Pollard_
 
 
 .. _Raspberry Pi Foundation: https://www.raspberrypi.org/
@@ -134,3 +135,4 @@ Other contributors:
 .. _Fatih Sarhan: https://github.com/f9n
 .. _Rick Ansell: https://github.com/ricksbt
 .. _Jeevan M R: https://github.com/jee1mr
+.. _Claire Pollard: https://github.com/tuftii
