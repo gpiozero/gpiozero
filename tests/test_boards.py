@@ -1311,3 +1311,63 @@ def test_statusboard_named(mock_factory):
         assert isinstance(sb.a.lights.red, LED)
         with pytest.raises(AttributeError):
             sb.one
+
+def test_pumpkin_pi(mock_factory):
+    pins = [mock_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
+    with PumpkinPi() as board:
+        assert [device.pin for device in board.leds] == pins
+        assert isinstance(board.sides.left, LEDBoard)
+        assert isinstance(board.sides.right, LEDBoard)
+        assert isinstance(board.sides, LEDBoard)
+        assert isinstance(board.eyes, LEDBoard)
+        board.off()
+        assert board.value == (
+            (False, False), (
+                (False, False, False, False, False),
+                (False, False, False, False, False)
+            )
+        )
+        board.eyes.on()
+        assert board.value == (
+            (True, True), (
+                (False, False, False, False, False),
+                (False, False, False, False, False)
+            )
+        )
+        board.sides.left.middle.on()
+        assert board.value == (
+            (True, True), (
+                (False, False, True, False, False),
+                (False, False, False, False, False)
+            )
+        )
+        board.sides.right.midtop.on()
+        assert board.value == (
+            (True, True), (
+                (False, False, True, False, False),
+                (False, False, False, True, False)
+            )
+        )
+        board.toggle()
+        assert board.value == (
+            (False, False), (
+                (True, True, False, True, True),
+                (True, True, True, False, True)
+            )
+        )
+
+def test_pumpkin_pi_initial_value(mock_factory):
+    with PumpkinPi() as board:
+        assert all(device.pin.state == False for device in board.leds)
+    with PumpkinPi(initial_value=False) as board:
+        assert all(device.pin.state == False for device in board.leds)
+    with PumpkinPi(initial_value=True) as board:
+        assert all(device.pin.state == True for device in board.leds)
+    with PumpkinPi(initial_value=0.5) as board:
+        assert all(device.pin.state == True for device in board.leds)
+
+def test_pumpkin_pi_initial_value_pwm(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
+    with PumpkinPi(pwm=True, initial_value=0.5) as board:
+        assert [device.pin for device in board.leds] == pins
+        assert all(device.pin.state == 0.5 for device in board.leds)
