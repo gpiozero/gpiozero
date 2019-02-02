@@ -589,7 +589,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     .. note::
 
         Note that this class does not currently work with
-        :class:`PiGPIOFactory`.
+        :class:`~gpiozero.pins.pigpio.PiGPIOFactory`.
     """
 
     def __init__(self, pin=None, initial_value=None, mid_note='A4', octaves=1,

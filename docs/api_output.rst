@@ -54,7 +54,8 @@ TonalBuzzer
 -----------
 
 .. autoclass:: TonalBuzzer(pin, \*, initial_value=None, mid_note='A4', octaves=1, pin_factory=None)
-    :members: play, stop, note_value, is_active, octaves, min_note, mid_note, max_note
+    :members: play, stop, note_value, octaves, min_note, mid_note, max_note, is_active, value
+
 
 Motor
 -----
