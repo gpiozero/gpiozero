@@ -132,6 +132,21 @@ BPLUS_BOARD = """\
 {style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
 {style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
 
+B3PLUS_BOARD = """\
+{style:white on green},--------------------------------.{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}      P {style:black on white}| USB{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                    {style:white on black}oo{style:on green}o {style:black on white}+===={style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}  {style:white on black}oo{style:on green}E    |{style:reset}
+{style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:on green}                  |{style:reset}
+{style:white on green}|                   {style:on black}|C|{style:on green}     {style:black on white}+======{style:reset}
+{style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
@@ -142,6 +157,21 @@ APLUS_BOARD = """\
 {style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}           {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}           {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|I|{style:on green}  {style:on black}+----+{style:on green}              |{style:reset}
+{style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
+{style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-'{style:reset}"""
+
+A3PLUS_BOARD = """\
+{style:white on green},--------------------------.{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                     |{style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
+{style:white on green}|        {style:black on white},----.{style:on green}         {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}         {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}         {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:on green}            |{style:reset}
 {style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
 {style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
 {style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
@@ -166,13 +196,14 @@ ZERO13_BOARD = """\
 {style:white on green}`---{style:black on white}|    |{style:white on green}--------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
 CM_BOARD = """\
-{style:white on green}+-----------------------------------------------------------------------------------------------------------------------+{style:reset}
-{style:white on green}| Raspberry Pi Compute Module                                                                                           |{style:reset}
-{style:white on green}|                                                                                                                       |{style:reset}
-{style:white on green}| You were expecting more detail? Sorry, the Compute Module's a bit hard to do right now!                               |{style:reset}
-{style:white on green}|                                                                                                                       |{style:reset}
-{style:white on green}|                                                                                                                       |{style:reset}
-{style:white on green}||||||||||||||||||||-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||{style:reset}"""
+{style:white on green}+---------------------------------------+{style:reset}
+{style:white on green}| {style:yellow on black}O{style:bold white on green}  Raspberry Pi {model:4s}                {style:normal yellow on black}O{style:white on green} |{style:reset}
+ {style:white on green})   Version {pcb_revision:3s}     {style:on black}+---+{style:on green}             ({style:reset}
+{style:white on green}|                    {style:on black}|SoC|{style:on green}              |{style:reset}
+ {style:white on green})                   {style:on black}+---+{style:on green}             ({style:reset}
+{style:white on green}| {style:on black}O{style:on green}   _                               {style:on black}O{style:on green} |{style:reset}
+{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}
+"""
 
 # Pin maps for various board revisions and headers
 
@@ -975,11 +1006,12 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
                     'A+':     APLUS_BOARD,
                     'CM':     CM_BOARD,
-                    'CM3':    CM_BOARD.replace('Compute Module  ', 'Compute Module 3'),
+                    'CM3':    CM_BOARD,
+                    'CM3+':   CM_BOARD,
                     'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     'Zero W': ZERO13_BOARD,
-                    '3A+':    APLUS_BOARD,
-                    'CM3+':   CM_BOARD.replace('Compute Module   ', 'Compute Module 3+'),
+                    '3A+':    A3PLUS_BOARD,
+                    '3B+':    B3PLUS_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
