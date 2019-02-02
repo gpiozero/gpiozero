@@ -363,16 +363,20 @@ class CompositeDevice(Device):
                 self._order = sorted(kwargs.keys())
             else:
                 for missing_name in set(kwargs.keys()) - set(self._order):
-                    raise CompositeDeviceBadOrder('%s missing from _order' % missing_name)
+                    raise CompositeDeviceBadOrder(
+                        '%s missing from _order' % missing_name)
             self._order = tuple(self._order)
             for name in set(self._order) & set(dir(self)):
-                raise CompositeDeviceBadName('%s is a reserved name' % name)
+                raise CompositeDeviceBadName(
+                    '%s is a reserved name' % name)
             for dev in chain(args, kwargs.values()):
                 if not isinstance(dev, Device):
-                    raise CompositeDeviceBadDevice("%s doesn't inherit from Device" % dev)
+                    raise CompositeDeviceBadDevice(
+                        "%s doesn't inherit from Device" % dev)
             self._named = frozendict(kwargs)
-            self._namedtuple = namedtuple('%sValue' % self.__class__.__name__, chain(
-                ('device_%d' % i for i in range(len(args))), self._order))
+            self._namedtuple = namedtuple(
+                '%sValue' % self.__class__.__name__, chain(
+                    ('device_%d' % i for i in range(len(args))), self._order))
         except:
             for dev in chain(args, kwargs.values()):
                 if isinstance(dev, Device):

@@ -13,6 +13,13 @@ from gpiozero import Device
 from gpiozero.pins.mock import MockFactory, MockPWMPin
 
 
+@pytest.yield_fixture()
+def no_default_factory(request):
+    save_pin_factory = Device.pin_factory
+    Device.pin_factory = None
+    yield None
+    Device.pin_factory = save_pin_factory
+
 @pytest.yield_fixture(scope='function')
 def mock_factory(request):
     save_factory = Device.pin_factory

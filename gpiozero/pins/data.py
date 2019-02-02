@@ -459,7 +459,8 @@ class Style(object):
                         else:
                             codes.append(40 + self.colors[spec])
                     except KeyError:
-                        raise ValueError('invalid format specification "%s"' % spec)
+                        raise ValueError(
+                            'invalid format specification "%s"' % spec)
         if self.color:
             return '\x1b[%sm' % (';'.join(str(code) for code in codes))
         else:
@@ -863,8 +864,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     9:  'Zero',
                     10: 'CM3',
                     12: 'Zero W',
-                    13:  '3B+',
-                    14:  '3A+',
+                    13: '3B+',
+                    14: '3A+',
                     16: 'CM3+',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
@@ -1255,13 +1256,15 @@ def pi_info(revision=None):
 
     :param str revision:
         The revision of the Pi to return information about. If this is omitted
-        or ``None`` (the default), then the library will attempt to determine
+        or :data:`None` (the default), then the library will attempt to determine
         the model of Pi it is running on and return information about that.
     """
     if revision is None:
         # The reason this import is located here is to avoid a circular
         # dependency; devices->pins.local->pins.data->devices
         from ..devices import Device
+        if Device.pin_factory is None:
+            Device.pin_factory = Device._default_pin_factory()
         result = Device.pin_factory.pi_info
         if result is None:
             raise PinUnknownPi('The default pin_factory is not attached to a Pi')

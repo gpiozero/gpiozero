@@ -15,6 +15,7 @@ import textwrap
 import warnings
 import webbrowser
 
+
 class PinoutTool(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(

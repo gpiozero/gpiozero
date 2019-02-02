@@ -7,6 +7,8 @@ from __future__ import (
 str = type('')
 
 
+import os
+
 import pytest
 
 from gpiozerocli.pinout import main
@@ -33,3 +35,7 @@ def test_help(capsys):
         main(['pinout', '--help'])
     out, err = capsys.readouterr()
     assert 'GPIO pin-out' in out
+
+def test_execution(capsys, no_default_factory):
+    os.environ['GPIOZERO_PIN_FACTORY'] = 'mock'
+    assert main() == 0

@@ -27,6 +27,7 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
+    # XXX Add some mechanism to monitor state and fire events on change.
 
 
 class PingServer(InternalDevice):
@@ -57,9 +58,9 @@ class PingServer(InternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, host):
+    def __init__(self, host, pin_factory=None):
         self._host = host
-        super(PingServer, self).__init__()
+        super(PingServer, self).__init__(pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -138,9 +139,9 @@ class CPUTemperature(InternalDevice):
         which most users can ignore).
     """
     def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
-            min_temp=0.0, max_temp=100.0, threshold=80.0):
+            min_temp=0.0, max_temp=100.0, threshold=80.0, pin_factory=None):
         self.sensor_file = sensor_file
-        super(CPUTemperature, self).__init__()
+        super(CPUTemperature, self).__init__(pin_factory=pin_factory)
         if min_temp >= max_temp:
             raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
@@ -228,7 +229,7 @@ class LoadAverage(InternalDevice):
         which most users can ignore).
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
-        max_load_average=1.0, threshold=0.8, minutes=5):
+        max_load_average=1.0, threshold=0.8, minutes=5, pin_factory=None):
         if min_load_average >= max_load_average:
             raise ValueError(
                 'max_load_average must be greater than min_load_average')
@@ -247,7 +248,7 @@ class LoadAverage(InternalDevice):
             5: 1,
             15: 2,
         }[minutes]
-        super(LoadAverage, self).__init__()
+        super(LoadAverage, self).__init__(pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -320,11 +321,11 @@ class TimeOfDay(InternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, start_time, end_time, utc=True):
+    def __init__(self, start_time, end_time, utc=True, pin_factory=None):
         self._start_time = None
         self._end_time = None
         self._utc = True
-        super(TimeOfDay, self).__init__()
+        super(TimeOfDay, self).__init__(pin_factory=pin_factory)
         self._start_time = self._validate_time(start_time)
         self._end_time = self._validate_time(end_time)
         if self.start_time == self.end_time:
@@ -414,8 +415,8 @@ class DiskUsage(InternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, filesystem='/', threshold=90.0):
-        super(DiskUsage, self).__init__()
+    def __init__(self, filesystem='/', threshold=90.0, pin_factory=None):
+        super(DiskUsage, self).__init__(pin_factory=pin_factory)
         if not os.path.ismount(filesystem):
             raise ValueError('invalid filesystem')
         if not 0 <= threshold <= 100:
@@ -433,6 +434,7 @@ class DiskUsage(InternalDevice):
         """
         Returns the current disk usage in percentage.
         """
+        # XXX Use os.statvfs?
         df = subprocess.Popen(['df', '--output=pcent', self.filesystem], stdout=subprocess.PIPE)
         output = df.communicate()[0].split(b'\n')[1].split()[0]
         return float(output.decode('UTF-8').rstrip('%'))

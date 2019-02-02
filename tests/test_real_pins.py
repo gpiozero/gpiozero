@@ -66,13 +66,6 @@ def default_factory(request, pin_factory):
     yield pin_factory
     Device.pin_factory = save_pin_factory
 
-@pytest.yield_fixture()
-def no_default_factory(request):
-    save_pin_factory = Device.pin_factory
-    Device.pin_factory = None
-    yield None
-    Device.pin_factory = save_pin_factory
-
 @pytest.yield_fixture(scope='function')
 def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for

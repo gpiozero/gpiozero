@@ -115,7 +115,8 @@ class Factory(object):
             :meth:`pin` for the same pin specification must return the same
             object.
         """
-        raise PinUnsupported("Individual pins are not supported by this pin factory")
+        raise PinUnsupported(
+            "Individual pins are not supported by this pin factory")
 
     def spi(self, **spi_args):
         """
@@ -339,7 +340,8 @@ class Pin(object):
 
     def _set_bounce(self, value):
         if value is not None:
-            raise PinEdgeDetectUnsupported("Edge detection is not supported on pin %r" % self)
+            raise PinEdgeDetectUnsupported(
+                "Edge detection is not supported on pin %r" % self)
 
     bounce = property(
         lambda self: self._get_bounce(),
@@ -379,7 +381,8 @@ class Pin(object):
         return 'none'
 
     def _set_edges(self, value):
-        raise PinEdgeDetectUnsupported("Edge detection is not supported on pin %r" % self)
+        raise PinEdgeDetectUnsupported(
+            "Edge detection is not supported on pin %r" % self)
 
     edges = property(
         lambda self: self._get_edges(),
@@ -408,7 +411,8 @@ class Pin(object):
         return None
 
     def _set_when_changed(self, value):
-        raise PinEdgeDetectUnsupported("Edge detection is not supported on pin %r" % self)
+        raise PinEdgeDetectUnsupported(
+            "Edge detection is not supported on pin %r" % self)
 
     when_changed = property(
         lambda self: self._get_when_changed(),

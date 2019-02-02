@@ -184,6 +184,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
     """
     def __init__(self, *args, **kwargs):
         pull_up = kwargs.pop('pull_up', True)
+        active_state = kwargs.pop('active_state', None)
         bounce_time = kwargs.pop('bounce_time', None)
         hold_time = kwargs.pop('hold_time', 1)
         hold_repeat = kwargs.pop('hold_repeat', False)
@@ -191,15 +192,20 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         order = kwargs.pop('_order', None)
         super(ButtonBoard, self).__init__(
             *(
-                Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                Button(pin, pull_up=pull_up, active_state=active_state,
+                       bounce_time=bounce_time, hold_time=hold_time,
+                       hold_repeat=hold_repeat)
                 for pin in args
-                ),
+            ),
             _order=order,
             pin_factory=pin_factory,
             **{
-                name: Button(pin, pull_up, bounce_time, hold_time, hold_repeat)
+                name: Button(pin, pull_up=pull_up, active_state=active_state,
+                             bounce_time=bounce_time, hold_time=hold_time,
+                             hold_repeat=hold_repeat)
                 for name, pin in kwargs.items()
-                })
+            }
+        )
         if len(self) == 0:
             raise GPIOPinMissing('No pins given')
         def get_new_handler(device):
@@ -278,7 +284,7 @@ class LEDCollection(CompositeOutputDevice):
                     pin_factory=pin_factory
                 )
                 for pin_or_collection in args
-                ),
+            ),
             _order=order,
             pin_factory=pin_factory,
             **{
@@ -289,7 +295,8 @@ class LEDCollection(CompositeOutputDevice):
                     pin_factory=pin_factory
                 )
                 for name, pin_or_collection in kwargs.items()
-                })
+            }
+        )
         if len(self) == 0:
             raise GPIOPinMissing('No pins given')
         leds = []
@@ -500,8 +507,7 @@ class LEDBoard(LEDCollection):
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n)
-        )
+            args=(on_time, off_time, fade_in_time, fade_out_time, n))
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
@@ -539,27 +545,27 @@ class LEDBoard(LEDCollection):
         """
         on_time = off_time = 0
         self.blink(
-            on_time, off_time, fade_in_time, fade_out_time, n, background
-        )
+            on_time, off_time, fade_in_time, fade_out_time, n, background)
 
-    def _blink_device(self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
+    def _blink_device(
+            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
         if fade_in_time > 0:
             sequence += [
                 (i * (1 / fps) / fade_in_time, 1 / fps)
                 for i in range(int(fps * fade_in_time))
-                ]
+            ]
         sequence.append((1, on_time))
         if fade_out_time > 0:
             sequence += [
                 (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
                 for i in range(int(fps * fade_out_time))
-                ]
+            ]
         sequence.append((0, off_time))
-        sequence = (
-                cycle(sequence) if n is None else
-                chain.from_iterable(repeat(sequence, n))
-                )
+        if n is None:
+            sequence = cycle(sequence)
+        else:
+            sequence = chain.from_iterable(repeat(sequence, n))
         with self._blink_lock:
             self._blink_leds = list(self.leds)
             for led in self._blink_leds:
@@ -638,16 +644,18 @@ class LEDBarGraph(LEDCollection):
     def __init__(self, *pins, **kwargs):
         # Don't allow graphs to contain collections
         for pin in pins:
-            assert not isinstance(pin, LEDCollection)
+            if isinstance(pin, Device):
+                raise CompositeDeviceBadDevice(
+                    'Only pins may be specified for LEDBarGraph')
         pwm = kwargs.pop('pwm', False)
         active_high = kwargs.pop('active_high', True)
         initial_value = kwargs.pop('initial_value', 0.0)
         pin_factory = kwargs.pop('pin_factory', None)
         if kwargs:
-            raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
+            raise TypeError(
+                'unexpected keyword argument: %s' % kwargs.popitem()[0])
         super(LEDBarGraph, self).__init__(
-            *pins, pwm=pwm, active_high=active_high, pin_factory=pin_factory
-        )
+            *pins, pwm=pwm, active_high=active_high, pin_factory=pin_factory)
         try:
             self.value = initial_value
         except:
@@ -686,7 +694,8 @@ class LEDBarGraph(LEDCollection):
     @value.setter
     def value(self, value):
         if not -1 <= value <= 1:
-            raise OutputDeviceBadValue('LEDBarGraph value must be between -1 and 1')
+            raise OutputDeviceBadValue(
+                'LEDBarGraph value must be between -1 and 1')
         count = len(self)
         leds = self
         if value < 0:
@@ -990,8 +999,7 @@ class TrafficLights(LEDBoard):
                  pin_factory=None):
         if amber is not None and yellow is not None:
             raise OutputDeviceBadValue(
-                'Only one of amber or yellow can be specified'
-            )
+                'Only one of amber or yellow can be specified')
         devices = OrderedDict((('red', red), ))
         self._display_yellow = amber is None and yellow is not None
         if self._display_yellow:
@@ -1000,9 +1008,8 @@ class TrafficLights(LEDBoard):
             devices['amber'] = amber
         devices['green'] = green
         if not all(p is not None for p in devices.values()):
-            raise GPIOPinMissing(
-                ', '.join(devices.keys())+' pins must be provided'
-            )
+            raise GPIOPinMissing('%s pins must be provided' %
+                                 ', '.join(devices.keys()))
         super(TrafficLights, self).__init__(
             pwm=pwm, initial_value=initial_value,
             _order=devices.keys(), pin_factory=pin_factory,
@@ -1113,8 +1120,7 @@ class PiStop(TrafficLights):
                              ', '.join(sorted(self.LOCATIONS.keys())))
         super(PiStop, self).__init__(
             *gpios, pwm=pwm, initial_value=initial_value,
-            pin_factory=pin_factory
-        )
+            pin_factory=pin_factory)
 
 
 class StatusZero(LEDBoard):
@@ -1583,7 +1589,8 @@ class Robot(SourceMixin, CompositeDevice):
         if not 0 <= curve_right <= 1:
             raise ValueError('curve_right must be between 0 and 1')
         if curve_left != 0 and curve_right != 0:
-            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+            raise ValueError("curve_left and curve_right can't be used at "
+                             "the same time")
         self.left_motor.forward(speed * (1 - curve_left))
         self.right_motor.forward(speed * (1 - curve_right))
 
@@ -1616,7 +1623,8 @@ class Robot(SourceMixin, CompositeDevice):
         if not 0 <= curve_right <= 1:
             raise ValueError('curve_right must be between 0 and 1')
         if curve_left != 0 and curve_right != 0:
-            raise ValueError('curve_left and curve_right can\'t be used at the same time')
+            raise ValueError("curve_left and curve_right can't be used at "
+                             "the same time")
         self.left_motor.backward(speed * (1 - curve_left))
         self.right_motor.backward(speed * (1 - curve_right))
 
@@ -2118,7 +2126,6 @@ class JamHat(CompositeOutputDevice):
     Extends :class:`CompositeOutputDevice` for the `ModMyPi JamHat`_ board.
 
     There are 6 LEDs, two buttons and a tonal buzzer. The pins are fixed.
-
     Usage::
 
         from gpiozero import JamHat

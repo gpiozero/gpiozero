@@ -239,7 +239,8 @@ def booleanized(values, min_value, max_value, hysteresis=0):
     else:
         hysteresis = float(hysteresis)
     if (max_value - min_value) <= hysteresis:
-        raise ValueError('The gap between min_value and max_value must be larger than hysteresis')
+        raise ValueError('The gap between min_value and max_value must be '
+                         'larger than hysteresis')
     last_state = None
     for v in values:
         if v < min_value:

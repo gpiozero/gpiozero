@@ -1099,7 +1099,7 @@ class RGBLED(SourceMixin, Device):
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, on_color,
             off_color, n, fps=25):
-        # Define some simple lambdas to perform linear interpolation between
+        # Define a simple lambda to perform linear interpolation between
         # off_color and on_color
         lerp = lambda t, fade_in: tuple(
             (1 - t) * off + t * on
@@ -1245,7 +1245,8 @@ class Motor(SourceMixin, CompositeDevice):
             raise ValueError('forward speed must be between 0 and 1')
         if isinstance(self.forward_device, DigitalOutputDevice):
             if speed not in (0, 1):
-                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
+                raise ValueError(
+                    'forward speed must be 0 or 1 with non-PWM Motors')
         self.backward_device.off()
         self.forward_device.value = speed
 
@@ -1263,7 +1264,8 @@ class Motor(SourceMixin, CompositeDevice):
             raise ValueError('backward speed must be between 0 and 1')
         if isinstance(self.backward_device, DigitalOutputDevice):
             if speed not in (0, 1):
-                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
+                raise ValueError(
+                    'backward speed must be 0 or 1 with non-PWM Motors')
         self.forward_device.off()
         self.backward_device.value = speed
 
@@ -1337,7 +1339,11 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         Represents the speed of the motor as a floating point value between -1
         (full speed backward) and 1 (full speed forward).
         """
-        return -self.enable_device.value if self.phase_device.is_active else self.enable_device.value
+        return (
+            -self.enable_device.value
+            if self.phase_device.is_active else
+            self.enable_device.value
+        )
 
     @value.setter
     def value(self, value):
@@ -1368,7 +1374,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         if isinstance(self.enable_device, DigitalOutputDevice):
             if speed not in (0, 1):
-                raise ValueError('forward speed must be 0 or 1 with non-PWM Motors')
+                raise ValueError(
+                    'forward speed must be 0 or 1 with non-PWM Motors')
         self.enable_device.off()
         self.phase_device.off()
         self.enable_device.value = speed
@@ -1383,7 +1390,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         if isinstance(self.enable_device, DigitalOutputDevice):
             if speed not in (0, 1):
-                raise ValueError('backward speed must be 0 or 1 with non-PWM Motors')
+                raise ValueError(
+                    'backward speed must be 0 or 1 with non-PWM Motors')
         self.enable_device.off()
         self.phase_device.on()
         self.enable_device.value = speed

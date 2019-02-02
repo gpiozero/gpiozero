@@ -60,15 +60,14 @@ class InputDevice(GPIODevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, pin=None, pull_up=False, pin_factory=None,
-                 active_state=None):
+    def __init__(self, pin=None, pull_up=False, active_state=None,
+                 pin_factory=None):
         super(InputDevice, self).__init__(pin, pin_factory=pin_factory)
         try:
             self.pin.function = 'input'
-            if pull_up is None:
-                self.pin.pull = 'floating'
-            else:
-                self.pin.pull = 'up' if pull_up else 'down'
+            pull = {None: 'floating', True: 'up', False: 'down'}[pull_up]
+            if self.pin.pull != pull:
+                self.pin.pull = pull
         except:
             self.close()
             raise
@@ -80,6 +79,10 @@ class InputDevice(GPIODevice):
                     'defined' % self.pin.number)
             self._active_state = bool(active_state)
         else:
+            if active_state is not None:
+                raise PinInvalidState(
+                    'Pin %d is not floating, but "active_state" it not None' %
+                    self.pin.number)
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state
 
@@ -139,11 +142,11 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, bounce_time=None, pin_factory=None,
-            active_state=None):
+            self, pin=None, pull_up=False, active_state=None, bounce_time=None,
+            pin_factory=None):
         super(DigitalInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            pin_factory=pin_factory)
         try:
             self.pin.bounce = bounce_time
             self.pin.edges = 'both'
@@ -207,33 +210,35 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         as fast as possible.
 
     :param bool partial:
-        If ``False`` (the default), attempts to read the state of the device
-        (from the :attr:`is_active` property) will block until the queue has
-        filled.  If ``True``, a value will be returned immediately, but be
-        aware that this value is likely to fluctuate excessively.
+        If :data:`False` (the default), attempts to read the state of the
+        device (from the :attr:`is_active` property) will block until the queue
+        has filled.  If :data:`True`, a value will be returned immediately, but
+        be aware that this value is likely to fluctuate excessively.
 
     :param average:
         The function used to average the values in the internal queue. This
-        defaults to :func:`statistics.median` which a good selection for
-        discarding outliers from jittery sensors. The function specific must
+        defaults to :func:`statistics.median` which is a good selection for
+        discarding outliers from jittery sensors. The function specified must
         accept a sequence of numbers and return a single number.
 
-    :param set ignore:
+    :type ignore: frozenset or None
+    :param ignore:
         The set of values which the queue should ignore, if returned from
         querying the device's value.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
-            sample_wait=0.0, partial=False, average=median, ignore=None,
-            pin_factory=None, active_state=None):
+            self, pin=None, pull_up=False, active_state=None, threshold=0.5,
+            queue_len=5, sample_wait=0.0, partial=False, average=median,
+            ignore=None, pin_factory=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            pin_factory=pin_factory)
         try:
             self._queue = GPIOQueue(self, queue_len, sample_wait, partial,
                                     average, ignore)
@@ -384,13 +389,11 @@ class Button(HoldMixin, DigitalInputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=True, bounce_time=None,
-            hold_time=1, hold_repeat=False, pin_factory=None,
-            active_state=None):
+            self, pin=None, pull_up=True, active_state=None, bounce_time=None,
+            hold_time=1, hold_repeat=False, pin_factory=None):
         super(Button, self).__init__(
-            pin, pull_up, bounce_time, pin_factory=pin_factory,
-            active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            bounce_time=bounce_time, pin_factory=pin_factory)
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
@@ -466,11 +469,13 @@ class LineSensor(SmoothedInputDevice):
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(
-            self, pin=None, pull_up=False, queue_len=5, sample_rate=100,
-            threshold=0.5, partial=False, pin_factory=None):
+            self, pin=None, pull_up=False, active_state=None, queue_len=5,
+            sample_rate=100, threshold=0.5, partial=False, pin_factory=None):
         super(LineSensor, self).__init__(
-            pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
-            partial=partial, pin_factory=pin_factory)
+            pin, pull_up=pull_up, active_state=active_state,
+            threshold=threshold, queue_len=queue_len,
+            sample_wait=1 / sample_rate, partial=partial,
+            pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -548,13 +553,12 @@ class MotionSensor(SmoothedInputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, queue_len=1, sample_rate=10,
-            threshold=0.5, partial=False, pin_factory=None, active_state=None):
+            self, pin=None, pull_up=False, active_state=None, queue_len=1,
+            sample_rate=10, threshold=0.5, partial=False, pin_factory=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up=pull_up, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
-            pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            threshold=threshold, queue_len=queue_len, sample_wait=1 /
+            sample_rate, partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -626,10 +630,8 @@ class LightSensor(SmoothedInputDevice):
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False, pin_factory=None):
         super(LightSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=0.0, partial=partial,
-            pin_factory=pin_factory
-        )
+            pin, pull_up=False, threshold=threshold, queue_len=queue_len,
+            sample_wait=0.0, partial=partial, pin_factory=pin_factory)
         try:
             self._charge_time_limit = charge_time_limit
             self._charge_time = None
@@ -897,7 +899,8 @@ class DistanceSensor(SmoothedInputDevice):
             if self._echo.wait(0.1):
                 if self._echo_fall is not None and self._echo_rise is not None:
                     distance = (
-                        self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
+                        self.pin_factory.ticks_diff(
+                            self._echo_fall, self._echo_rise) *
                         self.speed_of_sound / 2.0)
                     return min(1.0, distance / self._max_distance)
                 else:
