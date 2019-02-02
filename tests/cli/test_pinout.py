@@ -38,4 +38,4 @@ def test_help(capsys):
 
 def test_execution(capsys, no_default_factory):
     os.environ['GPIOZERO_PIN_FACTORY'] = 'mock'
-    assert main() == 0
+    assert main([]) == 0
