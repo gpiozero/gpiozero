@@ -2,6 +2,9 @@ pinout
 ======
 
 .. image:: images/pinout_pi3.png
+    :align: center
+    :width: 537px
+
 
 Synopsis
 --------
@@ -9,6 +12,7 @@ Synopsis
 ::
 
     pinout [-h] [-r REVISION] [-c] [-m] [-x]
+
 
 Description
 -----------
@@ -18,6 +22,7 @@ A utility for querying Raspberry Pi GPIO pin-out information. Running
 diagram for the current Raspberry Pi. It is also possible to manually specify a
 revision of Pi, or (by :doc:`remote_gpio`) to output information about a
 remote Pi.
+
 
 Options
 -------
@@ -44,6 +49,7 @@ Options
 .. option:: -x, --xyz
 
     Open `pinout.xyz`_ in the default web browser
+
 
 Examples
 --------
@@ -134,6 +140,8 @@ Or new-style `revision codes`_ (such as for the Pi Zero W):
     $ pinout -r 9000c1
 
 .. image:: images/pinout_pizero_w.png
+    :align: center
+    :width: 537px
 
 You can also use the tool with :doc:`remote_gpio` to query remote Raspberry
 Pi's:
@@ -149,22 +157,26 @@ this case you'll almost certainly want to specify the Pi revision manually):
 
     $ GPIOZERO_PIN_FACTORY=mock pinout -r a22042
 
+
 Environment Variables
 ---------------------
 
-GPIOZERO_PIN_FACTORY
+.. envvar:: GPIOZERO_PIN_FACTORY
+
     The library to use when communicating with the GPIO pins. Defaults to
     attempting to load RPi.GPIO, then RPIO, then pigpio, and finally uses a
     native Python implementation. Valid values include "rpigpio", "rpio",
     "pigpio", "native", and "mock". The latter is most useful on non-Pi
     platforms as it emulates a Raspberry Pi model 3B (by default).
 
-PIGPIO_ADDR
+.. envvar:: PIGPIO_ADDR
+
     The hostname of the Raspberry Pi the pigpio library should attempt to
     connect to (if the pigpio pin factory is being used). Defaults to
     ``localhost``.
 
-PIGPIO_PORT
+.. envvar:: PIGPIO_PORT
+
     The port number the pigpio library should attempt to connect to (if the
     pigpio pin factory is being used). Defaults to ``8888``.
 

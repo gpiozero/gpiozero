@@ -2,10 +2,11 @@
 Pi Zero USB OTG
 ===============
 
-The `Raspberry Pi Zero`_ and `Pi Zero W`_ feature a USB OTG port, allowing users
-to configure the device as (amongst other things) an Ethernet device. In this
-mode, it is possible to control the Pi Zero's GPIO pins over USB from another
-computer using the :doc:`remote GPIO <remote_gpio>` feature.
+The `Raspberry Pi Zero`_ and `Pi Zero W`_ feature a USB OTG port, allowing
+users to configure the device as (amongst other things) an Ethernet device. In
+this mode, it is possible to control the Pi Zero's GPIO pins over USB from
+another computer using the :doc:`remote GPIO <remote_gpio>` feature.
+
 
 GPIO expander method - no SD card required
 ==========================================
@@ -16,8 +17,8 @@ USB cable, launching a mini version of Raspbian and booting it in RAM. The OS
 then starts the pigpio daemon, allowing "remote" access over the USB cable.
 
 At the time of writing, this is only possible using either the Raspberry Pi
-Desktop x86 OS, or Ubuntu (or a derivative), or from another Raspberry Pi. Usage
-from Windows and Mac OS is not supported at present.
+Desktop x86 OS, or Ubuntu (or a derivative), or from another Raspberry Pi.
+Usage from Windows and Mac OS is not supported at present.
 
 Raspberry Pi Desktop x86 setup
 ------------------------------
@@ -70,16 +71,18 @@ will automatically launch a prompt to select a role for the device. Select
 "GPIO expansion board" and continue:
 
 .. image:: images/gpio-expansion-prompt.png
+    :align: center
+    :width: 364px
 
 It will take 30 seconds or so to flash it, then the dialogue will disappear.
 
-Raspberry Pi Desktop and Raspbian will name your Pi Zero connection ``usb0``. On
-Ubuntu, this will likely be something else. You can ping it (be sure to use
-``ping6`` as it's IPv6 only) using the address ``fe80::1%`` followed by the
-connection string. You can look this up using ``ifconfig``.
+Raspberry Pi Desktop and Raspbian will name your Pi Zero connection ``usb0``.
+On Ubuntu, this will likely be something else. You can ping it using the
+address ``fe80::1%`` followed by the connection string. You can look this up
+using ``ifconfig``.
 
-Set the ``GPIOZERO_PIN_FACTORY`` and ``PIGPIO_ADDR`` environment variables on
-your PC so GPIO Zero connects to the "remote" Pi Zero:
+Set the :envvar:`GPIOZERO_PIN_FACTORY` and :envvar:`PIGPIO_ADDR` environment
+variables on your PC so GPIO Zero connects to the "remote" Pi Zero:
 
 .. code-block:: console
 
@@ -90,6 +93,8 @@ Now any GPIO Zero code you run on the PC will use the GPIOs of the attached Pi
 Zero:
 
 .. image:: images/gpio-expansion-example.png
+    :align: center
+    :width: 640px
 
 Alternatively, you can set the pin factory in-line, as explained in
 :doc:`remote_gpio`.
@@ -105,21 +110,21 @@ The legacy method requires the Pi Zero to have a Raspbian SD card inserted.
 Start by creating a Raspbian (desktop or lite) SD card, and then configure the
 boot partition like so:
 
-1. Edit ``config.txt`` and add ``dtoverlay=dwc2`` on a new line, then save the
-   file.
+1. Edit :file:`config.txt` and add ``dtoverlay=dwc2`` on a new line, then save
+   the file.
 
-2. Create an empty file called ``ssh`` (no file extension) and save it in the
-   boot partition.
+2. Create an empty file called :file:`ssh` (no file extension) and save it in
+   the boot partition.
 
-3. Edit ``cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
+3. Edit :file:`cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
    ``rootwait``.
 
 (See guides on `blog.gbaman.info`_ and `learn.adafruit.com`_ for more detailed
 instructions)
 
-Then connect the Pi Zero to your computer using a micro USB cable (connecting it
-to the USB port, not the power port). You'll see the indicator LED flashing as
-the Pi Zero boots. When it's ready, you will be able to ping and SSH into it
+Then connect the Pi Zero to your computer using a micro USB cable (connecting
+it to the USB port, not the power port). You'll see the indicator LED flashing
+as the Pi Zero boots. When it's ready, you will be able to ping and SSH into it
 using the hostname ``raspberrypi.local``. SSH into the Pi Zero, install pigpio
 and run the pigpio daemon.
 

@@ -29,10 +29,10 @@ from ..exc import (
 
 class PiGPIOFactory(PiFactory):
     """
-    Uses the `pigpio`_ library to interface to the Pi's GPIO pins. The pigpio
-    library relies on a daemon (``pigpiod``) to be running as root to provide
-    access to the GPIO pins, and communicates with this daemon over a network
-    socket.
+    Extends :class:`~gpiozero.pins.pi.PiFactory`. Uses the `pigpio`_ library to
+    interface to the Pi's GPIO pins. The pigpio library relies on a daemon
+    (:command:`pigpiod`) to be running as root to provide access to the GPIO
+    pins, and communicates with this daemon over a network socket.
 
     While this does mean only the daemon itself should control the pins, the
     architecture does have several advantages:
@@ -68,7 +68,7 @@ class PiGPIOFactory(PiFactory):
         to be possible to get the daemon into "unusual" states. We would be
         most interested to hear any bug reports relating to this (it may be a
         bug in our pin implementation). A workaround for now is simply to
-        restart the ``pigpiod`` daemon.
+        restart the :command:`pigpiod` daemon.
 
     .. _pigpio: http://abyz.co.uk/rpi/pigpio/
     """
@@ -149,8 +149,8 @@ class PiGPIOFactory(PiFactory):
 
 class PiGPIOPin(PiPin):
     """
-    Pin implementation for the `pigpio`_ library. See :class:`PiGPIOFactory`
-    for more information.
+    Extends :class:`~gpiozero.pins.pi.PiPin`. Pin implementation for the
+    `pigpio`_ library. See :class:`PiGPIOFactory` for more information.
 
     .. _pigpio: http://abyz.co.uk/rpi/pigpio/
     """

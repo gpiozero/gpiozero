@@ -45,8 +45,9 @@ SPI_HARDWARE_PINS = {
 
 class PiFactory(Factory):
     """
-    Abstract base class representing hardware attached to a Raspberry Pi. This
-    forms the base of :class:`~gpiozero.pins.local.LocalPiFactory`.
+    Extends :class:`~gpiozero.Factory`. Abstract base class representing
+    hardware attached to a Raspberry Pi. This forms the base of
+    :class:`~gpiozero.pins.local.LocalPiFactory`.
     """
     def __init__(self):
         super(PiFactory, self).__init__()
@@ -95,13 +96,14 @@ class PiFactory(Factory):
         Returns an SPI interface, for the specified SPI *port* and *device*, or
         for the specified pins (*clock_pin*, *mosi_pin*, *miso_pin*, and
         *select_pin*).  Only one of the schemes can be used; attempting to mix
-        *port* and *device* with pin numbers will raise :exc:`SPIBadArgs`.
+        *port* and *device* with pin numbers will raise
+        :exc:`~gpiozero.SPIBadArgs`.
 
         If the pins specified match the hardware SPI pins (clock on GPIO11,
         MOSI on GPIO10, MISO on GPIO9, and chip select on GPIO8 or GPIO7), and
-        the spidev module can be imported, a :class:`SPIHardwareInterface`
-        instance will be returned. Otherwise, a :class:`SPISoftwareInterface`
-        will be returned which will use simple bit-banging to communicate.
+        the spidev module can be imported, a hardware based interface (using
+        spidev) will be returned. Otherwise, a software based interface will be
+        returned which will use simple bit-banging to communicate.
 
         Both interfaces have the same API, support clock polarity and phase
         attributes, and can handle half and full duplex communications, but the
@@ -198,9 +200,9 @@ class PiFactory(Factory):
 
 class PiPin(Pin):
     """
-    Abstract base class representing a multi-function GPIO pin attached to a
-    Raspberry Pi. This overrides several methods in the abstract base
-    :class:`~gpiozero.Pin`. Descendents *must* override the following methods:
+    Extends :class:`~gpiozero.Pin`. Abstract base class representing a
+    multi-function GPIO pin attached to a Raspberry Pi. Descendents *must*
+    override the following methods:
 
     * :meth:`_get_function`
     * :meth:`_set_function`

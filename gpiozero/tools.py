@@ -50,8 +50,8 @@ def _normalize(values):
 
 def negated(values):
     """
-    Returns the negation of the supplied values (``True`` becomes ``False``,
-    and ``False`` becomes ``True``). For example::
+    Returns the negation of the supplied values (:data:`True` becomes
+    :data:`False`, and :data:`False` becomes :data:`True`). For example::
 
         from gpiozero import Button, LED
         from gpiozero.tools import negated
@@ -214,7 +214,7 @@ def booleanized(values, min_value, max_value, hysteresis=0):
     add `hysteresis`_ which prevents the output value rapidly flipping when
     the input value is fluctuating near the *min_value* or *max_value*
     thresholds. For example, to light an LED only when a potentiometer is
-    between 1/4 and 3/4 of its full range::
+    between ¼ and ¾ of its full range::
 
         from gpiozero import LED, MCP3008
         from gpiozero.tools import booleanized
@@ -272,9 +272,9 @@ def booleanized(values, min_value, max_value, hysteresis=0):
 def all_values(*values):
     """
     Returns the `logical conjunction`_ of all supplied values (the result is
-    only ``True`` if and only if all input values are simultaneously ``True``).
-    One or more *values* can be specified. For example, to light an
-    :class:`LED` only when *both* buttons are pressed::
+    only :data:`True` if and only if all input values are simultaneously
+    :data:`True`). One or more *values* can be specified. For example, to light
+    an :class:`~gpiozero.LED` only when *both* buttons are pressed::
 
         from gpiozero import LED, Button
         from gpiozero.tools import all_values
@@ -299,9 +299,9 @@ def all_values(*values):
 def any_values(*values):
     """
     Returns the `logical disjunction`_ of all supplied values (the result is
-    ``True`` if any of the input values are currently ``True``). One or more
-    *values* can be specified. For example, to light an :class:`LED` when
-    *any* button is pressed::
+    :data:`True` if any of the input values are currently :data:`True`). One or
+    more *values* can be specified. For example, to light an
+    :class:`~gpiozero.LED` when *any* button is pressed::
 
         from gpiozero import LED, Button
         from gpiozero.tools import any_values
@@ -325,8 +325,8 @@ def any_values(*values):
 def averaged(*values):
     """
     Returns the mean of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the average of
-    several potentiometers connected to an :class:`MCP3008` ADC::
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the average
+    of several potentiometers connected to an :class:`~gpiozero.MCP3008` ADC::
 
         from gpiozero import MCP3008, PWMLED
         from gpiozero.tools import averaged
@@ -349,8 +349,9 @@ def averaged(*values):
 def summed(*values):
     """
     Returns the sum of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the (scaled) sum of
-    several potentiometers connected to an :class:`MCP3008` ADC::
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the
+    (scaled) sum of several potentiometers connected to an
+    :class:`~gpiozero.MCP3008` ADC::
 
         from gpiozero import MCP3008, PWMLED
         from gpiozero.tools import summed, scaled
@@ -373,8 +374,9 @@ def summed(*values):
 def multiplied(*values):
     """
     Returns the product of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the product (i.e.
-    multiplication) of several potentiometers connected to an :class:`MCP3008`
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the product
+    (i.e. multiplication) of several potentiometers connected to an
+    :class:`~gpiozero.MCP3008`
     ADC::
 
         from gpiozero import MCP3008, PWMLED
@@ -644,9 +646,9 @@ def cos_values(period=360):
 
 def alternating_values(initial_value=False):
     """
-    Provides an infinite source of values alternating between ``True`` and
-    ``False``, starting wth *initial_value* (which defaults to ``False``). For
-    example, to produce a flashing LED::
+    Provides an infinite source of values alternating between :data:`True` and
+    :data:`False`, starting wth *initial_value* (which defaults to
+    :data:`False`). For example, to produce a flashing LED::
 
         from gpiozero import LED
         from gpiozero.tools import alternating_values

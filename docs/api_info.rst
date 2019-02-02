@@ -2,6 +2,8 @@
 API - Pi Information
 ====================
 
+.. module:: gpiozero.pins.data
+
 .. currentmodule:: gpiozero
 
 The GPIO Zero library also contains a database of information about the various
@@ -10,11 +12,26 @@ warnings when non-physical pins are used, or to raise exceptions when
 pull-downs are requested on pins with physical pull-up resistors attached. The
 following functions and classes can be used to query this database:
 
+
+pi_info
+=======
+
 .. autofunction:: pi_info
+
+
+PiBoardInfo
+===========
 
 .. autoclass:: PiBoardInfo
 
+
+HeaderInfo
+==========
+
 .. autoclass:: HeaderInfo
 
-.. autoclass:: PinInfo
 
+PinInfo
+=======
+
+.. autoclass:: PinInfo

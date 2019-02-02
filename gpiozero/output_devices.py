@@ -29,22 +29,26 @@ class OutputDevice(SourceMixin, GPIODevice):
     output devices: an :meth:`on` method to switch the device on, a
     corresponding :meth:`off` method, and a :meth:`toggle` method.
 
-    :param int pin:
-        The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is ``None`` a :exc:`GPIOPinMissing` will be raised.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set the GPIO to
-        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
-        :meth:`off` method always does the opposite).
+        If :data:`True` (the default), the :meth:`on` method will set the GPIO
+        to HIGH. If :data:`False`, the :meth:`on` method will set the GPIO to
+        LOW (the :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
-        If ``False`` (the default), the device will be off initially.  If
-        ``None``, the device will be left in whatever state the pin is found in
-        when configured for output (warning: this can be on).  If ``True``, the
-        device will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), the device will be off initially.  If
+        :data:`None`, the device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on).  If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -95,8 +99,9 @@ class OutputDevice(SourceMixin, GPIODevice):
     @property
     def value(self):
         """
-        Returns ``True`` if the device is currently active and ``False``
-        otherwise. Setting this property changes the state of the device.
+        Returns :data:`True` if the device is currently active and
+        :data:`False` otherwise. Setting this property changes the state of the
+        device.
         """
         return super(OutputDevice, self).value
 
@@ -107,9 +112,10 @@ class OutputDevice(SourceMixin, GPIODevice):
     @property
     def active_high(self):
         """
-        When ``True``, the :attr:`value` property is ``True`` when the device's
-        :attr:`pin` is high. When ``False`` the :attr:`value` property is
-        ``True`` when the device's pin is low (i.e. the value is inverted).
+        When :data:`True`, the :attr:`value` property is :data:`True` when the
+        device's :attr:`~GPIODevice.pin` is high. When :data:`False` the
+        :attr:`value` property is :data:`True` when the device's pin is low
+        (i.e. the value is inverted).
 
         This property can be set after construction; be warned that changing it
         will invert :attr:`value` (i.e. changing this property doesn't change
@@ -138,6 +144,29 @@ class DigitalOutputDevice(OutputDevice):
     This class extends :class:`OutputDevice` with a :meth:`blink` method which
     uses an optional background thread to handle toggling the device state
     without further interaction.
+
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
+
+    :param bool active_high:
+        If :data:`True` (the default), the :meth:`on` method will set the GPIO
+        to HIGH. If :data:`False`, the :meth:`on` method will set the GPIO to
+        LOW (the :meth:`off` method always does the opposite).
+
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), the device will be off initially.  If
+        :data:`None`, the device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on).  If
+        :data:`True`, the device will be switched on initially.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(
             self, pin=None, active_high=True, initial_value=False,
@@ -179,14 +208,15 @@ class DigitalOutputDevice(OutputDevice):
         :param float off_time:
             Number of seconds off. Defaults to 1 second.
 
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
@@ -233,22 +263,26 @@ class LED(DigitalOutputDevice):
         led = LED(17)
         led.on()
 
-    :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
-        valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the LED is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param bool active_high:
-        If ``True`` (the default), the LED will operate normally with the
-        circuit described above. If ``False`` you should wire the cathode to
-        the GPIO pin, and the anode to a 3V3 pin (via a limiting resistor).
+        If :data:`True` (the default), the LED will operate normally with the
+        circuit described above. If :data:`False` you should wire the cathode
+        to the GPIO pin, and the anode to a 3V3 pin (via a limiting resistor).
 
-    :param bool initial_value:
-        If ``False`` (the default), the LED will be off initially.  If
-        ``None``, the LED will be left in whatever state the pin is found in
-        when configured for output (warning: this can be on).  If ``True``, the
-        LED will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), the LED will be off initially.  If
+        :data:`None`, the LED will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on).  If
+        :data:`True`, the LED will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -260,8 +294,12 @@ LED.is_lit = LED.is_active
 class Buzzer(DigitalOutputDevice):
     """
     Extends :class:`DigitalOutputDevice` and represents a digital buzzer
-    component. Note that this interface is only capable of simple on/off
-    commands, and is not capable of playing a variety of tones.
+    component.
+
+    .. note::
+
+        This interface is only capable of simple on/off commands, and is not
+        capable of playing a variety of tones (see :class:`TonalBuzzer`).
 
     Connect the cathode (negative pin) of the buzzer to a ground pin; connect
     the other side to any GPIO pin.
@@ -273,22 +311,26 @@ class Buzzer(DigitalOutputDevice):
         bz = Buzzer(3)
         bz.on()
 
-    :param int pin:
-        The GPIO pin which the buzzer is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the buzzer is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param bool active_high:
-        If ``True`` (the default), the buzzer will operate normally with the
-        circuit described above. If ``False`` you should wire the cathode to
-        the GPIO pin, and the anode to a 3V3 pin.
+        If :data:`True` (the default), the buzzer will operate normally with
+        the circuit described above. If :data:`False` you should wire the
+        cathode to the GPIO pin, and the anode to a 3V3 pin.
 
-    :param bool initial_value:
-        If ``False`` (the default), the buzzer will be silent initially.  If
-        ``None``, the buzzer will be left in whatever state the pin is found in
-        when configured for output (warning: this can be on).  If ``True``, the
-        buzzer will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), the buzzer will be silent initially. If
+        :data:`None`, the buzzer will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the buzzer will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -301,26 +343,29 @@ class PWMOutputDevice(OutputDevice):
     """
     Generic output device configured for pulse-width modulation (PWM).
 
-    :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set the GPIO to
-        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
-        :meth:`off` method always does the opposite).
+        If :data:`True` (the default), the :meth:`on` method will set the GPIO
+        to HIGH. If :data:`False`, the :meth:`on` method will set the GPIO to
+        LOW (the :meth:`off` method always does the opposite).
 
     :param float initial_value:
-        If ``0`` (the default), the device's duty cycle will be 0 initially.
+        If 0 (the default), the device's duty cycle will be 0 initially.
         Other values between 0 and 1 can be specified as an initial duty cycle.
-        Note that ``None`` cannot be specified (unlike the parent class) as
+        Note that :data:`None` cannot be specified (unlike the parent class) as
         there is no way to tell PWM not to alter the state of the pin.
 
     :param int frequency:
         The frequency (in Hz) of pulses emitted to drive the device. Defaults
         to 100Hz.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -399,8 +444,8 @@ class PWMOutputDevice(OutputDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the device is currently active (:attr:`value` is
-        non-zero) and ``False`` otherwise.
+        Returns :data:`True` if the device is currently active (:attr:`value`
+        is non-zero) and :data:`False` otherwise.
         """
         return self.value != 0
 
@@ -434,14 +479,15 @@ class PWMOutputDevice(OutputDevice):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 0.
 
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
@@ -463,14 +509,15 @@ class PWMOutputDevice(OutputDevice):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 1.
 
-        :param int n:
-            Number of times to pulse; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to pulse; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            pulsing and return immediately. If ``False``, only return when the
-            pulse is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue pulsing and return immediately. If :data:`False`, only
+            return when the pulse is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         on_time = off_time = 0
         self.blink(
@@ -509,28 +556,33 @@ class PWMOutputDevice(OutputDevice):
             if self._blink_thread.stopping.wait(delay):
                 break
 
+
 class TonalBuzzer(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a tonal buzzer.
 
-    :param int pin:
-        The GPIO pin which the buzzer is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the buzzer is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param float initial_value:
-        If ``None`` (the default), the buzzer will be off initially. Values
+        If :data:`None` (the default), the buzzer will be off initially. Values
         between -1 and 1 can be specified as an initial value for the buzzer.
 
-    :param int mid_note:
-        The note which is represented the device's middle value (0). The default
-        is 69/A4.
+    :type mid_note: int or str
+    :param mid_note:
+        The note which is represented the device's middle value (0). The
+        default is "A4" (MIDI note 69).
 
     :param int octaves:
         The number of octaves to allow away from the base note. The default is
         1, meaning a value of -1 goes one octave below the base note, and one
         above, i.e. from A3 to A5 with the default base note of A4.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -582,7 +634,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     def note_value(self, note):
         """
         Convert the given note to a normalized value scaled -1 to 1 relative to
-        the buzzer's range. If note is ``None``, ``None`` is returned.
+        the buzzer's range. If note is :data:`None`, :data:`None` is returned.
         """
         if note is None:
             return None
@@ -607,7 +659,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     def stop(self):
         """
         Turn the buzzer off. This is equivalent to setting :attr:`value` to
-        ``None``.
+        :data:`None`.
         """
         self.value = None
 
@@ -616,8 +668,8 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         """
         Represents the state of the buzzer as a value between 0 (representing
         the minimum note) and 1 (representing the maximum note). This can also
-        be the special value ``None`` indicating that the buzzer is currently
-        silent.
+        be the special value :data:`None` indicating that the buzzer is
+        currently silent.
         """
         if self.pwm_device.pin.frequency is None:
             return None
@@ -647,8 +699,8 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the buzzer is currently playing, otherwise
-        ``False``.
+        Returns :data:`True` if the buzzer is currently playing, otherwise
+        :data:`False`.
         """
         return self.value is not None
 
@@ -662,8 +714,8 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def min_note(self):
         """
-        The minimum note available (i.e. the MIDI note represented when value is
-        -1).
+        The minimum note available (i.e. the MIDI note represented when value
+        is -1).
         """
         return self.mid_note - 12 * self.octaves
 
@@ -678,8 +730,8 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def max_note(self):
         """
-        The maximum note available (i.e. the MIDI note represented when value is
-        1).
+        The maximum note available (i.e. the MIDI note represented when value
+        is 1).
         """
         return self.mid_note + 12 * self.octaves
 
@@ -714,26 +766,29 @@ class PWMLED(PWMOutputDevice):
     anode (long leg) of the LED, and the cathode (short leg) to ground, with
     an optional resistor to prevent the LED from burning out.
 
-    :param int pin:
-        The GPIO pin which the LED is attached to. See :ref:`pin-numbering` for
-        valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the LED is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set the GPIO to
-        HIGH. If ``False``, the :meth:`on` method will set the GPIO to LOW (the
-        :meth:`off` method always does the opposite).
+        If :data:`True` (the default), the :meth:`on` method will set the GPIO
+        to HIGH. If :data:`False`, the :meth:`on` method will set the GPIO to
+        LOW (the :meth:`off` method always does the opposite).
 
     :param float initial_value:
         If ``0`` (the default), the LED will be off initially. Other values
         between 0 and 1 can be specified as an initial brightness for the LED.
-        Note that ``None`` cannot be specified (unlike the parent class) as
+        Note that :data:`None` cannot be specified (unlike the parent class) as
         there is no way to tell PWM not to alter the state of the pin.
 
     :param int frequency:
         The frequency (in Hz) of pulses emitted to drive the LED. Defaults
         to 100Hz.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -766,28 +821,35 @@ class RGBLED(SourceMixin, Device):
         led = RGBLED(2, 3, 4)
         led.color = Color('yellow')
 
-    :param int red:
-        The GPIO pin that controls the red component of the RGB LED.
+    :type red: int or str
+    :param red:
+        The GPIO pin that controls the red component of the RGB LED. See
+        :ref:`pin-numbering` for valid pin numbers. If this is :data:`None` a
+        :exc:`GPIODeviceError` will be raised.
 
-    :param int green:
+    :type green: int or str
+    :param green:
         The GPIO pin that controls the green component of the RGB LED.
 
-    :param int blue:
+    :type blue: int or str
+    :param blue:
         The GPIO pin that controls the blue component of the RGB LED.
 
     :param bool active_high:
-        Set to ``True`` (the default) for common cathode RGB LEDs. If you are
-        using a common anode RGB LED, set this to ``False``.
+        Set to :data:`True` (the default) for common cathode RGB LEDs. If you
+        are using a common anode RGB LED, set this to :data:`False`.
 
-    :param tuple initial_value:
+    :type initial_value: ~colorzero.Color or tuple
+    :param initial_value:
         The initial color for the RGB LED. Defaults to black ``(0, 0, 0)``.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMLED` instances for
-        each component of the RGBLED. If ``False``, construct regular
+        If :data:`True` (the default), construct :class:`PWMLED` instances for
+        each component of the RGBLED. If :data:`False`, construct regular
         :class:`LED` instances, which prevents smooth color graduations.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -824,7 +886,7 @@ class RGBLED(SourceMixin, Device):
     def value(self):
         """
         Represents the color of the LED as an RGB 3-tuple of ``(red, green,
-        blue)`` where each value is between 0 and 1 if ``pwm`` was ``True``
+        blue)`` where each value is between 0 and 1 if *pwm* was :data:`True`
         when the class was constructed (and only 0 or 1 if not).
 
         For example, red would be ``(1, 0, 0)`` and yellow would be ``(1, 1,
@@ -850,8 +912,8 @@ class RGBLED(SourceMixin, Device):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the LED is currently active (not black) and
-        ``False`` otherwise.
+        Returns :data:`True` if the LED is currently active (not black) and
+        :data:`False` otherwise.
         """
         return self.value != (0, 0, 0)
 
@@ -948,28 +1010,31 @@ class RGBLED(SourceMixin, Device):
 
         :param float fade_in_time:
             Number of seconds to spend fading in. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
+            *pwm* was :data:`False` when the class was constructed
             (:exc:`ValueError` will be raised if not).
 
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
+            *pwm* was :data:`False` when the class was constructed
             (:exc:`ValueError` will be raised if not).
 
-        :param tuple on_color:
+        :type on_color: ~colorzero.Color or tuple
+        :param on_color:
             The color to use when the LED is "on". Defaults to white.
 
-        :param tuple off_color:
+        :type off_color: ~colorzero.Color or tuple
+        :param off_color:
             The color to use when the LED is "off". Defaults to black.
 
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         if isinstance(self._leds[0], LED):
             if fade_in_time:
@@ -1001,20 +1066,23 @@ class RGBLED(SourceMixin, Device):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 1.
 
-        :param tuple on_color:
+        :type on_color: ~colorzero.Color or tuple
+        :param on_color:
             The color to use when the LED is "on". Defaults to white.
 
-        :param tuple off_color:
+        :type off_color: ~colorzero.Color or tuple
+        :param off_color:
             The color to use when the LED is "off". Defaults to black.
 
-        :param int n:
-            Number of times to pulse; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to pulse; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            pulsing and return immediately. If ``False``, only return when the
-            pulse is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue pulsing and return immediately. If :data:`False`, only
+            return when the pulse is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         on_time = off_time = 0
         self.blink(
@@ -1084,26 +1152,32 @@ class Motor(SourceMixin, CompositeDevice):
         motor = Motor(17, 18)
         motor.forward()
 
-    :param int forward:
+    :type forward: int or str
+    :param forward:
         The GPIO pin that the forward input of the motor driver chip is
-        connected to.
+        connected to. See :ref:`pin-numbering` for valid pin numbers. If this
+        is :data:`None` a :exc:`GPIODeviceError` will be raised.
 
-    :param int backward:
+    :type backward: int or str
+    :param backward:
         The GPIO pin that the backward input of the motor driver chip is
-        connected to.
+        connected to. See :ref:`pin-numbering` for valid pin numbers. If this
+        is :data:`None` a :exc:`GPIODeviceError` will be raised.
 
-    :param int enable:
-        (Optional) The GPIO pin that enables the motor. Required for some motor
-        controller boards. Defaults to ``None``.
+    :type enable: int or str or None
+    :param enable:
+        The GPIO pin that enables the motor. Required for *some* motor
+        controller boards. See :ref:`pin-numbering` for valid pin numbers.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
-        variable speed control. If ``False``, construct
+        variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -1152,8 +1226,8 @@ class Motor(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the motor is currently running and ``False``
-        otherwise.
+        Returns :data:`True` if the motor is currently running and
+        :data:`False` otherwise.
         """
         return self.value != 0
 
@@ -1163,8 +1237,9 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
-            ``True`` when the class was constructed (and only 0 or 1 if not).
+            0 (stopped) and the default 1 (maximum speed) if *pwm* was
+            :data:`True` when the class was constructed (and only 0 or 1 if
+            not).
         """
         if not 0 <= speed <= 1:
             raise ValueError('forward speed must be between 0 and 1')
@@ -1180,8 +1255,9 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed) if ``pwm`` was
-            ``True`` when the class was constructed (and only 0 or 1 if not).
+            0 (stopped) and the default 1 (maximum speed) if *pwm* was
+            :data:`True` when the class was constructed (and only 0 or 1 if
+            not).
         """
         if not 0 <= speed <= 1:
             raise ValueError('backward speed must be between 0 and 1')
@@ -1220,22 +1296,27 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         motor = PhaseEnableMotor(12, 5)
         motor.forward()
 
-    :param int phase:
+    :type phase: int or str
+    :param phase:
         The GPIO pin that the phase (direction) input of the motor driver chip
-        is connected to.
+        is connected to. See :ref:`pin-numbering` for valid pin numbers. If
+        this is :data:`None` a :exc:`GPIODeviceError` will be raised.
 
-    :param int enable:
-        The GPIO pin that the enable (speed) input of the motor driver chip is
-        connected to.
+    :type enable: int or str
+    :param enable:
+        The GPIO pin that the enable (speed) input of the motor driver chip
+        is connected to. See :ref:`pin-numbering` for valid pin numbers. If
+        this is :data:`None` a :exc:`GPIODeviceError` will be raised.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
-        variable speed control. If ``False``, construct
+        variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -1272,8 +1353,8 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the motor is currently running and ``False``
-        otherwise.
+        Returns :data:`True` if the motor is currently running and
+        :data:`False` otherwise.
         """
         return self.value != 0
 
@@ -1348,14 +1429,16 @@ class Servo(SourceMixin, CompositeDevice):
             servo.max()
             sleep(1)
 
-    :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the servo is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param float initial_value:
-        If ``0`` (the default), the device's mid-point will be set
-        initially.  Other values between -1 and +1 can be specified as an
-        initial position. ``None`` means to start the servo un-controlled (see
+        If ``0`` (the default), the device's mid-point will be set initially.
+        Other values between -1 and +1 can be specified as an initial position.
+        :data:`None` means to start the servo un-controlled (see
         :attr:`value`).
 
     :param float min_pulse_width:
@@ -1370,7 +1453,8 @@ class Servo(SourceMixin, CompositeDevice):
         The length of time between servo control pulses measured in seconds.
         This defaults to 20ms which is a common value for servos.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -1453,7 +1537,7 @@ class Servo(SourceMixin, CompositeDevice):
     def detach(self):
         """
         Temporarily disable control of the servo. This is equivalent to
-        setting :attr:`value` to ``None``.
+        setting :attr:`value` to :data:`None`.
         """
         self.value = None
 
@@ -1470,9 +1554,10 @@ class Servo(SourceMixin, CompositeDevice):
         """
         Represents the position of the servo as a value between -1 (the minimum
         position) and +1 (the maximum position). This can also be the special
-        value ``None`` indicating that the servo is currently "uncontrolled",
-        i.e. that no control signal is being sent. Typically this means the
-        servo's position remains unchanged, but that it can be moved by hand.
+        value :data:`None` indicating that the servo is currently
+        "uncontrolled", i.e. that no control signal is being sent. Typically
+        this means the servo's position remains unchanged, but that it can be
+        moved by hand.
         """
         result = self._get_value()
         if result is None:
@@ -1546,14 +1631,16 @@ class AngularServo(Servo):
         can be useful with servos that rotate in the opposite direction to your
         expectations of minimum and maximum.
 
-    :param int pin:
-        The GPIO pin which the device is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the servo is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param float initial_angle:
         Sets the servo's initial angle to the specified value. The default is
         0. The value specified must be between *min_angle* and *max_angle*
-        inclusive. ``None`` means to start the servo un-controlled (see
+        inclusive. :data:`None` means to start the servo un-controlled (see
         :attr:`value`).
 
     :param float min_angle:
@@ -1578,7 +1665,8 @@ class AngularServo(Servo):
         The length of time between servo control pulses measured in seconds.
         This defaults to 20ms which is a common value for servos.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -1623,13 +1711,13 @@ class AngularServo(Servo):
     def angle(self):
         """
         The position of the servo as an angle measured in degrees. This will
-        only be accurate if *min_angle* and *max_angle* have been set
-        appropriately in the constructor.
+        only be accurate if :attr:`min_angle` and :attr:`max_angle` have been
+        set appropriately in the constructor.
 
-        This can also be the special value ``None`` indicating that the servo
-        is currently "uncontrolled", i.e. that no control signal is being sent.
-        Typically this means the servo's position remains unchanged, but that
-        it can be moved by hand.
+        This can also be the special value :data:`None` indicating that the
+        servo is currently "uncontrolled", i.e. that no control signal is being
+        sent.  Typically this means the servo's position remains unchanged, but
+        that it can be moved by hand.
         """
         result = self._get_value()
         if result is None:

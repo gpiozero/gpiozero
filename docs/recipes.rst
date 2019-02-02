@@ -136,11 +136,11 @@ Run a function every time the button is pressed:
 .. note::
 
     Note that the line ``button.when_pressed = say_hello`` does not run the
-    function ``say_hello``, rather it creates a reference to the function to
-    be called when the button is pressed. Accidental use of
-    ``button.when_pressed = say_hello()`` would set the ``when_pressed`` action
-    to ``None`` (the return value of this function) which would mean nothing
-    happens when the button is pressed.
+    function ``say_hello``, rather it creates a reference to the function to be
+    called when the button is pressed. Accidental use of ``button.when_pressed
+    = say_hello()`` would set the ``when_pressed`` action to :data:`None` (the
+    return value of this function) which would mean nothing happens when the
+    button is pressed.
 
 Similarly, functions can be attached to button releases:
 
@@ -327,7 +327,7 @@ Distance sensor
     In the diagram above, the wires leading from the sensor to the breadboard
     can be omitted; simply plug the sensor directly into the breadboard facing
     the edge (unfortunately this is difficult to illustrate in the diagram
-    without sensor's diagram obscuring most of the breadboard!)
+    without the sensor's diagram obscuring most of the breadboard!)
 
 Have a :class:`DistanceSensor` detect the distance to the nearest object:
 

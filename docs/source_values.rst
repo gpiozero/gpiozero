@@ -16,7 +16,9 @@ which is equivalent to:
 
 Every device has a :attr:`~Device.value` property (the device's current value).
 Input devices can only have their values read, but output devices can also have
-their value set to alter the state of the device::
+their value set to alter the state of the device:
+
+.. code-block:: pycon
 
     >>> led = PWMLED(17)
     >>> led.value  # LED is initially off
@@ -29,9 +31,9 @@ their value set to alter the state of the device::
 Every device also has a :attr:`~ValuesMixin.values` property (a generator
 continuously yielding the device's current value). All output devices have a
 :attr:`~SourceMixin.source` property which can be set to any iterator. The
-device will iterate over the values of the device provided, setting the device's
-value to each element at a rate specified in the :attr:`~SourceMixin.source_delay`
-property.
+device will iterate over the values of the device provided, setting the
+device's value to each element at a rate specified in the
+:attr:`~SourceMixin.source_delay` property.
 
 .. image:: images/source_values.*
     :align: center
@@ -42,9 +44,10 @@ example would be a potentiometer controlling the brightness of an LED:
 
 .. literalinclude:: examples/pwmled_pot.py
 
-The way this works is that the device's :attr:`~ValuesMixin.values` property
-is used to feed values into the device. Prior to v1.5, the :attr:`~SourceMixin.source`
-had to be set directly to a device's :attr:`~ValuesMixin.values` property:
+The way this works is that the device's :attr:`~ValuesMixin.values` property is
+used to feed values into the device. Prior to v1.5, the
+:attr:`~SourceMixin.source` had to be set directly to a device's
+:attr:`~ValuesMixin.values` property:
 
 .. literalinclude:: examples/pwmled_pot_values.py
 
@@ -59,7 +62,7 @@ another output device, to keep them matching:
 .. literalinclude:: examples/matching_leds.py
 
 The device's values can also be processed before they are passed to the
-``source``:
+:attr:`~SourceMixin.source`:
 
 .. image:: images/source_value_processing.*
     :align: center
@@ -79,7 +82,8 @@ For example:
 .. literalinclude:: examples/custom_generator.py
 
 If the iterator is infinite (i.e. an infinite generator), the elements will be
-processed until the :attr:`~SourceMixin.source` is changed or set to ``None``.
+processed until the :attr:`~SourceMixin.source` is changed or set to
+:data:`None`.
 
 If the iterator is finite (e.g. a list), this will terminate once all elements
 are processed (leaving the device's value at the final element):
@@ -92,7 +96,9 @@ Composite devices
 Most devices have a :attr:`~Device.value` range between 0 and 1. Some have a
 range between -1 and 1 (e.g. :class:`Motor`). The :attr:`~Device.value` of a
 composite device is a namedtuple of such values. For example, the
-:class:`Robot` class::
+:class:`Robot` class:
+
+.. code-block:: pycon
 
     >>> from gpiozero import Robot
     >>> robot = Robot(left=(14, 15), right=(17, 18))
@@ -118,6 +124,7 @@ source/values, called source tools. These are available by importing from
 Some of these source tools are artificial sources which require no input:
 
 .. image:: images/source_tool.*
+    :align: center
 
 In this example, random values between 0 and 1 are passed to the LED, giving it
 a flickering candle effect:
@@ -127,6 +134,7 @@ a flickering candle effect:
 Some tools take a single source and process its values:
 
 .. image:: images/source_tool_value_processor.*
+    :align: center
 
 In this example, the LED is lit only when the button is not pressed:
 
@@ -141,10 +149,11 @@ In this example, the LED is lit only when the button is not pressed:
 Some tools combine the values of multiple sources:
 
 .. image:: images/combining_sources.*
+    :align: center
 
 In this example, the LED is lit only if both buttons are pressed (like an
 `AND`_ gate):
 
-.. _AND: https://en.wikipedia.org/wiki/AND_gate
-
 .. literalinclude:: examples/combining_sources.py
+
+.. _AND: https://en.wikipedia.org/wiki/AND_gate

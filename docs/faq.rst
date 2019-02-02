@@ -12,7 +12,7 @@ Frequently Asked Questions
 How do I keep my script running?
 ================================
 
-The following script looks like it should turn an LED on::
+The following script looks like it should turn an :class:`LED` on::
 
     from gpiozero import LED
 
@@ -65,10 +65,10 @@ example::
     b = Button(17)
     b.when_pressed = pushed()
 
-In the case above, when assigning to ``when_pressed``, the thing that is
-assigned is the *result of calling* the ``pushed`` function. Because ``pushed``
-doesn't explicitly return anything, the result is ``None``. Hence this is
-equivalent to doing::
+In the case above, when assigning to :attr:`~Button.when_pressed`, the thing
+that is assigned is the *result of calling* the ``pushed`` function. Because
+``pushed`` doesn't explicitly return anything, the result is :data:`None`.
+Hence this is equivalent to doing::
 
     b.when_pressed = None
 
@@ -117,8 +117,8 @@ certain things).
 If you want to use a pin driver other than the default, and you want to
 suppress the warnings you've got a couple of options:
 
-1. Explicitly specify what pin driver you want via an environment variable. For
-   example:
+1. Explicitly specify what pin driver you want via the
+   :envvar:`GPIOZERO_PIN_FACTORY` environment variable. For example:
 
    .. code-block:: console
 
@@ -128,7 +128,9 @@ suppress the warnings you've got a couple of options:
    specified factory loads or it fails in which case an :exc:`ImportError` will
    be raised.
 
-2. Suppress the warnings and let the fallback mechanism work::
+2. Suppress the warnings and let the fallback mechanism work:
+
+   .. code-block:: pycon
 
         >>> import warnings
         >>> warnings.simplefilter('ignore')
@@ -142,7 +144,7 @@ How can I tell what version of gpiozero I have installed?
 =========================================================
 
 The gpiozero library relies on the setuptools package for installation
-services.  You can use the setuptools ``pkg_resources`` API to query which
+services.  You can use the setuptools :mod:`pkg_resources` API to query which
 version of gpiozero is available in your Python environment like so:
 
 .. code-block:: pycon
@@ -153,13 +155,13 @@ version of gpiozero is available in your Python environment like so:
     >>> require('gpiozero')[0].version
     '1.4.1'
 
-If you have multiple versions installed (e.g. from ``pip`` and ``apt``) they
-will not show up in the list returned by the ``require`` method. However, the
-first entry in the list will be the version that ``import gpiozero`` will
-import.
+If you have multiple versions installed (e.g. from :command:`pip` and
+:command:`apt`) they will not show up in the list returned by the
+:meth:`pkg_resources.require` method. However, the first entry in the list will
+be the version that ``import gpiozero`` will import.
 
-If you receive the error ``No module named pkg_resources``, you need to install
-``pip``. This can be done with the following command in Raspbian:
+If you receive the error "No module named pkg_resources", you need to install
+:command:`pip`. This can be done with the following command in Raspbian:
 
 .. code-block:: console
 
@@ -167,24 +169,22 @@ If you receive the error ``No module named pkg_resources``, you need to install
 
 Alternatively, install pip with `get-pip`_.
 
-.. _get-pip: https://pip.pypa.io/en/stable/installing/
-
 
 Why do I get "command not found" when running pinout?
 =====================================================
 
-The gpiozero library is available as a Debian package for Python 2 and Python 3,
-but the :program:`pinout` tool cannot be made available by both packages, so
+The gpiozero library is available as a Debian package for Python 2 and Python
+3, but the :doc:`cli_pinout` tool cannot be made available by both packages, so
 it's only included with the Python 3 version of the package. To make sure the
-:program:`pinout` tool is available, the ``python3-gpiozero`` package must be
+:doc:`cli_pinout` tool is available, the "python3-gpiozero" package must be
 installed:
 
 .. code-block:: console
 
     $ sudo apt install python3-gpiozero
 
-Alternatively, installing gpiozero using ``pip`` will install the command line
-tool, regardless of Python version:
+Alternatively, installing gpiozero using :command:`pip` will install the
+command line tool, regardless of Python version:
 
 .. code-block:: console
 
@@ -202,18 +202,14 @@ The pinout command line tool incorrectly identifies my Raspberry Pi model
 
 If your Raspberry Pi model is new, it's possible it wasn't known about at the
 time of the gpiozero release you are using. Ensure you have the latest version
-installed (remember, the :program:`pinout` tool usually comes from the Python 3
+installed (remember, the :doc:`cli_pinout` tool usually comes from the Python 3
 version of the package as noted in the previous FAQ).
 
 If the Pi model you are using isn't known to gpiozero, it may have been added
 since the last release. You can check the `GitHub issues`_ to see if it's been
-reported before, or check the ``commits``_ on GitHub since the last release to
+reported before, or check the `commits`_ on GitHub since the last release to
 see if it's been added. The model determination can be found in
 :file:`gpiozero/pins/data.py`.
-
-
-.. _GitHub issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
 
 
 .. _gpio-cleanup:
@@ -226,7 +222,7 @@ Many people ask how to do the equivalent of the ``cleanup`` function from
 automatically, restoring your GPIO pins to the state they were found.
 
 To explicitly close a connection to a pin, you can manually call the
-:meth:`Device.close` method on a device object:
+:meth:`~Device.close` method on a device object:
 
 .. code-block:: pycon
 
@@ -240,22 +236,22 @@ To explicitly close a connection to a pin, you can manually call the
 
 This means that you can reuse the pin for another device, and that despite
 turning the LED on (and hence, the pin high), after calling
-:meth:`Device.close` it is restored to its previous state (LED off, pin low).
+:meth:`~Device.close` it is restored to its previous state (LED off, pin low).
 
 
 How do I use button.when_pressed and button.when_held together?
 ===============================================================
 
-The :class:`Button` class provides a :attr:`Button.when_held` property which is used to
-set a callback for when the button is held down for a set amount of time (as
-determined by the :attr:`Button.hold_time` property). If you want to set
-:attr:`Button.when_held` as well as :attr:`Button.when_pressed`, you'll notice
-that both callbacks will fire. Sometimes, this is acceptable, but often you'll
-want to only fire the :attr:`Button.when_pressed` callback when the button has
-not been held, only pressed.
+The :class:`Button` class provides a :attr:`~Button.when_held` property which
+is used to set a callback for when the button is held down for a set amount of
+time (as determined by the :attr:`~Button.hold_time` property). If you want to
+set :attr:`~Button.when_held` as well as :attr:`~Button.when_pressed`, you'll
+notice that both callbacks will fire. Sometimes, this is acceptable, but often
+you'll want to only fire the :attr:`~Button.when_pressed` callback when the
+button has not been held, only pressed.
 
 The way to achieve this is to *not* set a callback on
-:attr:`Button.when_pressed`, and instead use :attr:`Button.when_released` to
+:attr:`~Button.when_pressed`, and instead use :attr:`~Button.when_released` to
 work out whether it had been held or just pressed::
 
     from gpiozero import Button
@@ -296,7 +292,7 @@ the gpiozero library from the libraries path. You'll see an error like this::
 
 Simply rename your script to something else, and run it again. Be sure not to
 name any of your scripts the same name as a Python module you may be importing,
-such as ``picamera.py``.
+such as :file:`picamera.py`.
 
 
 Why do I get an AttributeError trying to set attributes on a device object?
@@ -333,12 +329,12 @@ find. Consider the following example::
 
 This is perfectly valid Python code, and no errors would occur, but the program
 would not behave as expected: pressing the button would do nothing, because the
-property for setting a callback is ``when_pressed`` not ``pressed``. But without
-gpiozero preventing this non-existent attribute from being set, the user would
-likely struggle to see the mistake.
+property for setting a callback is ``when_pressed`` not ``pressed``. But
+without gpiozero preventing this non-existent attribute from being set, the
+user would likely struggle to see the mistake.
 
-If you really want to set a new attribute on a device object, you need to create
-it in the class before initializing your object:
+If you really want to set a new attribute on a device object, you need to
+create it in the class before initializing your object:
 
 .. code-block:: pycon
 
@@ -365,6 +361,9 @@ curve for beginners by making it easy to get started and easy to build up to
 more advanced projects.
 
 
+.. _get-pip: https://pip.pypa.io/en/stable/installing/
+.. _GitHub issues: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
 .. _Pygame Zero: https://pygame-zero.readthedocs.io/en/stable/
 .. _NetworkZero: https://networkzero.readthedocs.io/en/latest/
 .. _guizero: https://lawsie.github.io/guizero/

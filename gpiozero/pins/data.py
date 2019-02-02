@@ -499,10 +499,10 @@ class PinInfo(namedtuple('PinInfo', (
     .. attribute:: pull_up
 
         A bool indicating whether the pin has a physical pull-up resistor
-        permanently attached (this is usually ``False`` but GPIO2 and GPIO3
-        are *usually* ``True``). This is used internally by gpiozero to raise
-        errors when pull-down is requested on a pin with a physical pull-up
-        resistor.
+        permanently attached (this is usually :data:`False` but GPIO2 and GPIO3
+        are *usually* :data:`True`). This is used internally by gpiozero to
+        raise errors when pull-down is requested on a pin with a physical
+        pull-up resistor.
 
     .. attribute:: row
 
@@ -535,9 +535,9 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         print('{0:col2}'.format(pi_info().headers['P1']))
         print('{0:row1}'.format(pi_info().headers['P1']))
 
-    `'color'` and `'mono'` can be prefixed to format specifications to force
-    the use of `ANSI color codes`_. If neither is specified, ANSI codes will
-    only be used if stdout is detected to be a tty::
+    "color" and "mono" can be prefixed to format specifications to force the
+    use of `ANSI color codes`_. If neither is specified, ANSI codes will only
+    be used if stdout is detected to be a tty::
 
         print('{0:color row2}'.format(pi_info().headers['J8'])) # force use of ANSI codes
         print('{0:mono row2}'.format(pi_info().headers['P1'])) # force plain ASCII
@@ -653,10 +653,10 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         """
         Pretty-print a diagram of the header pins.
 
-        If *color* is ``None`` (the default, the diagram will include ANSI
+        If *color* is :data:`None` (the default, the diagram will include ANSI
         color codes if stdout is a color-capable terminal). Otherwise *color*
-        can be set to ``True`` or ``False`` to force color or monochrome
-        output.
+        can be set to :data:`True` or :data:`False` to force color or
+        monochrome output.
         """
         print('{0:{style} full}'.format(self, style=Style(color)))
 
@@ -694,9 +694,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         print('{0:specs}'.format(pi_info()))
         print('{0:headers}'.format(pi_info()))
 
-    `'color'` and `'mono'` can be prefixed to format specifications to force
-    the use of `ANSI color codes`_. If neither is specified, ANSI codes will
-    only be used if stdout is detected to be a tty::
+    "color" and "mono" can be prefixed to format specifications to force the
+    use of `ANSI color codes`_. If neither is specified, ANSI codes will only
+    be used if stdout is detected to be a tty::
 
         print('{0:color board}'.format(pi_info())) # force use of ANSI codes
         print('{0:mono board}'.format(pi_info())) # force plain ASCII
@@ -710,6 +710,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     .. automethod:: pprint
 
     .. automethod:: pulled_up
+
+    .. automethod:: to_gpio
 
     .. attribute:: revision
 
@@ -1238,9 +1240,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         """
         Pretty-print a representation of the board along with header diagrams.
 
-        If *color* is ``None`` (the default), the diagram will include ANSI
+        If *color* is :data:`None` (the default), the diagram will include ANSI
         color codes if stdout is a color-capable terminal. Otherwise *color*
-        can be set to ``True`` or ``False`` to force color or monochrome
+        can be set to :data:`True` or :data:`False` to force color or monochrome
         output.
         """
         print('{0:{style} full}'.format(self, style=Style(color)))

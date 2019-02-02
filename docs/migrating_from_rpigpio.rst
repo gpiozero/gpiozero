@@ -11,32 +11,31 @@ code which deals with *pins* and the *state of pins*. You will see from the
 examples in this documentation that we generally refer to things like LEDs and
 Buttons rather than input pins and output pins.
 
-.. _RPi.GPIO: https://pypi.org/project/RPi.GPIO/
-
-GPIO Zero provides classes which represent devices, so instead of having a pin
-number and telling it to go high, you have an LED and you tell it to turn on,
-and instead of having a pin number and asking if it's high or low, you have a
-button and ask if it's pressed. There is also no boilerplate code to get started
-- you just import the parts you need.
+GPIO Zero provides classes which represent *devices*, so instead of having a
+pin number and telling it to go high, you have an LED and you tell it to turn
+on, and instead of having a pin number and asking if it's high or low, you have
+a button and ask if it's pressed. There is also no boilerplate code to get
+started — you just import the parts you need.
 
 GPIO Zero provides many device classes, each with specific methods and
-properties bespoke to that device. For example, the functionality for an HC-SR04
-Distance Sensor can be found in the :class:`DistanceSensor` class.
+properties bespoke to that device. For example, the functionality for an
+HC-SR04 Distance Sensor can be found in the :class:`DistanceSensor` class.
 
-As well as specific device classes, we provide base classes :class:`InputDevice`
-and :class:`OutputDevice`. One main difference between these and the equivalents
-in RPi.GPIO is that they are classes, not functions, which means that you
-initialize one to begin, and provide its pin number, but then you never need to
-use the pin number again, as it's stored by the object.
+As well as specific device classes, we provide base classes
+:class:`InputDevice` and :class:`OutputDevice`. One main difference between
+these and the equivalents in RPi.GPIO is that they are classes, not functions,
+which means that you initialize one to begin, and provide its pin number, but
+then you never need to use the pin number again, as it's stored by the object.
 
 GPIO Zero was originally just a layer on top of RPi.GPIO, but we later added
 support for various other underlying pin libraries. RPi.GPIO is currently the
 default pin library used. Read more about this in :ref:`changing-pin-factory`.
 
+
 Output devices
 ==============
 
-Turning an LED on in RPi.GPIO::
+Turning an LED on in `RPi.GPIO`_::
 
     import RPi.GPIO as GPIO
 
@@ -66,10 +65,11 @@ devices have similar property and method names. There is commonality in naming
 at base level, such as :attr:`OutputDevice.is_active`, which is aliased in a
 device class, such as :attr:`LED.is_lit`.
 
+
 Input devices
 =============
 
-Reading a button press in RPi.GPIO::
+Reading a button press in `RPi.GPIO`_::
 
     import RPi.GPIO as GPIO
 
@@ -107,8 +107,8 @@ GPIO.input(4)``::
     if GPIO.input(4):
         print("button is pressed")
 
-In GPIO Zero, the default configuration for a button is pull-up, but this can be
-configured at initialization, and the rest of the code stays the same::
+In GPIO Zero, the default configuration for a button is pull-up, but this can
+be configured at initialization, and the rest of the code stays the same::
 
     from gpiozero import Button
 
@@ -213,31 +213,33 @@ similar property and method names. There is commonality in naming at base level,
 such as :attr:`InputDevice.is_active`, which is aliased in a device class, such
 as :attr:`Button.is_pressed` and :attr:`LightSensor.light_detected`.
 
+
 Composite devices, boards and accessories
 =========================================
 
 Some devices require connections to multiple pins, for example a distance
-sensor, a combination of LEDs or a HAT. Some GPIO Zero devices comprise multiple
-device connections within one object, such as :class:`RGBLED`,
+sensor, a combination of LEDs or a HAT. Some GPIO Zero devices comprise
+multiple device connections within one object, such as :class:`RGBLED`,
 :class:`LEDBoard`, :class:`DistanceSensor`, :class:`Motor` and :class:`Robot`.
 
 With RPi.GPIO, you would have one output pin for the trigger, and one input pin
 for the echo. You would time the echo and calculate the distance. With GPIO
-Zero, you create a single :class:`DistanceSensor` object, specifying the trigger
-and echo pins, and you would read the :attr:`DistanceSensor.distance` property
-which automatically calculates the distance within the implementation of the
-class.
+Zero, you create a single :class:`DistanceSensor` object, specifying the
+trigger and echo pins, and you would read the :attr:`DistanceSensor.distance`
+property which automatically calculates the distance within the implementation
+of the class.
 
-The :class:`Motor` class controls two output pins to drive the motor forwards or
-backwards. The :class:`Robot` class controls four output pins (two motors) in
-the right combination to drive a robot forwards or backwards, and turn left and
-right.
+The :class:`Motor` class controls two output pins to drive the motor forwards
+or backwards. The :class:`Robot` class controls four output pins (two motors)
+in the right combination to drive a robot forwards or backwards, and turn left
+and right.
 
 The :class:`LEDBoard` class takes an arbitrary number of pins, each controlling
-a single LED. The resulting :class:`LEDBoard` object can be used to control
-all LEDs together (all on / all off), or individually by index. Also the object
-can be iterated over to turn LEDs on in order. See examples of this (including
+a single LED. The resulting :class:`LEDBoard` object can be used to control all
+LEDs together (all on / all off), or individually by index. Also the object can
+be iterated over to turn LEDs on in order. See examples of this (including
 slicing) in the :ref:`advanced recipes <ledboard-advanced>`.
+
 
 PWM (Pulse-width modulation)
 ============================
@@ -248,7 +250,7 @@ library used, GPIO Zero can also support hardware PWM (using
 
 A simple example of using PWM is to control the brightness of an LED.
 
-In RPi.GPIO::
+In `RPi.GPIO`_::
 
     import RPi.GPIO as GPIO
     from time import sleep
@@ -282,12 +284,13 @@ for ``fade_in`` and ``fade_out`` options to be provided. There is also the
 and out repeatedly.
 
 Other devices can make use of PWM, such as motors (for variable speed) and
-servos. See the :class:`Motor`, :class:`Servo` and :class:`AngularServo` classes
-for information on those. :class:`Motor` and :class:`Robot` default to using
-PWM, but it can be disabled with ``pwm=False`` at initialization. Servos cannot
-be used without PWM. Devices containing LEDs default to not using PWM, but
-``pwm=True`` can be specified and any LED objects within the device will be
+servos. See the :class:`Motor`, :class:`Servo` and :class:`AngularServo`
+classes for information on those. :class:`Motor` and :class:`Robot` default to
+using PWM, but it can be disabled with ``pwm=False`` at initialization. Servos
+cannot be used without PWM. Devices containing LEDs default to not using PWM,
+but ``pwm=True`` can be specified and any LED objects within the device will be
 initialized as :class:`PWMLED` objects.
+
 
 Cleanup
 =======
@@ -298,6 +301,7 @@ pin used, at the end of the script. Manual cleanup is possible by use of the
 :meth:`~Device.close` method on the device.
 
 Read more in the relevant FAQ: :ref:`gpio-cleanup`
+
 
 Pi Information
 ==============
@@ -317,6 +321,7 @@ Zero is the function :func:`pi_info`:
     True
 
 Read more about what :class:`PiBoardInfo` provides.
+
 
 More
 ====
@@ -342,6 +347,7 @@ in a logical way, for example in one line you can say that an LED and button are
 "paired", i.e. the button being pressed turns the LED on. Read about this in
 :doc:`source_values`.
 
+
 FAQs
 ====
 
@@ -350,3 +356,5 @@ Note the following FAQs which may catch out users too familiar with RPi.GPIO:
 * :ref:`keep-your-script-running`
 * :ref:`pinfactoryfallback-warnings`
 * :ref:`gpio-cleanup`
+
+.. _RPi.GPIO: https://pypi.org/project/RPi.GPIO/

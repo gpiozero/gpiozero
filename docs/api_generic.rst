@@ -32,11 +32,13 @@ are represented in purple, while abstract classes are shaded lighter):
 
 .. _mixin classes: https://en.wikipedia.org/wiki/Mixin
 
+
 Device
 ======
 
 .. autoclass:: Device(\*, pin_factory=None)
-    :members: close, closed, value, is_active
+    :members: close, closed, value, is_active, pin_factory
+
 
 ValuesMixin
 ===========
@@ -44,11 +46,13 @@ ValuesMixin
 .. autoclass:: ValuesMixin(...)
     :members:
 
+
 SourceMixin
 ===========
 
 .. autoclass:: SourceMixin(...)
     :members:
+
 
 SharedMixin
 ===========
@@ -56,15 +60,16 @@ SharedMixin
 .. autoclass:: SharedMixin(...)
     :members: _shared_key
 
+
 EventsMixin
 ===========
 
 .. autoclass:: EventsMixin(...)
     :members:
 
+
 HoldMixin
 =========
 
 .. autoclass:: HoldMixin(...)
     :members:
-

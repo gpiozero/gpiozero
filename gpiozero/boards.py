@@ -43,16 +43,30 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
     :meth:`toggle` methods for controlling subordinate output devices.  Also
     extends :attr:`value` to be writeable.
 
-    :param list _order:
+    :param Device \\*args:
+        The un-named devices that belong to the composite device. The
+        :attr:`~Device.value` attributes of these devices will be represented
+        within the composite device's tuple :attr:`value` in the order
+        specified here.
+
+    :type _order: list or None
+    :param _order:
         If specified, this is the order of named items specified by keyword
         arguments (to ensure that the :attr:`value` tuple is constructed with a
         specific order). All keyword arguments *must* be included in the
         collection. If omitted, an alphabetically sorted order will be selected
         for keyword arguments.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    :param Device \\*\\*kwargs:
+        The named devices that belong to the composite device. These devices
+        will be accessible as named attributes on the resulting device, and
+        their :attr:`value` attributes will be accessible as named elements of
+        the composite device's tuple :attr:`value`.
     """
 
     def on(self):
@@ -99,41 +113,69 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
 class ButtonBoard(HoldMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` and represents a generic button board or
-    collection of buttons.
+    collection of buttons. The :attr:`value` of the button board is a tuple
+    of all the buttons states. This can be used to control all the LEDs in a
+    :class:`LEDBoard` with a :class:`ButtonBoard`::
 
-    :param int \\*pins:
+        from gpiozero import LEDBoard, ButtonBoard
+        from signal import pause
+
+        leds = LEDBoard(2, 3, 4, 5)
+        btns = ButtonBoard(6, 7, 8, 9)
+        leds.source = btns.values
+        pause()
+
+    Alternatively you could represent the number of pressed buttons with an
+    :class:`LEDBarGraph`::
+
+        from gpiozero import LEDBarGraph, ButtonBoard
+        from signal import pause
+
+        graph = LEDBarGraph(2, 3, 4, 5)
+        btns = ButtonBoard(6, 7, 8, 9)
+        graph.source = (sum(value) for value in btn.values)
+        pause()
+
+    :type pins: int or str
+    :param \\*pins:
         Specify the GPIO pins that the buttons of the board are attached to.
-        You can designate as many pins as necessary.
+        See :ref:`pin-numbering` for valid pin numbers. You can designate as
+        many pins as necessary.
 
-    :param bool pull_up:
-        If ``True`` (the default), the GPIO pins will be pulled high by
-        default. In this case, connect the other side of the buttons to
-        ground. If ``False``, the GPIO pins will be pulled low by default. In
-        this case, connect the other side of the buttons to 3V3. This
-        parameter can only be specified as a keyword parameter.
+    :type pull_up: bool or None
+    :param pull_up:
+        If :data:`True` (the default), the GPIO pins will be pulled high by
+        default.  In this case, connect the other side of the buttons to
+        ground.  If :data:`False`, the GPIO pins will be pulled low by default.
+        In this case, connect the other side of the buttons to 3V3. If
+        :data:`None`, the pin will be floating, so it must be externally pulled
+        up or down and the ``active_state`` parameter must be set accordingly.
+
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
 
     :param float bounce_time:
-        If ``None`` (the default), no software bounce compensation will be
+        If :data:`None` (the default), no software bounce compensation will be
         performed. Otherwise, this is the length of time (in seconds) that the
-        buttons will ignore changes in state after an initial change. This
-        parameter can only be specified as a keyword parameter.
+        buttons will ignore changes in state after an initial change.
 
     :param float hold_time:
         The length of time (in seconds) to wait after any button is pushed,
-        until executing the :attr:`when_held` handler. Defaults to ``1``. This
-        parameter can only be specified as a keyword parameter.
+        until executing the :attr:`when_held` handler. Defaults to ``1``.
 
     :param bool hold_repeat:
-        If ``True``, the :attr:`when_held` handler will be repeatedly executed
-        as long as any buttons remain held, every *hold_time* seconds. If
-        ``False`` (the default) the :attr:`when_held` handler will be only be
-        executed once per hold. This parameter can only be specified as a
-        keyword parameter.
+        If :data:`True`, the :attr:`when_held` handler will be repeatedly
+        executed as long as any buttons remain held, every *hold_time* seconds.
+        If :data:`False` (the default) the :attr:`when_held` handler will be
+        only be executed once per hold.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
+    :type named_pins: int or str
     :param \\*\\*named_pins:
         Specify GPIO pins that buttons of the board are attached to,
         associating each button with a property name. You can designate as
@@ -181,7 +223,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
     @property
     def pull_up(self):
         """
-        If ``True``, the device uses a pull-up resistor to set the GPIO pin
+        If :data:`True`, the device uses a pull-up resistor to set the GPIO pin
         "high" by default.
         """
         return self[0].pull_up
@@ -206,7 +248,6 @@ class ButtonBoard(HoldMixin, CompositeDevice):
             pass
         elif old_value != new_value:
             self._fire_changed()
-
 
 ButtonBoard.is_pressed = ButtonBoard.is_active
 ButtonBoard.pressed_time = ButtonBoard.active_time
@@ -286,33 +327,35 @@ class LEDBoard(LEDCollection):
         leds = LEDBoard(2, 3, 4, 5, 6)
         leds.on()
 
-    :param int \\*pins:
-        Specify the GPIO pins that the LEDs of the board are attached to. You
-        can designate as many pins as necessary. You can also specify
-        :class:`LEDBoard` instances to create trees of LEDs.
+    :type pins: int or str or LEDCollection
+    :param \\*pins:
+        Specify the GPIO pins that the LEDs of the board are attached to. See
+        :ref:`pin-numbering` for valid pin numbers. You can designate as many
+        pins as necessary. You can also specify :class:`LEDBoard` instances to
+        create trees of LEDs.
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances. This
-        parameter can only be specified as a keyword parameter.
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set all the
-        associated pins to HIGH. If ``False``, the :meth:`on` method will set
-        all pins to LOW (the :meth:`off` method always does the opposite). This
-        parameter can only be specified as a keyword parameter.
+        If :data:`True` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If :data:`False`, the :meth:`on` method will
+        set all pins to LOW (the :meth:`off` method always does the opposite).
 
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially. This parameter can only be
-        specified as a keyword parameter.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
+    :type named_pins: int or str
     :param \\*\\*named_pins:
         Specify GPIO pins that LEDs of the board are attached to, associating
         each LED with a property name. You can designate as many pins as
@@ -334,6 +377,26 @@ class LEDBoard(LEDCollection):
         super(LEDBoard, self).close()
 
     def on(self, *args):
+        """
+        If no arguments are specified, turn all the LEDs on. If arguments are
+        specified, they must be the indexes of the LEDs you wish to turn on.
+        For example::
+
+            from gpiozero import LEDBoard
+
+            leds = LEDBoard(2, 3, 4, 5)
+            leds.on(0)    # turn on the first LED (pin 2)
+            leds.on(-1)   # turn on the last LED (pin 5)
+            leds.on(1, 2) # turn on the middle LEDs (pins 3 and 4)
+            leds.off()    # turn off all LEDs
+            leds.on()     # turn on all LEDs
+
+        If :meth:`blink` is currently active, it will be stopped first.
+
+        :param int args:
+            The index(es) of the LED(s) to turn on. If no indexes are specified
+            turn on all LEDs.
+        """
         self._stop_blink()
         if args:
             for index in args:
@@ -342,6 +405,26 @@ class LEDBoard(LEDCollection):
             super(LEDBoard, self).on()
 
     def off(self, *args):
+        """
+        If no arguments are specified, turn all the LEDs off. If arguments are
+        specified, they must be the indexes of the LEDs you wish to turn off.
+        For example::
+
+            from gpiozero import LEDBoard
+
+            leds = LEDBoard(2, 3, 4, 5)
+            leds.on()      # turn on all LEDs
+            leds.off(0)    # turn off the first LED (pin 2)
+            leds.off(-1)   # turn off the last LED (pin 5)
+            leds.off(1, 2) # turn off the middle LEDs (pins 3 and 4)
+            leds.on()      # turn on all LEDs
+
+        If :meth:`blink` is currently active, it will be stopped first.
+
+        :param int args:
+            The index(es) of the LED(s) to turn off. If no indexes are
+            specified turn off all LEDs.
+        """
         self._stop_blink()
         if args:
             for index in args:
@@ -350,6 +433,25 @@ class LEDBoard(LEDCollection):
             super(LEDBoard, self).off()
 
     def toggle(self, *args):
+        """
+        If no arguments are specified, toggle the state of all LEDs. If
+        arguments are specified, they must be the indexes of the LEDs you wish
+        to toggle. For example::
+
+            from gpiozero import LEDBoard
+
+            leds = LEDBoard(2, 3, 4, 5)
+            leds.toggle(0)   # turn on the first LED (pin 2)
+            leds.toggle(-1)  # turn on the last LED (pin 5)
+            leds.toggle()    # turn the first and last LED off, and the
+                             # middle pair on
+
+        If :meth:`blink` is currently active, it will be stopped first.
+
+        :param int args:
+            The index(es) of the LED(s) to toggle. If no indexes are specified
+            toggle the state of all LEDs.
+        """
         self._stop_blink()
         if args:
             for index in args:
@@ -371,20 +473,21 @@ class LEDBoard(LEDCollection):
 
         :param float fade_in_time:
             Number of seconds to spend fading in. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
+            ``pwm`` was :data:`False` when the class was constructed
             (:exc:`ValueError` will be raised if not).
 
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 0. Must be 0 if
-            ``pwm`` was ``False`` when the class was constructed
+            ``pwm`` was :data:`False` when the class was constructed
             (:exc:`ValueError` will be raised if not).
 
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True``, start a background thread to continue blinking and
-            return immediately. If ``False``, only return when the blink is
+            If :data:`True`, start a background thread to continue blinking and
+            return immediately. If :data:`False`, only return when the blink is
             finished (warning: the default value of *n* will result in this
             method never returning).
         """
@@ -415,7 +518,8 @@ class LEDBoard(LEDCollection):
 
     def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
         """
-        Make the device fade in and out repeatedly.
+        Make all LEDs fade in and out repeatedly. Note that this method will
+        only work if the *pwm* parameter was :data:`True` at construction time.
 
         :param float fade_in_time:
             Number of seconds to spend fading in. Defaults to 1.
@@ -423,14 +527,15 @@ class LEDBoard(LEDCollection):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 1.
 
-        :param int n:
-            Number of times to blink; ``None`` (the default) means forever.
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
-            If ``True`` (the default), start a background thread to continue
-            blinking and return immediately. If ``False``, only return when the
-            blink is finished (warning: the default value of *n* will result in
-            this method never returning).
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
         """
         on_time = off_time = 0
         self.blink(
@@ -490,7 +595,7 @@ class LEDBarGraph(LEDCollection):
         sleep(1)
         graph.off()
 
-    As with other output devices, :attr:`source` and :attr:`values` are
+    As with all other output devices, :attr:`source` and :attr:`values` are
     supported::
 
         from gpiozero import LEDBarGraph, MCP3008
@@ -503,27 +608,30 @@ class LEDBarGraph(LEDCollection):
 
         pause()
 
-    :param int \\*pins:
+    :type pins: int or str
+    :param \\*pins:
         Specify the GPIO pins that the LEDs of the bar graph are attached to.
-        You can designate as many pins as necessary.
+        See :ref:`pin-numbering` for valid pin numbers. You can designate as
+        many pins as necessary.
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances. This
-        parameter can only be specified as a keyword parameter.
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
+        This parameter can only be specified as a keyword parameter.
 
     :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set all the
-        associated pins to HIGH. If ``False``, the :meth:`on` method will set
-        all pins to LOW (the :meth:`off` method always does the opposite). This
-        parameter can only be specified as a keyword parameter.
+        If :data:`True` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If :data:`False`, the :meth:`on` method will
+        set all pins to LOW (the :meth:`off` method always does the opposite).
+        This parameter can only be specified as a keyword parameter.
 
     :param float initial_value:
         The initial :attr:`value` of the graph given as a float between -1 and
-        +1.  Defaults to ``0.0``. This parameter can only be specified as a
+        +1. Defaults to 0.0. This parameter can only be specified as a
         keyword parameter.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
@@ -595,8 +703,8 @@ class LEDBarGraph(LEDCollection):
     def lit_count(self):
         """
         The number of LEDs on the bar graph actually lit up. Note that just
-        like ``value``, this can be negative if the LEDs are lit from last to
-        first.
+        like :attr:`value`, this can be negative if the LEDs are lit from last
+        to first.
         """
         lit_value = self.value * len(self)
         if not isinstance(self[0], PWMLED):
@@ -612,6 +720,12 @@ class PiHutXmasTree(LEDBoard):
     """
     Extends :class:`LEDBoard` for `The Pi Hut's Xmas board`_: a 3D Christmas
     tree board with 24 red LEDs and a white LED as a star on top.
+
+    The 24 red LEDs can be accessed through the attributes led0, led1, led2,
+    and so on. The white star LED is accessed through the :attr:`star`
+    attribute. Alternatively, as with all descendents of :class:`LEDBoard`,
+    you can treat the instance as a sequence of LEDs (the first element is the
+    :attr:`star`).
 
     The Xmas Tree board pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example turns all the LEDs
@@ -644,16 +758,34 @@ class PiHutXmasTree(LEDBoard):
         pause()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances.
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
 
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
 
     .. _The Pi Hut's Xmas board: https://thepihut.com/xmas
+
+    .. attribute:: star
+
+        Returns the :class:`LED` or :class:`PWMLED` representing the white
+        star on top of the tree.
+
+    .. attribute:: led0, led1, led2, ...
+
+        Returns the :class:`LED` or :class:`PWMLED` representing one of the red
+        LEDs. There are actually 24 of these properties named led0, led1, and
+        so on but for the sake of brevity we represent all 24 under this
+        section.
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         pins_dict = OrderedDict(star=2)
@@ -683,15 +815,17 @@ class LedBorg(RGBLED):
         led = LedBorg()
         led.color = (1, 0, 1)
 
-    :param tuple initial_value:
+    :type initial_value: ~colorzero.Color or tuple
+    :param initial_value:
         The initial color for the LedBorg. Defaults to black ``(0, 0, 0)``.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMLED` instances for
-        each component of the LedBorg. If ``False``, construct regular
+        If :data:`True` (the default), construct :class:`PWMLED` instances for
+        each component of the LedBorg. If :data:`False`, construct regular
         :class:`LED` instances, which prevents smooth color graduations.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -706,8 +840,8 @@ class LedBorg(RGBLED):
 
 class PiLiter(LEDBoard):
     """
-    Extends :class:`LEDBoard` for the `Ciseco Pi-LITEr`_: a strip of 8 very bright
-    LEDs.
+    Extends :class:`LEDBoard` for the `Ciseco Pi-LITEr`_: a strip of 8 very
+    bright LEDs.
 
     The Pi-LITEr pins are fixed and therefore there's no need to specify them
     when constructing this class. The following example turns on all the LEDs
@@ -719,16 +853,18 @@ class PiLiter(LEDBoard):
         lite.on()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances.
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
 
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each LED will be left in whatever state the pin is found
+        in when configured for output (warning: this can be on). If
+        :data:`True`, the each LED will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -756,14 +892,15 @@ class PiLiterBarGraph(LEDBarGraph):
         graph.value = 0.5
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances.
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
 
     :param float initial_value:
         The initial :attr:`value` of the graph given as a float between -1 and
         +1. Defaults to ``0.0``.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -790,34 +927,63 @@ class TrafficLights(LEDBoard):
         traffic = TrafficLights(2, 3, 4)
         traffic.amber.on()
 
-    :param int red:
-        The GPIO pin that the red LED is attached to.
+    :type red: int or str
+    :param red:
+        The GPIO pin that the red LED is attached to. See :ref:`pin-numbering`
+        for valid pin numbers.
 
-    :param int amber:
-        The GPIO pin that the amber LED is attached to.
+    :type amber: int or str or None
+    :param amber:
+        The GPIO pin that the amber LED is attached to. See
+        :ref:`pin-numbering` for valid pin numbers.
 
-    :param int green:
-        The GPIO pin that the green LED is attached to.
+    :type yellow: int or str or None
+    :param yellow:
+        The GPIO pin that the yellow LED is attached to. This is merely an
+        alias for the ``amber`` parameter; you can't specify both ``amber`` and
+        ``yellow``. See :ref:`pin-numbering` for valid pin numbers.
+
+    :type green: int or str
+    :param green:
+        The GPIO pin that the green LED is attached to. See
+        :ref:`pin-numbering` for valid pin numbers.
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param int yellow:
-        The GPIO pin that the yellow LED is attached to. This is merely an
-        alias for the ``amber`` parameter - you can't specify both ``amber``
-        and ``yellow``.
-
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: red
+
+        The red :class:`LED` or :class:`PWMLED`.
+
+    .. attribute:: amber
+
+        The amber :class:`LED` or :class:`PWMLED`. Note that this attribute
+        will not be present when the instance is constructed with the
+        *yellow* keyword parameter.
+
+    .. attribute:: yellow
+
+        The yellow :class:`LED` or :class:`PWMLED`. Note that this attribute
+        will only be present when the instance is constructed with the
+        *yellow* keyword parameter.
+
+    .. attribute:: green
+
+        The green :class:`LED` or :class:`PWMLED`.
     """
     def __init__(self, red=None, amber=None, green=None,
                  pwm=False, initial_value=False, yellow=None,
@@ -868,17 +1034,19 @@ class PiTraffic(TrafficLights):
     simply use the parent class, :class:`TrafficLights`.
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
+    :type initial_value: bool or None
     :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -895,8 +1063,8 @@ class PiStop(TrafficLights):
     Extends :class:`TrafficLights` for the `PiHardware Pi-Stop`_: a vertical
     traffic lights board.
 
-    The following example turns on the amber LED on a Pi-Stop
-    connected to location ``A+``::
+    The following example turns on the amber LED on a Pi-Stop connected to
+    location ``A+``::
 
         from gpiozero import PiStop
 
@@ -908,17 +1076,19 @@ class PiStop(TrafficLights):
         Must be one of: ``A``, ``A+``, ``B``, ``B+``, ``C``, ``D``.
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
+    :type initial_value: bool or None
     :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -962,6 +1132,9 @@ class StatusZero(LEDBoard):
         status.wifi.green.on()
         status.raining.red.on()
 
+    Each designated label will contain two :class:`LED` objects named "red"
+    and "green".
+
     :param str \\*labels:
         Specify the names of the labels you wish to designate the strips to.
         You can list up to three labels. If no labels are given, three strips
@@ -969,11 +1142,27 @@ class StatusZero(LEDBoard):
         not all strips are given labels, any remaining strips will not be
         initialised.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _STATUS Zero: https://thepihut.com/statuszero
+
+    .. attribute:: your-label-here, your-label-here, ...
+
+        This entry represents one of the three labelled attributes supported on
+        the STATUS Zero board. It is an :class:`LEDBoard` which contains:
+
+        .. attribute:: red
+
+            The :class:`LED` or :class:`PWMLED` representing the red LED
+            next to the label.
+
+        .. attribute:: green
+
+            The :class:`LED` or :class:`PWMLED` representing the green LED
+            next to the label.
     """
     default_labels = ('one', 'two', 'three')
 
@@ -1018,17 +1207,47 @@ class StatusBoard(CompositeOutputDevice):
         status.wifi.lights.green.on()
         status.wifi.button.when_pressed = status.wifi.lights.toggle
 
+    Each designated label will contain a "lights" :class:`LEDBoard` containing
+    two :class:`LED` objects named "red" and "green", and a :class:`Button`
+    object named "button".
+
     :param str \\*labels:
         Specify the names of the labels you wish to designate the strips to.
         You can list up to five labels. If no labels are given, five strips
         will be initialised with names 'one' to 'five'. If some, but not all
         strips are given labels, any remaining strips will not be initialised.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _STATUS: https://thepihut.com/status
+
+    .. attribute:: your-label-here, your-label-here, ...
+
+        This entry represents one of the five labelled attributes supported on
+        the STATUS board. It is an :class:`CompositeOutputDevice` which
+        contains:
+
+        .. attribute:: lights
+
+            A :class:`LEDBoard` representing the lights next to the label. It
+            contains:
+
+            .. attribute:: red
+
+                The :class:`LED` or :class:`PWMLED` representing the red LED
+                next to the label.
+
+            .. attribute:: green
+
+                The :class:`LED` or :class:`PWMLED` representing the green LED
+                next to the label.
+
+        .. attribute:: button
+
+            A :class:`Button` representing the button next to the label.
     """
     default_labels = ('one', 'two', 'three', 'four', 'five')
 
@@ -1078,21 +1297,49 @@ class SnowPi(LEDBoard):
         snowman.arms.blink()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
+    :type initial_value: bool or None
     :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _Ryanteck SnowPi: https://ryanteck.uk/raspberry-pi/114-snowpi-the-gpio-snowman-for-raspberry-pi-0635648608303.html
+
+    .. attribute:: arms
+
+        A :class:`LEDBoard` representing the arms of the snow man. It contains
+        the following attributes:
+
+        .. attribute:: left, right
+
+            Two :class:`LEDBoard` objects representing the left and right arms
+            of the snow-man. They contain:
+
+            .. attribute:: top, middle, bottom
+
+                The :class:`LED` or :class:`PWMLED` down the snow-man's arms.
+
+    .. attribute:: eyes
+
+        A :class:`LEDBoard` representing the eyes of the snow-man. It contains:
+
+        .. attribute:: left, right
+
+            The :class:`LED` or :class:`PWMLED` for the snow-man's eyes.
+
+    .. attribute:: nose
+
+        The :class:`LED` or :class:`PWMLED` for the snow-man's nose.
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         super(SnowPi, self).__init__(
@@ -1138,9 +1385,22 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
     :param Button button:
         An instance of :class:`Button` representing the button on the HAT.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: lights
+
+        The :class:`TrafficLights` instance passed as the *lights* parameter.
+
+    .. attribute:: buzzer
+
+        The :class:`Buzzer` instance passed as the *buzzer* parameter.
+
+    .. attribute:: button
+
+        The :class:`Button` instance passed as the *button* parameter.
     """
     def __init__(self, lights, buzzer, button, pin_factory=None):
         super(TrafficLightsBuzzer, self).__init__(
@@ -1166,11 +1426,12 @@ class FishDish(TrafficLightsBuzzer):
         fish.lights.on()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1201,11 +1462,12 @@ class TrafficHat(TrafficLightsBuzzer):
         hat.lights.on()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1246,15 +1508,24 @@ class Robot(SourceMixin, CompositeDevice):
         motor controller requires an enable pin.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
-        variable speed control. If ``False``, construct
+        variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: left_motor
+
+        The :class:`Motor` on the left of the robot.
+
+    .. attribute:: right_motor
+
+        The :class:`Motor` on the right of the robot.
     """
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
@@ -1293,15 +1564,15 @@ class Robot(SourceMixin, CompositeDevice):
 
         :param float curve_left:
             The amount to curve left while moving forwards, by driving the
-            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            left motor at a slower speed. Maximum *curve_left* is 1, the
             default is 0 (no curve). This parameter can only be specified as a
-            keyword parameter, and is mutually exclusive with ``curve_right``.
+            keyword parameter, and is mutually exclusive with *curve_right*.
 
         :param float curve_right:
             The amount to curve right while moving forwards, by driving the
-            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            right motor at a slower speed. Maximum *curve_right* is 1, the
             default is 0 (no curve). This parameter can only be specified as a
-            keyword parameter, and is mutually exclusive with ``curve_left``.
+            keyword parameter, and is mutually exclusive with *curve_left*.
         """
         curve_left = kwargs.pop('curve_left', 0)
         curve_right = kwargs.pop('curve_right', 0)
@@ -1326,15 +1597,15 @@ class Robot(SourceMixin, CompositeDevice):
 
         :param float curve_left:
             The amount to curve left while moving backwards, by driving the
-            left motor at a slower speed. Maximum ``curve_left`` is 1, the
+            left motor at a slower speed. Maximum *curve_left* is 1, the
             default is 0 (no curve). This parameter can only be specified as a
-            keyword parameter, and is mutually exclusive with ``curve_right``.
+            keyword parameter, and is mutually exclusive with *curve_right*.
 
         :param float curve_right:
             The amount to curve right while moving backwards, by driving the
-            right motor at a slower speed. Maximum ``curve_right`` is 1, the
+            right motor at a slower speed. Maximum *curve_right* is 1, the
             default is 0 (no curve). This parameter can only be specified as a
-            keyword parameter, and is mutually exclusive with ``curve_left``.
+            keyword parameter, and is mutually exclusive with *curve_left*.
         """
         curve_left = kwargs.pop('curve_left', 0)
         curve_right = kwargs.pop('curve_right', 0)
@@ -1405,13 +1676,14 @@ class RyanteckRobot(Robot):
         robot.forward()
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
-        variable speed control. If ``False``, construct
+        variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1438,13 +1710,14 @@ class CamJamKitRobot(Robot):
         robot.forward()
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller pins, allowing both direction and
-        variable speed control. If ``False``, construct
+        variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1481,15 +1754,24 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         of the right motor's controller.
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller's enable pins, allowing both
-        direction and variable speed control. If ``False``, construct
+        direction and variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: left_motor
+
+        The :class:`PhaseEnableMotor` on the left of the robot.
+
+    .. attribute:: right_motor
+
+        The :class:`PhaseEnableMotor` on the right of the robot.
     """
     def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
         # *args is a hack to ensure a useful message is shown when pins are
@@ -1596,13 +1878,14 @@ class PololuDRV8835Robot(PhaseEnableRobot):
         robot.forward()
 
     :param bool pwm:
-        If ``True`` (the default), construct :class:`PWMOutputDevice`
+        If :data:`True` (the default), construct :class:`PWMOutputDevice`
         instances for the motor controller's enable pins, allowing both
-        direction and variable speed control. If ``False``, construct
+        direction and variable speed control. If :data:`False`, construct
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1657,7 +1940,7 @@ class Energenie(SourceMixin, Device):
     Extends :class:`Device` to represent an `Energenie socket`_ controller.
 
     This class is constructed with a socket number and an optional initial
-    state (defaults to ``False``, meaning off). Instances of this class can
+    state (defaults to :data:`False`, meaning off). Instances of this class can
     be used to switch peripherals on and off. For example::
 
         from gpiozero import Energenie
@@ -1673,9 +1956,10 @@ class Energenie(SourceMixin, Device):
         The initial state of the socket. As Energenie sockets provide no
         means of reading their state, you must provide an initial state for
         the socket, which will be set upon construction. This defaults to
-        ``False`` which will switch the socket off.
+        :data:`False` which will switch the socket off.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -1721,9 +2005,8 @@ class Energenie(SourceMixin, Device):
     @property
     def value(self):
         """
-        Returns ``True`` if the socket is on and ``False``
-        if the socket is off.  Setting this property changes
-        the state of the socket.
+        Returns :data:`True` if the socket is on and :data:`False` if the
+        socket is off.  Setting this property changes the state of the socket.
         """
         return self._value
 
@@ -1748,12 +2031,11 @@ class Energenie(SourceMixin, Device):
 
 class PumpkinPi(LEDBoard):
     """
-    Extends :class: `LEDBoard` for the `ModMyPi Pumpkin Pi` board.
+    Extends :class:`LEDBoard` for the `ModMyPi PumpkinPi`_ board.
 
     There are twelve LEDs connected up to individual pins, so for the PumpkinPi
-    the pins are fixed.
+    the pins are fixed. For example::
 
-    Usage:
         from gpiozero import PumpkinPi
 
         pumpkin = PumpkinPi(pwm=True)
@@ -1761,22 +2043,46 @@ class PumpkinPi(LEDBoard):
         pumpkin.off()
 
     :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances to represent each
-        LED. If ``False`` (the default), construct regular :class:`LED`
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
         instances
 
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially.
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _ModMyPi PumpkinPi: https://www.modmypi.com/halloween-pumpkin-programmable-kit
 
+    .. attribute:: sides
+
+        A :class:`LEDBoard` representing the LEDs around the edge of the
+        pumpkin. It contains:
+
+        .. attribute:: left, right
+
+            Two :class:`LEDBoard` instances representing the LEDs on the left
+            and right sides of the pumpkin. They each contain:
+
+            .. attribute:: top, midtop, middle, midbottom, bottom
+
+                Each :class:`LED` or :class:`PWMLED` around the specified side
+                of the pumpkin.
+
+    .. attribute:: eyes
+
+        A :class:`LEDBoard` representing the eyes of the pumpkin. It contains:
+
+        .. attribute:: left, right
+
+            The :class:`LED` or :class:`PWMLED` for each of the pumpkin's eyes.
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         super(PumpkinPi, self).__init__(
@@ -1825,15 +2131,35 @@ class JamHat(CompositeOutputDevice):
         hat.off()
 
     :param bool pwm:
-        If ``True``, construct :class: PWMLED instances to represent each LED on
-        the board. If ``False`` (the default), construct regular :class:`LED`
-        instances.
+        If :data:`True`, construct :class: PWMLED instances to represent each
+        LED on the board. If :data:`False` (the default), construct regular
+        :class:`LED` instances.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _ModMyPi JamHat: https://www.modmypi.com/jam-hat
+
+    .. attribute:: lights_1, lights_2
+
+        Two :class:`LEDBoard` instances representing the top (lights_1) and
+        bottom (lights_2) rows of LEDs on the JamHat.
+
+        .. attribute:: red, yellow, green
+
+            :class:`LED` or :class:`PWMLED` instances representing the red,
+            yellow, and green LEDs along the top row.
+
+    .. attribute:: button_1, button_2
+
+        The left (button_1) and right (button_2) :class:`Button` objects on the
+        JamHat.
+
+    .. attribute:: buzzer
+
+        The :class:`Buzzer` at the bottom right of the JamHat.
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(JamHat, self).__init__(

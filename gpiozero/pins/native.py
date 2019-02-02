@@ -271,16 +271,14 @@ class NativeDispatchThread(Thread):
 
 class NativeFactory(LocalPiFactory):
     """
-    Uses a built-in pure Python implementation to interface to the Pi's GPIO
-    pins. This is the default pin implementation if no third-party libraries
-    are discovered.
+    Extends :class:`~gpiozero.pins.local.LocalPiFactory`. Uses a built-in pure
+    Python implementation to interface to the Pi's GPIO pins. This is the
+    default pin implementation if no third-party libraries are discovered.
 
     .. warning::
 
         This implementation does *not* currently support PWM. Attempting to
-        use any class which requests PWM will raise an exception. This
-        implementation is also experimental; we make no guarantees it will
-        not eat your Pi for breakfast!
+        use any class which requests PWM will raise an exception.
 
     You can construct native pin instances manually like so::
 
@@ -313,7 +311,8 @@ class NativeFactory(LocalPiFactory):
 
 class NativePin(LocalPiPin):
     """
-    Native pin implementation. See :class:`NativeFactory` for more information.
+    Extends :class:`~gpiozero.pins.local.LocalPiPin`. Native pin
+    implementation. See :class:`NativeFactory` for more information.
     """
     GPIO_FUNCTIONS = {
         'input':   0b000,

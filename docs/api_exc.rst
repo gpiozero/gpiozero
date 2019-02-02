@@ -2,6 +2,8 @@
 API - Exceptions
 ================
 
+.. module:: gpiozero.exc
+
 .. currentmodule:: gpiozero
 
 The following exceptions are defined by GPIO Zero. Please note that multiple
@@ -23,7 +25,7 @@ the case that an out of range value is passed to :attr:`OutputDevice.value` you
 would expect a :exc:`ValueError` to be raised. In fact, a
 :exc:`OutputDeviceBadValue` error will be raised. However, note that this
 descends from both :exc:`GPIOZeroError` (indirectly) and from :exc:`ValueError`
-so you can still do::
+so you can still do the obvious::
 
     from gpiozero import *
 
@@ -38,102 +40,172 @@ Errors
 ======
 
 .. autoexception:: GPIOZeroError
+    :show-inheritance:
 
 .. autoexception:: DeviceClosed
+    :show-inheritance:
 
 .. autoexception:: BadEventHandler
-
-.. autoexception:: BadQueueLen
+    :show-inheritance:
 
 .. autoexception:: BadWaitTime
+    :show-inheritance:
+
+.. autoexception:: BadQueueLen
+    :show-inheritance:
+
+.. autoexception:: BadPinFactory
+    :show-inheritance:
+
+.. autoexception:: ZombieThread
+    :show-inheritance:
 
 .. autoexception:: CompositeDeviceError
+    :show-inheritance:
 
 .. autoexception:: CompositeDeviceBadName
+    :show-inheritance:
+
+.. autoexception:: CompositeDeviceBadOrder
+    :show-inheritance:
+
+.. autoexception:: CompositeDeviceBadDevice
+    :show-inheritance:
 
 .. autoexception:: EnergenieSocketMissing
+    :show-inheritance:
 
 .. autoexception:: EnergenieBadSocket
+    :show-inheritance:
 
 .. autoexception:: SPIError
+    :show-inheritance:
 
 .. autoexception:: SPIBadArgs
+    :show-inheritance:
 
 .. autoexception:: SPIBadChannel
+    :show-inheritance:
 
 .. autoexception:: SPIFixedClockMode
+    :show-inheritance:
 
 .. autoexception:: SPIInvalidClockMode
+    :show-inheritance:
 
 .. autoexception:: SPIFixedBitOrder
+    :show-inheritance:
 
 .. autoexception:: SPIFixedSelect
+    :show-inheritance:
 
 .. autoexception:: SPIFixedWordSize
+    :show-inheritance:
 
 .. autoexception:: SPIInvalidWordSize
+    :show-inheritance:
 
 .. autoexception:: GPIODeviceError
+    :show-inheritance:
 
 .. autoexception:: GPIODeviceClosed
+    :show-inheritance:
 
 .. autoexception:: GPIOPinInUse
+    :show-inheritance:
 
 .. autoexception:: GPIOPinMissing
+    :show-inheritance:
 
 .. autoexception:: InputDeviceError
+    :show-inheritance:
 
 .. autoexception:: OutputDeviceError
+    :show-inheritance:
 
 .. autoexception:: OutputDeviceBadValue
+    :show-inheritance:
 
 .. autoexception:: PinError
+    :show-inheritance:
 
 .. autoexception:: PinInvalidFunction
+    :show-inheritance:
 
 .. autoexception:: PinInvalidState
+    :show-inheritance:
 
 .. autoexception:: PinInvalidPull
+    :show-inheritance:
 
 .. autoexception:: PinInvalidEdges
+    :show-inheritance:
 
 .. autoexception:: PinInvalidBounce
+    :show-inheritance:
 
 .. autoexception:: PinSetInput
+    :show-inheritance:
 
 .. autoexception:: PinFixedPull
+    :show-inheritance:
 
 .. autoexception:: PinEdgeDetectUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinSPIUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinPWMError
+    :show-inheritance:
 
 .. autoexception:: PinPWMUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinPWMFixedValue
+    :show-inheritance:
 
 .. autoexception:: PinUnknownPi
+    :show-inheritance:
 
 .. autoexception:: PinMultiplePins
+    :show-inheritance:
 
 .. autoexception:: PinNoPins
+    :show-inheritance:
 
 .. autoexception:: PinInvalidPin
+    :show-inheritance:
 
 Warnings
 ========
 
 .. autoexception:: GPIOZeroWarning
+    :show-inheritance:
+
+.. autoexception:: DistanceSensorNoEcho
+    :show-inheritance:
 
 .. autoexception:: SPIWarning
+    :show-inheritance:
 
 .. autoexception:: SPISoftwareFallback
+    :show-inheritance:
+
+.. autoexception:: PinWarning
+    :show-inheritance:
 
 .. autoexception:: PinFactoryFallback
+    :show-inheritance:
 
 .. autoexception:: PinNonPhysical
+    :show-inheritance:
+
+.. autoexception:: ThresholdOutOfRange
+    :show-inheritance:
 
 .. autoexception:: CallbackSetToNone
+    :show-inheritance:

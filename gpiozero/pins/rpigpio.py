@@ -24,9 +24,10 @@ from ..exc import (
 
 class RPiGPIOFactory(LocalPiFactory):
     """
-    Uses the `RPi.GPIO`_ library to interface to the Pi's GPIO pins. This is
-    the default pin implementation if the RPi.GPIO library is installed.
-    Supports all features including PWM (via software).
+    Extends :class:`~gpiozero.pins.local.LocalPiFactory`. Uses the `RPi.GPIO`_
+    library to interface to the Pi's GPIO pins. This is the default pin
+    implementation if the RPi.GPIO library is installed. Supports all features
+    including PWM (via software).
 
     Because this is the default pin implementation you can use it simply by
     specifying an integer number for the pin in most operations, e.g.::
@@ -59,8 +60,8 @@ class RPiGPIOFactory(LocalPiFactory):
 
 class RPiGPIOPin(LocalPiPin):
     """
-    Pin implementation for the `RPi.GPIO`_ library. See :class:`RPiGPIOFactory`
-    for more information.
+    Extends :class:`~gpiozero.pins.local.LocalPiPin`. Pin implementation for
+    the `RPi.GPIO`_ library. See :class:`RPiGPIOFactory` for more information.
 
     .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
     """

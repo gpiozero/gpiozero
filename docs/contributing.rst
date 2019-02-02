@@ -6,11 +6,13 @@ Contributing
 
 Contributions to the library are welcome! Here are some guidelines to follow.
 
+
 Suggestions
 ===========
 
 Please make suggestions for additional components or enhancements to the
 codebase by opening an `issue`_ explaining your reasoning clearly.
+
 
 Bugs
 ====
@@ -18,11 +20,13 @@ Bugs
 Please submit bug reports by opening an `issue`_ explaining the problem clearly
 using code examples.
 
+
 Documentation
 =============
 
 The documentation source lives in the `docs`_ folder. Contributions to the
 documentation are welcome but should be easy to read and understand.
+
 
 Commit messages and pull requests
 =================================
@@ -37,17 +41,21 @@ include a short description, for example: "Add LED example, close #123", and
 pull requests should aim to match or closely match the corresponding issue
 title.
 
+
 Backwards compatibility
 =======================
 
 Since this library reached v1.0 we aim to maintain backwards-compatibility
 thereafter. Changes which break backwards-compatibility will not be accepted.
 
+
 Python 2/3
 ==========
 
-The library is 100% compatible with both Python 2 and 3. We intend to drop
-Python 2 support in 2020 when Python 2 reaches `end-of-life`_.
+The library is 100% compatible with both Python 2.7 and Python 3 from version
+3.2 onwards. We intend to drop Python 2 support in 2020 when Python 2 reaches
+`end-of-life`_.
+
 
 .. _docs: https://github.com/RPi-Distro/python-gpiozero/tree/master/docs
 .. _issue: https://github.com/RPi-Distro/python-gpiozero/issues

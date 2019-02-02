@@ -166,7 +166,7 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
     @property
     def closed(self):
         """
-        Returns ``True`` if the device is closed (see the :meth:`close`
+        Returns :data:`True` if the device is closed (see the :meth:`close`
         method). Once a device is closed you can no longer use any other
         methods or properties to control or query the device.
         """
@@ -190,6 +190,17 @@ class Device(ValuesMixin, GPIOBase):
     etc. This is the base class of the device hierarchy. It defines the basic
     services applicable to all devices (specifically the :attr:`is_active`
     property, the :attr:`value` property, and the :meth:`close` method).
+
+    .. attribute:: pin_factory
+
+        This attribute exists at both a class level (representing the default
+        pin factory used to construct devices when no *pin_factory* parameter
+        is specified), and at an instance level (representing the pin factory
+        that the device was constructed with).
+
+        The pin factory provides various facilities to the device including
+        allocating pins, providing low level interfaces (e.g. SPI), and clock
+        facilities (querying and calculating elapsed times).
     """
     pin_factory = None # instance of a Factory sub-class
 
@@ -263,9 +274,9 @@ class Device(ValuesMixin, GPIOBase):
         """
         Called by :meth:`Factory.reserve_pins` to test whether the *other*
         :class:`Device` using a common pin conflicts with this device's intent
-        to use it. The default is ``True`` indicating that all devices conflict
-        with common pins.  Sub-classes may override this to permit more nuanced
-        replies.
+        to use it. The default is :data:`True` indicating that all devices
+        conflict with common pins.  Sub-classes may override this to permit
+        more nuanced replies.
         """
         return True
 
@@ -282,9 +293,9 @@ class Device(ValuesMixin, GPIOBase):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the device is currently active and ``False``
-        otherwise. This property is usually derived from :attr:`value`. Unlike
-        :attr:`value`, this is *always* a boolean.
+        Returns :data:`True` if the device is currently active and
+        :data:`False` otherwise. This property is usually derived from
+        :attr:`value`. Unlike :attr:`value`, this is *always* a boolean.
         """
         return bool(self.value)
 
@@ -296,16 +307,50 @@ class CompositeDevice(Device):
     motors, etc.
 
     The constructor accepts subordinate devices as positional or keyword
-    arguments.  Positional arguments form unnamed devices accessed via the
-    :attr:`all` attribute, while keyword arguments are added to the device
-    as named (read-only) attributes.
+    arguments.  Positional arguments form unnamed devices accessed by treating
+    the composite device as a container, while keyword arguments are added to
+    the device as named (read-only) attributes.
 
-    :param list _order:
+    For example:
+
+    .. code-block:: pycon
+
+        >>> from gpiozero import *
+        >>> d = CompositeDevice(LED(2), LED(3), LED(4), btn=Button(17))
+        >>> d[0]
+        <gpiozero.LED object on pin GPIO2, active_high=True, is_active=False>
+        >>> d[1]
+        <gpiozero.LED object on pin GPIO3, active_high=True, is_active=False>
+        >>> d[2]
+        <gpiozero.LED object on pin GPIO4, active_high=True, is_active=False>
+        >>> d.btn
+        <gpiozero.Button object on pin GPIO17, pull_up=True, is_active=False>
+        >>> d.value
+        CompositeDeviceValue(device_0=False, device_1=False, device_2=False, btn=False)
+
+    :param Device \\*args:
+        The un-named devices that belong to the composite device. The
+        :attr:`value` attributes of these devices will be represented within
+        the composite device's tuple :attr:`value` in the order specified here.
+
+    :type _order: list or None
+    :param _order:
         If specified, this is the order of named items specified by keyword
         arguments (to ensure that the :attr:`value` tuple is constructed with a
         specific order). All keyword arguments *must* be included in the
         collection. If omitted, an alphabetically sorted order will be selected
         for keyword arguments.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    :param Device \\*\\*kwargs:
+        The named devices that belong to the composite device. These devices
+        will be accessible as named attributes on the resulting device, and
+        their :attr:`value` attributes will be accessible as named elements of
+        the composite device's tuple :attr:`value`.
     """
     def __init__(self, *args, **kwargs):
         self._all = ()
@@ -389,14 +434,29 @@ class CompositeDevice(Device):
 
     @property
     def namedtuple(self):
+        """
+        The :func:`~collections.namedtuple` type constructed to represent the
+        value of the composite device. The :attr:`value` attribute returns
+        values of this type.
+        """
         return self._namedtuple
 
     @property
     def value(self):
+        """
+        A :func:`~collections.namedtuple` containing a value for each
+        subordinate device. Devices with names will be represented as named
+        elements. Unnamed devices will have a unique name generated for them,
+        and they will appear in the position they appeared in the constructor.
+        """
         return self.namedtuple(*(device.value for device in self))
 
     @property
     def is_active(self):
+        """
+        Composite devices are considered "active" if any of their constituent
+        devices have a "truthy" value.
+        """
         return any(self.value)
 
 
@@ -406,10 +466,12 @@ class GPIODevice(Device):
     the services common to all single-pin GPIO devices (like ensuring two
     GPIO devices do no share a :attr:`pin`).
 
-    :param int pin:
-        The GPIO pin (in BCM numbering) that the device is connected to. If
-        this is ``None``, :exc:`GPIOPinMissing` will be raised. If the pin is
-        already in use by another device, :exc:`GPIOPinInUse` will be raised.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised. If the pin is already in use by another device,
+        :exc:`GPIOPinInUse` will be raised.
     """
     def __init__(self, pin=None, **kwargs):
         super(GPIODevice, self).__init__(**kwargs)
@@ -457,10 +519,11 @@ class GPIODevice(Device):
     @property
     def pin(self):
         """
-        The :class:`Pin` that the device is connected to. This will be ``None``
-        if the device has been closed (see the :meth:`close` method). When
-        dealing with GPIO pins, query ``pin.number`` to discover the GPIO
-        pin (in BCM numbering) that the device is connected to.
+        The :class:`Pin` that the device is connected to. This will be
+        :data:`None` if the device has been closed (see the
+        :meth:`~Device.close` method). When dealing with GPIO pins, query
+        ``pin.number`` to discover the GPIO pin (in BCM numbering) that the
+        device is connected to.
         """
         return self._pin
 

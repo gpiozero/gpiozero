@@ -35,6 +35,13 @@ within a virtual Python environment:
     $ sudo apt install lsb-release build-essential git git-core \
         exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
         python-dev python3-dev
+
+After installing ``virtualenvwrapper`` you'll need to restart your shell before
+commands like :command:`mkvirtualenv` will operate correctly. Once you've
+restarted your shell, continue:
+
+.. code-block:: console
+
     $ cd
     $ mkvirtualenv -p /usr/bin/python3 python-gpiozero
     $ workon python-gpiozero
@@ -121,12 +128,44 @@ You'll also need to install some pip packages:
 
 The test suite expects pins 22 and 27 (by default) to be wired together in
 order to run the "real" pin tests. The pins used by the test suite can be
-overridden with the environment variables ``GPIOZERO_TEST_PIN`` (defaults to
-22) and ``GPIOZERO_TEST_INPUT_PIN`` (defaults to 27).
+overridden with the environment variables :envvar:`GPIOZERO_TEST_PIN` (defaults
+to 22) and :envvar:`GPIOZERO_TEST_INPUT_PIN` (defaults to 27).
 
 .. warning::
 
-    When wiring GPIOs together, ensure a load (like a 330Ω resistor) is placed
+    When wiring GPIOs together, ensure a load (like a 1KΩ resistor) is placed
     between them. Failure to do so may lead to blown GPIO pins (your humble
     author has a fried GPIO27 as a result of such laziness, although it did
     take *many* runs of the test suite before this occurred!).
+
+The test suite is also setup for usage with the :command:`tox` utility, in
+which case it will attempt to execute the test suite with all supported
+versions of Python. If you are developing under Ubuntu you may wish to look
+into the `Dead Snakes PPA`_ in order to install old/new versions of Python; the
+tox setup *should* work with the version of tox shipped with Ubuntu Xenial, but
+more features (like parallel test execution) are available with later versions.
+
+On the subject of parallel test execution, this is also supported in the tox
+setup, including the "real" pin tests (a file-system level lock is used to
+ensure different interpreters don't try to access the physical pins
+simultaneously).
+
+For example, to execute the test suite under tox, skipping interpreter versions
+which are not installed:
+
+.. code-block:: console
+
+    $ tox -s
+
+To execute the test suite under all installed interpreter versions in parallel,
+using as many parallel tasks as there are CPUs, then displaying a combined
+report of coverage from all environments:
+
+.. code-block:: console
+
+    $ tox -p auto -s
+    $ coverage combine --rcfile coverage.cfg
+    $ coverage report --rcfile coverage.cfg
+
+
+.. _Dead Snakes PPA: https://launchpad.net/~deadsnakes/%2Barchive/ubuntu/ppa

@@ -51,6 +51,11 @@ class PingServer(InternalDevice):
 
     :param str host:
         The hostname or IP address to attempt to ping.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, host):
         self._host = host
@@ -62,10 +67,17 @@ class PingServer(InternalDevice):
 
     @property
     def host(self):
+        """
+        The hostname or IP address to test whenever :attr:`value` is queried.
+        """
         return self._host
 
     @property
     def value(self):
+        """
+        Returns :data:`True` if the host returned a single ping, and
+        :data:`False` otherwise.
+        """
         # XXX This is doing a DNS lookup every time it's queried; should we
         # call gethostbyname in the constructor and ping that instead (good
         # for consistency, but what if the user *expects* the host to change
@@ -118,7 +130,12 @@ class CPUTemperature(InternalDevice):
 
     :param float threshold:
         The temperature above which the device will be considered "active".
-        This defaults to 80.0.
+        (see :attr:`is_active`). This defaults to 80.0.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
             min_temp=0.0, max_temp=100.0, threshold=80.0):
@@ -159,8 +176,8 @@ class CPUTemperature(InternalDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` when the CPU :attr:`temperature` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the CPU :attr:`temperature` exceeds the
+        *threshold*.
         """
         return self.temperature > self.threshold
 
@@ -199,11 +216,16 @@ class LoadAverage(InternalDevice):
 
     :param float threshold:
         The load average above which the device will be considered "active".
-        This defaults to 0.8.
+        (see :attr:`is_active`). This defaults to 0.8.
 
     :param int minutes:
         The number of minutes over which to average the load. Must be 1, 5 or
         15. This defaults to 5.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
         max_load_average=1.0, threshold=0.8, minutes=5):
@@ -234,7 +256,7 @@ class LoadAverage(InternalDevice):
     @property
     def load_average(self):
         """
-        Returns the current load average
+        Returns the current load average.
         """
         with io.open(self.load_average_file, 'r') as f:
             file_columns = f.readline().strip().split()
@@ -253,8 +275,8 @@ class LoadAverage(InternalDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` when the :attr:`load_average` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the :attr:`load_average` exceeds the
+        *threshold*.
         """
         return self.load_average > self.threshold
 
@@ -280,6 +302,9 @@ class TimeOfDay(InternalDevice):
 
         pause()
 
+    Note that *start_time* and *end_time* may be reversed, indicating a time
+    period which cross midnight.
+
     :param ~datetime.time start_time:
         The time from which the device will be considered active.
 
@@ -287,8 +312,13 @@ class TimeOfDay(InternalDevice):
         The time after which the device will be considered inactive.
 
     :param bool utc:
-        If ``True`` (the default), a naive UTC time will be used for the
+        If :data:`True` (the default), a naive UTC time will be used for the
         comparison rather than a local time-zone reading.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, start_time, end_time, utc=True):
         self._start_time = None
@@ -331,13 +361,20 @@ class TimeOfDay(InternalDevice):
     @property
     def utc(self):
         """
-        If ``True``, use a naive UTC time reading for comparison instead of a
-        local timezone reading.
+        If :data:`True`, use a naive UTC time reading for comparison instead of
+        a local timezone reading.
         """
         return self._utc
 
     @property
     def value(self):
+        """
+        Returns :data:`True` when the system clock reads between
+        :attr:`start_time` and :attr:`end_time`, and :data:`False` otherwise.
+        If :attr:`start_time` and :attr:`end_time` are reversed (indicating a
+        period that crosses midnight), then this returns :data:`True` when the
+        is greater than :attr:`start_time` or less than :attr:`end_time`.
+        """
         now = datetime.utcnow().time() if self.utc else datetime.now().time()
         if self.start_time < self.end_time:
             return self.start_time <= now <= self.end_time
@@ -366,11 +403,16 @@ class DiskUsage(InternalDevice):
 
     :param str filesystem:
         The filesystem for which the disk usage needs to be computed. This
-        defaults to `/`, which is the root filesystem.
+        defaults to :file:`/`, which is the root filesystem.
 
     :param float threshold:
-        The disk usage percentage above which the device will be considered "active".
-        This defaults to 90.0.
+        The disk usage percentage above which the device will be considered
+        "active" (see :attr:`is_active`). This defaults to 90.0.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, filesystem='/', threshold=90.0):
         super(DiskUsage, self).__init__()
@@ -398,15 +440,15 @@ class DiskUsage(InternalDevice):
     @property
     def value(self):
         """
-        Returns the current disk usage as a value between 0.0 and 1.0
-        by dividing :attr:`temperature` by 100.
+        Returns the current disk usage as a value between 0.0 and 1.0 by
+        dividing :attr:`usage` by 100.
         """
         return self.usage / 100.0
 
     @property
     def is_active(self):
         """
-        Returns ``True`` when the disk :attr:`usage` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the disk :attr:`usage` exceeds the
+        *threshold*.
         """
         return self.usage > self.threshold

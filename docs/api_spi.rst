@@ -86,41 +86,90 @@ use, gpiozero will attempt to use the hardware implementation if it is
 available and if the selected pins are compatible, falling back to the software
 implementation if not.
 
+
 Analog to Digital Converters (ADC)
 ==================================
+
+The following classes are intended for general use with the integrated circuits
+they are named after. All classes in this section are concrete (not abstract).
+
+
+MCP3001
+-------
 
 .. autoclass:: MCP3001
     :members: value
 
+
+MCP3002
+-------
+
 .. autoclass:: MCP3002
     :members: channel, value, differential
+
+
+MCP3004
+-------
 
 .. autoclass:: MCP3004
     :members: channel, value, differential
 
+
+MCP3008
+-------
+
 .. autoclass:: MCP3008
     :members: channel, value, differential
+
+
+MCP3201
+-------
 
 .. autoclass:: MCP3201
     :members: value
 
+
+MCP3202
+-------
+
 .. autoclass:: MCP3202
     :members: channel, value, differential
+
+
+MCP3204
+-------
 
 .. autoclass:: MCP3204
     :members: channel, value, differential
 
+
+MCP3208
+-------
+
 .. autoclass:: MCP3208
     :members: channel, value, differential
+
+
+MCP3301
+-------
 
 .. autoclass:: MCP3301
     :members: value
 
+
+MCP3302
+-------
+
 .. autoclass:: MCP3302
     :members: channel, value, differential
 
+
+MCP3304
+-------
+
 .. autoclass:: MCP3304
     :members: channel, value, differential
+
 
 Base Classes
 ============
@@ -135,15 +184,16 @@ than concrete classes):
 The following sections document these base classes for advanced users that wish
 to construct classes for their own devices.
 
+
 AnalogInputDevice
-=================
+-----------------
 
 .. autoclass:: AnalogInputDevice
     :members:
 
+
 SPIDevice
-=========
+---------
 
 .. autoclass:: SPIDevice
     :members:
-

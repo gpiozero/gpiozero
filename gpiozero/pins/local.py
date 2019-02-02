@@ -33,9 +33,9 @@ from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
 
 class LocalPiFactory(PiFactory):
     """
-    Abstract base class representing pins attached locally to a Pi. This forms
-    the base class for local-only pin interfaces
-    (:class:`~gpiozero.pins.rpigpio.RPiGPIOPin`,
+    Extends :class:`~gpiozero.pins.pi.PiFactory`. Abstract base class
+    representing pins attached locally to a Pi. This forms the base class for
+    local-only pin interfaces (:class:`~gpiozero.pins.rpigpio.RPiGPIOPin`,
     :class:`~gpiozero.pins.rpio.RPIOPin`, and
     :class:`~gpiozero.pins.native.NativePin`).
     """
@@ -92,8 +92,8 @@ class LocalPiFactory(PiFactory):
 
 class LocalPiPin(PiPin):
     """
-    Abstract base class representing a multi-function GPIO pin attached to the
-    local Raspberry Pi.
+    Extends :class:`~gpiozero.pins.pi.PiPin`. Abstract base class representing
+    a multi-function GPIO pin attached to the local Raspberry Pi.
     """
     def _call_when_changed(self, ticks=None, state=None):
         """

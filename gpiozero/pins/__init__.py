@@ -70,10 +70,10 @@ class Factory(object):
     def release_pins(self, reserver, *pins):
         """
         Releases the reservation of *reserver* against *pins*.  This is
-        typically called during :meth:`Device.close` to clean up reservations
-        taken during construction. Releasing a reservation that is not currently
-        held will be silently ignored (to permit clean-up after failed / partial
-        construction).
+        typically called during :meth:`~gpiozero.Device.close` to clean up
+        reservations taken during construction. Releasing a reservation that is
+        not currently held will be silently ignored (to permit clean-up after
+        failed / partial construction).
         """
         with self._res_lock:
             for pin in pins:
@@ -160,7 +160,7 @@ class Factory(object):
 
         If the pins represented by this class are not *directly* attached to a
         Pi (e.g. the pin is attached to a board attached to the Pi, or the pins
-        are not on a Pi at all), this may return ``None``.
+        are not on a Pi at all), this may return :data:`None`.
         """)
 
 
@@ -285,8 +285,8 @@ class Pin(object):
 
         Descendents which implement analog, or analog-like capabilities can
         return values between 0 and 1. For example, pins implementing PWM
-        (where :attr:`frequency` is not ``None``) return a value between 0.0
-        and 1.0 representing the current PWM duty cycle.
+        (where :attr:`frequency` is not :data:`None`) return a value between
+        0.0 and 1.0 representing the current PWM duty cycle.
 
         If a pin is currently configured for input, and an attempt is made to
         set this attribute, :exc:`PinSetInput` will be raised. If an invalid
@@ -325,12 +325,13 @@ class Pin(object):
         lambda self: self._get_frequency(),
         lambda self, value: self._set_frequency(value),
         doc="""\
-        The frequency (in Hz) for the pin's PWM implementation, or ``None`` if
-        PWM is not currently in use. This value always defaults to ``None`` and
-        may be changed with certain pin types to activate or deactivate PWM.
+        The frequency (in Hz) for the pin's PWM implementation, or :data:`None`
+        if PWM is not currently in use. This value always defaults to
+        :data:`None` and may be changed with certain pin types to activate or
+        deactivate PWM.
 
         If the pin does not support PWM, :exc:`PinPWMUnsupported` will be
-        raised when attempting to set this to a value other than ``None``.
+        raised when attempting to set this to a value other than :data:`None`.
         """)
 
     def _get_bounce(self):
@@ -346,7 +347,7 @@ class Pin(object):
         doc="""\
         The amount of bounce detection (elimination) currently in use by edge
         detection, measured in seconds. If bounce detection is not currently in
-        use, this is ``None``.
+        use, this is :data:`None`.
 
         For example, if :attr:`edges` is currently "rising", :attr:`bounce` is
         currently 5/1000 (5ms), then the waveform below will only fire
@@ -502,14 +503,14 @@ class SPI(object):
     @property
     def clock_polarity(self):
         """
-        The polarity of the SPI clock pin. If this is ``False`` (the default),
-        the clock pin will idle low, and pulse high. Setting this to ``True``
-        will cause the clock pin to idle high, and pulse low. On many data
-        sheets this is documented as the CPOL value.
+        The polarity of the SPI clock pin. If this is :data:`False` (the
+        default), the clock pin will idle low, and pulse high. Setting this to
+        :data:`True` will cause the clock pin to idle high, and pulse low. On
+        many data sheets this is documented as the CPOL value.
 
         The following diagram illustrates the waveform when
-        :attr:`clock_polarity` is ``False`` (the default), equivalent to CPOL
-        0:
+        :attr:`clock_polarity` is :data:`False` (the default), equivalent to
+        CPOL 0:
 
         .. code-block:: text
 
@@ -521,7 +522,7 @@ class SPI(object):
             idle       off     off     off     off     off     off       idle
 
         The following diagram illustrates the waveform when
-        :attr:`clock_polarity` is ``True``, equivalent to CPOL 1:
+        :attr:`clock_polarity` is :data:`True`, equivalent to CPOL 1:
 
         .. code-block:: text
 
@@ -541,17 +542,17 @@ class SPI(object):
     @property
     def clock_phase(self):
         """
-        The phase of the SPI clock pin. If this is ``False`` (the default),
+        The phase of the SPI clock pin. If this is :data:`False` (the default),
         data will be read from the MISO pin when the clock pin activates.
-        Setting this to ``True`` will cause data to be read from the MISO pin
-        when the clock pin deactivates. On many data sheets this is documented
-        as the CPHA value. Whether the clock edge is rising or falling when the
-        clock is considered activated is controlled by the
+        Setting this to :data:`True` will cause data to be read from the MISO
+        pin when the clock pin deactivates. On many data sheets this is
+        documented as the CPHA value. Whether the clock edge is rising or
+        falling when the clock is considered activated is controlled by the
         :attr:`clock_polarity` attribute (corresponding to CPOL).
 
         The following diagram indicates when data is read when
-        :attr:`clock_polarity` is ``False``, and :attr:`clock_phase` is
-        ``False`` (the default), equivalent to CPHA 0:
+        :attr:`clock_polarity` is :data:`False`, and :attr:`clock_phase` is
+        :data:`False` (the default), equivalent to CPHA 0:
 
         .. code-block:: text
 
@@ -567,8 +568,8 @@ class SPI(object):
                `---'   `---'   `---'   `---'   `---'   `---'   `---'
 
         The following diagram indicates when data is read when
-        :attr:`clock_polarity` is ``False``, but :attr:`clock_phase` is
-        ``True``, equivalent to CPHA 1:
+        :attr:`clock_polarity` is :data:`False`, but :attr:`clock_phase` is
+        :data:`True`, equivalent to CPHA 1:
 
         .. code-block:: text
 
@@ -630,14 +631,14 @@ class SPI(object):
         lambda self, value: self._set_lsb_first(value),
         doc="""\
         Controls whether words are read and written LSB in (Least Significant
-        Bit first) order. The default is ``False`` indicating that words are
-        read and written in MSB (Most Significant Bit first) order.
+        Bit first) order. The default is :data:`False` indicating that words
+        are read and written in MSB (Most Significant Bit first) order.
         Effectively, this controls the `Bit endianness`_ of the connection.
 
         The following diagram shows the a word containing the number 5 (binary
         0101) transmitted on MISO with :attr:`bits_per_word` set to 4, and
-        :attr:`clock_mode` set to 0, when :attr:`lsb_first` is ``False`` (the
-        default):
+        :attr:`clock_mode` set to 0, when :attr:`lsb_first` is :data:`False`
+        (the default):
 
         .. code-block:: text
 
@@ -652,7 +653,7 @@ class SPI(object):
                 :       :       :       :
                MSB                     LSB
 
-        And now with :attr:`lsb_first` set to ``True`` (and all other
+        And now with :attr:`lsb_first` set to :data:`True` (and all other
         parameters the same):
 
         .. code-block:: text
@@ -681,13 +682,13 @@ class SPI(object):
         lambda self: self._get_select_high(),
         lambda self, value: self._set_select_high(value),
         doc="""\
-        If ``False`` (the default), the chip select line is considered active
-        when it is pulled low. When set to ``True``, the chip select line is
-        considered active when it is driven high.
+        If :data:`False` (the default), the chip select line is considered
+        active when it is pulled low. When set to :data:`True`, the chip select
+        line is considered active when it is driven high.
 
         The following diagram shows the waveform of the chip select line, and
-        the clock when :attr:`clock_polarity` is ``False``, and
-        :attr:`select_high` is ``False`` (the default):
+        the clock when :attr:`clock_polarity` is :data:`False`, and
+        :attr:`select_high` is :data:`False` (the default):
 
         .. code-block:: text
 
@@ -701,7 +702,7 @@ class SPI(object):
                 |   |   |   |   |   |   |   |   |   |   |   |   |   |
             ----'   `---'   `---'   `---'   `---'   `---'   `---'   `-------
 
-        And when :attr:`select_high` is ``True``:
+        And when :attr:`select_high` is :data:`True`:
 
         .. code-block:: text
 
