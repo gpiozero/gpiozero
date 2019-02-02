@@ -86,7 +86,7 @@ def test_input_event_activated(mock_factory):
     event = Event()
     pin = mock_factory.pin(4)
     with DigitalInputDevice(4) as device:
-        device.when_activated = lambda: event.set(mock_factory)
+        device.when_activated = lambda: event.set()
         assert not event.is_set()
         pin.drive_high()
         assert event.is_set()
