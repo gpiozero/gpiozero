@@ -17,12 +17,12 @@ digraph classes {
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
 
-    SmoothedInputDevice->InputDevice;
+    InputDevice->GPIODevice;
     LightSensor->SmoothedInputDevice;
     MotionSensor->SmoothedInputDevice;
-    DistanceSensor->SmoothedInputDevice;
-    LineSensor->SmoothedInputDevice;
     Button->DigitalInputDevice;
-    InputDevice->GPIODevice;
     DigitalInputDevice->InputDevice;
+    DistanceSensor->SmoothedInputDevice;
+    SmoothedInputDevice->InputDevice;
+    LineSensor->SmoothedInputDevice;
 }

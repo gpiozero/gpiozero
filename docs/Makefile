@@ -182,16 +182,32 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 images/device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i Device -i SharedMixin -x SPI -x SPISoftwareBus > $@
+	./images/class_graph \
+		-i Device \
+		-i SharedMixin \
+		-x SPI -x SPISoftwareBus > $@
 
 images/composite_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i CompositeDevice -i Energenie -o SourceMixin -o HoldMixin > $@
+	./images/class_graph \
+		-i CompositeDevice \
+		-i Energenie \
+		-x Motor \
+		-x PhaseEnableMotor \
+		-x Servo \
+		-o SourceMixin -o HoldMixin > $@
 
 images/spi_device_hierarchy.dot: $(PY_SOURCES)
 	./images/class_graph -i SPIDevice > $@
 
 images/output_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i OutputDevice -i RGBLED -x SPI -o SourceMixin > $@
+	./images/class_graph \
+		-i OutputDevice \
+		-i RGBLED \
+		-i Servo \
+		-i Motor \
+		-i PhaseEnableMotor \
+		-i TonalBuzzer \
+		-x SPI -o SourceMixin > $@
 
 images/input_device_hierarchy.dot: $(PY_SOURCES)
 	./images/class_graph -i InputDevice -o EventsMixin -o HoldMixin > $@

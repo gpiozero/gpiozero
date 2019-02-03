@@ -20,7 +20,7 @@
 <text text-anchor="middle" x="144.5" y="-163.5" font-family="Sans" font-size="10.00" fill="#ffffff">InputDevice</text>
 </g>
 <!-- SmoothedInputDevice&#45;&gt;InputDevice -->
-<g id="edge1" class="edge"><title>SmoothedInputDevice&#45;&gt;InputDevice</title>
+<g id="edge7" class="edge"><title>SmoothedInputDevice&#45;&gt;InputDevice</title>
 <path fill="none" stroke="black" d="M218.065,-144.011C208.916,-146.783 199.598,-149.607 190.823,-152.266"/>
 <polygon fill="black" stroke="black" points="189.738,-148.937 181.183,-155.187 191.768,-155.636 189.738,-148.937"/>
 </g>
@@ -30,7 +30,7 @@
 <text text-anchor="middle" x="36" y="-163.5" font-family="Sans" font-size="10.00" fill="#000000">GPIODevice</text>
 </g>
 <!-- InputDevice&#45;&gt;GPIODevice -->
-<g id="edge7" class="edge"><title>InputDevice&#45;&gt;GPIODevice</title>
+<g id="edge1" class="edge"><title>InputDevice&#45;&gt;GPIODevice</title>
 <path fill="none" stroke="black" d="M107.741,-166C99.5782,-166 90.7988,-166 82.2962,-166"/>
 <polygon fill="black" stroke="black" points="82.1223,-162.5 72.1222,-166 82.1222,-169.5 82.1223,-162.5"/>
 </g>
@@ -54,45 +54,45 @@
 <path fill="none" stroke="black" d="M380.452,-126C371.019,-126 360.705,-126 350.387,-126"/>
 <polygon fill="black" stroke="black" points="350.1,-122.5 340.1,-126 350.1,-129.5 350.1,-122.5"/>
 </g>
-<!-- DistanceSensor -->
-<g id="node6" class="node"><title>DistanceSensor</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="468,-90 376,-90 376,-54 468,-54 468,-90"/>
-<text text-anchor="middle" x="422" y="-69.5" font-family="Sans" font-size="10.00" fill="#ffffff">DistanceSensor</text>
-</g>
-<!-- DistanceSensor&#45;&gt;SmoothedInputDevice -->
-<g id="edge4" class="edge"><title>DistanceSensor&#45;&gt;SmoothedInputDevice</title>
-<path fill="none" stroke="black" d="M375.839,-89.2344C363.213,-94.0529 349.33,-99.351 336.131,-104.388"/>
-<polygon fill="black" stroke="black" points="334.763,-101.164 326.668,-107.999 337.259,-107.704 334.763,-101.164"/>
-</g>
-<!-- LineSensor -->
-<g id="node7" class="node"><title>LineSensor</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="457,-36 387,-36 387,-0 457,-0 457,-36"/>
-<text text-anchor="middle" x="422" y="-15.5" font-family="Sans" font-size="10.00" fill="#ffffff">LineSensor</text>
-</g>
-<!-- LineSensor&#45;&gt;SmoothedInputDevice -->
-<g id="edge5" class="edge"><title>LineSensor&#45;&gt;SmoothedInputDevice</title>
-<path fill="none" stroke="black" d="M389.125,-36.266C384.645,-39.0802 380.154,-42.0382 376,-45 351.533,-62.4433 325.537,-84.4907 306.698,-101.178"/>
-<polygon fill="black" stroke="black" points="304.216,-98.7014 299.088,-107.972 308.878,-103.923 304.216,-98.7014"/>
-</g>
 <!-- Button -->
-<g id="node8" class="node"><title>Button</title>
+<g id="node6" class="node"><title>Button</title>
 <polygon fill="#2980b9" stroke="#2980b9" points="449,-252 395,-252 395,-216 449,-216 449,-252"/>
 <text text-anchor="middle" x="422" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">Button</text>
 </g>
 <!-- DigitalInputDevice -->
-<g id="node9" class="node"><title>DigitalInputDevice</title>
+<g id="node7" class="node"><title>DigitalInputDevice</title>
 <polygon fill="#2980b9" stroke="#2980b9" points="330,-225 227,-225 227,-189 330,-189 330,-225"/>
 <text text-anchor="middle" x="278.5" y="-204.5" font-family="Sans" font-size="10.00" fill="#ffffff">DigitalInputDevice</text>
 </g>
 <!-- Button&#45;&gt;DigitalInputDevice -->
-<g id="edge6" class="edge"><title>Button&#45;&gt;DigitalInputDevice</title>
+<g id="edge4" class="edge"><title>Button&#45;&gt;DigitalInputDevice</title>
 <path fill="none" stroke="black" d="M394.717,-228.985C379.335,-226.05 359.238,-222.215 340.144,-218.572"/>
 <polygon fill="black" stroke="black" points="340.759,-215.126 330.28,-216.69 339.447,-222.002 340.759,-215.126"/>
 </g>
 <!-- DigitalInputDevice&#45;&gt;InputDevice -->
-<g id="edge8" class="edge"><title>DigitalInputDevice&#45;&gt;InputDevice</title>
+<g id="edge5" class="edge"><title>DigitalInputDevice&#45;&gt;InputDevice</title>
 <path fill="none" stroke="black" d="M226.843,-191.266C215.034,-187.598 202.532,-183.714 190.964,-180.121"/>
 <polygon fill="black" stroke="black" points="191.668,-176.675 181.08,-177.051 189.592,-183.36 191.668,-176.675"/>
+</g>
+<!-- DistanceSensor -->
+<g id="node8" class="node"><title>DistanceSensor</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="468,-90 376,-90 376,-54 468,-54 468,-90"/>
+<text text-anchor="middle" x="422" y="-69.5" font-family="Sans" font-size="10.00" fill="#ffffff">DistanceSensor</text>
+</g>
+<!-- DistanceSensor&#45;&gt;SmoothedInputDevice -->
+<g id="edge6" class="edge"><title>DistanceSensor&#45;&gt;SmoothedInputDevice</title>
+<path fill="none" stroke="black" d="M375.839,-89.2344C363.213,-94.0529 349.33,-99.351 336.131,-104.388"/>
+<polygon fill="black" stroke="black" points="334.763,-101.164 326.668,-107.999 337.259,-107.704 334.763,-101.164"/>
+</g>
+<!-- LineSensor -->
+<g id="node9" class="node"><title>LineSensor</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="457,-36 387,-36 387,-0 457,-0 457,-36"/>
+<text text-anchor="middle" x="422" y="-15.5" font-family="Sans" font-size="10.00" fill="#ffffff">LineSensor</text>
+</g>
+<!-- LineSensor&#45;&gt;SmoothedInputDevice -->
+<g id="edge8" class="edge"><title>LineSensor&#45;&gt;SmoothedInputDevice</title>
+<path fill="none" stroke="black" d="M389.125,-36.266C384.645,-39.0802 380.154,-42.0382 376,-45 351.533,-62.4433 325.537,-84.4907 306.698,-101.178"/>
+<polygon fill="black" stroke="black" points="304.216,-98.7014 299.088,-107.972 308.878,-103.923 304.216,-98.7014"/>
 </g>
 </g>
 </svg>
