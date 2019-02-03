@@ -441,11 +441,6 @@ Alternatively, the following example is identical, but uses the
 .. literalinclude:: examples/rgbled_pot_2.py
     :emphasize-lines: 9
 
-.. note::
-
-    Please note the example above requires Python 3. In Python 2, :func:`zip`
-    doesn't support lazy evaluation so the script will simply hang.
-
 Timed heat lamp
 ===============
 

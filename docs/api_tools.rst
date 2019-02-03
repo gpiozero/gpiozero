@@ -58,6 +58,8 @@ Combining sources
 
 .. autofunction:: summed
 
+.. autofunction:: zip_values
+
 Artificial sources
 ==================
 

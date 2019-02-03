@@ -701,3 +701,25 @@ def ramping_values(period=360):
         elif value > 1 or value < 0:
             step *= -1
             value += step
+
+def zip_values(*devices):
+    """
+    Provides a source constructed from the values of each item, for example::
+
+        from gpiozero import MCP3008, Robot
+        from gpiozero.tools import zip_values
+        from signal import pause
+
+        robot = Robot(left=(4, 14), right=(17, 18))
+
+        left = MCP3008(0)
+        right = MCP3008(1)
+
+        robot.source = zip_values(left, right)
+
+        pause()
+
+    ``zip_values(pot1, pot2)`` is equivalent to
+    ``zip(pot1.values, pot2.values)``
+    """
+    return zip(*[d.values for d in devices])

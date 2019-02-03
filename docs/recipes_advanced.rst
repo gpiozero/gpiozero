@@ -77,14 +77,14 @@ Use two potentiometers to control the left and right motor speed of a robot:
 
 .. literalinclude:: examples/robot_pots_1.py
 
+To include reverse direction, scale the potentiometer values from 0-1 to -1-1:
+
+.. literalinclude:: examples/robot_pots_2.py
+
 .. note::
 
     Please note the example above requires Python 3. In Python 2, :func:`zip`
     doesn't support lazy evaluation so the script will simply hang.
-
-To include reverse direction, scale the potentiometer values from 0-1 to -1-1:
-
-.. literalinclude:: examples/robot_pots_2.py
 
 BlueDot LED
 ===========
