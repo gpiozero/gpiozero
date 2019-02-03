@@ -11,26 +11,25 @@ digraph classes {
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
 
-    CompositeDevice;
     GPIODevice;
+    CompositeDevice;
     Device;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
 
     PhaseEnableMotor->CompositeDevice;
-    PWMOutputDevice->OutputDevice;
-    TonalBuzzer->CompositeDevice;
-    GPIODevice->Device;
-    CompositeDevice->Device;
-    PWMLED->PWMOutputDevice;
-    Motor->CompositeDevice;
-    Buzzer->DigitalOutputDevice;
     Servo->CompositeDevice;
     DigitalOutputDevice->OutputDevice;
-    RGBLED->Device;
-    AngularServo->Servo;
+    Motor->CompositeDevice;
+    TonalBuzzer->CompositeDevice;
     OutputDevice->GPIODevice;
+    AngularServo->Servo;
+    Buzzer->DigitalOutputDevice;
+    CompositeDevice->Device;
+    PWMOutputDevice->OutputDevice;
+    PWMLED->PWMOutputDevice;
+    GPIODevice->Device;
     LED->DigitalOutputDevice;
-    LedBorg->RGBLED;
+    RGBLED->Device;
 }

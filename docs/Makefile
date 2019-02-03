@@ -191,6 +191,7 @@ images/composite_device_hierarchy.dot: $(PY_SOURCES)
 	./images/class_graph \
 		-i CompositeDevice \
 		-i Energenie \
+		-i LedBord \
 		-x Motor \
 		-x PhaseEnableMotor \
 		-x Servo \
@@ -207,6 +208,7 @@ images/output_device_hierarchy.dot: $(PY_SOURCES)
 		-i Motor \
 		-i PhaseEnableMotor \
 		-i TonalBuzzer \
+		-x LedBorg \
 		-x SPI -o SourceMixin > $@
 
 images/input_device_hierarchy.dot: $(PY_SOURCES)
