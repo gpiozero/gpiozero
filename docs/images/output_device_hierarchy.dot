@@ -1,26 +1,29 @@
-/* vim: set et sw=4 sts=4: */
-
 digraph classes {
     graph [rankdir=RL];
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-    Device;
+
     GPIODevice;
+    Device;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
 
-    GPIODevice->Device;
-    OutputDevice->GPIODevice;
-    DigitalOutputDevice->OutputDevice;
     LED->DigitalOutputDevice;
-    Buzzer->DigitalOutputDevice;
     PWMOutputDevice->OutputDevice;
-    PWMLED->PWMOutputDevice;
-    RGBLED->Device;
     LedBorg->RGBLED;
+    DigitalOutputDevice->OutputDevice;
+    PWMLED->PWMOutputDevice;
+    OutputDevice->GPIODevice;
+    RGBLED->Device;
+    Buzzer->DigitalOutputDevice;
+    GPIODevice->Device;
 }
-

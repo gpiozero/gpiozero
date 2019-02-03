@@ -1,44 +1,53 @@
-/* vim: set et sw=4 sts=4: */
-
 digraph classes {
     graph [rankdir=RL];
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
+
     Device;
-    CompositeDevice;
-    CompositeOutputDevice;
     LEDCollection;
+    CompositeOutputDevice;
+    CompositeDevice;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
-    CompositeDevice->Device;
-    CompositeOutputDevice->CompositeDevice;
-    LEDCollection->CompositeOutputDevice;
 
-    LEDBoard->LEDCollection;
+    PololuDRV8835Robot->PhaseEnableRobot;
     LEDBarGraph->LEDCollection;
-
-    PiLiter->LEDBoard;
-    PiHutXmasTree->LEDBoard;
-    PiLiterBarGraph->LEDBarGraph;
+    LEDBoard->LEDCollection;
+    TrafficHat->TrafficLightsBuzzer;
+    RyanteckRobot->Robot;
+    Robot->CompositeDevice;
+    LEDCollection->CompositeOutputDevice;
+    PhaseEnableRobot->CompositeDevice;
+    CamJamKitRobot->Robot;
+    Energenie->Device;
     TrafficLights->LEDBoard;
+    JamHat->CompositeOutputDevice;
+    StatusBoard->CompositeOutputDevice;
     SnowPi->LEDBoard;
     PiTraffic->TrafficLights;
+    StatusZero->LEDBoard;
+    TonalBuzzer->CompositeDevice;
+    PhaseEnableMotor->CompositeDevice;
+    ButtonBoard->CompositeDevice;
+    Motor->CompositeDevice;
+    CompositeOutputDevice->CompositeDevice;
+    PiLiterBarGraph->LEDBarGraph;
+    PiLiter->LEDBoard;
+    FishDish->TrafficLightsBuzzer;
     PiStop->TrafficLights;
     TrafficLightsBuzzer->CompositeOutputDevice;
-    JamHat->CompositeOutputDevice;
-    FishDish->TrafficLightsBuzzer;
-    TrafficHat->TrafficLightsBuzzer;
-    Robot->CompositeDevice;
-    RyanteckRobot->Robot;
-    CamJamKitRobot->Robot;
-    Motor->CompositeDevice;
-    Servo->CompositeDevice;
-    TonalBuzzer->CompositeDevice;
+    PumpkinPi->LEDBoard;
+    PiHutXmasTree->LEDBoard;
     AngularServo->Servo;
-    Energenie->Device;
-    ButtonBoard->CompositeDevice;
+    Servo->CompositeDevice;
+    CompositeDevice->Device;
 }
