@@ -585,6 +585,11 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. note::
+
+        Note that this class does not currently work with
+        :class:`PiGPIOFactory`.
     """
 
     def __init__(self, pin=None, initial_value=None, mid_note='A4', octaves=1,
