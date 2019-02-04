@@ -4,11 +4,11 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 1.5.0 (2019-02-01)
+Release 1.5.0 (2019-02-05)
 ==========================
 
-* Allow source tools to take device object as well as device.values or just
-  values. (`#640`_)
+* Allow :attr:`~Device.source` to take a device object as well as
+  `~Device.values` or just ``values``. (`#640`_)
 * Introduced pin event timing to increase accuracy of certain devices such as
   the HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
 * Further improvements to :class:`DistanceSensor` (ignoring missed edges).
@@ -32,12 +32,13 @@ Release 1.5.0 (2019-02-01)
   `#634`)
 * Allow :class:`SmoothedInputDevice`, :class:`LightSensor` and
   :class:`MotionSensor` to have pull-up configured. (`#652`_)
+* Allow input devices to be pulled up or down externally, thanks to Philippe
+  Muller. (`#593`_, `#658`_)
 * Minor changes to support Python 3.7, thanks to Russel Winder and Rick Ansell.
   (`#666`_, `#668`_, `#669`_, `#671`_, `#673`_)
 * Correct row/col numbering logic in :class:`PinInfo`. (`#674`_)
 * Many additional tests.
 * Many documentation corrections, additions and clarifications.
-
 
 .. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
 .. _#664: https://github.com/RPi-Distro/python-gpiozero/issues/664
@@ -61,6 +62,8 @@ Release 1.5.0 (2019-02-01)
 .. _#629: https://github.com/RPi-Distro/python-gpiozero/issues/629
 .. _#634: https://github.com/RPi-Distro/python-gpiozero/issues/634
 .. _#652: https://github.com/RPi-Distro/python-gpiozero/issues/652
+.. _#593: https://github.com/RPi-Distro/python-gpiozero/issues/593
+.. _#658: https://github.com/RPi-Distro/python-gpiozero/issues/658
 .. _#666: https://github.com/RPi-Distro/python-gpiozero/issues/666
 .. _#668: https://github.com/RPi-Distro/python-gpiozero/issues/668
 .. _#669: https://github.com/RPi-Distro/python-gpiozero/issues/669
@@ -95,7 +98,6 @@ This release is mostly bug-fixes, but a few enhancements have made it in too:
 .. _#617: https://github.com/RPi-Distro/python-gpiozero/issues/617
 .. _#618: https://github.com/RPi-Distro/python-gpiozero/issues/618
 .. _#619: https://github.com/RPi-Distro/python-gpiozero/issues/619
-
 
 Release 1.4.0 (2017-07-26)
 ==========================
