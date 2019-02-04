@@ -12,7 +12,7 @@ from math import sin, cos, radians
 from time import time, sleep
 from itertools import islice
 
-from gpiozero import Device, LED, Button
+from gpiozero import Device, LED, Button, Robot
 from gpiozero.tools import *
 try:
     from math import isclose
@@ -378,3 +378,54 @@ def test_ramping_values():
             else:
                 if i % period == 0:
                     assert v == firstval
+
+def test_zip_values():
+    with Button(2) as btn1, Button(3) as btn2:
+        zv = zip_values(btn1, btn2)
+        assert next(zv) == (False, False)
+        btn1.pin.drive_low()
+        sleep(epsilon)
+        assert next(zv) == (True, False)
+        btn2.pin.drive_low()
+        sleep(epsilon)
+        assert next(zv) == (True, True)
+        btn1.pin.drive_high()
+        sleep(epsilon)
+        assert next(zv) == (False, True)
+        btn2.pin.drive_high()
+        sleep(epsilon)
+        assert next(zv) == (False, False)
+    with Button(2) as btn1, Button(3) as btn2, Button(4) as btn3, Button(5) as btn4:
+        zv = zip_values(btn1, btn2, btn3, btn4)
+        assert next(zv) == (False, False, False, False)
+        btn1.pin.drive_low()
+        btn3.pin.drive_low()
+        sleep(epsilon)
+        assert next(zv) == (True, False, True, False)
+        btn2.pin.drive_low()
+        btn4.pin.drive_low()
+        sleep(epsilon)
+        assert next(zv) == (True, True, True, True)
+        btn1.pin.drive_high()
+        btn2.pin.drive_high()
+        btn3.pin.drive_high()
+        btn4.pin.drive_high()
+        sleep(epsilon)
+        assert next(zv) == (False, False, False, False)
+    with Robot(left=(4, 5), right=(6, 7), pwm=False) as robot, Button(2) as btn1, Button(3) as btn2:
+        assert robot.value == (0, 0)
+        robot.source = zip_values(btn1, btn2)
+        sleep(epsilon)
+        assert robot.value == (0, 0)
+        btn1.pin.drive_low()
+        sleep(epsilon)
+        assert robot.value == (1, 0)
+        btn2.pin.drive_low()
+        sleep(epsilon)
+        assert robot.value == (1, 1)
+        btn1.pin.drive_high()
+        sleep(epsilon)
+        assert robot.value == (0, 1)
+        btn2.pin.drive_high()
+        sleep(epsilon)
+        assert robot.value == (0, 0)

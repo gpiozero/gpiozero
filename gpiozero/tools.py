@@ -719,7 +719,7 @@ def zip_values(*devices):
 
         pause()
 
-    ``zip_values(pot1, pot2)`` is equivalent to
-    ``zip(pot1.values, pot2.values)``
+    ``zip_values(left, right)`` is equivalent to ``zip(left.values,
+    right.values)``.
     """
     return zip(*[d.values for d in devices])
