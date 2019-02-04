@@ -379,7 +379,7 @@ def test_ramping_values():
                 if i % period == 0:
                     assert v == firstval
 
-def test_zip_values():
+def test_zip_values(mock_factory):
     with Button(2) as btn1, Button(3) as btn2:
         zv = zip_values(btn1, btn2)
         assert next(zv) == (False, False)
