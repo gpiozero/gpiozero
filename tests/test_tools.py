@@ -31,7 +31,6 @@ except ImportError:
 epsilon = 0.01  # time to sleep after setting source before checking value
 
 def test_set_source_by_value(mock_factory):
-    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -40,13 +39,12 @@ def test_set_source_by_value(mock_factory):
         sleep(epsilon)
         assert not led.value
         assert not btn.value
-        btn_pin.drive_low()
+        btn.pin.drive_low()
         sleep(epsilon)
         assert led.value
         assert btn.value
 
 def test_set_source_by_device(mock_factory):
-    btn_pin = mock_factory.pin(3)
     with LED(2) as led, Button(3) as btn:
         led.source_delay = 0
         assert not led.value
@@ -55,7 +53,7 @@ def test_set_source_by_device(mock_factory):
         sleep(epsilon)
         assert not led.value
         assert not btn.value
-        btn_pin.drive_low()
+        btn.pin.drive_low()
         sleep(epsilon)
         assert led.value
         assert btn.value
@@ -63,36 +61,6 @@ def test_set_source_by_device(mock_factory):
 def test_negated(mock_factory):
     assert list(negated(())) == []
     assert list(negated((True, True, False, False))) == [False, False, True, True]
-
-def test_negated_with_device_values(mock_factory):
-    btn_pin = mock_factory.pin(3)
-    with LED(2) as led, Button(3) as btn:
-        led.source_delay = 0
-        assert not led.value
-        assert not btn.value
-        led.source = negated(btn.values)
-        sleep(epsilon)
-        assert led.value
-        assert not btn.value
-        btn_pin.drive_low()
-        sleep(epsilon)
-        assert not led.value
-        assert btn.value
-
-def test_negated_with_device(mock_factory):
-    btn_pin = mock_factory.pin(3)
-    with LED(2) as led, Button(3) as btn:
-        led.source_delay = 0
-        assert not led.value
-        assert not btn.value
-        led.source = negated(btn)
-        sleep(epsilon)
-        assert led.value
-        assert not btn.value
-        btn_pin.drive_low()
-        sleep(epsilon)
-        assert not led.value
-        assert btn.value
 
 def test_inverted():
     with pytest.raises(ValueError):
@@ -384,27 +352,21 @@ def test_zip_values(mock_factory):
         zv = zip_values(btn1, btn2)
         assert next(zv) == (False, False)
         btn1.pin.drive_low()
-        sleep(epsilon)
         assert next(zv) == (True, False)
         btn2.pin.drive_low()
-        sleep(epsilon)
         assert next(zv) == (True, True)
         btn1.pin.drive_high()
-        sleep(epsilon)
         assert next(zv) == (False, True)
         btn2.pin.drive_high()
-        sleep(epsilon)
         assert next(zv) == (False, False)
     with Button(2) as btn1, Button(3) as btn2, Button(4) as btn3, Button(5) as btn4:
         zv = zip_values(btn1, btn2, btn3, btn4)
         assert next(zv) == (False, False, False, False)
         btn1.pin.drive_low()
         btn3.pin.drive_low()
-        sleep(epsilon)
         assert next(zv) == (True, False, True, False)
         btn2.pin.drive_low()
         btn4.pin.drive_low()
-        sleep(epsilon)
         assert next(zv) == (True, True, True, True)
         btn1.pin.drive_high()
         btn2.pin.drive_high()
@@ -412,20 +374,3 @@ def test_zip_values(mock_factory):
         btn4.pin.drive_high()
         sleep(epsilon)
         assert next(zv) == (False, False, False, False)
-    with Robot(left=(4, 5), right=(6, 7), pwm=False) as robot, Button(2) as btn1, Button(3) as btn2:
-        assert robot.value == (0, 0)
-        robot.source = zip_values(btn1, btn2)
-        sleep(epsilon)
-        assert robot.value == (0, 0)
-        btn1.pin.drive_low()
-        sleep(epsilon)
-        assert robot.value == (1, 0)
-        btn2.pin.drive_low()
-        sleep(epsilon)
-        assert robot.value == (1, 1)
-        btn1.pin.drive_high()
-        sleep(epsilon)
-        assert robot.value == (0, 1)
-        btn2.pin.drive_high()
-        sleep(epsilon)
-        assert robot.value == (0, 0)
