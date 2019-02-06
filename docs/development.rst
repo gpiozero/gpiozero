@@ -51,8 +51,8 @@ restarted your shell, continue:
 
 You will likely wish to install one or more pin implementations within the
 virtual environment (if you don't, GPIO Zero will use the "native" pin
-implementation which is largely experimental at this stage and not very
-useful):
+implementation which is usable at this stage, but doesn't support facilities
+like PWM):
 
 .. code-block:: console
 
@@ -61,7 +61,7 @@ useful):
 If you are working on SPI devices you may also wish to install the ``spidev``
 package to provide hardware SPI capabilities (again, GPIO Zero will work
 without this, but a big-banging software SPI implementation will be used
-instead):
+instead which limits bandwidth):
 
 .. code-block:: console
 
