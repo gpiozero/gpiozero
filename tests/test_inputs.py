@@ -102,6 +102,21 @@ def test_input_event_deactivated(mock_factory):
         pin.drive_low()
         assert event.is_set()
 
+def test_input_activated_callback_warning(mock_factory):
+    def foo(): pass
+
+    with DigitalInputDevice(4) as device:
+        with warnings.catch_warnings(record=True) as w:
+            device.when_activated = foo()
+            assert len(w) == 1
+            assert w[0].category == CallbackSetToNone
+
+    with DigitalInputDevice(4) as device:
+        with warnings.catch_warnings(record=True) as w:
+            device.when_deactivated = foo()
+            assert len(w) == 1
+            assert w[0].category == CallbackSetToNone
+
 def test_input_partial_callback(mock_factory):
     event = Event()
     pin = mock_factory.pin(4)
