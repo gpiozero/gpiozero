@@ -213,14 +213,17 @@ class Device(ValuesMixin, GPIOBase):
         # no third-party libraries are available, however, we fall back to a
         # pure Python implementation which supports platforms like PyPy
         #
-        # NOTE: If the built-in pin factories are expanded, this dict must be
+        # NOTE: If the built-in pin factories are expanded, the dict must be
         # updated along with the entry-points in setup.py.
-        default_factories = OrderedDict({
-            'rpigpio': 'gpiozero.pins.rpigpio:RPiGPIOFactory',
-            'rpio':    'gpiozero.pins.rpio:RPIOFactory',
-            'pigpio':  'gpiozero.pins.pigpio:PiGPIOFactory',
-            'native':  'gpiozero.pins.native:NativeFactory',
-        })
+        factories = (
+            ('rpigpio', 'gpiozero.pins.rpigpio:RPiGPIOFactory'),
+            ('rpio',    'gpiozero.pins.rpio:RPIOFactory'),
+            ('pigpio',  'gpiozero.pins.pigpio:PiGPIOFactory'),
+            ('native',  'gpiozero.pins.native:NativeFactory'),
+        )
+        default_factories = OrderedDict()
+        for k, v in factories:
+            default_factories[k] = v
         name = os.environ.get('GPIOZERO_PIN_FACTORY')
         if name is None:
             # If no factory is explicitly specified, try various names in
