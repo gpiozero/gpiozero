@@ -136,3 +136,4 @@ Warnings
 
 .. autoexception:: PinNonPhysical
 
+.. autoexception:: CallbackSetToNone

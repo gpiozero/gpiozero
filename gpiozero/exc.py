@@ -171,3 +171,6 @@ class PinNonPhysical(PinWarning):
 
 class ThresholdOutOfRange(GPIOZeroWarning):
     "Warning raised when a threshold is out of range specified by min and max values"
+
+class CallbackSetToNone(GPIOZeroWarning):
+    "Warning raised when a callback is set to None when its previous value was None"

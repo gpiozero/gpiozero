@@ -82,6 +82,13 @@ This will assign the function to the event handler *without calling it*. This
 is the crucial difference between ``my_function`` (a reference to a function)
 and ``my_function()`` (the result of calling a function).
 
+.. note::
+
+    Note that as of v1.5, setting a callback to ``None`` when it was previously
+    ``None`` will raise a :class:`CallbackSetToNone` warning, with the intention
+    of alerting users when callbacks are set to ``None`` accidentally. However,
+    if this is intentional, the warning can be suppressed. See the
+    :mod:`warnings` module for reference.
 
 .. _pinfactoryfallback-warnings:
 
@@ -247,9 +254,9 @@ that both callbacks will fire. Sometimes, this is acceptable, but often you'll
 want to only fire the :attr:`Button.when_pressed` callback when the button has
 not been held, only pressed.
 
-The way to achieve this is to *not* set a callback on when_pressed, and instead
-use :attr:`Button.when_released` to work out whether it had been held or just
-pressed::
+The way to achieve this is to *not* set a callback on
+:attr:`Button.when_pressed`, and instead use :attr:`Button.when_released` to
+work out whether it had been held or just pressed::
 
     from gpiozero import Button
 
