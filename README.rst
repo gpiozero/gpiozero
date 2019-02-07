@@ -115,7 +115,7 @@ Other contributors:
 - `Fatih Sarhan`_
 - `Rick Ansell`_
 - `Jeevan M R`_
-- `Claire Pollard_
+- `Claire Pollard`_
 - `Philippe Muller`_
 
 
