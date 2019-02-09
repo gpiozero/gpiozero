@@ -23,7 +23,7 @@ def test_default_pin_factory_order():
         with warnings.catch_warnings(record=True) as ws:
             with patch('sys.path') as path, \
                  patch('io.open') as io, \
-                 patch ('os.environ.get') as get:
+                 patch('os.environ.get') as get:
                 path.return_value = []
                 io.return_value.__enter__.side_effect = file_not_found
                 get.return_value = None
