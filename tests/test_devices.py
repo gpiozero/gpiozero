@@ -8,13 +8,30 @@ str = type('')
 
 import os
 import warnings
-
-import mock
+from mock import patch
 import pytest
+import errno
 
 from gpiozero import *
 from gpiozero.pins.mock import MockFactory
 
+
+file_not_found = IOError(errno.ENOENT, 'File not found')
+
+def test_default_pin_factory_order():
+    with pytest.raises(BadPinFactory):
+        with warnings.catch_warnings(record=True) as ws:
+            with patch('sys.path') as path, \
+                 patch('io.open') as io:
+                io.return_value.__enter__.side_effect = file_not_found
+                path.return_value = []
+                device = GPIODevice(2)
+                assert len(ws) == 4
+                assert all(w.category == PinFactoryFallback for w in ws)
+                assert w[0].message.startswith('Falling back from rpigpio:')
+                assert w[1].message.startswith('Falling back from rpio:')
+                assert w[2].message.startswith('Falling back from pigpio:')
+                assert w[3].message.startswith('Falling back from native:')
 
 def test_device_bad_pin(mock_factory):
     with pytest.raises(GPIOPinMissing):
