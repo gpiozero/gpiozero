@@ -116,8 +116,8 @@ class Tone(float):
 
         For example `concert A`_, the typical tuning note at 440Hz, would be
         represent as "A4". One semi-tone above this would be "A#4" or
-        alternatively "Bb4". Unicode representations are also accepted, e.g.
-        "A♯4" or "B♭4".
+        alternatively "Bb4". Unicode representations of sharp and flat are also
+        accepted.
         """
         if isinstance(note, bytes):
             note = note.decode('ascii')
