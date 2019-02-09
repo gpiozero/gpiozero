@@ -19,6 +19,7 @@ from .exc import OutputDeviceBadValue, GPIOPinMissing
 from .devices import GPIODevice, Device, CompositeDevice
 from .mixins import SourceMixin
 from .threads import GPIOThread
+from .tones import Tone
 
 
 class OutputDevice(SourceMixin, GPIODevice):
@@ -535,109 +536,122 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         which most users can ignore).
     """
 
-    def __init__(self, pin=None, initial_value=None, mid_note='A4', octaves=1,
-                 pin_factory=None):
-        self._validate_note_range(mid_note, octaves)
+    def __init__(self, pin=None, initial_value=None, mid_tone=Tone("A4"),
+                 octaves=1, pin_factory=None):
+        self._mid_tone = None
         super(TonalBuzzer, self).__init__(
             pwm_device=PWMOutputDevice(
                 pin=pin, pin_factory=pin_factory
             ), pin_factory=pin_factory)
         try:
+            self._mid_tone = Tone(mid_tone)
+            if not (0 < octaves <= 9):
+                raise ValueError('octaves must be between 1 and 9')
             self._octaves = octaves
+            try:
+                self.min_tone.note
+            except ValueError:
+                raise ValueError(
+                    '%r is too low for %d octaves' %
+                    (self._mid_tone, self._octaves))
+            try:
+                self.max_tone.note
+            except ValueError:
+                raise ValueError(
+                    '%r is too high for %d octaves' %
+                    (self._max_tone, self._octaves))
             self.value = initial_value
         except:
             self.close()
             raise
 
     def __repr__(self):
-        try:
-            return '<gpiozero.%s object on pin %r, is_active=%s>' % (
-                self.__class__.__name__, self.pwm_device.pin, self.is_active)
-        except:
-            return super(OutputDevice, self).__repr__()
+        if self._mid_note is None or self._octaves is None:
+            return super(TonalBuzzer, self).__repr__()
+        elif self.value is None:
+            return '<gpiozero.TonalBuzzer on pin %r, silent>' % (
+                self.pwm_device.pin,)
+        else:
+            return '<gpiozero.TonalBuzzer on pin %r, playing %s>' % (
+                self.pwm_device.pin, self.tone.note)
 
-    def _note_to_midi(self, note):
-        if isinstance(note, bytes):
-            note = note.decode('ascii')
-        if isinstance(note, str):
-            nt, num = note[:-1].replace('#', 'S'), int(note[-1])
-            notes = 'C CS D DS E F FS G GS A AS B'.split(' ')
-            note = (num  + 1) * 12 + notes.index(nt)
-        return note
-
-    def _note_to_freq(self, note):
-        midi = self._note_to_midi(note)
-        return 2**((midi-69)/12)*440
-
-    def _validate_note_range(self, mid_note, octaves):
-        self._mid_note = self._note_to_midi(mid_note)
-        self._octaves = octaves
-        if octaves < 1:
-            raise ValueError('octaves must be at least 1')
-        if self.min_note < 1:
-            plural = 's' if octaves > 1 else ''
-            raise ValueError(
-                'mid_note too low for {} octave{}'.format(octaves, plural))
-
-    def note_value(self, note):
+    def play(self, tone):
         """
-        Convert the given note to a normalized value scaled -1 to 1 relative to
-        the buzzer's range. If note is ``None``, ``None`` is returned.
-        """
-        if note is None:
-            return None
-        note = self._note_to_midi(note)
-        return (note - self.mid_note) / (self.max_note - self.mid_note)
+        Play the given *tone*. This can either be an instance of
+        :class:`~gpiozero.tones.Tone` or can be anything that could be used to
+        construct an instance of :class:`~gpiozero.tones.Tone`.
 
-    def play(self, note):
+        For example::
+
+            >>> from gpiozero import TonalBuzzer
+            >>> from gpiozero.tones import Tone
+            >>> b = TonalBuzzer(17)
+            >>> b.play(Tone("A4"))
+            >>> b.play(Tone(220.0)) # Hz
+            >>> b.play(Tone(60)) # middle C in MIDI notation
+            >>> b.play("A4")
+            >>> b.play(220.0)
+            >>> b.play(60)
         """
-        Play the given note e.g. ``play(60)`` (MIDI) or ``play('C4')`` (note).
-        ``play(None)`` turns the buzzer off.
-        """
-        if note is None:
+        if tone is None:
             self.value = None
         else:
-            freq = self._note_to_freq(note)
-            if self.min_frequency <= freq <= self.max_frequency:
+            if not isinstance(tone, Tone):
+                tone = Tone(tone)
+            freq = tone.frequency
+            if self.min_tone.frequency <= tone <= self.max_tone.frequency:
                 self.pwm_device.pin.frequency = freq
                 self.pwm_device.value = 0.5
             else:
-                raise ValueError("note out of the device's range")
+                raise ValueError("tone is out of the device's range")
 
     def stop(self):
         """
         Turn the buzzer off. This is equivalent to setting :attr:`value` to
-        ``None``.
+        :data:`None`.
         """
         self.value = None
+
+    @property
+    def tone(self):
+        """
+        Returns the :class:`~gpiozero.tones.Tone` that the buzzer is currently
+        playing, or :data:`None` if the buzzer is silent. This property can
+        also be set to play the specified tone.
+        """
+        if self.pwm_device.pin.frequency is None:
+            return None
+        else:
+            return Tone.from_frequency(self.pwm_device.pin.frequency)
+
+    @tone.setter
+    def tone(self, value):
+        self.play(value)
 
     @property
     def value(self):
         """
         Represents the state of the buzzer as a value between 0 (representing
         the minimum note) and 1 (representing the maximum note). This can also
-        be the special value ``None`` indicating that the buzzer is currently
-        silent.
+        be the special value :data:`None` indicating that the buzzer is
+        currently silent.
         """
         if self.pwm_device.pin.frequency is None:
             return None
         else:
-            freq = self.pwm_device.pin.frequency
-            mid_freq = self.mid_frequency
             try:
-                return log2(freq / mid_freq) / self.octaves
+                return log2(
+                    self.pwm_device.pin.frequency / self.mid_tone.frequency
+                ) / self.octaves
             except ZeroDivisionError:
-                return 0
+                return 0.0
 
     @value.setter
     def value(self, value):
         if value is None:
             self.pwm_device.pin.frequency = None
         elif -1 <= value <= 1:
-            if value == 0:
-                freq = self.mid_frequency
-            else:
-                freq = self.mid_frequency * 2**(self.octaves * value)
+            freq = self.mid_tone.frequency * 2 ** (self.octaves * value)
             self.pwm_device.pin.frequency = freq
             self.pwm_device.value = 0.5
         else:
@@ -647,8 +661,8 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the buzzer is currently playing, otherwise
-        ``False``.
+        Returns :data:`True` if the buzzer is currently playing, otherwise
+        :data:`False`.
         """
         return self.value is not None
 
@@ -660,49 +674,28 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         return self._octaves
 
     @property
-    def min_note(self):
+    def min_tone(self):
         """
-        The minimum note available (i.e. the MIDI note represented when value is
-        -1).
+        The lowest tone that the buzzer can play, i.e. the tone played
+        when :attr:`value` is -1.
         """
-        return self.mid_note - 12 * self.octaves
+        return self._mid_tone.down(12 * self.octaves)
 
     @property
-    def mid_note(self):
+    def mid_tone(self):
         """
-        The middle note available (i.e. the MIDI note represented when value is
-        0).
+        The middle tone available, i.e. the tone played when :attr:`value` is
+        0.
         """
-        return self._mid_note
+        return self._mid_tone
 
     @property
-    def max_note(self):
+    def max_tone(self):
         """
-        The maximum note available (i.e. the MIDI note represented when value is
-        1).
+        The highest tone that the buzzer can play, i.e. the tone played when
+        :attr:`value` is 1.
         """
-        return self.mid_note + 12 * self.octaves
-
-    @property
-    def min_frequency(self):
-        """
-        The frequency of the minimum note.
-        """
-        return self._note_to_freq(self.min_note)
-
-    @property
-    def mid_frequency(self):
-        """
-        The frequency of the middle note.
-        """
-        return self._note_to_freq(self.mid_note)
-
-    @property
-    def max_frequency(self):
-        """
-        The frequency of the maximum note.
-        """
-        return self._note_to_freq(self.max_note)
+        return self._mid_tone.up(12 * self.octaves)
 
 
 class PWMLED(PWMOutputDevice):
