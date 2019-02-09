@@ -9,198 +9,198 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 580)">
 <title>classes</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-580 589,-580 589,4 -4,4"/>
-<!-- MCP3xx2 -->
-<g id="node1" class="node"><title>MCP3xx2</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="487,-360 427,-360 427,-324 487,-324 487,-360"/>
-<text text-anchor="middle" x="457" y="-339.5" font-family="Sans" font-size="10.00" fill="#000000">MCP3xx2</text>
+<!-- AnalogInputDevice -->
+<g id="node1" class="node"><title>AnalogInputDevice</title>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="296,-333 190,-333 190,-297 296,-297 296,-333"/>
+<text text-anchor="middle" x="243" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">AnalogInputDevice</text>
 </g>
-<!-- MCP3xxx -->
-<g id="node7" class="node"><title>MCP3xxx</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="391,-333 332,-333 332,-297 391,-297 391,-333"/>
-<text text-anchor="middle" x="361.5" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">MCP3xxx</text>
+<!-- SPIDevice -->
+<g id="node8" class="node"><title>SPIDevice</title>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="154,-333 90,-333 90,-297 154,-297 154,-333"/>
+<text text-anchor="middle" x="122" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">SPIDevice</text>
 </g>
-<!-- MCP3xx2&#45;&gt;MCP3xxx -->
-<g id="edge15" class="edge"><title>MCP3xx2&#45;&gt;MCP3xxx</title>
-<path fill="none" stroke="black" d="M426.929,-333.605C418.76,-331.246 409.747,-328.644 401.116,-326.151"/>
-<polygon fill="black" stroke="black" points="401.811,-322.709 391.232,-323.297 399.869,-329.434 401.811,-322.709"/>
+<!-- AnalogInputDevice&#45;&gt;SPIDevice -->
+<g id="edge1" class="edge"><title>AnalogInputDevice&#45;&gt;SPIDevice</title>
+<path fill="none" stroke="black" d="M189.805,-315C181.286,-315 172.565,-315 164.354,-315"/>
+<polygon fill="black" stroke="black" points="164.279,-311.5 154.279,-315 164.279,-318.5 164.279,-311.5"/>
 </g>
 <!-- Device -->
 <g id="node2" class="node"><title>Device</title>
 <polygon fill="#9ec6e0" stroke="#9ec6e0" points="54,-333 0,-333 0,-297 54,-297 54,-333"/>
 <text text-anchor="middle" x="27" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">Device</text>
 </g>
-<!-- AnalogInputDevice -->
-<g id="node3" class="node"><title>AnalogInputDevice</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="296,-333 190,-333 190,-297 296,-297 296,-333"/>
-<text text-anchor="middle" x="243" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">AnalogInputDevice</text>
-</g>
-<!-- SPIDevice -->
-<g id="node4" class="node"><title>SPIDevice</title>
-<polygon fill="#9ec6e0" stroke="#9ec6e0" points="154,-333 90,-333 90,-297 154,-297 154,-333"/>
-<text text-anchor="middle" x="122" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">SPIDevice</text>
-</g>
-<!-- AnalogInputDevice&#45;&gt;SPIDevice -->
-<g id="edge14" class="edge"><title>AnalogInputDevice&#45;&gt;SPIDevice</title>
-<path fill="none" stroke="black" d="M189.805,-315C181.286,-315 172.565,-315 164.354,-315"/>
-<polygon fill="black" stroke="black" points="164.279,-311.5 154.279,-315 164.279,-318.5 164.279,-311.5"/>
-</g>
-<!-- SPIDevice&#45;&gt;Device -->
-<g id="edge19" class="edge"><title>SPIDevice&#45;&gt;Device</title>
-<path fill="none" stroke="black" d="M89.7736,-315C81.5203,-315 72.5448,-315 64.0586,-315"/>
-<polygon fill="black" stroke="black" points="64.0313,-311.5 54.0313,-315 64.0312,-318.5 64.0313,-311.5"/>
-</g>
-<!-- MCP32xx -->
-<g id="node5" class="node"><title>MCP32xx</title>
+<!-- MCP30xx -->
+<g id="node3" class="node"><title>MCP30xx</title>
 <polygon fill="#9ec6e0" stroke="#9ec6e0" points="487,-468 427,-468 427,-432 487,-432 487,-468"/>
-<text text-anchor="middle" x="457" y="-447.5" font-family="Sans" font-size="10.00" fill="#000000">MCP32xx</text>
+<text text-anchor="middle" x="457" y="-447.5" font-family="Sans" font-size="10.00" fill="#000000">MCP30xx</text>
 </g>
-<!-- MCP32xx&#45;&gt;MCP3xxx -->
-<g id="edge13" class="edge"><title>MCP32xx&#45;&gt;MCP3xxx</title>
+<!-- MCP3xxx -->
+<g id="node7" class="node"><title>MCP3xxx</title>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="391,-333 332,-333 332,-297 391,-297 391,-333"/>
+<text text-anchor="middle" x="361.5" y="-312.5" font-family="Sans" font-size="10.00" fill="#000000">MCP3xxx</text>
+</g>
+<!-- MCP30xx&#45;&gt;MCP3xxx -->
+<g id="edge7" class="edge"><title>MCP30xx&#45;&gt;MCP3xxx</title>
 <path fill="none" stroke="black" d="M443.39,-431.793C427.357,-408.644 399.546,-368.489 381.082,-341.829"/>
 <polygon fill="black" stroke="black" points="383.78,-339.577 375.209,-333.349 378.025,-343.563 383.78,-339.577"/>
 </g>
-<!-- MCP30xx -->
-<g id="node6" class="node"><title>MCP30xx</title>
+<!-- MCP32xx -->
+<g id="node4" class="node"><title>MCP32xx</title>
 <polygon fill="#9ec6e0" stroke="#9ec6e0" points="487,-306 427,-306 427,-270 487,-270 487,-306"/>
-<text text-anchor="middle" x="457" y="-285.5" font-family="Sans" font-size="10.00" fill="#000000">MCP30xx</text>
+<text text-anchor="middle" x="457" y="-285.5" font-family="Sans" font-size="10.00" fill="#000000">MCP32xx</text>
 </g>
-<!-- MCP30xx&#45;&gt;MCP3xxx -->
-<g id="edge17" class="edge"><title>MCP30xx&#45;&gt;MCP3xxx</title>
+<!-- MCP32xx&#45;&gt;MCP3xxx -->
+<g id="edge13" class="edge"><title>MCP32xx&#45;&gt;MCP3xxx</title>
 <path fill="none" stroke="black" d="M426.929,-296.395C418.76,-298.754 409.747,-301.356 401.116,-303.849"/>
 <polygon fill="black" stroke="black" points="399.869,-300.566 391.232,-306.703 401.811,-307.291 399.869,-300.566"/>
 </g>
-<!-- MCP3xxx&#45;&gt;AnalogInputDevice -->
-<g id="edge16" class="edge"><title>MCP3xxx&#45;&gt;AnalogInputDevice</title>
-<path fill="none" stroke="black" d="M331.702,-315C323.869,-315 315.072,-315 306.152,-315"/>
-<polygon fill="black" stroke="black" points="306.074,-311.5 296.074,-315 306.074,-318.5 306.074,-311.5"/>
-</g>
 <!-- MCP33xx -->
-<g id="node8" class="node"><title>MCP33xx</title>
+<g id="node5" class="node"><title>MCP33xx</title>
 <polygon fill="#9ec6e0" stroke="#9ec6e0" points="487,-117 427,-117 427,-81 487,-81 487,-117"/>
 <text text-anchor="middle" x="457" y="-96.5" font-family="Sans" font-size="10.00" fill="#000000">MCP33xx</text>
 </g>
 <!-- MCP33xx&#45;&gt;MCP3xxx -->
-<g id="edge20" class="edge"><title>MCP33xx&#45;&gt;MCP3xxx</title>
+<g id="edge17" class="edge"><title>MCP33xx&#45;&gt;MCP3xxx</title>
 <path fill="none" stroke="black" d="M448.189,-117.045C431.827,-154.844 393.862,-242.549 374.428,-287.444"/>
 <polygon fill="black" stroke="black" points="371.115,-286.287 370.354,-296.855 377.539,-289.068 371.115,-286.287"/>
 </g>
+<!-- MCP3xx2 -->
+<g id="node6" class="node"><title>MCP3xx2</title>
+<polygon fill="#9ec6e0" stroke="#9ec6e0" points="487,-360 427,-360 427,-324 487,-324 487,-360"/>
+<text text-anchor="middle" x="457" y="-339.5" font-family="Sans" font-size="10.00" fill="#000000">MCP3xx2</text>
+</g>
+<!-- MCP3xx2&#45;&gt;MCP3xxx -->
+<g id="edge18" class="edge"><title>MCP3xx2&#45;&gt;MCP3xxx</title>
+<path fill="none" stroke="black" d="M426.929,-333.605C418.76,-331.246 409.747,-328.644 401.116,-326.151"/>
+<polygon fill="black" stroke="black" points="401.811,-322.709 391.232,-323.297 399.869,-329.434 401.811,-322.709"/>
+</g>
+<!-- MCP3xxx&#45;&gt;AnalogInputDevice -->
+<g id="edge19" class="edge"><title>MCP3xxx&#45;&gt;AnalogInputDevice</title>
+<path fill="none" stroke="black" d="M331.702,-315C323.869,-315 315.072,-315 306.152,-315"/>
+<polygon fill="black" stroke="black" points="306.074,-311.5 296.074,-315 306.074,-318.5 306.074,-311.5"/>
+</g>
+<!-- SPIDevice&#45;&gt;Device -->
+<g id="edge20" class="edge"><title>SPIDevice&#45;&gt;Device</title>
+<path fill="none" stroke="black" d="M89.7736,-315C81.5203,-315 72.5448,-315 64.0586,-315"/>
+<polygon fill="black" stroke="black" points="64.0313,-311.5 54.0313,-315 64.0312,-318.5 64.0313,-311.5"/>
+</g>
+<!-- MCP3001 -->
+<g id="node9" class="node"><title>MCP3001</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-576 523,-576 523,-540 585,-540 585,-576"/>
+<text text-anchor="middle" x="554" y="-555.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3001</text>
+</g>
+<!-- MCP3001&#45;&gt;MCP30xx -->
+<g id="edge2" class="edge"><title>MCP3001&#45;&gt;MCP30xx</title>
+<path fill="none" stroke="black" d="M531.931,-539.831C528.858,-536.955 525.791,-533.954 523,-531 506.549,-513.591 489.668,-492.438 477.234,-476.115"/>
+<polygon fill="black" stroke="black" points="479.978,-473.941 471.163,-468.065 474.389,-478.156 479.978,-473.941"/>
+</g>
+<!-- MCP3002 -->
+<g id="node10" class="node"><title>MCP3002</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-414 523,-414 523,-378 585,-378 585,-414"/>
+<text text-anchor="middle" x="554" y="-393.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3002</text>
+</g>
+<!-- MCP3002&#45;&gt;MCP30xx -->
+<g id="edge3" class="edge"><title>MCP3002&#45;&gt;MCP30xx</title>
+<path fill="none" stroke="black" d="M522.941,-413.086C514.38,-417.953 504.94,-423.318 495.973,-428.415"/>
+<polygon fill="black" stroke="black" points="494.178,-425.41 487.214,-433.394 497.637,-431.496 494.178,-425.41"/>
+</g>
+<!-- MCP3002&#45;&gt;MCP3xx2 -->
+<g id="edge4" class="edge"><title>MCP3002&#45;&gt;MCP3xx2</title>
+<path fill="none" stroke="black" d="M522.941,-378.914C514.38,-374.047 504.94,-368.682 495.973,-363.585"/>
+<polygon fill="black" stroke="black" points="497.637,-360.504 487.214,-358.606 494.178,-366.59 497.637,-360.504"/>
+</g>
+<!-- MCP3004 -->
+<g id="node11" class="node"><title>MCP3004</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-522 523,-522 523,-486 585,-486 585,-522"/>
+<text text-anchor="middle" x="554" y="-501.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3004</text>
+</g>
+<!-- MCP3004&#45;&gt;MCP30xx -->
+<g id="edge5" class="edge"><title>MCP3004&#45;&gt;MCP30xx</title>
+<path fill="none" stroke="black" d="M522.941,-486.914C514.38,-482.047 504.94,-476.682 495.973,-471.585"/>
+<polygon fill="black" stroke="black" points="497.637,-468.504 487.214,-466.606 494.178,-474.59 497.637,-468.504"/>
+</g>
+<!-- MCP3008 -->
+<g id="node12" class="node"><title>MCP3008</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-468 523,-468 523,-432 585,-432 585,-468"/>
+<text text-anchor="middle" x="554" y="-447.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3008</text>
+</g>
+<!-- MCP3008&#45;&gt;MCP30xx -->
+<g id="edge6" class="edge"><title>MCP3008&#45;&gt;MCP30xx</title>
+<path fill="none" stroke="black" d="M522.941,-450C514.826,-450 505.921,-450 497.378,-450"/>
+<polygon fill="black" stroke="black" points="497.214,-446.5 487.214,-450 497.213,-453.5 497.214,-446.5"/>
+</g>
+<!-- MCP3201 -->
+<g id="node13" class="node"><title>MCP3201</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-306 523,-306 523,-270 585,-270 585,-306"/>
+<text text-anchor="middle" x="554" y="-285.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3201</text>
+</g>
+<!-- MCP3201&#45;&gt;MCP32xx -->
+<g id="edge8" class="edge"><title>MCP3201&#45;&gt;MCP32xx</title>
+<path fill="none" stroke="black" d="M522.941,-288C514.826,-288 505.921,-288 497.378,-288"/>
+<polygon fill="black" stroke="black" points="497.214,-284.5 487.214,-288 497.213,-291.5 497.214,-284.5"/>
+</g>
+<!-- MCP3202 -->
+<g id="node14" class="node"><title>MCP3202</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-360 523,-360 523,-324 585,-324 585,-360"/>
+<text text-anchor="middle" x="554" y="-339.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3202</text>
+</g>
+<!-- MCP3202&#45;&gt;MCP32xx -->
+<g id="edge9" class="edge"><title>MCP3202&#45;&gt;MCP32xx</title>
+<path fill="none" stroke="black" d="M522.941,-324.914C514.38,-320.047 504.94,-314.682 495.973,-309.585"/>
+<polygon fill="black" stroke="black" points="497.637,-306.504 487.214,-304.606 494.178,-312.59 497.637,-306.504"/>
+</g>
+<!-- MCP3202&#45;&gt;MCP3xx2 -->
+<g id="edge10" class="edge"><title>MCP3202&#45;&gt;MCP3xx2</title>
+<path fill="none" stroke="black" d="M522.941,-342C514.826,-342 505.921,-342 497.378,-342"/>
+<polygon fill="black" stroke="black" points="497.214,-338.5 487.214,-342 497.213,-345.5 497.214,-338.5"/>
+</g>
+<!-- MCP3204 -->
+<g id="node15" class="node"><title>MCP3204</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-252 523,-252 523,-216 585,-216 585,-252"/>
+<text text-anchor="middle" x="554" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3204</text>
+</g>
+<!-- MCP3204&#45;&gt;MCP32xx -->
+<g id="edge11" class="edge"><title>MCP3204&#45;&gt;MCP32xx</title>
+<path fill="none" stroke="black" d="M522.941,-251.086C514.38,-255.953 504.94,-261.318 495.973,-266.415"/>
+<polygon fill="black" stroke="black" points="494.178,-263.41 487.214,-271.394 497.637,-269.496 494.178,-263.41"/>
+</g>
+<!-- MCP3208 -->
+<g id="node16" class="node"><title>MCP3208</title>
+<polygon fill="#2980b9" stroke="#2980b9" points="585,-198 523,-198 523,-162 585,-162 585,-198"/>
+<text text-anchor="middle" x="554" y="-177.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3208</text>
+</g>
+<!-- MCP3208&#45;&gt;MCP32xx -->
+<g id="edge12" class="edge"><title>MCP3208&#45;&gt;MCP32xx</title>
+<path fill="none" stroke="black" d="M531.931,-198.169C528.858,-201.045 525.791,-204.046 523,-207 506.549,-224.409 489.668,-245.562 477.234,-261.885"/>
+<polygon fill="black" stroke="black" points="474.389,-259.844 471.163,-269.935 479.978,-264.059 474.389,-259.844"/>
+</g>
 <!-- MCP3301 -->
-<g id="node9" class="node"><title>MCP3301</title>
+<g id="node17" class="node"><title>MCP3301</title>
 <polygon fill="#2980b9" stroke="#2980b9" points="585,-144 523,-144 523,-108 585,-108 585,-144"/>
 <text text-anchor="middle" x="554" y="-123.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3301</text>
 </g>
 <!-- MCP3301&#45;&gt;MCP33xx -->
-<g id="edge1" class="edge"><title>MCP3301&#45;&gt;MCP33xx</title>
+<g id="edge14" class="edge"><title>MCP3301&#45;&gt;MCP33xx</title>
 <path fill="none" stroke="black" d="M522.941,-117.457C514.737,-115.125 505.725,-112.564 497.096,-110.112"/>
 <polygon fill="black" stroke="black" points="497.789,-106.67 487.214,-107.303 495.876,-113.403 497.789,-106.67"/>
 </g>
-<!-- MCP3002 -->
-<g id="node10" class="node"><title>MCP3002</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-360 523,-360 523,-324 585,-324 585,-360"/>
-<text text-anchor="middle" x="554" y="-339.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3002</text>
-</g>
-<!-- MCP3002&#45;&gt;MCP3xx2 -->
-<g id="edge2" class="edge"><title>MCP3002&#45;&gt;MCP3xx2</title>
-<path fill="none" stroke="black" d="M522.941,-342C514.826,-342 505.921,-342 497.378,-342"/>
-<polygon fill="black" stroke="black" points="497.214,-338.5 487.214,-342 497.213,-345.5 497.214,-338.5"/>
-</g>
-<!-- MCP3002&#45;&gt;MCP30xx -->
-<g id="edge3" class="edge"><title>MCP3002&#45;&gt;MCP30xx</title>
-<path fill="none" stroke="black" d="M522.941,-324.914C514.38,-320.047 504.94,-314.682 495.973,-309.585"/>
-<polygon fill="black" stroke="black" points="497.637,-306.504 487.214,-304.606 494.178,-312.59 497.637,-306.504"/>
-</g>
-<!-- MCP3008 -->
-<g id="node11" class="node"><title>MCP3008</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-306 523,-306 523,-270 585,-270 585,-306"/>
-<text text-anchor="middle" x="554" y="-285.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3008</text>
-</g>
-<!-- MCP3008&#45;&gt;MCP30xx -->
-<g id="edge4" class="edge"><title>MCP3008&#45;&gt;MCP30xx</title>
-<path fill="none" stroke="black" d="M522.941,-288C514.826,-288 505.921,-288 497.378,-288"/>
-<polygon fill="black" stroke="black" points="497.214,-284.5 487.214,-288 497.213,-291.5 497.214,-284.5"/>
-</g>
-<!-- MCP3208 -->
-<g id="node12" class="node"><title>MCP3208</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-576 523,-576 523,-540 585,-540 585,-576"/>
-<text text-anchor="middle" x="554" y="-555.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3208</text>
-</g>
-<!-- MCP3208&#45;&gt;MCP32xx -->
-<g id="edge5" class="edge"><title>MCP3208&#45;&gt;MCP32xx</title>
-<path fill="none" stroke="black" d="M531.931,-539.831C528.858,-536.955 525.791,-533.954 523,-531 506.549,-513.591 489.668,-492.438 477.234,-476.115"/>
-<polygon fill="black" stroke="black" points="479.978,-473.941 471.163,-468.065 474.389,-478.156 479.978,-473.941"/>
-</g>
-<!-- MCP3201 -->
-<g id="node13" class="node"><title>MCP3201</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-522 523,-522 523,-486 585,-486 585,-522"/>
-<text text-anchor="middle" x="554" y="-501.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3201</text>
-</g>
-<!-- MCP3201&#45;&gt;MCP32xx -->
-<g id="edge6" class="edge"><title>MCP3201&#45;&gt;MCP32xx</title>
-<path fill="none" stroke="black" d="M522.941,-486.914C514.38,-482.047 504.94,-476.682 495.973,-471.585"/>
-<polygon fill="black" stroke="black" points="497.637,-468.504 487.214,-466.606 494.178,-474.59 497.637,-468.504"/>
-</g>
-<!-- MCP3001 -->
-<g id="node14" class="node"><title>MCP3001</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-252 523,-252 523,-216 585,-216 585,-252"/>
-<text text-anchor="middle" x="554" y="-231.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3001</text>
-</g>
-<!-- MCP3001&#45;&gt;MCP30xx -->
-<g id="edge7" class="edge"><title>MCP3001&#45;&gt;MCP30xx</title>
-<path fill="none" stroke="black" d="M522.941,-251.086C514.38,-255.953 504.94,-261.318 495.973,-266.415"/>
-<polygon fill="black" stroke="black" points="494.178,-263.41 487.214,-271.394 497.637,-269.496 494.178,-263.41"/>
-</g>
-<!-- MCP3004 -->
-<g id="node15" class="node"><title>MCP3004</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-198 523,-198 523,-162 585,-162 585,-198"/>
-<text text-anchor="middle" x="554" y="-177.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3004</text>
-</g>
-<!-- MCP3004&#45;&gt;MCP30xx -->
-<g id="edge8" class="edge"><title>MCP3004&#45;&gt;MCP30xx</title>
-<path fill="none" stroke="black" d="M531.931,-198.169C528.858,-201.045 525.791,-204.046 523,-207 506.549,-224.409 489.668,-245.562 477.234,-261.885"/>
-<polygon fill="black" stroke="black" points="474.389,-259.844 471.163,-269.935 479.978,-264.059 474.389,-259.844"/>
-</g>
-<!-- MCP3202 -->
-<g id="node16" class="node"><title>MCP3202</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-414 523,-414 523,-378 585,-378 585,-414"/>
-<text text-anchor="middle" x="554" y="-393.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3202</text>
-</g>
-<!-- MCP3202&#45;&gt;MCP3xx2 -->
-<g id="edge10" class="edge"><title>MCP3202&#45;&gt;MCP3xx2</title>
-<path fill="none" stroke="black" d="M522.941,-378.914C514.38,-374.047 504.94,-368.682 495.973,-363.585"/>
-<polygon fill="black" stroke="black" points="497.637,-360.504 487.214,-358.606 494.178,-366.59 497.637,-360.504"/>
-</g>
-<!-- MCP3202&#45;&gt;MCP32xx -->
-<g id="edge9" class="edge"><title>MCP3202&#45;&gt;MCP32xx</title>
-<path fill="none" stroke="black" d="M522.941,-413.086C514.38,-417.953 504.94,-423.318 495.973,-428.415"/>
-<polygon fill="black" stroke="black" points="494.178,-425.41 487.214,-433.394 497.637,-431.496 494.178,-425.41"/>
-</g>
-<!-- MCP3204 -->
-<g id="node17" class="node"><title>MCP3204</title>
-<polygon fill="#2980b9" stroke="#2980b9" points="585,-468 523,-468 523,-432 585,-432 585,-468"/>
-<text text-anchor="middle" x="554" y="-447.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3204</text>
-</g>
-<!-- MCP3204&#45;&gt;MCP32xx -->
-<g id="edge11" class="edge"><title>MCP3204&#45;&gt;MCP32xx</title>
-<path fill="none" stroke="black" d="M522.941,-450C514.826,-450 505.921,-450 497.378,-450"/>
-<polygon fill="black" stroke="black" points="497.214,-446.5 487.214,-450 497.213,-453.5 497.214,-446.5"/>
-</g>
-<!-- MCP3304 -->
-<g id="node18" class="node"><title>MCP3304</title>
+<!-- MCP3302 -->
+<g id="node18" class="node"><title>MCP3302</title>
 <polygon fill="#2980b9" stroke="#2980b9" points="585,-90 523,-90 523,-54 585,-54 585,-90"/>
-<text text-anchor="middle" x="554" y="-69.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3304</text>
+<text text-anchor="middle" x="554" y="-69.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3302</text>
 </g>
-<!-- MCP3304&#45;&gt;MCP33xx -->
-<g id="edge12" class="edge"><title>MCP3304&#45;&gt;MCP33xx</title>
+<!-- MCP3302&#45;&gt;MCP33xx -->
+<g id="edge15" class="edge"><title>MCP3302&#45;&gt;MCP33xx</title>
 <path fill="none" stroke="black" d="M522.941,-80.543C514.737,-82.8749 505.725,-85.4359 497.096,-87.8884"/>
 <polygon fill="black" stroke="black" points="495.876,-84.5966 487.214,-90.6972 497.789,-91.33 495.876,-84.5966"/>
 </g>
-<!-- MCP3302 -->
-<g id="node19" class="node"><title>MCP3302</title>
+<!-- MCP3304 -->
+<g id="node19" class="node"><title>MCP3304</title>
 <polygon fill="#2980b9" stroke="#2980b9" points="585,-36 523,-36 523,-0 585,-0 585,-36"/>
-<text text-anchor="middle" x="554" y="-15.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3302</text>
+<text text-anchor="middle" x="554" y="-15.5" font-family="Sans" font-size="10.00" fill="#ffffff">MCP3304</text>
 </g>
-<!-- MCP3302&#45;&gt;MCP33xx -->
-<g id="edge18" class="edge"><title>MCP3302&#45;&gt;MCP33xx</title>
+<!-- MCP3304&#45;&gt;MCP33xx -->
+<g id="edge16" class="edge"><title>MCP3304&#45;&gt;MCP33xx</title>
 <path fill="none" stroke="black" d="M531.443,-36.3802C518.233,-47.6438 501.16,-62.2002 486.801,-74.4434"/>
 <polygon fill="black" stroke="black" points="484.483,-71.8201 479.144,-80.9716 489.025,-77.1468 484.483,-71.8201"/>
 </g>
