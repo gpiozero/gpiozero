@@ -22,9 +22,12 @@ def test_default_pin_factory_order():
     with pytest.raises(BadPinFactory):
         with warnings.catch_warnings(record=True) as ws:
             with patch('sys.path') as path, \
-                 patch('io.open') as io:
-                io.return_value.__enter__.side_effect = file_not_found
+                 patch('io.open') as io, \
+                 patch ('os.environ.get') as get:
                 path.return_value = []
+                io.return_value.__enter__.side_effect = file_not_found
+                get.return_value = None
+
                 device = GPIODevice(2)
                 assert len(ws) == 4
                 assert all(w.category == PinFactoryFallback for w in ws)
