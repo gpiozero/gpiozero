@@ -65,7 +65,7 @@ class Tone(float):
         if isinstance(value, int):
             if 0 <= value < 128:
                 return cls.from_midi(value)
-            elif value >= 128:
+            else:
                 return cls.from_frequency(value)
         elif isinstance(value, (bytes, str)):
             return cls.from_note(value)
@@ -160,7 +160,7 @@ class Tone(float):
         range represented by MIDI notes (which is approximately 8Hz to 12.5KHz)
         :exc:`ValueError` exception will be raised.
         """
-        result = round(12 * log2(self.frequency / 440) + 69)
+        result = int(round(12 * log2(self.frequency / 440) + 69))
         if 0 <= result < 128:
             return result
         raise ValueError('%f is outside the MIDI note range' % self.frequency)
