@@ -170,17 +170,17 @@ digraph classes {{
     return template.format(
         mixin_nodes='\n    '.join(
             '{name};'.format(name=name)
-            for name in set(all_names(class_map))
+            for name in sorted(set(all_names(class_map)))
             if name.endswith('Mixin')
         ),
         abstract_nodes='\n    '.join(
             '{name};'.format(name=name)
-            for name in abstract & set(all_names(class_map))
+            for name in sorted(abstract & set(all_names(class_map)))
         ),
         edges='\n    '.join(
             '{name}->{base};'.format(name=name, base=base)
-            for name, bases in class_map.items()
-            for base in bases
+            for name, bases in sorted(class_map.items())
+            for base in sorted(bases)
         ),
     )
 

@@ -11,39 +11,39 @@ digraph classes {
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
 
-    Device;
-    CompositeOutputDevice;
     CompositeDevice;
+    CompositeOutputDevice;
+    Device;
     LEDCollection;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
 
-    CamJamKitRobot->Robot;
-    PhaseEnableRobot->CompositeDevice;
-    CompositeDevice->Device;
-    Energenie->Device;
-    StatusZero->LEDBoard;
-    FishDish->TrafficLightsBuzzer;
-    LEDBarGraph->LEDCollection;
-    TrafficLightsBuzzer->CompositeOutputDevice;
-    TrafficLights->LEDBoard;
-    PiTraffic->TrafficLights;
-    PumpkinPi->LEDBoard;
-    TrafficHat->TrafficLightsBuzzer;
-    PiLiter->LEDBoard;
-    LEDCollection->CompositeOutputDevice;
-    PiStop->TrafficLights;
-    CompositeOutputDevice->CompositeDevice;
-    JamHat->CompositeOutputDevice;
-    PololuDRV8835Robot->PhaseEnableRobot;
-    Robot->CompositeDevice;
-    SnowPi->LEDBoard;
     ButtonBoard->CompositeDevice;
-    RyanteckRobot->Robot;
-    PiLiterBarGraph->LEDBarGraph;
-    StatusBoard->CompositeOutputDevice;
-    PiHutXmasTree->LEDBoard;
+    CamJamKitRobot->Robot;
+    CompositeDevice->Device;
+    CompositeOutputDevice->CompositeDevice;
+    Energenie->Device;
+    FishDish->TrafficLightsBuzzer;
+    JamHat->CompositeOutputDevice;
+    LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
+    LEDCollection->CompositeOutputDevice;
+    PhaseEnableRobot->CompositeDevice;
+    PiHutXmasTree->LEDBoard;
+    PiLiter->LEDBoard;
+    PiLiterBarGraph->LEDBarGraph;
+    PiStop->TrafficLights;
+    PiTraffic->TrafficLights;
+    PololuDRV8835Robot->PhaseEnableRobot;
+    PumpkinPi->LEDBoard;
+    Robot->CompositeDevice;
+    RyanteckRobot->Robot;
+    SnowPi->LEDBoard;
+    StatusBoard->CompositeOutputDevice;
+    StatusZero->LEDBoard;
     TonalBuzzer->CompositeDevice;
+    TrafficHat->TrafficLightsBuzzer;
+    TrafficLights->LEDBoard;
+    TrafficLightsBuzzer->CompositeOutputDevice;
 }
