@@ -45,6 +45,8 @@ import textwrap
 import warnings
 import webbrowser
 
+from gpiozero import pi_info
+
 
 class PinoutTool(object):
     def __init__(self):
@@ -94,40 +96,39 @@ class PinoutTool(object):
 
     def main(self, args):
         warnings.simplefilter('ignore')
-        try:
-            from gpiozero import pi_info
-        except ImportError:
+        if args.xyz:
+            webbrowser.open('https://pinout.xyz')
+        else:
+            if args.revision == '':
+                try:
+                    pi_info().pprint(color=args.color)
+                except ImportError:
+                    formatter = self.parser._get_formatter()
+                    formatter.add_text(
+                        "Unable to initialize GPIO Zero. This usually means "
+                        "that you are not running %(prog)s on a Raspberry Pi. "
+                        "If you still wish to run %(prog)s, set the "
+                        "GPIOZERO_PIN_FACTORY environment variable to 'mock' "
+                        "and retry, or refer to the Remote GPIO section of "
+                        "the manual* to configure your environment to "
+                        "remotely access your Pi."
+                    )
+                    formatter.add_text(
+                        "* https://gpiozero.readthedocs.io/en/stable/"
+                        "remote_gpio.html"
+                    )
+                    sys.stderr.write(formatter.format_help())
+                except IOError:
+                    raise IOError('This device is not a Raspberry Pi')
+            else:
+                pi_info(args.revision).pprint(color=args.color)
             formatter = self.parser._get_formatter()
             formatter.add_text(
-                "Unable to initialize GPIO Zero. This usually means that you "
-                "are not running %(prog)s on a Raspberry Pi. If you still wish "
-                "to run %(prog)s, set the GPIOZERO_PIN_FACTORY environment "
-                "variable to 'mock' and retry, or refer to the Remote GPIO "
-                "section of the manual* to configure your environment to "
-                "remotely access your Pi."
+                "For further information, please refer to "
+                "https://pinout.xyz/"
             )
-            formatter.add_text(
-                "* https://gpiozero.readthedocs.io/en/stable/remote_gpio.html"
-            )
-            sys.stderr.write(formatter.format_help())
-        else:
-            if args.xyz:
-                webbrowser.open('https://pinout.xyz')
-            else:
-                if args.revision == '':
-                    try:
-                        pi_info().pprint(color=args.color)
-                    except IOError:
-                        raise IOError('This device is not a Raspberry Pi')
-                else:
-                    pi_info(args.revision).pprint(color=args.color)
-                formatter = self.parser._get_formatter()
-                formatter.add_text(
-                    "For further information, please refer to "
-                    "https://pinout.xyz/"
-                )
-                sys.stdout.write('\n')
-                sys.stdout.write(formatter.format_help())
+            sys.stdout.write('\n')
+            sys.stdout.write(formatter.format_help())
 
 
 main = PinoutTool()

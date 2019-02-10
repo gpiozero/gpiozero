@@ -45,6 +45,7 @@ from operator import attrgetter
 from collections import namedtuple
 
 from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins, PinInvalidPin
+from ..devices import Device
 
 
 # Some useful constants for describing pins
@@ -1323,9 +1324,6 @@ def pi_info(revision=None):
         the model of Pi it is running on and return information about that.
     """
     if revision is None:
-        # The reason this import is located here is to avoid a circular
-        # dependency; devices->pins.local->pins.data->devices
-        from ..devices import Device
         if Device.pin_factory is None:
             Device.pin_factory = Device._default_pin_factory()
         result = Device.pin_factory.pi_info
