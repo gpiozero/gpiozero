@@ -19,25 +19,24 @@ from gpiozero.pins.mock import MockFactory
 file_not_found = IOError(errno.ENOENT, 'File not found')
 
 def test_default_pin_factory_order():
-    with pytest.raises(BadPinFactory):
+    with patch('sys.path') as path, \
+         patch('io.open') as io, \
+         patch('os.environ.get') as get:
+        # ensure no pin libraries can be imported
+        path.return_value = []
+        # ensure /proc/device-tree... is not found when trying native
+        io.return_value.__enter__.side_effect = file_not_found
+        # ensure pin factory not set in env var
+        get.return_value = None
         with warnings.catch_warnings(record=True) as ws:
-            with patch('sys.path') as path, \
-                 patch('io.open') as io, \
-                 patch('os.environ.get') as get:
-                # ensure no pin libraries can be imported
-                path.return_value = []
-                # ensure /proc/device-tree... is not found when trying native
-                io.return_value.__enter__.side_effect = file_not_found
-                # ensure pin factory not set in env var
-                get.return_value = None
-
+            with pytest.raises(BadPinFactory):
                 device = GPIODevice(2)
-                assert len(ws) == 4
-                assert all(w.category == PinFactoryFallback for w in ws)
-                assert w[0].message.startswith('Falling back from rpigpio:')
-                assert w[1].message.startswith('Falling back from rpio:')
-                assert w[2].message.startswith('Falling back from pigpio:')
-                assert w[3].message.startswith('Falling back from native:')
+            assert len(ws) == 4
+            assert all(w.category == PinFactoryFallback for w in ws)
+            assert ws[0].message.args[0].startswith('Falling back from rpigpio:')
+            assert ws[1].message.args[0].startswith('Falling back from rpio:')
+            assert ws[2].message.args[0].startswith('Falling back from pigpio:')
+            assert ws[3].message.args[0].startswith('Falling back from native:')
 
 def test_device_bad_pin(mock_factory):
     with pytest.raises(GPIOPinMissing):
