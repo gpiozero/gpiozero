@@ -566,14 +566,15 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
             raise
 
     def __repr__(self):
-        if self._mid_note is None or self._octaves is None:
+        try:
+            if self.value is None:
+                return '<gpiozero.TonalBuzzer on pin %r, silent>' % (
+                    self.pwm_device.pin,)
+            else:
+                return '<gpiozero.TonalBuzzer on pin %r, playing %s>' % (
+                    self.pwm_device.pin, self.tone.note)
+        except:
             return super(TonalBuzzer, self).__repr__()
-        elif self.value is None:
-            return '<gpiozero.TonalBuzzer on pin %r, silent>' % (
-                self.pwm_device.pin,)
-        else:
-            return '<gpiozero.TonalBuzzer on pin %r, playing %s>' % (
-                self.pwm_device.pin, self.tone.note)
 
     def play(self, tone):
         """

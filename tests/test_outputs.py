@@ -1459,6 +1459,7 @@ def test_tonalbuzzer_bad_init(mock_factory, pwm):
 def test_tonalbuzzer_init(mock_factory, pwm):
     pin = mock_factory.pin(2)
     with TonalBuzzer(2) as tb:
+        repr(tb)
         assert tb.pwm_device.pin == pin
         assert tb.value is None
         assert tb.pwm_device.frequency is None
