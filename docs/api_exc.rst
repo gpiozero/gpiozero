@@ -1,6 +1,38 @@
+.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2019 Ben Nuttall <ben@bennuttall.com>
+..
+.. Redistribution and use in source and binary forms, with or without
+.. modification, are permitted provided that the following conditions are met:
+..
+.. * Redistributions of source code must retain the above copyright notice,
+..   this list of conditions and the following disclaimer.
+..
+.. * Redistributions in binary form must reproduce the above copyright notice,
+..   this list of conditions and the following disclaimer in the documentation
+..   and/or other materials provided with the distribution.
+..
+.. * Neither the name of the copyright holder nor the names of its contributors
+..   may be used to endorse or promote products derived from this software
+..   without specific prior written permission.
+..
+.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.. POSSIBILITY OF SUCH DAMAGE.
+
 ================
 API - Exceptions
 ================
+
+.. module:: gpiozero.exc
 
 .. currentmodule:: gpiozero
 
@@ -23,7 +55,7 @@ the case that an out of range value is passed to :attr:`OutputDevice.value` you
 would expect a :exc:`ValueError` to be raised. In fact, a
 :exc:`OutputDeviceBadValue` error will be raised. However, note that this
 descends from both :exc:`GPIOZeroError` (indirectly) and from :exc:`ValueError`
-so you can still do::
+so you can still do the obvious::
 
     from gpiozero import *
 
@@ -38,102 +70,172 @@ Errors
 ======
 
 .. autoexception:: GPIOZeroError
+    :show-inheritance:
 
 .. autoexception:: DeviceClosed
+    :show-inheritance:
 
 .. autoexception:: BadEventHandler
-
-.. autoexception:: BadQueueLen
+    :show-inheritance:
 
 .. autoexception:: BadWaitTime
+    :show-inheritance:
+
+.. autoexception:: BadQueueLen
+    :show-inheritance:
+
+.. autoexception:: BadPinFactory
+    :show-inheritance:
+
+.. autoexception:: ZombieThread
+    :show-inheritance:
 
 .. autoexception:: CompositeDeviceError
+    :show-inheritance:
 
 .. autoexception:: CompositeDeviceBadName
+    :show-inheritance:
+
+.. autoexception:: CompositeDeviceBadOrder
+    :show-inheritance:
+
+.. autoexception:: CompositeDeviceBadDevice
+    :show-inheritance:
 
 .. autoexception:: EnergenieSocketMissing
+    :show-inheritance:
 
 .. autoexception:: EnergenieBadSocket
+    :show-inheritance:
 
 .. autoexception:: SPIError
+    :show-inheritance:
 
 .. autoexception:: SPIBadArgs
+    :show-inheritance:
 
 .. autoexception:: SPIBadChannel
+    :show-inheritance:
 
 .. autoexception:: SPIFixedClockMode
+    :show-inheritance:
 
 .. autoexception:: SPIInvalidClockMode
+    :show-inheritance:
 
 .. autoexception:: SPIFixedBitOrder
+    :show-inheritance:
 
 .. autoexception:: SPIFixedSelect
+    :show-inheritance:
 
 .. autoexception:: SPIFixedWordSize
+    :show-inheritance:
 
 .. autoexception:: SPIInvalidWordSize
+    :show-inheritance:
 
 .. autoexception:: GPIODeviceError
+    :show-inheritance:
 
 .. autoexception:: GPIODeviceClosed
+    :show-inheritance:
 
 .. autoexception:: GPIOPinInUse
+    :show-inheritance:
 
 .. autoexception:: GPIOPinMissing
+    :show-inheritance:
 
 .. autoexception:: InputDeviceError
+    :show-inheritance:
 
 .. autoexception:: OutputDeviceError
+    :show-inheritance:
 
 .. autoexception:: OutputDeviceBadValue
+    :show-inheritance:
 
 .. autoexception:: PinError
+    :show-inheritance:
 
 .. autoexception:: PinInvalidFunction
+    :show-inheritance:
 
 .. autoexception:: PinInvalidState
+    :show-inheritance:
 
 .. autoexception:: PinInvalidPull
+    :show-inheritance:
 
 .. autoexception:: PinInvalidEdges
+    :show-inheritance:
 
 .. autoexception:: PinInvalidBounce
+    :show-inheritance:
 
 .. autoexception:: PinSetInput
+    :show-inheritance:
 
 .. autoexception:: PinFixedPull
+    :show-inheritance:
 
 .. autoexception:: PinEdgeDetectUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinSPIUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinPWMError
+    :show-inheritance:
 
 .. autoexception:: PinPWMUnsupported
+    :show-inheritance:
 
 .. autoexception:: PinPWMFixedValue
+    :show-inheritance:
 
 .. autoexception:: PinUnknownPi
+    :show-inheritance:
 
 .. autoexception:: PinMultiplePins
+    :show-inheritance:
 
 .. autoexception:: PinNoPins
+    :show-inheritance:
 
 .. autoexception:: PinInvalidPin
+    :show-inheritance:
 
 Warnings
 ========
 
 .. autoexception:: GPIOZeroWarning
+    :show-inheritance:
+
+.. autoexception:: DistanceSensorNoEcho
+    :show-inheritance:
 
 .. autoexception:: SPIWarning
+    :show-inheritance:
 
 .. autoexception:: SPISoftwareFallback
+    :show-inheritance:
+
+.. autoexception:: PinWarning
+    :show-inheritance:
 
 .. autoexception:: PinFactoryFallback
+    :show-inheritance:
 
 .. autoexception:: PinNonPhysical
+    :show-inheritance:
+
+.. autoexception:: ThresholdOutOfRange
+    :show-inheritance:
 
 .. autoexception:: CallbackSetToNone
+    :show-inheritance:

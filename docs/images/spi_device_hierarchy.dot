@@ -3,38 +3,44 @@ digraph classes {
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-    Device;
-    SPIDevice;
+
     AnalogInputDevice;
-    MCP3xxx;
+    Device;
     MCP30xx;
     MCP32xx;
-    MCP3xx2;
     MCP33xx;
+    MCP3xx2;
+    MCP3xxx;
+    SPIDevice;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
-    SPIDevice->Device;
-    AnalogInputDevice->SPIDevice;
-    MCP3xxx->AnalogInputDevice;
-    MCP30xx->MCP3xxx;
-    MCP32xx->MCP3xxx;
-    MCP33xx->MCP3xxx;
-    MCP3xx2->MCP3xxx;
 
+    AnalogInputDevice->SPIDevice;
     MCP3001->MCP30xx;
     MCP3002->MCP30xx;
+    MCP3002->MCP3xx2;
     MCP3004->MCP30xx;
     MCP3008->MCP30xx;
+    MCP30xx->MCP3xxx;
     MCP3201->MCP32xx;
     MCP3202->MCP32xx;
+    MCP3202->MCP3xx2;
     MCP3204->MCP32xx;
     MCP3208->MCP32xx;
-    MCP3002->MCP3xx2;
-    MCP3202->MCP3xx2;
+    MCP32xx->MCP3xxx;
     MCP3301->MCP33xx;
     MCP3302->MCP33xx;
     MCP3304->MCP33xx;
+    MCP33xx->MCP3xxx;
+    MCP3xx2->MCP3xxx;
+    MCP3xxx->AnalogInputDevice;
+    SPIDevice->Device;
 }

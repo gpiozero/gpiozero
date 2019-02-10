@@ -156,6 +156,9 @@ $(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES)
 	mkdir -p dist/
 	for f in $(DIST_DSC); do cp ../$${f##*/} dist/; done
 
+copyrights: $(PY_SOURCES) $(DOC_SOURCES)
+	./copyrights
+
 changelog: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 	$(MAKE) clean
 	# ensure there are no current uncommitted changes

@@ -1,3 +1,34 @@
+.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2017 rgm <roland@securelink.com>
+.. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+..
+.. Redistribution and use in source and binary forms, with or without
+.. modification, are permitted provided that the following conditions are met:
+..
+.. * Redistributions of source code must retain the above copyright notice,
+..   this list of conditions and the following disclaimer.
+..
+.. * Redistributions in binary form must reproduce the above copyright notice,
+..   this list of conditions and the following disclaimer in the documentation
+..   and/or other materials provided with the distribution.
+..
+.. * Neither the name of the copyright holder nor the names of its contributors
+..   may be used to endorse or promote products derived from this software
+..   without specific prior written permission.
+..
+.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.. POSSIBILITY OF SUCH DAMAGE.
+
 =================
 API - SPI Devices
 =================
@@ -86,41 +117,90 @@ use, gpiozero will attempt to use the hardware implementation if it is
 available and if the selected pins are compatible, falling back to the software
 implementation if not.
 
+
 Analog to Digital Converters (ADC)
 ==================================
+
+The following classes are intended for general use with the integrated circuits
+they are named after. All classes in this section are concrete (not abstract).
+
+
+MCP3001
+-------
 
 .. autoclass:: MCP3001
     :members: value
 
+
+MCP3002
+-------
+
 .. autoclass:: MCP3002
     :members: channel, value, differential
+
+
+MCP3004
+-------
 
 .. autoclass:: MCP3004
     :members: channel, value, differential
 
+
+MCP3008
+-------
+
 .. autoclass:: MCP3008
     :members: channel, value, differential
+
+
+MCP3201
+-------
 
 .. autoclass:: MCP3201
     :members: value
 
+
+MCP3202
+-------
+
 .. autoclass:: MCP3202
     :members: channel, value, differential
+
+
+MCP3204
+-------
 
 .. autoclass:: MCP3204
     :members: channel, value, differential
 
+
+MCP3208
+-------
+
 .. autoclass:: MCP3208
     :members: channel, value, differential
+
+
+MCP3301
+-------
 
 .. autoclass:: MCP3301
     :members: value
 
+
+MCP3302
+-------
+
 .. autoclass:: MCP3302
     :members: channel, value, differential
 
+
+MCP3304
+-------
+
 .. autoclass:: MCP3304
     :members: channel, value, differential
+
 
 Base Classes
 ============
@@ -135,15 +215,16 @@ than concrete classes):
 The following sections document these base classes for advanced users that wish
 to construct classes for their own devices.
 
+
 AnalogInputDevice
-=================
+-----------------
 
 .. autoclass:: AnalogInputDevice
     :members:
 
+
 SPIDevice
-=========
+---------
 
 .. autoclass:: SPIDevice
     :members:
-

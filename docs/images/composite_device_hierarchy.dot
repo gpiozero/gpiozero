@@ -1,44 +1,49 @@
-/* vim: set et sw=4 sts=4: */
-
 digraph classes {
     graph [rankdir=RL];
     node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-    Device;
+
     CompositeDevice;
     CompositeOutputDevice;
+    Device;
     LEDCollection;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+
+    ButtonBoard->CompositeDevice;
+    CamJamKitRobot->Robot;
     CompositeDevice->Device;
     CompositeOutputDevice->CompositeDevice;
-    LEDCollection->CompositeOutputDevice;
-
-    LEDBoard->LEDCollection;
-    LEDBarGraph->LEDCollection;
-
-    PiLiter->LEDBoard;
-    PiHutXmasTree->LEDBoard;
-    PiLiterBarGraph->LEDBarGraph;
-    TrafficLights->LEDBoard;
-    SnowPi->LEDBoard;
-    PiTraffic->TrafficLights;
-    PiStop->TrafficLights;
-    TrafficLightsBuzzer->CompositeOutputDevice;
-    JamHat->CompositeOutputDevice;
+    Energenie->Device;
     FishDish->TrafficLightsBuzzer;
-    TrafficHat->TrafficLightsBuzzer;
+    JamHat->CompositeOutputDevice;
+    LEDBarGraph->LEDCollection;
+    LEDBoard->LEDCollection;
+    LEDCollection->CompositeOutputDevice;
+    PhaseEnableRobot->CompositeDevice;
+    PiHutXmasTree->LEDBoard;
+    PiLiter->LEDBoard;
+    PiLiterBarGraph->LEDBarGraph;
+    PiStop->TrafficLights;
+    PiTraffic->TrafficLights;
+    PololuDRV8835Robot->PhaseEnableRobot;
+    PumpkinPi->LEDBoard;
     Robot->CompositeDevice;
     RyanteckRobot->Robot;
-    CamJamKitRobot->Robot;
-    Motor->CompositeDevice;
-    Servo->CompositeDevice;
+    SnowPi->LEDBoard;
+    StatusBoard->CompositeOutputDevice;
+    StatusZero->LEDBoard;
     TonalBuzzer->CompositeDevice;
-    AngularServo->Servo;
-    Energenie->Device;
-    ButtonBoard->CompositeDevice;
+    TrafficHat->TrafficLightsBuzzer;
+    TrafficLights->LEDBoard;
+    TrafficLightsBuzzer->CompositeOutputDevice;
 }

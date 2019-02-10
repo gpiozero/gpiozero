@@ -1,7 +1,40 @@
+.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2017-2019 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2017-2018 Ben Nuttall <ben@bennuttall.com>
+..
+.. Redistribution and use in source and binary forms, with or without
+.. modification, are permitted provided that the following conditions are met:
+..
+.. * Redistributions of source code must retain the above copyright notice,
+..   this list of conditions and the following disclaimer.
+..
+.. * Redistributions in binary form must reproduce the above copyright notice,
+..   this list of conditions and the following disclaimer in the documentation
+..   and/or other materials provided with the distribution.
+..
+.. * Neither the name of the copyright holder nor the names of its contributors
+..   may be used to endorse or promote products derived from this software
+..   without specific prior written permission.
+..
+.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.. POSSIBILITY OF SUCH DAMAGE.
+
 pinout
 ======
 
 .. image:: images/pinout_pi3.png
+    :align: center
+    :width: 537px
+
 
 Synopsis
 --------
@@ -9,6 +42,7 @@ Synopsis
 ::
 
     pinout [-h] [-r REVISION] [-c] [-m] [-x]
+
 
 Description
 -----------
@@ -18,6 +52,7 @@ A utility for querying Raspberry Pi GPIO pin-out information. Running
 diagram for the current Raspberry Pi. It is also possible to manually specify a
 revision of Pi, or (by :doc:`remote_gpio`) to output information about a
 remote Pi.
+
 
 Options
 -------
@@ -44,6 +79,7 @@ Options
 .. option:: -x, --xyz
 
     Open `pinout.xyz`_ in the default web browser
+
 
 Examples
 --------
@@ -134,6 +170,8 @@ Or new-style `revision codes`_ (such as for the Pi Zero W):
     $ pinout -r 9000c1
 
 .. image:: images/pinout_pizero_w.png
+    :align: center
+    :width: 537px
 
 You can also use the tool with :doc:`remote_gpio` to query remote Raspberry
 Pi's:
@@ -149,22 +187,26 @@ this case you'll almost certainly want to specify the Pi revision manually):
 
     $ GPIOZERO_PIN_FACTORY=mock pinout -r a22042
 
+
 Environment Variables
 ---------------------
 
-GPIOZERO_PIN_FACTORY
+.. envvar:: GPIOZERO_PIN_FACTORY
+
     The library to use when communicating with the GPIO pins. Defaults to
     attempting to load RPi.GPIO, then RPIO, then pigpio, and finally uses a
     native Python implementation. Valid values include "rpigpio", "rpio",
     "pigpio", "native", and "mock". The latter is most useful on non-Pi
     platforms as it emulates a Raspberry Pi model 3B (by default).
 
-PIGPIO_ADDR
+.. envvar:: PIGPIO_ADDR
+
     The hostname of the Raspberry Pi the pigpio library should attempt to
     connect to (if the pigpio pin factory is being used). Defaults to
     ``localhost``.
 
-PIGPIO_PORT
+.. envvar:: PIGPIO_PORT
+
     The port number the pigpio library should attempt to connect to (if the
     pigpio pin factory is being used). Defaults to ``8888``.
 

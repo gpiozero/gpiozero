@@ -1,3 +1,32 @@
+# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 from __future__ import (
     unicode_literals,
     absolute_import,
@@ -45,8 +74,9 @@ SPI_HARDWARE_PINS = {
 
 class PiFactory(Factory):
     """
-    Abstract base class representing hardware attached to a Raspberry Pi. This
-    forms the base of :class:`~gpiozero.pins.local.LocalPiFactory`.
+    Extends :class:`~gpiozero.Factory`. Abstract base class representing
+    hardware attached to a Raspberry Pi. This forms the base of
+    :class:`~gpiozero.pins.local.LocalPiFactory`.
     """
     def __init__(self):
         super(PiFactory, self).__init__()
@@ -95,13 +125,14 @@ class PiFactory(Factory):
         Returns an SPI interface, for the specified SPI *port* and *device*, or
         for the specified pins (*clock_pin*, *mosi_pin*, *miso_pin*, and
         *select_pin*).  Only one of the schemes can be used; attempting to mix
-        *port* and *device* with pin numbers will raise :exc:`SPIBadArgs`.
+        *port* and *device* with pin numbers will raise
+        :exc:`~gpiozero.SPIBadArgs`.
 
         If the pins specified match the hardware SPI pins (clock on GPIO11,
         MOSI on GPIO10, MISO on GPIO9, and chip select on GPIO8 or GPIO7), and
-        the spidev module can be imported, a :class:`SPIHardwareInterface`
-        instance will be returned. Otherwise, a :class:`SPISoftwareInterface`
-        will be returned which will use simple bit-banging to communicate.
+        the spidev module can be imported, a hardware based interface (using
+        spidev) will be returned. Otherwise, a software based interface will be
+        returned which will use simple bit-banging to communicate.
 
         Both interfaces have the same API, support clock polarity and phase
         attributes, and can handle half and full duplex communications, but the
@@ -198,9 +229,9 @@ class PiFactory(Factory):
 
 class PiPin(Pin):
     """
-    Abstract base class representing a multi-function GPIO pin attached to a
-    Raspberry Pi. This overrides several methods in the abstract base
-    :class:`~gpiozero.Pin`. Descendents *must* override the following methods:
+    Extends :class:`~gpiozero.Pin`. Abstract base class representing a
+    multi-function GPIO pin attached to a Raspberry Pi. Descendents *must*
+    override the following methods:
 
     * :meth:`_get_function`
     * :meth:`_set_function`
