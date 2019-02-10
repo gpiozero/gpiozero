@@ -18,6 +18,7 @@ from gpiozero.pins.mock import MockFactory
 
 file_not_found = IOError(errno.ENOENT, 'File not found')
 
+
 def test_default_pin_factory_order():
     with patch('sys.path') as path, \
          patch('io.open') as io, \
@@ -65,6 +66,7 @@ def test_device_non_physical(mock_factory):
 def test_device_init(mock_factory):
     pin = mock_factory.pin(2)
     with GPIODevice(2) as device:
+        assert repr(device).startswith('<gpiozero.GPIODevice object')
         assert not device.closed
         assert device.pin is pin
     with pytest.raises(TypeError):
@@ -145,6 +147,7 @@ def test_device_context_manager(mock_factory):
 
 def test_composite_device_sequence(mock_factory):
     with CompositeDevice(InputDevice(4), InputDevice(5)) as device:
+        assert repr(device).startswith('<gpiozero.CompositeDevice object')
         assert len(device) == 2
         assert device[0].pin.number == 4
         assert device[1].pin.number == 5
