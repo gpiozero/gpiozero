@@ -1379,17 +1379,33 @@ def test_jamhat(mock_factory, pwm):
         assert isinstance(jh.buzzer, TonalBuzzer)
         assert isinstance(jh.lights_1.red, LED)
         assert jh.value == (
-            (False, False, False),
-            (False, False, False),
-            False, False,
-            None
+            (False, False, False),  # lights_1
+            (False, False, False),  # lights_2
+            False, False,           # buttons
+            None                    # buzzer
         )
         jh.on()
         assert jh.value == (
-            (True, True, True),
-            (True, True, True),
-            False, False,
-            None
+            (True, True, True),  # lights_1
+            (True, True, True),  # lights_2
+            False, False,        # buttons
+            0                    # buzzer
+        )
+        jh.buzzer.play('A5')
+        jh.button_1.pin.drive_high()
+        jh.button_2.pin.drive_high()
+        assert jh.value == (
+            (True, True, True),  # lights_1
+            (True, True, True),  # lights_2
+            True, True,          # buttons
+            1                    # buzzer
+        )
+        jh.off()
+        assert jh.value == (
+            (False, False, False),  # lights_1
+            (False, False, False),  # lights_2
+            True, True,             # buttons
+            None                    # buzzer
         )
 
 def test_jamhat_pwm(mock_factory, pwm):
@@ -1400,3 +1416,23 @@ def test_jamhat_pwm(mock_factory, pwm):
         assert isinstance(jh.button_1, Button)
         assert isinstance(jh.button_2, Button)
         assert isinstance(jh.buzzer, TonalBuzzer)
+        assert jh.value == (
+            (0, 0, 0),              # lights_1
+            (0, 0, 0),              # lights_2
+            False, False,           # buttons
+            None                    # buzzer
+        )
+        jh.on()
+        assert jh.value == (
+            (1, 1, 1),           # lights_1
+            (1, 1, 1),           # lights_2
+            False, False,        # buttons
+            0                    # buzzer
+        )
+        jh.off()
+        assert jh.value == (
+            (0, 0, 0),              # lights_1
+            (0, 0, 0),              # lights_2
+            False, False,           # buttons
+            None                    # buzzer
+        )

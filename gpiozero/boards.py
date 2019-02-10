@@ -1819,9 +1819,10 @@ class JamHat(CompositeOutputDevice):
 
         hat = JamHat()
 
+        hat.button_1.wait_for_press()
         hat.lights_1.on()
-        hat.buzzer.play(60)
-
+        hat.buzzer.play('C4')
+        hat.button_2.wait_for_press()
         hat.off()
 
     :param bool pwm:
@@ -1849,3 +1850,17 @@ class JamHat(CompositeOutputDevice):
             _order=('lights_1', 'lights_2', 'button_1', 'button_2', 'buzzer'),
             pin_factory=pin_factory
         )
+
+    def on(self):
+        """
+        Turns all the LEDs on and makes the buzzer play its mid tone.
+        """
+        self.buzzer.value = 0
+        super(JamHat, self).on()
+
+    def off(self):
+        """
+        Turns all the LEDs off and stops the buzzer.
+        """
+        self.buzzer.value = None
+        super(JamHat, self).off()
