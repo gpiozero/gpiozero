@@ -207,7 +207,7 @@ version of the package as noted in the previous FAQ).
 
 If the Pi model you are using isn't known to gpiozero, it may have been added
 since the last release. You can check the `GitHub issues`_ to see if it's been
-reported before, or check the ``commits``_ on GitHub since the last release to
+reported before, or check the `commits`_ on GitHub since the last release to
 see if it's been added. The model determination can be found in
 :file:`gpiozero/pins/data.py`.
 
