@@ -58,7 +58,10 @@ class PingServer(InternalDevice):
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
-        return '<gpiozero.PingServer host="%s">' % self.host
+        try:
+            return '<gpiozero.PingServer object host="%s">' % self.host
+        except:
+            return super(PingServer, self).__repr__()
 
     @property
     def host(self):
@@ -135,7 +138,10 @@ class CPUTemperature(InternalDevice):
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
-        return '<gpiozero.CPUTemperature temperature=%.2f>' % self.temperature
+        try:
+            return '<gpiozero.CPUTemperature object temperature=%.2f>' % self.temperature
+        except:
+            return super(CPUTemperature, self).__repr__()
 
     @property
     def temperature(self):
@@ -229,7 +235,10 @@ class LoadAverage(InternalDevice):
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
-        return '<gpiozero.LoadAverage load average=%.2f>' % self.load_average
+        try:
+            return '<gpiozero.LoadAverage object load average=%.2f>' % self.load_average
+        except:
+            return super(LoadAverage, self).__repr__()
 
     @property
     def load_average(self):
@@ -303,8 +312,11 @@ class TimeOfDay(InternalDevice):
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
-        return '<gpiozero.TimeOfDay active between %s and %s %s>' % (
+        try:
+            return '<gpiozero.TimeOfDay object active between %s and %s %s>' % (
                 self.start_time, self.end_time, ('local', 'UTC')[self.utc])
+        except:
+            return super(TimeOfDay, self).__repr__()
 
     def _validate_time(self, value):
         if isinstance(value, datetime):
@@ -384,7 +396,10 @@ class DiskUsage(InternalDevice):
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
-        return '<gpiozero.DiskUsage usage=%.2f>' % self.usage
+        try:
+            return '<gpiozero.DiskUsage object usage=%.2f>' % self.usage
+        except:
+            return super(DiskUsage, self).__repr__()
 
     @property
     def usage(self):

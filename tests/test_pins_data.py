@@ -24,7 +24,7 @@ def test_pi_revision():
     with patch('gpiozero.devices.Device.pin_factory', LocalPiFactory()):
         # Can't use MockPin for this as we want something that'll actually try
         # and read /proc/device-tree/system/linux,revision and /proc/cpuinfo
-        # (MockPin simply parrots the 2B's data); LocalPiFactory is used as we
+        # (MockPin simply parrots the 3B's data); LocalPiFactory is used as we
         # can definitely instantiate it (strictly speaking it's abstract but
         # we're only interested in the pi_info stuff)
         with patch('io.open') as m:
@@ -249,4 +249,3 @@ def test_pprint_rows_cols():
         '{0:row16}'.format(pi_info('0002').headers['P1'])
     with pytest.raises(ValueError):
         '{0:col3}'.format(pi_info('0002').headers['P1'])
-

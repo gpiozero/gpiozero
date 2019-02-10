@@ -51,6 +51,7 @@ def test_timeofday_init(mock_factory):
 
 def test_timeofday_value(mock_factory):
     with TimeOfDay(time(7), time(8), utc=False) as tod:
+        assert repr(tod).startswith('<gpiozero.TimeOfDay object')
         assert tod.start_time == time(7)
         assert tod.end_time == time(8)
         assert not tod.utc
@@ -122,6 +123,7 @@ def test_pingserver_init(mock_factory):
     with patch('gpiozero.internal_devices.subprocess') as sp:
         sp.check_call.return_value = True
         with PingServer('example.com') as server:
+            assert repr(server).startswith('<gpiozero.PingServer object')
             assert server.host == 'example.com'
         with PingServer('192.168.1.10') as server:
             assert server.host == '192.168.1.10'
@@ -160,6 +162,7 @@ def test_cputemperature(mock_factory):
     with patch('io.open') as m:
         m.return_value.__enter__.return_value.readline.return_value = '37000'
         with CPUTemperature() as cpu:
+            assert repr(cpu).startswith('<gpiozero.CPUTemperature object')
             assert cpu.temperature == 37.0
             assert cpu.value == 0.37
         with warnings.catch_warnings(record=True) as w:
@@ -199,6 +202,7 @@ def test_loadaverage(mock_factory):
         foo = m.return_value.__enter__
         foo.return_value.readline.return_value = '0.09 0.10 0.09 1/292 20758'
         with LoadAverage() as la:
+            assert repr(la).startswith('<gpiozero.LoadAverage object')
             assert la.min_load_average == 0
             assert la.max_load_average == 1
             assert la.threshold == 0.8
@@ -229,6 +233,7 @@ def test_diskusage_init(mock_factory):
     with patch('gpiozero.internal_devices.os.path') as ospath:
         ospath.ismount.return_value = True
         with DiskUsage('/home') as disk:
+            assert repr(disk).startswith('<gpiozero.DiskUsage object')
             assert disk.filesystem == '/home'
             assert disk.threshold == 90.0
 

@@ -23,6 +23,7 @@ from gpiozero import *
 def test_output_initial_values(mock_factory, pwm):
     pin = mock_factory.pin(2)
     with OutputDevice(2, initial_value=False) as device:
+        assert repr(device).startswith('<gpiozero.OutputDevice object')
         assert pin.function == 'output'
         assert not pin.state
     with OutputDevice(2, initial_value=True) as device:
@@ -78,6 +79,7 @@ def test_output_value(mock_factory):
 def test_output_digital_toggle(mock_factory):
     pin = mock_factory.pin(2)
     with DigitalOutputDevice(2) as device:
+        assert repr(device).startswith('<gpiozero.DigitalOutputDevice object')
         assert not device.value
         assert not pin.state
         device.toggle()
@@ -148,6 +150,7 @@ def test_output_pwm_not_supported(mock_factory):
 def test_output_pwm_states(mock_factory, pwm):
     pin = mock_factory.pin(4)
     with PWMOutputDevice(4) as device:
+        assert repr(device).startswith('<gpiozero.PWMOutputDevice object')
         device.value = 0.1
         device.value = 0.2
         device.value = 0.0
@@ -393,6 +396,7 @@ def test_rgbled_missing_pins(mock_factory):
 def test_rgbled_initial_value(mock_factory, pwm):
     r, g, b = (mock_factory.pin(i) for i in (1, 2, 3))
     with RGBLED(1, 2, 3, initial_value=(0.1, 0.2, 0)) as led:
+        assert repr(led).startswith('<gpiozero.RGBLED object')
         assert r.frequency
         assert g.frequency
         assert b.frequency
@@ -967,6 +971,7 @@ def test_motor_pins(mock_factory, pwm):
     f = mock_factory.pin(1)
     b = mock_factory.pin(2)
     with Motor(1, 2) as motor:
+        assert repr(motor).startswith('<gpiozero.Motor object')
         assert motor.forward_device.pin is f
         assert isinstance(motor.forward_device, PWMOutputDevice)
         assert motor.backward_device.pin is b
@@ -1161,6 +1166,7 @@ def test_phaseenable_motor_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
     e = mock_factory.pin(2)
     with PhaseEnableMotor(1, 2) as motor:
+        assert repr(motor).startswith('<gpiozero.PhaseEnableMotor object')
         assert motor.phase_device.pin is p
         assert isinstance(motor.phase_device, OutputDevice)
         assert motor.enable_device.pin is e
@@ -1294,6 +1300,7 @@ def test_phaseenable_motor_reverse_nonpwm(mock_factory):
 def test_servo_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
     with Servo(1) as servo:
+        assert repr(servo).startswith('<gpiozero.Servo object')
         assert servo.pwm_device.pin is p
         assert isinstance(servo.pwm_device, PWMOutputDevice)
 
@@ -1382,13 +1389,12 @@ def test_servo_values(mock_factory, pwm):
         assert servo.value is None
 
 def test_angular_servo_range(mock_factory, pwm):
-    p = mock_factory.pin(1)
     with AngularServo(1, initial_angle=15, min_angle=0, max_angle=90) as servo:
+        assert repr(servo).startswith('<gpiozero.AngularServo object')
         assert servo.min_angle == 0
         assert servo.max_angle == 90
 
 def test_angular_servo_initial_angles(mock_factory, pwm):
-    p = mock_factory.pin(1)
     with AngularServo(1) as servo:
         assert servo.angle == 0
     with AngularServo(1, initial_angle=-90) as servo:
@@ -1404,7 +1410,6 @@ def test_angular_servo_initial_angles(mock_factory, pwm):
         assert servo.angle is None
 
 def test_angular_servo_angles(mock_factory, pwm):
-    p = mock_factory.pin(1)
     with AngularServo(1) as servo:
         servo.angle = 0
         assert servo.angle == 0
@@ -1417,6 +1422,7 @@ def test_angular_servo_angles(mock_factory, pwm):
         assert isclose(servo.value, -1)
         servo.detach()
         assert servo.angle is None
+
     with AngularServo(1, initial_angle=15, min_angle=0, max_angle=90) as servo:
         assert servo.angle == 15
         assert isclose(servo.value, -2/3)
@@ -1428,6 +1434,7 @@ def test_angular_servo_angles(mock_factory, pwm):
         assert isclose(servo.value, 1)
         servo.angle = None
         assert servo.angle is None
+
     with AngularServo(1, min_angle=45, max_angle=-45) as servo:
         assert servo.angle == 0
         assert isclose(servo.value, 0)
@@ -1459,8 +1466,8 @@ def test_tonalbuzzer_bad_init(mock_factory, pwm):
 def test_tonalbuzzer_init(mock_factory, pwm):
     pin = mock_factory.pin(2)
     with TonalBuzzer(2) as tb:
-        repr(tb)
-        assert tb.pwm_device.pin == pin
+        assert repr(tb).startswith('<gpiozero.TonalBuzzer object')
+        assert tb.pwm_device.pin is pin
         assert tb.value is None
         assert tb.pwm_device.frequency is None
     with TonalBuzzer(2, mid_tone='C4') as tb:

@@ -16,20 +16,21 @@ from gpiozero import *
 
 
 def test_composite_output_on_off(mock_factory):
-    pin1 = mock_factory.pin(2)
-    pin2 = mock_factory.pin(3)
-    pin3 = mock_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
+    pins = [mock_factory.pin(n) for n in (2, 3, 4)]
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3),
+                               foo=OutputDevice(4)) as device:
+        assert repr(device).startswith('<gpiozero.CompositeOutputDevice object')
         device.on()
-        assert all((pin1.state, pin2.state, pin3.state))
+        assert all(pin.state for pin in pins)
         device.off()
-        assert not any((pin1.state, pin2.state, pin3.state))
+        assert not any(pin.state for pin in pins)
 
 def test_composite_output_toggle(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3),
+                               foo=OutputDevice(4)) as device:
         device.toggle()
         assert all((pin1.state, pin2.state, pin3.state))
         device[0].off()
@@ -42,7 +43,8 @@ def test_composite_output_value(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
-    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3), foo=OutputDevice(4)) as device:
+    with CompositeOutputDevice(OutputDevice(2), OutputDevice(3),
+                               foo=OutputDevice(4)) as device:
         assert device.value == (0, 0, 0)
         device.toggle()
         assert device.value == (1, 1, 1)
@@ -53,9 +55,19 @@ def test_composite_output_value(mock_factory):
 
 def test_button_board_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
-        buttons = ButtonBoard()
+        ButtonBoard()
     with pytest.raises(GPIOPinMissing):
-        buttons = ButtonBoard(hold_repeat=True)
+        ButtonBoard(hold_repeat=True)
+
+def test_button_board_init(mock_factory):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4)]
+    with ButtonBoard(2, 3, 4) as board:
+        assert repr(board).startswith('<gpiozero.ButtonBoard object')
+        assert len(board) == 3
+        assert isinstance(board[0], Button)
+        assert isinstance(board[1], Button)
+        assert isinstance(board[2], Button)
+        assert [b.pin for b in board] == pins
 
 def test_button_board_pressed_released(mock_factory):
     pin1 = mock_factory.pin(4)
@@ -112,27 +124,48 @@ def test_button_board_when_pressed(mock_factory):
 
 def test_led_collection_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
-        leds = LEDCollection()
+        LEDCollection()
     with pytest.raises(GPIOPinMissing):
-        leds = LEDCollection(pwm=True)
+        LEDCollection(pwm=True)
+
+def test_led_collection_init(mock_factory):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4)]
+    with LEDCollection(2, 3, 4) as board:
+        assert repr(board).startswith('<gpiozero.LEDCollection object')
+        assert len(board) == 3
+        assert isinstance(board[0], LED)
+        assert isinstance(board[1], LED)
+        assert isinstance(board[2], LED)
+        assert [b.pin for b in board] == pins
 
 def test_led_board_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
-        leds = LEDBoard()
+        LEDBoard()
     with pytest.raises(GPIOPinMissing):
-        leds = LEDBoard(pwm=True)
+        LEDBoard(pwm=True)
+
+def test_led_board_pwm_init(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4)]
+    with LEDBoard(2, 3, 4, pwm=True) as board:
+        assert repr(board).startswith('<gpiozero.LEDBoard object')
+        assert len(board) == 3
+        assert isinstance(board[0], PWMLED)
+        assert isinstance(board[1], PWMLED)
+        assert isinstance(board[2], PWMLED)
+        assert [b.pin for b in board] == pins
 
 def test_led_bar_graph_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
-        leds = LEDBarGraph()
+        LEDBarGraph()
     with pytest.raises(GPIOPinMissing):
-        leds = LEDBarGraph(pwm=True)
+        LEDBarGraph(pwm=True)
 
 def test_led_board_on_off(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
     with LEDBoard(2, 3, foo=4) as board:
+        assert repr(board).startswith('<gpiozero.LEDBoard object')
         assert isinstance(board[0], LED)
         assert isinstance(board[1], LED)
         assert isinstance(board[2], LED)
@@ -492,6 +525,7 @@ def test_led_bar_graph_value(mock_factory):
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
     with LEDBarGraph(2, 3, 4) as graph:
+        assert repr(graph).startswith('<gpiozero.LEDBarGraph object')
         assert isinstance(graph[0], LED)
         assert isinstance(graph[1], LED)
         assert isinstance(graph[2], LED)
@@ -558,18 +592,20 @@ def test_led_bar_graph_pwm_value(mock_factory, pwm):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
+    pins = (pin1, pin2, pin3)
     with LEDBarGraph(2, 3, 4, pwm=True) as graph:
+        assert repr(graph).startswith('<gpiozero.LEDBarGraph object')
         assert isinstance(graph[0], PWMLED)
         assert isinstance(graph[1], PWMLED)
         assert isinstance(graph[2], PWMLED)
         graph.value = 0
         assert graph.value == 0
         assert graph.lit_count == 0
-        assert not any((pin1.state, pin2.state, pin3.state))
+        assert not any(pin.state for pin in pins)
         graph.value = 1
         assert graph.value == 1
         assert graph.lit_count == 3
-        assert all((pin1.state, pin2.state, pin3.state))
+        assert all(pin.state for pin in pins)
         graph.value = 1/3
         assert graph.value == 1/3
         assert graph.lit_count == 1
@@ -639,16 +675,19 @@ def test_led_bar_graph_pwm_initial_value(mock_factory, pwm):
 def test_led_borg(mock_factory, pwm):
     pins = [mock_factory.pin(n) for n in (17, 27, 22)]
     with LedBorg() as board:
+        assert repr(board).startswith('<gpiozero.LedBorg object')
         assert [device.pin for device in board._leds] == pins
 
 def test_pi_liter(mock_factory):
     pins = [mock_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
     with PiLiter() as board:
+        assert repr(board).startswith('<gpiozero.PiLiter object')
         assert [device.pin for device in board] == pins
 
 def test_pi_liter_graph(mock_factory):
     pins = [mock_factory.pin(n) for n in (4, 17, 27, 18, 22, 23, 24, 25)]
     with PiLiterBarGraph() as board:
+        assert repr(board).startswith('<gpiozero.PiLiterBarGraph object')
         board.value = 0.5
         assert [pin.state for pin in pins] == [1, 1, 1, 1, 0, 0, 0, 0]
         pins[4].state = 1
@@ -659,6 +698,7 @@ def test_traffic_lights(mock_factory):
     amber_pin = mock_factory.pin(3)
     green_pin = mock_factory.pin(4)
     with TrafficLights(2, 3, 4) as board:
+        assert repr(board).startswith('<gpiozero.TrafficLights object')
         board.red.on()
         assert board.red.value
         assert not board.amber.value
@@ -700,15 +740,19 @@ def test_traffic_lights_bad_init(mock_factory):
 def test_pi_traffic(mock_factory):
     pins = [mock_factory.pin(n) for n in (9, 10, 11)]
     with PiTraffic() as board:
+        assert repr(board).startswith('<gpiozero.PiTraffic object')
         assert [device.pin for device in board] == pins
 
-def test_pi_stop(mock_factory):
+def test_pi_stop_bad_init(mock_factory):
     with pytest.raises(ValueError):
         PiStop()
     with pytest.raises(ValueError):
         PiStop('E')
+
+def test_pi_stop(mock_factory):
     pins_a = [mock_factory.pin(n) for n in (7, 8, 25)]
     with PiStop('A') as board:
+        assert repr(board).startswith('<gpiozero.PiStop object')
         assert [device.pin for device in board] == pins_a
     pins_aplus = [mock_factory.pin(n) for n in (21, 20, 16)]
     with PiStop('A+') as board:
@@ -729,6 +773,7 @@ def test_pi_stop(mock_factory):
 def test_snow_pi(mock_factory):
     pins = [mock_factory.pin(n) for n in (23, 24, 25, 17, 18, 22, 7, 8, 9)]
     with SnowPi() as board:
+        assert repr(board).startswith('<gpiozero.SnowPi object')
         assert [device.pin for device in board.leds] == pins
 
 def test_snow_pi_initial_value(mock_factory):
@@ -752,6 +797,7 @@ def test_pihut_xmas_tree(mock_factory):
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
     pins = [mock_factory.pin(n) for n in led_pins]
     with PiHutXmasTree() as tree:
+        assert repr(tree).startswith('<gpiozero.PiHutXmasTree object')
         assert [led.pin for led in tree.leds] == pins
         assert len(tree) == 25
         assert isinstance(tree.star, LED)
@@ -797,6 +843,7 @@ def test_traffic_lights_buzzer(mock_factory):
             TrafficLights(2, 3, 4),
             Buzzer(5),
             Button(6)) as board:
+        assert repr(board).startswith('<gpiozero.TrafficLightsBuzzer object')
         board.lights.red.on()
         board.buzzer.on()
         assert red_pin.state
@@ -820,12 +867,16 @@ def test_traffic_lights_buzzer(mock_factory):
 def test_fish_dish(mock_factory):
     pins = [mock_factory.pin(n) for n in (9, 22, 4, 8, 7)]
     with FishDish() as board:
-        assert [led.pin for led in board.lights] + [board.buzzer.pin, board.button.pin] == pins
+        assert repr(board).startswith('<gpiozero.FishDish object')
+        assert ([led.pin for led in board.lights] +
+                [board.buzzer.pin, board.button.pin]) == pins
 
 def test_traffic_hat(mock_factory):
     pins = [mock_factory.pin(n) for n in (24, 23, 22, 5, 25)]
     with TrafficHat() as board:
-        assert [led.pin for led in board.lights] + [board.buzzer.pin, board.button.pin] == pins
+        assert repr(board).startswith('<gpiozero.TrafficHat object')
+        assert ([led.pin for led in board.lights] +
+                [board.buzzer.pin, board.button.pin]) == pins
 
 def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
@@ -851,8 +902,11 @@ def test_robot(mock_factory, pwm):
         # Ensure both forward and back pins aren't both driven simultaneously
         assert pins[0].state == 0 or pins[1].state == 0
         assert pins[2].state == 0 or pins[3].state == 0
-        assert robot.value == (pins[0].state - pins[1].state, pins[2].state - pins[3].state) == expected_value
+        assert robot.value == (
+            pins[0].state - pins[1].state, pins[2].state - pins[3].state
+        ) == expected_value
     with Robot((2, 3), (4, 5)) as robot:
+        assert repr(robot).startswith('<gpiozero.Robot object')
         assert (
             [device.pin for device in robot.left_motor] +
             [device.pin for device in robot.right_motor]) == pins
@@ -999,6 +1053,7 @@ def test_robots(mock_factory, pwm):
         assert isinstance(right_motor, Motor)
         assert isinstance(right_motor.forward_device, PWMOutputDevice)
         assert isinstance(right_motor.backward_device, PWMOutputDevice)
+
     with CamJamKitRobot() as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
@@ -1007,6 +1062,7 @@ def test_robots(mock_factory, pwm):
         assert isinstance(right_motor, Motor)
         assert isinstance(right_motor.forward_device, PWMOutputDevice)
         assert isinstance(right_motor.backward_device, PWMOutputDevice)
+
     with PololuDRV8835Robot() as robot:
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, PhaseEnableMotor)
@@ -1032,7 +1088,10 @@ def test_robot_nopwm(mock_factory):
         assert isinstance(right_motor.backward_device, DigitalOutputDevice)
 
 def test_robots_nopwm(mock_factory):
+    pins = [mock_factory.pin(n) for n in (17, 18, 22, 23)]
     with RyanteckRobot(pwm=False) as robot:
+        assert repr(robot).startswith('<gpiozero.RyanteckRobot object')
+        assert [device.pin for motor in robot for device in motor] == pins
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
         assert isinstance(left_motor.forward_device, DigitalOutputDevice)
@@ -1040,7 +1099,11 @@ def test_robots_nopwm(mock_factory):
         assert isinstance(right_motor, Motor)
         assert isinstance(right_motor.forward_device, DigitalOutputDevice)
         assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+
+    pins = [mock_factory.pin(n) for n in (9, 10, 7, 8)]
     with CamJamKitRobot(pwm=False) as robot:
+        assert repr(robot).startswith('<gpiozero.CamJamKitRobot object')
+        assert [device.pin for motor in robot for device in motor] == pins
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, Motor)
         assert isinstance(left_motor.forward_device, DigitalOutputDevice)
@@ -1048,7 +1111,11 @@ def test_robots_nopwm(mock_factory):
         assert isinstance(right_motor, Motor)
         assert isinstance(right_motor.forward_device, DigitalOutputDevice)
         assert isinstance(right_motor.backward_device, DigitalOutputDevice)
+
+    pins = [mock_factory.pin(n) for n in (5, 12, 6, 13)]
     with PololuDRV8835Robot(pwm=False) as robot:
+        assert repr(robot).startswith('<gpiozero.PololuDRV8835Robot object')
+        assert [device.pin for motor in robot for device in motor] == pins
         left_motor, right_motor = robot.all
         assert isinstance(left_motor, PhaseEnableMotor)
         assert isinstance(left_motor.phase_device, DigitalOutputDevice)
@@ -1116,6 +1183,7 @@ def test_phaseenable_robot_bad_init(mock_factory):
 def test_phaseenable_robot(mock_factory, pwm):
     pins = [mock_factory.pin(n) for n in (5, 12, 6, 13)]
     with PhaseEnableRobot((5, 12), (6, 13)) as robot:
+        assert repr(robot).startswith('<gpiozero.PhaseEnableRobot object')
         assert (
             [device.pin for device in robot.left_motor] +
             [device.pin for device in robot.right_motor]) == pins
@@ -1148,21 +1216,6 @@ def test_phaseenable_robot(mock_factory, pwm):
         robot.value = (0, -0.5)
         assert robot.value == (0, -0.5)
 
-def test_ryanteck_robot(mock_factory, pwm):
-    pins = [mock_factory.pin(n) for n in (17, 18, 22, 23)]
-    with RyanteckRobot() as board:
-        assert [device.pin for motor in board for device in motor] == pins
-
-def test_camjam_kit_robot(mock_factory, pwm):
-    pins = [mock_factory.pin(n) for n in (9, 10, 7, 8)]
-    with CamJamKitRobot() as board:
-        assert [device.pin for motor in board for device in motor] == pins
-
-def test_pololudrv8835_robot(mock_factory, pwm):
-    pins = [mock_factory.pin(n) for n in (5, 12, 6, 13)]
-    with PololuDRV8835Robot() as board:
-        assert [device.pin for motor in board for device in motor] == pins
-
 def test_energenie_bad_init(mock_factory):
     with pytest.raises(ValueError):
         Energenie()
@@ -1174,7 +1227,7 @@ def test_energenie_bad_init(mock_factory):
 def test_energenie(mock_factory):
     pins = [mock_factory.pin(n) for n in (17, 22, 23, 27, 24, 25)]
     with Energenie(1, initial_value=True) as device1, \
-            Energenie(2, initial_value=False) as device2:
+         Energenie(2, initial_value=False) as device2:
         assert repr(device1) == '<gpiozero.Energenie object on socket 1>'
         assert repr(device2) == '<gpiozero.Energenie object on socket 2>'
         assert device1.value
@@ -1204,6 +1257,7 @@ def test_energenie(mock_factory):
 
 def test_statuszero_init(mock_factory):
     with StatusZero() as sz:
+        assert repr(sz).startswith('<gpiozero.StatusZero object')
         assert sz.namedtuple._fields == ('one', 'two', 'three')
     with StatusZero('a') as sz:
         assert sz.namedtuple._fields == ('a',)
@@ -1253,6 +1307,7 @@ def test_statuszero_named(mock_factory):
 
 def test_statusboard_init(mock_factory):
     with StatusBoard() as sb:
+        assert repr(sb).startswith('<gpiozero.StatusBoard object')
         assert sb.namedtuple._fields == ('one', 'two', 'three', 'four', 'five')
     with StatusBoard('a') as sb:
         assert sb.namedtuple._fields == ('a',)
@@ -1313,8 +1368,10 @@ def test_statusboard_named(mock_factory):
             sb.one
 
 def test_pumpkin_pi(mock_factory):
-    pins = [mock_factory.pin(n) for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
+    pins = [mock_factory.pin(n)
+            for n in (12, 6, 18, 17, 16, 13, 24, 19, 20, 21, 22, 23)]
     with PumpkinPi() as board:
+        assert repr(board).startswith('<gpiozero.PumpkinPi object')
         assert [device.pin for device in board.leds] == pins
         assert isinstance(board.sides.left, LEDBoard)
         assert isinstance(board.sides.right, LEDBoard)
@@ -1372,6 +1429,7 @@ def test_pumpkin_pi_initial_value_pwm(mock_factory, pwm):
 
 def test_jamhat(mock_factory, pwm):
     with JamHat() as jh:
+        assert repr(jh).startswith('<gpiozero.JamHat object')
         assert isinstance(jh.lights_1, LEDBoard)
         assert isinstance(jh.lights_2, LEDBoard)
         assert isinstance(jh.button_1, Button)
@@ -1379,17 +1437,33 @@ def test_jamhat(mock_factory, pwm):
         assert isinstance(jh.buzzer, TonalBuzzer)
         assert isinstance(jh.lights_1.red, LED)
         assert jh.value == (
-            (False, False, False),
-            (False, False, False),
-            False, False,
-            None
+            (False, False, False),  # lights_1
+            (False, False, False),  # lights_2
+            False, False,           # buttons
+            None                    # buzzer
         )
         jh.on()
         assert jh.value == (
-            (True, True, True),
-            (True, True, True),
-            False, False,
-            None
+            (True, True, True),  # lights_1
+            (True, True, True),  # lights_2
+            False, False,        # buttons
+            0                    # buzzer
+        )
+        jh.buzzer.play('A5')
+        jh.button_1.pin.drive_high()
+        jh.button_2.pin.drive_high()
+        assert jh.value == (
+            (True, True, True),  # lights_1
+            (True, True, True),  # lights_2
+            True, True,          # buttons
+            1                    # buzzer
+        )
+        jh.off()
+        assert jh.value == (
+            (False, False, False),  # lights_1
+            (False, False, False),  # lights_2
+            True, True,             # buttons
+            None                    # buzzer
         )
 
 def test_jamhat_pwm(mock_factory, pwm):
@@ -1400,3 +1474,23 @@ def test_jamhat_pwm(mock_factory, pwm):
         assert isinstance(jh.button_1, Button)
         assert isinstance(jh.button_2, Button)
         assert isinstance(jh.buzzer, TonalBuzzer)
+        assert jh.value == (
+            (0, 0, 0),              # lights_1
+            (0, 0, 0),              # lights_2
+            False, False,           # buttons
+            None                    # buzzer
+        )
+        jh.on()
+        assert jh.value == (
+            (1, 1, 1),           # lights_1
+            (1, 1, 1),           # lights_2
+            False, False,        # buttons
+            0                    # buzzer
+        )
+        jh.off()
+        assert jh.value == (
+            (0, 0, 0),              # lights_1
+            (0, 0, 0),              # lights_2
+            False, False,           # buttons
+            None                    # buzzer
+        )

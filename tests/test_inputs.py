@@ -25,6 +25,7 @@ from gpiozero import *
 def test_input_initial_values(mock_factory):
     pin = mock_factory.pin(4)
     with InputDevice(4, pull_up=True) as device:
+        assert repr(device).startswith('<gpiozero.InputDevice object')
         assert pin.function == 'input'
         assert pin.pull == 'up'
         assert device.pull_up
@@ -86,6 +87,7 @@ def test_input_event_activated(mock_factory):
     event = Event()
     pin = mock_factory.pin(4)
     with DigitalInputDevice(4) as device:
+        assert repr(device).startswith('<gpiozero.DigitalInputDevice object')
         device.when_activated = lambda: event.set()
         assert not event.is_set()
         pin.drive_high()
@@ -189,6 +191,7 @@ def test_input_smoothed_values(mock_factory):
 def test_input_button(mock_factory):
     pin = mock_factory.pin(2)
     with Button(2) as button:
+        assert repr(button).startswith('<gpiozero.Button object')
         assert pin.pull == 'up'
         assert not button.is_pressed
         pin.drive_low()
@@ -231,7 +234,8 @@ def test_input_button_hold(mock_factory):
 def test_input_line_sensor(mock_factory):
     pin = mock_factory.pin(4)
     with LineSensor(4) as sensor:
-        pin.drive_low() # logic is inverted for line sensor
+        assert repr(sensor).startswith('<gpiozero.LineSensor object')
+        pin.drive_low()  # logic is inverted for line sensor
         assert sensor.wait_for_line(1)
         assert sensor.line_detected
         pin.drive_high()
@@ -241,6 +245,7 @@ def test_input_line_sensor(mock_factory):
 def test_input_motion_sensor(mock_factory):
     pin = mock_factory.pin(4)
     with MotionSensor(4) as sensor:
+        assert repr(sensor).startswith('<gpiozero.MotionSensor object')
         pin.drive_high()
         assert sensor.wait_for_motion(1)
         assert sensor.motion_detected
@@ -254,6 +259,7 @@ def test_input_light_sensor(mock_factory):
     pin = mock_factory.pin(4, pin_class=MockChargingPin)
     assert isinstance(pin, MockChargingPin)
     with LightSensor(4) as sensor:
+        assert repr(sensor).startswith('<gpiozero.LightSensor object')
         pin.charge_time = 0.1
         assert sensor.wait_for_dark(1)
         pin.charge_time = 0.0
@@ -270,6 +276,7 @@ def test_input_distance_sensor(mock_factory):
     # normal queue len is large (because the sensor is *really* jittery) but
     # we want quick tests and we've got precisely controlled pins :)
     with DistanceSensor(4, 5, queue_len=5, max_distance=1) as sensor:
+        assert repr(sensor).startswith('<gpiozero.DistanceSensor object')
         assert sensor.max_distance == 1
         assert sensor.trigger is trig_pin
         assert sensor.echo is echo_pin
