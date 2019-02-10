@@ -35,22 +35,24 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 1.5.0 (2019-02-05)
+Release 1.5.0 (2019-02-11)
 ==========================
 
-* Allow :attr:`~Device.source` to take a device object as well as
-  `~Device.values` or just ``values``. (`#640`_)
 * Introduced pin event timing to increase accuracy of certain devices such as
   the HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
 * Further improvements to :class:`DistanceSensor` (ignoring missed edges).
   (`#719`_)
+* Allow :attr:`~Device.source` to take a device object as well as
+  :attr:`~Device.values` or other ``values``. (`#640`_)
 * Added internal device classes :class:`LoadAverage` and :class:`DiskUsage`
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`TonalBuzzer` class with musical notation API. (`#681`_, `#717`_)
-* Added :class:`PiHutXmasTree`, :class:`PumpkinPi` and :class:`JamHat` (thanks
-  to Claire Pollard). (`#502`_, `#680`_, `#681`_, `#717`_)
+* Added :class:`TonalBuzzer` class with musical notation API :class:`Tone`.
+  (`#681`_, `#717`_)
+* Added :class:`PiHutXmasTree` (`#502`_)
+* Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
+  (`#680`_, `#681`_, `#717`_)
 * Added support for various pin numbering mechanisms. (`#470`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
@@ -60,16 +62,19 @@ Release 1.5.0 (2019-02-05)
   `pinout.xyz`_ in a web browser. (`#604`_)
 * Added 3B+, 3A+ and CM3+ to Pi model data. (`#627`_, `#704`_)
 * Minor improvements to :class:`Energenie`, thanks to Steve Amor. (`#629`_,
-  `#634`)
+  `#634`_)
 * Allow :class:`SmoothedInputDevice`, :class:`LightSensor` and
   :class:`MotionSensor` to have pull-up configured. (`#652`_)
 * Allow input devices to be pulled up or down externally, thanks to Philippe
   Muller. (`#593`_, `#658`_)
 * Minor changes to support Python 3.7, thanks to Russel Winder and Rick Ansell.
   (`#666`_, `#668`_, `#669`_, `#671`_, `#673`_)
+* Added :func:`zip_values` source tool.
 * Correct row/col numbering logic in :class:`PinInfo`. (`#674`_)
-* Many additional tests.
+* Many additional tests, and other improvements to the test suite.
 * Many documentation corrections, additions and clarifications.
+* Automatic documentation class hierarchy diagram generation.
+* Automatic copyright attribution in source files.
 
 .. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
 .. _#664: https://github.com/RPi-Distro/python-gpiozero/issues/664
