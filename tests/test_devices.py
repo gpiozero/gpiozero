@@ -24,8 +24,11 @@ def test_default_pin_factory_order():
             with patch('sys.path') as path, \
                  patch('io.open') as io, \
                  patch('os.environ.get') as get:
+                # ensure no pin libraries can be imported
                 path.return_value = []
+                # ensure /proc/device-tree... is not found when trying native
                 io.return_value.__enter__.side_effect = file_not_found
+                # ensure pin factory not set in env var
                 get.return_value = None
 
                 device = GPIODevice(2)
