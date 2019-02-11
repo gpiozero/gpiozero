@@ -330,8 +330,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     @property
     def value(self):
         """
-        Returns the mean of the values in the internal queue. This is compared
-        to :attr:`~SmoothedInputDevice.threshold` to determine whether
+        Returns the average of the values in the internal queue. This is
+        compared to :attr:`~SmoothedInputDevice.threshold` to determine whether
         :attr:`is_active` is :data:`True`.
         """
         self._check_open()
@@ -420,6 +420,10 @@ class Button(HoldMixin, DigitalInputDevice):
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: value
+
+        Returns 1 if the button is currently pressed, and 0 if it is not.
     """
     def __init__(
             self, pin=None, pull_up=True, active_state=None, bounce_time=None,
@@ -440,8 +444,8 @@ Button.wait_for_release = Button.wait_for_inactive
 
 class LineSensor(SmoothedInputDevice):
     """
-    Extends :class:`SmoothedInputDevice` and represents a single pin line sensor
-    like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
+    Extends :class:`SmoothedInputDevice` and represents a single pin line
+    sensor like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
     EduKit`_.
 
     A typical line sensor has a small circuit board with three pins: VCC, GND,
@@ -500,6 +504,12 @@ class LineSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
+
+    .. attribute:: value
+
+        Returns a value representing the average of the queued values. This
+        is nearer 0 for black under the sensor, and nearer 1 for white under
+        the sensor.
     """
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=5,
@@ -584,6 +594,10 @@ class MotionSensor(SmoothedInputDevice):
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
+
+    .. attribute:: value
+
+        Returns 1 if the motion is currently detected, and 0 otherwise.
     """
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=1,
@@ -658,6 +672,10 @@ class LightSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #2 EduKit: http://camjam.me/?page_id=623
+
+    .. attribute:: value
+
+        Returns a value between 0 (dark) and 1 (light).
     """
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
@@ -806,6 +824,13 @@ class DistanceSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
+
+    .. attribute:: value
+
+        Returns a value between 0, indicating the reflector is either touching
+        the sensor or is sufficiently near that the sensor can't tell the
+        difference, and 1, indicating the reflector is at or beyond the
+        specified *max_distance*.
     """
     ECHO_LOCK = Lock()
 

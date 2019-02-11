@@ -105,7 +105,7 @@ DigitalInputDevice
 ------------------
 
 .. autoclass:: DigitalInputDevice(pin, \*, pull_up=False, active_state=None, bounce_time=None, pin_factory=None)
-    :members: wait_for_active, wait_for_inactive, when_activated, when_deactivated, active_time, inactive_time
+    :members: wait_for_active, wait_for_inactive, when_activated, when_deactivated, active_time, inactive_time, value
 
 
 SmoothedInputDevice
