@@ -42,7 +42,7 @@ Buzzer
 TonalBuzzer
 ===========
 
-.. autoclass:: TonalBuzzer(pin, \*, initial_value=None, mid_note='A4', octaves=1, pin_factory=None)
+.. autoclass:: TonalBuzzer(pin, \*, initial_value=None, mid_tone=Tone('A4'), octaves=1, pin_factory=None)
     :members: play, stop, octaves, min_tone, mid_tone, max_tone, tone, is_active, value
 
 Motor
