@@ -56,6 +56,7 @@ from .exc import (
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
+    EnergenieBadInitialValue,
     OutputDeviceBadValue,
     )
 from .input_devices import Button
@@ -2015,6 +2016,8 @@ class Energenie(SourceMixin, Device):
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
+        if initial_value is None:
+            raise EnergenieBadInitialValue("initial value can't be None")
         self._value = None
         super(Energenie, self).__init__(pin_factory=pin_factory)
         self._socket = socket
