@@ -114,6 +114,9 @@ def test_input_invalid_external_pull_configuration(mock_factory):
     with pytest.raises(PinInvalidState) as exc:
         InputDevice(4, pull_up=None)
     assert str(exc.value) == 'Pin 4 is defined as floating, but "active_state" is not defined'
+    with pytest.raises(PinInvalidState) as exc:
+        InputDevice(4, active_state=True)
+    assert str(exc.value) == 'Pin 4 is not floating, but "active_state" is not None'
 
 def test_input_event_activated(mock_factory):
     event = Event()

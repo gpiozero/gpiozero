@@ -45,7 +45,7 @@ try:
 except ImportError:
     pass # py2's reduce is built-in
 
-from .exc import DeviceClosed, SPIBadChannel
+from .exc import DeviceClosed, SPIBadChannel, InputDeviceError
 from .devices import Device
 
 
