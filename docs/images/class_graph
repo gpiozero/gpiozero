@@ -12,7 +12,11 @@ ABSTRACT_CLASSES = {
     'SmoothedInputDevice',
     'AnalogInputDevice',
     'MCP3xxx',
+    'MCP3xx2',
+    'MCP30xx',
+    'MCP32xx',
     'MCP33xx',
+    'SPIDevice',
     'CompositeDevice',
     'CompositeOutputDevice',
     'LEDCollection',
@@ -39,7 +43,6 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     my_path = Path(__file__).parent
-    # XXX make this relative to repo root rather than this script
     default_path = my_path / '..' / '..' / 'gpiozero'
     default_path = default_path.resolve()
     parser = argparse.ArgumentParser(description=main.__doc__)
@@ -47,14 +50,18 @@ def main(args=None):
                         default=[], help=
                         "search under PATH for Python source files; can be "
                         "specified multiple times, defaults to %s" % default_path)
-    parser.add_argument('-i', '--include', action='append', metavar='BASE',
+    parser.add_argument('-i', '--include', action='append', metavar='CLASS',
                         default=[], help=
                         "only include classes which have BASE somewhere in "
                         "their ancestry; can be specified multiple times")
-    parser.add_argument('-x', '--exclude', action='append', metavar='BASE',
+    parser.add_argument('-x', '--exclude', action='append', metavar='CLASS',
                         default=[], help=
                         "exclude any classes which have BASE somewhere in "
                         "their ancestry; can be specified multiple times")
+    parser.add_argument('-o', '--omit', action='append', metavar='CLASS',
+                        default=[], help="omit the specified class, but not "
+                        "its descendents from the chart; can be specified "
+                        "multiple times")
     parser.add_argument('output', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, help=
                         "the file to write the output to; defaults to stdout")
@@ -62,7 +69,7 @@ def main(args=None):
     if not args.path:
         args.path = [str(default_path)]
 
-    m = make_class_map(args.path, OMIT_CLASSES)
+    m = make_class_map(set(args.path), OMIT_CLASSES | set(args.omit))
     if args.include or args.exclude:
         m = filter_map(m, include_roots=set(args.include), exclude_roots=set(args.exclude))
     args.output.write(render_map(m, ABSTRACT_CLASSES))
@@ -78,17 +85,18 @@ def make_class_map(search_paths, omit):
     their descendents (useful for excluding "object" etc.)
     """
     def find_classes():
-        class_re = re.compile(r'^class (?P<name>\w+)(?:\((?P<bases>.*)\))?:', re.MULTILINE)
+        class_re = re.compile(
+            r'^class\s+(?P<name>\w+)\s*(?:\((?P<bases>.*)\))?:', re.MULTILINE)
         for path in search_paths:
             for py_file in Path(path).rglob('*.py'):
                 with py_file.open() as f:
                     for match in class_re.finditer(f.read()):
                         if match.group('name') not in omit:
-                            yield match.group('name'), [
+                            yield match.group('name'), {
                                 base.strip()
                                 for base in (match.group('bases') or '').split(',')
                                 if base.strip() not in omit
-                            ]
+                            }
     return {
         name: bases
         for name, bases in find_classes()
@@ -105,12 +113,20 @@ def filter_map(class_map, include_roots, exclude_roots):
         return cls == parent or any(
             has_parent(base, parent) for base in class_map.get(cls, ()))
 
-    return {
+    filtered = {
         name: bases
         for name, bases in class_map.items()
         if (not include_roots or any(has_parent(name, root) for root in include_roots))
         and not any(has_parent(name, root) for root in exclude_roots)
     }
+    pure_bases = {
+        base for name, bases in filtered.items() for base in bases
+    } - set(filtered)
+    # Make a second pass to fill in missing links between classes that are
+    # only included as bases of other classes
+    for base in pure_bases:
+        filtered[base] = pure_bases & class_map[base]
+    return filtered
 
 
 def render_map(class_map, abstract):
@@ -154,17 +170,17 @@ digraph classes {{
     return template.format(
         mixin_nodes='\n    '.join(
             '{name};'.format(name=name)
-            for name in set(all_names(class_map))
+            for name in sorted(set(all_names(class_map)))
             if name.endswith('Mixin')
         ),
         abstract_nodes='\n    '.join(
             '{name};'.format(name=name)
-            for name in abstract & set(all_names(class_map))
+            for name in sorted(abstract & set(all_names(class_map)))
         ),
         edges='\n    '.join(
             '{name}->{base};'.format(name=name, base=base)
-            for name, bases in class_map.items()
-            for base in bases
+            for name, bases in sorted(class_map.items())
+            for base in sorted(bases)
         ),
     )
 

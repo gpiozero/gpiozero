@@ -1,4 +1,35 @@
 # vim: set fileencoding=utf-8:
+#
+# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2017-2019 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2019 Jeevan M R <14.jeevan@gmail.com>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import (
     unicode_literals,
@@ -27,6 +58,7 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
+    # XXX Add some mechanism to monitor state and fire events on change.
 
 
 class PingServer(InternalDevice):
@@ -51,10 +83,15 @@ class PingServer(InternalDevice):
 
     :param str host:
         The hostname or IP address to attempt to ping.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, host):
+    def __init__(self, host, pin_factory=None):
         self._host = host
-        super(PingServer, self).__init__()
+        super(PingServer, self).__init__(pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -65,10 +102,17 @@ class PingServer(InternalDevice):
 
     @property
     def host(self):
+        """
+        The hostname or IP address to test whenever :attr:`value` is queried.
+        """
         return self._host
 
     @property
     def value(self):
+        """
+        Returns :data:`True` if the host returned a single ping, and
+        :data:`False` otherwise.
+        """
         # XXX This is doing a DNS lookup every time it's queried; should we
         # call gethostbyname in the constructor and ping that instead (good
         # for consistency, but what if the user *expects* the host to change
@@ -121,12 +165,17 @@ class CPUTemperature(InternalDevice):
 
     :param float threshold:
         The temperature above which the device will be considered "active".
-        This defaults to 80.0.
+        (see :attr:`is_active`). This defaults to 80.0.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
-            min_temp=0.0, max_temp=100.0, threshold=80.0):
+            min_temp=0.0, max_temp=100.0, threshold=80.0, pin_factory=None):
         self.sensor_file = sensor_file
-        super(CPUTemperature, self).__init__()
+        super(CPUTemperature, self).__init__(pin_factory=pin_factory)
         if min_temp >= max_temp:
             raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
@@ -165,8 +214,8 @@ class CPUTemperature(InternalDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` when the CPU :attr:`temperature` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the CPU :attr:`temperature` exceeds the
+        *threshold*.
         """
         return self.temperature > self.threshold
 
@@ -205,14 +254,19 @@ class LoadAverage(InternalDevice):
 
     :param float threshold:
         The load average above which the device will be considered "active".
-        This defaults to 0.8.
+        (see :attr:`is_active`). This defaults to 0.8.
 
     :param int minutes:
         The number of minutes over which to average the load. Must be 1, 5 or
         15. This defaults to 5.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
-        max_load_average=1.0, threshold=0.8, minutes=5):
+        max_load_average=1.0, threshold=0.8, minutes=5, pin_factory=None):
         if min_load_average >= max_load_average:
             raise ValueError(
                 'max_load_average must be greater than min_load_average')
@@ -231,7 +285,7 @@ class LoadAverage(InternalDevice):
             5: 1,
             15: 2,
         }[minutes]
-        super(LoadAverage, self).__init__()
+        super(LoadAverage, self).__init__(pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -243,7 +297,7 @@ class LoadAverage(InternalDevice):
     @property
     def load_average(self):
         """
-        Returns the current load average
+        Returns the current load average.
         """
         with io.open(self.load_average_file, 'r') as f:
             file_columns = f.readline().strip().split()
@@ -262,8 +316,8 @@ class LoadAverage(InternalDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` when the :attr:`load_average` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the :attr:`load_average` exceeds the
+        *threshold*.
         """
         return self.load_average > self.threshold
 
@@ -289,6 +343,9 @@ class TimeOfDay(InternalDevice):
 
         pause()
 
+    Note that *start_time* may be greater than *end_time*, indicating a time
+    period which crosses midnight.
+
     :param ~datetime.time start_time:
         The time from which the device will be considered active.
 
@@ -296,14 +353,19 @@ class TimeOfDay(InternalDevice):
         The time after which the device will be considered inactive.
 
     :param bool utc:
-        If ``True`` (the default), a naive UTC time will be used for the
+        If :data:`True` (the default), a naive UTC time will be used for the
         comparison rather than a local time-zone reading.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, start_time, end_time, utc=True):
+    def __init__(self, start_time, end_time, utc=True, pin_factory=None):
         self._start_time = None
         self._end_time = None
         self._utc = True
-        super(TimeOfDay, self).__init__()
+        super(TimeOfDay, self).__init__(pin_factory=pin_factory)
         self._start_time = self._validate_time(start_time)
         self._end_time = self._validate_time(end_time)
         if self.start_time == self.end_time:
@@ -343,13 +405,21 @@ class TimeOfDay(InternalDevice):
     @property
     def utc(self):
         """
-        If ``True``, use a naive UTC time reading for comparison instead of a
-        local timezone reading.
+        If :data:`True`, use a naive UTC time reading for comparison instead of
+        a local timezone reading.
         """
         return self._utc
 
     @property
     def value(self):
+        """
+        Returns :data:`True` when the system clock reads between
+        :attr:`start_time` and :attr:`end_time`, and :data:`False` otherwise.
+        If :attr:`start_time` is greater than :attr:`end_time` (indicating a
+        period that crosses midnight), then this returns :data:`True` when the
+        current time is greater than :attr:`start_time` or less than
+        :attr:`end_time`.
+        """
         now = datetime.utcnow().time() if self.utc else datetime.now().time()
         if self.start_time < self.end_time:
             return self.start_time <= now <= self.end_time
@@ -378,14 +448,19 @@ class DiskUsage(InternalDevice):
 
     :param str filesystem:
         The filesystem for which the disk usage needs to be computed. This
-        defaults to `/`, which is the root filesystem.
+        defaults to :file:`/`, which is the root filesystem.
 
     :param float threshold:
-        The disk usage percentage above which the device will be considered "active".
-        This defaults to 90.0.
+        The disk usage percentage above which the device will be considered
+        "active" (see :attr:`is_active`). This defaults to 90.0.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, filesystem='/', threshold=90.0):
-        super(DiskUsage, self).__init__()
+    def __init__(self, filesystem='/', threshold=90.0, pin_factory=None):
+        super(DiskUsage, self).__init__(pin_factory=pin_factory)
         if not os.path.ismount(filesystem):
             raise ValueError('invalid filesystem')
         if not 0 <= threshold <= 100:
@@ -406,6 +481,7 @@ class DiskUsage(InternalDevice):
         """
         Returns the current disk usage in percentage.
         """
+        # XXX Use os.statvfs?
         df = subprocess.Popen(['df', '--output=pcent', self.filesystem], stdout=subprocess.PIPE)
         try:
             output = df.communicate()[0].split(b'\n')[1].split()[0]
@@ -417,15 +493,15 @@ class DiskUsage(InternalDevice):
     @property
     def value(self):
         """
-        Returns the current disk usage as a value between 0.0 and 1.0
-        by dividing :attr:`temperature` by 100.
+        Returns the current disk usage as a value between 0.0 and 1.0 by
+        dividing :attr:`usage` by 100.
         """
         return self.usage / 100.0
 
     @property
     def is_active(self):
         """
-        Returns ``True`` when the disk :attr:`usage` exceeds the
-        :attr:`threshold`.
+        Returns :data:`True` when the disk :attr:`usage` exceeds the
+        *threshold*.
         """
         return self.usage > self.threshold

@@ -19,6 +19,10 @@ A simple interface to GPIO devices with Raspberry Pi.
 Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
 other contributors.
 
+.. _Ben Nuttall: https://github.com/bennuttall
+.. _Raspberry Pi Foundation: https://www.raspberrypi.org/
+.. _Dave Jones: https://github.com/waveform80
+
 About
 =====
 
@@ -59,6 +63,8 @@ some more complex things like sensors, analogue-to-digital converters, full
 colour LEDs, robotics kits and more. See the `Recipes`_ chapter of the
 documentation for ideas on how to get started.
 
+.. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
+
 Installation
 ============
 
@@ -66,12 +72,18 @@ GPIO Zero is installed by default in the Raspbian desktop image, available from
 `raspberrypi.org`_. To install on Raspbian Lite or other operating systems,
 including for PCs using remote GPIO, see the `Installing`_ chapter.
 
+.. _raspberrypi.org: https://www.raspberrypi.org/downloads/
+.. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
+
 Documentation
 =============
 
 Comprehensive documentation is available at https://gpiozero.readthedocs.io/.
 Please refer to the `Contributing`_ and `Development`_ chapters in the
 documentation for information on contributing to the project.
+
+.. _Contributing: https://gpiozero.readthedocs.io/en/stable/contributing.html
+.. _Development: https://gpiozero.readthedocs.io/en/stable/development.html
 
 Contributors
 ============
@@ -103,17 +115,10 @@ Other contributors:
 - `Fatih Sarhan`_
 - `Rick Ansell`_
 - `Jeevan M R`_
+- `Claire Pollard`_
+- `Philippe Muller`_
 
 
-.. _Raspberry Pi Foundation: https://www.raspberrypi.org/
-.. _raspberrypi.org: https://www.raspberrypi.org/downloads/
-.. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
-.. _Contributing: https://gpiozero.readthedocs.io/en/stable/contributing.html
-.. _Development: https://gpiozero.readthedocs.io/en/stable/development.html
-.. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
-
-.. _Ben Nuttall: https://github.com/bennuttall
-.. _Dave Jones: https://github.com/waveform80
 .. _Andrew Scheller: https://github.com/lurch
 .. _Martin O'Hanlon: https://github.com/martinohanlon
 .. _Steve Amor: https://github.com/SteveAmor
@@ -134,3 +139,5 @@ Other contributors:
 .. _Fatih Sarhan: https://github.com/f9n
 .. _Rick Ansell: https://github.com/ricksbt
 .. _Jeevan M R: https://github.com/jee1mr
+.. _Claire Pollard: https://github.com/tuftii
+.. _Philippe Muller: https://github.com/pmuller

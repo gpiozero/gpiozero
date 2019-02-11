@@ -1,4 +1,37 @@
 # vim: set fileencoding=utf-8:
+#
+# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2015-2018 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2018 Philippe Muller <philippe.muller@gmail.com>
+# Copyright (c) 2016 Steveis <SteveAmor@users.noreply.github.com>
+# Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import (
     unicode_literals,
@@ -28,46 +61,46 @@ class InputDevice(GPIODevice):
     This class extends :class:`GPIODevice` to add facilities common to GPIO
     input devices.  The constructor adds the optional *pull_up* parameter to
     specify how the pin should be pulled by the internal resistors. The
-    :attr:`~GPIODevice.is_active` property is adjusted accordingly so that
-    ``True`` still means active regardless of the :attr:`pull_up` setting.
+    :attr:`is_active` property is adjusted accordingly so that :data:`True`
+    still means active regardless of the *pull_up* setting.
 
-    :param int pin:
-        The GPIO pin (in Broadcom numbering) that the device is connected to.
-        If this is ``None`` a :exc:`GPIODeviceError` will be raised.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
+    :type pull_up: bool or None
     :param pull_up:
-        If ``True``, the pin will be pulled high with an internal resistor. If
-        ``False`` (the default), the pin will be pulled low.
-        If ``None``, the pin will be floating. As gpiozero cannot automatically
-        guess the active state when not pulling the pin, the ``active_state``
-        parameter must be passed.
-    :type pull_up: ``bool`` or ``None``
+        If :data:`True`, the pin will be pulled high with an internal resistor.
+        If :data:`False` (the default), the pin will be pulled low.  If
+        :data:`None`, the pin will be floating. As gpiozero cannot
+        automatically guess the active state when not pulling the pin, the
+        *active_state* parameter must be passed.
 
-    :param Factory pin_factory:
-        See :doc:`api_pins` for more information (this is an advanced feature
-        which most users can ignore).
-
+    :type active_state: bool or None
     :param active_state:
-        If ``True``, when the hardware pin state is ``HIGH``,
-        the software pin is ``HIGH``.
-        If ``False``, the input polarity is reversed:
-        when the hardware pin state is ``HIGH``,
-        the software pin state is ``LOW``.
+        If :data:`True`, when the hardware pin state is ``HIGH``, the software
+        pin is ``HIGH``. If :data:`False`, the input polarity is reversed: when
+        the hardware pin state is ``HIGH``, the software pin state is ``LOW``.
         Use this parameter to set the active state of the underlying pin when
-        configuring it as not pulled (``pull_up=None``).
-        When ``pull_up`` is ``True`` or ``False``, the active state is
+        configuring it as not pulled (when *pull_up* is :data:`None`). When
+        *pull_up* is :data:`True` or :data:`False`, the active state is
         automatically set to the proper value.
 
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
     """
-    def __init__(self, pin=None, pull_up=False, pin_factory=None,
-                 active_state=None):
+    def __init__(self, pin=None, pull_up=False, active_state=None,
+                 pin_factory=None):
         super(InputDevice, self).__init__(pin, pin_factory=pin_factory)
         try:
             self.pin.function = 'input'
-            if pull_up is None:
-                self.pin.pull = 'floating'
-            else:
-                self.pin.pull = 'up' if pull_up else 'down'
+            pull = {None: 'floating', True: 'up', False: 'down'}[pull_up]
+            if self.pin.pull != pull:
+                self.pin.pull = pull
         except:
             self.close()
             raise
@@ -79,13 +112,17 @@ class InputDevice(GPIODevice):
                     'defined' % self.pin.number)
             self._active_state = bool(active_state)
         else:
+            if active_state is not None:
+                raise PinInvalidState(
+                    'Pin %d is not floating, but "active_state" it not None' %
+                    self.pin.number)
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state
 
     @property
     def pull_up(self):
         """
-        If ``True``, the device uses a pull-up resistor to set the GPIO pin
+        If :data:`True`, the device uses a pull-up resistor to set the GPIO pin
         "high" by default.
         """
         pull = self.pin.pull
@@ -111,29 +148,38 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     straight forward on / off states with (reasonably) clean transitions
     between the two.
 
-    :param int pin:
-        The GPIO pin (in Broadcom numbering) that the device is connected to.
-        If this is ``None`` a :exc:`GPIODeviceError` will be raised.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
-    :param bool pull_up:
-        If ``True``, the pin will be pulled high with an internal resistor. If
-        ``False`` (the default), the pin will be pulled low.
+    :type pull_up: bool or None
+    :param pull_up:
+        See descrpition under :class:`InputDevice` for more information.
 
-    :param float bounce_time:
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
+
+    :type bounce_time: float or None
+    :param bounce_time:
         Specifies the length of time (in seconds) that the component will
         ignore changes in state after an initial change. This defaults to
-        ``None`` which indicates that no bounce compensation will be performed.
+        :data:`None` which indicates that no bounce compensation will be
+        performed.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, bounce_time=None, pin_factory=None,
-            active_state=None):
+            self, pin=None, pull_up=False, active_state=None, bounce_time=None,
+            pin_factory=None):
         super(DigitalInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            pin_factory=pin_factory)
         try:
             self.pin.bounce = bounce_time
             self.pin.edges = 'both'
@@ -170,13 +216,19 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     behaviour (such as the charging time of a capacitor with an LDR), or those
     which exhibit "twitchy" behaviour (such as certain motion sensors).
 
-    :param int pin:
-        The GPIO pin (in Broadcom numbering) that the device is connected to.
-        If this is ``None`` a :exc:`GPIODeviceError` will be raised.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin that the device is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
-    :param bool pull_up:
-        If ``True``, the pin will be pulled high with an internal resistor. If
-        ``False`` (the default), the pin will be pulled low.
+    :type pull_up: bool or None
+    :param pull_up:
+        See descrpition under :class:`InputDevice` for more information.
+
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
 
     :param float threshold:
         The value above which the device will be considered "on".
@@ -191,33 +243,35 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         as fast as possible.
 
     :param bool partial:
-        If ``False`` (the default), attempts to read the state of the device
-        (from the :attr:`is_active` property) will block until the queue has
-        filled.  If ``True``, a value will be returned immediately, but be
-        aware that this value is likely to fluctuate excessively.
+        If :data:`False` (the default), attempts to read the state of the
+        device (from the :attr:`is_active` property) will block until the queue
+        has filled.  If :data:`True`, a value will be returned immediately, but
+        be aware that this value is likely to fluctuate excessively.
 
     :param average:
         The function used to average the values in the internal queue. This
-        defaults to :func:`statistics.median` which a good selection for
-        discarding outliers from jittery sensors. The function specific must
+        defaults to :func:`statistics.median` which is a good selection for
+        discarding outliers from jittery sensors. The function specified must
         accept a sequence of numbers and return a single number.
 
-    :param set ignore:
+    :type ignore: frozenset or None
+    :param ignore:
         The set of values which the queue should ignore, if returned from
         querying the device's value.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, threshold=0.5, queue_len=5,
-            sample_wait=0.0, partial=False, average=median, ignore=None,
-            pin_factory=None, active_state=None):
+            self, pin=None, pull_up=False, active_state=None, threshold=0.5,
+            queue_len=5, sample_wait=0.0, partial=False, average=median,
+            ignore=None, pin_factory=None):
         self._queue = None
         super(SmoothedInputDevice, self).__init__(
-            pin, pull_up, pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            pin_factory=pin_factory)
         try:
             self._queue = GPIOQueue(self, queue_len, sample_wait, partial,
                                     average, ignore)
@@ -265,8 +319,10 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     @property
     def partial(self):
         """
-        If ``False`` (the default), attempts to read the :attr:`value` or
-        :attr:`is_active` properties will block until the queue has filled.
+        If :data:`False` (the default), attempts to read the
+        :attr:`~SmoothedInputDevice.value` or
+        :attr:`~SmoothedInputDevice.is_active` properties will block until the
+        queue has filled.
         """
         self._check_open()
         return self._queue.partial
@@ -275,8 +331,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     def value(self):
         """
         Returns the mean of the values in the internal queue. This is compared
-        to :attr:`threshold` to determine whether :attr:`is_active` is
-        ``True``.
+        to :attr:`~SmoothedInputDevice.threshold` to determine whether
+        :attr:`is_active` is :data:`True`.
         """
         self._check_open()
         return self._queue.value
@@ -284,8 +340,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     @property
     def threshold(self):
         """
-        If :attr:`value` exceeds this amount, then :attr:`is_active` will
-        return ``True``.
+        If :attr:`~SmoothedInputDevice.value` exceeds this amount, then
+        :attr:`is_active` will return :data:`True`.
         """
         return self._threshold
 
@@ -300,8 +356,9 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     @property
     def is_active(self):
         """
-        Returns ``True`` if the device is currently active and ``False``
-        otherwise.
+        Returns :data:`True` if the :attr:`~SmoothedInputDevice.value`
+        currently exceeds :attr:`~SmoothedInputDevice.threshold` and
+        :data:`False` otherwise.
         """
         return self.value > self.threshold
 
@@ -313,7 +370,7 @@ class Button(HoldMixin, DigitalInputDevice):
 
     Connect one side of the button to a ground pin, and the other to any GPIO
     pin. Alternatively, connect one side of the button to the 3V3 pin, and the
-    other to any GPIO pin, then set *pull_up* to ``False`` in the
+    other to any GPIO pin, then set *pull_up* to :data:`False` in the
     :class:`Button` constructor.
 
     The following example will print a line of text when the button is pushed::
@@ -324,20 +381,28 @@ class Button(HoldMixin, DigitalInputDevice):
         button.wait_for_press()
         print("The button was pressed!")
 
-    :param int pin:
-        The GPIO pin which the button is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the button is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
-    :param bool pull_up:
-        If ``True`` (the default), the GPIO pin will be pulled high by default.
-        In this case, connect the other side of the button to ground. If
-        ``False``, the GPIO pin will be pulled low by default. In this case,
-        connect the other side of the button to 3V3.
-        If ``None``, the pin will be floating, so it must be externally pulled
-        up or down and the ``active_state`` parameter must be set accordingly.
+    :type pull_up: bool or None
+    :param pull_up:
+        If :data:`True` (the default), the GPIO pin will be pulled high by
+        default.  In this case, connect the other side of the button to ground.
+        If :data:`False`, the GPIO pin will be pulled low by default. In this
+        case, connect the other side of the button to 3V3. If :data:`None`, the
+        pin will be floating, so it must be externally pulled up or down and
+        the ``active_state`` parameter must be set accordingly.
 
-    :param float bounce_time:
-        If ``None`` (the default), no software bounce compensation will be
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
+
+    :type bounce_time: float or None
+    :param bounce_time:
+        If :data:`None` (the default), no software bounce compensation will be
         performed. Otherwise, this is the length of time (in seconds) that the
         component will ignore changes in state after an initial change.
 
@@ -346,35 +411,22 @@ class Button(HoldMixin, DigitalInputDevice):
         until executing the :attr:`when_held` handler. Defaults to ``1``.
 
     :param bool hold_repeat:
-        If ``True``, the :attr:`when_held` handler will be repeatedly executed
-        as long as the device remains active, every *hold_time* seconds. If
-        ``False`` (the default) the :attr:`when_held` handler will be only be
-        executed once per hold.
+        If :data:`True`, the :attr:`when_held` handler will be repeatedly
+        executed as long as the device remains active, every *hold_time*
+        seconds. If :data:`False` (the default) the :attr:`when_held` handler
+        will be only be executed once per hold.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
-
-    :param active_state:
-        If ``True``, when the hardware pin state is ``HIGH``,
-        the software pin is ``HIGH``.
-        If ``False``, the input polarity is reversed:
-        when the hardware pin state is ``HIGH``,
-        the software pin state is ``LOW``.
-        Use this parameter to set the active state of the underlying pin when
-        configuring it as not pulled (``pull_up=None``).
-        When ``pull_up`` is ``True`` or ``False``, the active state is
-        automatically set to the proper value.
-
     """
     def __init__(
-            self, pin=None, pull_up=True, bounce_time=None,
-            hold_time=1, hold_repeat=False, pin_factory=None,
-            active_state=None):
+            self, pin=None, pull_up=True, active_state=None, bounce_time=None,
+            hold_time=1, hold_repeat=False, pin_factory=None):
         super(Button, self).__init__(
-            pin, pull_up, bounce_time, pin_factory=pin_factory,
-            active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            bounce_time=bounce_time, pin_factory=pin_factory)
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
@@ -408,13 +460,19 @@ class LineSensor(SmoothedInputDevice):
         sensor.when_no_line = lambda: print('No line detected')
         pause()
 
-    :param int pin:
-        The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the sensor is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
-    :param bool pull_up:
-        If ``True``, the pin will be pulled high with an internal resistor. If
-        ``False`` (the default), the pin will be pulled low.
+    :type pull_up: bool or None
+    :param pull_up:
+        See descrpition under :class:`InputDevice` for more information.
+
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
 
     :param int queue_len:
         The length of the queue used to store values read from the sensor. This
@@ -431,23 +489,26 @@ class LineSensor(SmoothedInputDevice):
         events will be fired.
 
     :param bool partial:
-        When ``False`` (the default), the object will not return a value for
-        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
-        filled with values.  Only set this to ``True`` if you require values
-        immediately after object construction.
+        When :data:`False` (the default), the object will not return a value
+        for :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to :data:`True` if you require
+        values immediately after object construction.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(
-            self, pin=None, pull_up=False, queue_len=5, sample_rate=100,
-            threshold=0.5, partial=False, pin_factory=None):
+            self, pin=None, pull_up=False, active_state=None, queue_len=5,
+            sample_rate=100, threshold=0.5, partial=False, pin_factory=None):
         super(LineSensor, self).__init__(
-            pin, pull_up, threshold, queue_len, sample_wait=1 / sample_rate,
-            partial=partial, pin_factory=pin_factory)
+            pin, pull_up=pull_up, active_state=active_state,
+            threshold=threshold, queue_len=queue_len,
+            sample_wait=1 / sample_rate, partial=partial,
+            pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -484,9 +545,19 @@ class MotionSensor(SmoothedInputDevice):
         pir.wait_for_motion()
         print("Motion detected!")
 
-    :param int pin:
-        The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+    :type pin: int or str
+    :param pin:
+        The GPIO pin which the sensor is connected to. See :ref:`pin-numbering`
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
+
+    :type pull_up: bool or None
+    :param pull_up:
+        See descrpition under :class:`InputDevice` for more information.
+
+    :type active_state: bool or None
+    :param active_state:
+        See description under :class:`InputDevice` for more information.
 
     :param int queue_len:
         The length of the queue used to store values read from the sensor. This
@@ -504,29 +575,23 @@ class MotionSensor(SmoothedInputDevice):
         events will be fired.
 
     :param bool partial:
-        When ``False`` (the default), the object will not return a value for
-        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
-        filled with values.  Only set this to ``True`` if you require values
-        immediately after object construction.
+        When :data:`False` (the default), the object will not return a value
+        for :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to :data:`True` if you require
+        values immediately after object construction.
 
-    :param bool pull_up:
-        If ``False`` (the default), the GPIO pin will be pulled low by default.
-        If ``True``, the GPIO pin will be pulled high by the sensor.
-        If ``None``, the pin must be externally be pulled up or down, and
-        the ``active_state`` parameter must be set accordingly.
-
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, queue_len=1, sample_rate=10,
-            threshold=0.5, partial=False, pin_factory=None, active_state=None):
+            self, pin=None, pull_up=False, active_state=None, queue_len=1,
+            sample_rate=10, threshold=0.5, partial=False, pin_factory=None):
         super(MotionSensor, self).__init__(
-            pin, pull_up=pull_up, threshold=threshold,
-            queue_len=queue_len, sample_wait=1 / sample_rate, partial=partial,
-            pin_factory=pin_factory, active_state=active_state,
-        )
+            pin, pull_up=pull_up, active_state=active_state,
+            threshold=threshold, queue_len=queue_len, sample_wait=1 /
+            sample_rate, partial=partial, pin_factory=pin_factory)
         try:
             self._queue.start()
         except:
@@ -559,9 +624,11 @@ class LightSensor(SmoothedInputDevice):
         ldr.wait_for_light()
         print("Light detected!")
 
-    :param int pin:
+    :type pin: int or str
+    :param pin:
         The GPIO pin which the sensor is attached to. See :ref:`pin-numbering`
-        for valid pin numbers.
+        for valid pin numbers. If this is :data:`None` a :exc:`GPIODeviceError`
+        will be raised.
 
     :param int queue_len:
         The length of the queue used to store values read from the circuit.
@@ -580,12 +647,13 @@ class LightSensor(SmoothedInputDevice):
         appropriate events will be fired.
 
     :param bool partial:
-        When ``False`` (the default), the object will not return a value for
-        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
-        filled with values.  Only set this to ``True`` if you require values
-        immediately after object construction.
+        When :data:`False` (the default), the object will not return a value
+        for :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to :data:`True` if you require
+        values immediately after object construction.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -595,10 +663,8 @@ class LightSensor(SmoothedInputDevice):
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False, pin_factory=None):
         super(LightSensor, self).__init__(
-            pin, pull_up=False, threshold=threshold,
-            queue_len=queue_len, sample_wait=0.0, partial=partial,
-            pin_factory=pin_factory
-        )
+            pin, pull_up=False, threshold=threshold, queue_len=queue_len,
+            sample_wait=0.0, partial=partial, pin_factory=pin_factory)
         try:
             self._charge_time_limit = charge_time_limit
             self._charge_time = None
@@ -694,13 +760,23 @@ class DistanceSensor(SmoothedInputDevice):
             print('Distance: ', sensor.distance * 100)
             sleep(1)
 
-    :param int echo:
-        The GPIO pin which the ECHO pin is attached to. See
-        :ref:`pin-numbering` for valid pin numbers.
+    .. note::
 
-    :param int trigger:
-        The GPIO pin which the TRIG pin is attached to. See
-        :ref:`pin-numbering` for valid pin numbers.
+        For improved accuracy, use the pigpio pin driver rather than the
+        default RPi.GPIO driver (pigpio uses DMA sampling for much more precise
+        edge timing). See :ref:`changing-pin-factory` for further information.
+
+    :type echo: int or str
+    :param echo:
+        The GPIO pin which the ECHO pin is connected to. See
+        :ref:`pin-numbering` for valid pin numbers. If this is :data:`None` a
+        :exc:`GPIODeviceError` will be raised.
+
+    :type trigger: int or str
+    :param trigger:
+        The GPIO pin which the TRIG pin is connected to. See
+        :ref:`pin-numbering` for valid pin numbers. If this is :data:`None` a
+        :exc:`GPIODeviceError` will be raised.
 
     :param int queue_len:
         The length of the queue used to store values read from the sensor.
@@ -716,12 +792,13 @@ class DistanceSensor(SmoothedInputDevice):
         ``in_range`` and ``out_of_range`` events when crossed.
 
     :param bool partial:
-        When ``False`` (the default), the object will not return a value for
-        :attr:`~SmoothedInputDevice.is_active` until the internal queue has
-        filled with values.  Only set this to ``True`` if you require values
-        immediately after object construction.
+        When :data:`False` (the default), the object will not return a value
+        for :attr:`~SmoothedInputDevice.is_active` until the internal queue has
+        filled with values.  Only set this to :data:`True` if you require
+        values immediately after object construction.
 
-    :param Factory pin_factory:
+    :type pin_factory: Factory or None
+    :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
@@ -770,9 +847,10 @@ class DistanceSensor(SmoothedInputDevice):
     def max_distance(self):
         """
         The maximum distance that the sensor will measure in meters. This value
-        is specified in the constructor and is used to provide the scaling
-        for the :attr:`value` attribute. When :attr:`distance` is equal to
-        :attr:`max_distance`, :attr:`value` will be 1.
+        is specified in the constructor and is used to provide the scaling for
+        the :attr:`~SmoothedInputDevice.value` attribute. When :attr:`distance`
+        is equal to :attr:`max_distance`, :attr:`~SmoothedInputDevice.value`
+        will be 1.
         """
         return self._max_distance
 
@@ -790,7 +868,7 @@ class DistanceSensor(SmoothedInputDevice):
         The distance, measured in meters, that will trigger the
         :attr:`when_in_range` and :attr:`when_out_of_range` events when
         crossed. This is simply a meter-scaled variant of the usual
-        :attr:`threshold` attribute.
+        :attr:`~SmoothedInputDevice.threshold` attribute.
         """
         return self.threshold * self.max_distance
 
@@ -818,7 +896,7 @@ class DistanceSensor(SmoothedInputDevice):
     def echo(self):
         """
         Returns the :class:`Pin` that the sensor's echo is connected to. This
-        is simply an alias for the usual :attr:`pin` attribute.
+        is simply an alias for the usual :attr:`~GPIODevice.pin` attribute.
         """
         return self.pin
 
@@ -854,7 +932,8 @@ class DistanceSensor(SmoothedInputDevice):
             if self._echo.wait(0.1):
                 if self._echo_fall is not None and self._echo_rise is not None:
                     distance = (
-                        self.pin_factory.ticks_diff(self._echo_fall, self._echo_rise) *
+                        self.pin_factory.ticks_diff(
+                            self._echo_fall, self._echo_rise) *
                         self.speed_of_sound / 2.0)
                     return min(1.0, distance / self._max_distance)
                 else:

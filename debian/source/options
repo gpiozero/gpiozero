@@ -1,9 +1,12 @@
 diff-ignore
 tar-ignore
 tar-ignore = dist
-tar-ignore = docs/_build
-tar-ignore = .cache
-tar-ignore = .coverage
 tar-ignore = tags
+tar-ignore = *.egg-info
+tar-ignore = .cache
+tar-ignore = .pytest_cache
+tar-ignore = .coverage*
+tar-ignore = .github
+tar-ignore = .tox
 tar-ignore = *.fzz
 tar-ignore = *.xcf

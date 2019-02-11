@@ -1,23 +1,58 @@
+.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
+.. Copyright (c) 2015-2018 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+..
+.. Redistribution and use in source and binary forms, with or without
+.. modification, are permitted provided that the following conditions are met:
+..
+.. * Redistributions of source code must retain the above copyright notice,
+..   this list of conditions and the following disclaimer.
+..
+.. * Redistributions in binary form must reproduce the above copyright notice,
+..   this list of conditions and the following disclaimer in the documentation
+..   and/or other materials provided with the distribution.
+..
+.. * Neither the name of the copyright holder nor the names of its contributors
+..   may be used to endorse or promote products derived from this software
+..   without specific prior written permission.
+..
+.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.. POSSIBILITY OF SUCH DAMAGE.
+
 =========
 Changelog
 =========
 
 .. currentmodule:: gpiozero
 
-Release 1.5.0 (unreleased)
+Release 1.5.0 (2019-02-11)
 ==========================
 
-* Allow source tools to take device object as well as device.values or just
-  values. (`#640`_)
-* Introduced pin event timing to increase accuracy of certain devices such as the
-  HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
+* Introduced pin event timing to increase accuracy of certain devices such as
+  the HC-SR04 :class:`DistanceSensor`. (`#664`_, `#665`_)
 * Further improvements to :class:`DistanceSensor` (ignoring missed edges).
   (`#719`_)
+* Allow :attr:`~Device.source` to take a device object as well as
+  :attr:`~Device.values` or other ``values``. (`#640`_)
 * Added internal device classes :class:`LoadAverage` and :class:`DiskUsage`
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`PiHutXmasTree` class. (`#502`_)
+* Added :class:`TonalBuzzer` class with musical notation API :class:`Tone`.
+  (`#681`_, `#717`_)
+* Added :class:`PiHutXmasTree` (`#502`_)
+* Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
+  (`#680`_, `#681`_, `#717`_)
 * Added support for various pin numbering mechanisms. (`#470`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
@@ -25,17 +60,21 @@ Release 1.5.0 (unreleased)
 * Added optional ``enable`` init param to :class:`Motor`. (`#366`_)
 * Added ``--xyz`` option to :program:`pinout` command line tool to open
   `pinout.xyz`_ in a web browser. (`#604`_)
-* Added 3B+ and 3A+ to Pi model data. (`#627`_, `#704`_)
+* Added 3B+, 3A+ and CM3+ to Pi model data. (`#627`_, `#704`_)
 * Minor improvements to :class:`Energenie`, thanks to Steve Amor. (`#629`_,
-  `#634`)
+  `#634`_)
 * Allow :class:`SmoothedInputDevice`, :class:`LightSensor` and
   :class:`MotionSensor` to have pull-up configured. (`#652`_)
+* Allow input devices to be pulled up or down externally, thanks to Philippe
+  Muller. (`#593`_, `#658`_)
 * Minor changes to support Python 3.7, thanks to Russel Winder and Rick Ansell.
   (`#666`_, `#668`_, `#669`_, `#671`_, `#673`_)
+* Added :func:`zip_values` source tool.
 * Correct row/col numbering logic in :class:`PinInfo`. (`#674`_)
-* Many additional tests.
+* Many additional tests, and other improvements to the test suite.
 * Many documentation corrections, additions and clarifications.
-
+* Automatic documentation class hierarchy diagram generation.
+* Automatic copyright attribution in source files.
 
 .. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
 .. _#664: https://github.com/RPi-Distro/python-gpiozero/issues/664
@@ -45,6 +84,9 @@ Release 1.5.0 (unreleased)
 .. _#714: https://github.com/RPi-Distro/python-gpiozero/issues/714
 .. _colorzero: https://colorzero.readthedocs.io/en/stable
 .. _#655: https://github.com/RPi-Distro/python-gpiozero/issues/655
+.. _#681: https://github.com/RPi-Distro/python-gpiozero/issues/681
+.. _#717: https://github.com/RPi-Distro/python-gpiozero/issues/717
+.. _#680: https://github.com/RPi-Distro/python-gpiozero/issues/680
 .. _#502: https://github.com/RPi-Distro/python-gpiozero/issues/502
 .. _#470: https://github.com/RPi-Distro/python-gpiozero/issues/470
 .. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481
@@ -56,6 +98,8 @@ Release 1.5.0 (unreleased)
 .. _#629: https://github.com/RPi-Distro/python-gpiozero/issues/629
 .. _#634: https://github.com/RPi-Distro/python-gpiozero/issues/634
 .. _#652: https://github.com/RPi-Distro/python-gpiozero/issues/652
+.. _#593: https://github.com/RPi-Distro/python-gpiozero/issues/593
+.. _#658: https://github.com/RPi-Distro/python-gpiozero/issues/658
 .. _#666: https://github.com/RPi-Distro/python-gpiozero/issues/666
 .. _#668: https://github.com/RPi-Distro/python-gpiozero/issues/668
 .. _#669: https://github.com/RPi-Distro/python-gpiozero/issues/669
@@ -90,7 +134,6 @@ This release is mostly bug-fixes, but a few enhancements have made it in too:
 .. _#617: https://github.com/RPi-Distro/python-gpiozero/issues/617
 .. _#618: https://github.com/RPi-Distro/python-gpiozero/issues/618
 .. _#619: https://github.com/RPi-Distro/python-gpiozero/issues/619
-
 
 Release 1.4.0 (2017-07-26)
 ==========================

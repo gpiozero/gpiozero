@@ -2,14 +2,14 @@
 
 digraph device_pins {
     graph [rankdir=TB];
-    node [shape=rect, shape=filled, fontname=Sans, fontsize=10];
+    node [shape=rect, style=filled, color="#660033", fontname=Sans, fontcolor="#ffffff", fontsize=10];
     edge [fontname=Sans, fontsize=10];
 
     constructor [label="LED(pin_spec, ...,\npin_factory=None)"];
-    pin_factory_kwarg [shape=diamond,label="pin_factory == None?"];
-    default_factory [label="self.pin_factory = Device.pin_factory"];
-    override_factory [label="self.pin_factory = pin_factory"];
-    factory_pin [label="self.pin = self.pin_factory.pin(pin_spec)"];
+    pin_factory_kwarg [shape=diamond,label="pin_factory\nis None?"];
+    default_factory [label="self.pin_factory =\nDevice.pin_factory"];
+    override_factory [label="self.pin_factory =\npin_factory"];
+    factory_pin [label="self.pin =\nself.pin_factory.pin(pin_spec)"];
 
     constructor->pin_factory_kwarg;
     pin_factory_kwarg->default_factory [label="yes"];

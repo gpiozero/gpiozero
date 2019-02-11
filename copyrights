@@ -1,0 +1,208 @@
+#!/usr/bin/env python
+
+import io
+import re
+import sys
+from collections import namedtuple
+from operator import attrgetter
+from itertools import groupby
+from datetime import datetime
+from subprocess import Popen, PIPE, DEVNULL
+from pathlib import Path
+from fnmatch import fnmatch
+from functools import lru_cache
+
+
+Contribution = namedtuple('Contribution', ('author', 'email', 'year', 'filename'))
+Copyright = namedtuple('Copyright', ('author', 'email', 'years'))
+
+
+def main():
+    includes = {
+        '**/*.py',
+        '**/*.rst',
+    }
+    excludes = {
+        'docs/examples/*.py',
+        'docs/license.rst',
+    }
+    prefixes = {
+        '.py': '#',
+        '.rst': '..',
+    }
+    if len(sys.argv) > 1:
+        includes = set(sys.argv[1:])
+    contributions = get_contributions(includes, excludes)
+    for filename, copyrights in contributions.items():
+        filename = Path(filename)
+        update_copyright(filename, copyrights, prefixes[filename.suffix])
+
+
+def get_contributions(include, exclude):
+    sorted_blame = sorted(
+        get_blame(include, exclude),
+        key=lambda c: (c.filename, c.author, c.email)
+    )
+    blame_by_file = {
+        filename: list(file_contributions)
+        for filename, file_contributions in groupby(
+            sorted_blame, key=attrgetter('filename')
+        )
+    }
+    contributors_all_years = {
+        filename: {
+            Copyright(author, email, frozenset(y.year for y in years))
+            for (author, email), years in groupby(
+                file_contributors, key=lambda c: (c.author, c.email)
+            )
+        }
+        for filename, file_contributors in blame_by_file.items()
+    }
+    contributions = {
+        filename: {
+            Copyright(
+                c.author, c.email,
+                (min(c.years), max(c.years))
+                if len(c.years) > 1 else
+                min(c.years)
+            )
+            for c in contributors
+        }
+        for filename, contributors in contributors_all_years.items()
+    }
+    return contributions
+
+
+def get_blame(include, exclude):
+    for filename in get_source_files(include, exclude):
+        blame = Popen(
+            ['git', 'blame', '--line-porcelain', 'HEAD', '--', filename],
+            stdout=PIPE,
+            stderr=PIPE,
+            universal_newlines=True
+        )
+        author = email = year = None
+        for line in blame.stdout:
+            if line.startswith('author '):
+                author = line.split(' ', 1)[1].rstrip()
+            elif line.startswith('author-mail '):
+                email = line.split(' ', 1)[1].rstrip().lstrip('<').rstrip('>')
+            elif line.startswith('author-time '):
+                # Forget the timezone; we only want the year anyway
+                year = datetime.fromtimestamp(int(line.split(' ', 1)[1].rstrip())).year
+            elif line.startswith('filename '):
+                yield Contribution(
+                    author=author, email=email, year=year, filename=filename)
+                author = email = year = None
+        blame.wait()
+        assert blame.returncode == 0
+
+
+def get_source_files(include, exclude):
+    ls_tree = Popen(
+        ['git', 'ls-tree', '-r', '--name-only', 'HEAD'],
+        stdout=PIPE,
+        stderr=DEVNULL,
+        universal_newlines=True
+    )
+    if not include:
+        include = {'*'}
+    for filename in ls_tree.stdout:
+        filename = filename.strip()
+        if any(fnmatch(filename, pattern) for pattern in exclude):
+            continue
+        if any(fnmatch(filename, pattern) for pattern in include):
+            yield filename
+    ls_tree.wait()
+    assert ls_tree.returncode == 0
+
+
+insertion_point = object()
+def parse_source_file(filename, prefix):
+    license = get_license()
+    license_start = license[0]
+    license_end = license[-1]
+    with filename.open('r') as source:
+        state = 'preamble'
+        for linenum, line in enumerate(source, start=1):
+            if state == 'preamble':
+                if linenum == 1 and line.startswith('#!'):
+                    yield line
+                elif linenum < 10 and 'set fileencoding' in line:
+                    yield line
+                elif line.rstrip() == prefix:
+                    pass # skip blank comment lines
+                elif line.startswith(prefix + ' GPIO Zero:'):
+                    pass # skip existing header lines
+                elif line.startswith(prefix + ' Copyright (c)'):
+                    pass # skip existing copyright lines
+                elif line.startswith(prefix + ' ' + license_start):
+                    state = 'license' # skip existing license lines
+                else:
+                    yield insertion_point
+                    state = 'blank'
+            elif state == 'license':
+                if line.startswith(prefix + ' ' + license_end):
+                    yield insertion_point
+                    state = 'blank'
+                    continue
+            if state == 'blank':
+                # Ensure there's a blank line between license and start of the
+                # source body
+                if line.strip():
+                    yield '\n'
+                yield line
+                state = 'body'
+            elif state == 'body':
+                yield line
+
+
+def update_copyright(filename, copyrights, prefix):
+    print('Re-writing {filename}...'.format(filename=filename))
+    license = get_license()
+    copyrights = sorted(
+        copyrights, reverse=True, key=lambda c:
+            (c.years[::-1] if isinstance(c.years, tuple) else (c.years, 0), c.author)
+    )
+    content = []
+    for line in parse_source_file(filename, prefix):
+        if line is insertion_point:
+            if len(content) > 0:
+                content.append(prefix + '\n')
+            content.append(
+                prefix + " GPIO Zero: a library for controlling the "
+                "Raspberry Pi's GPIO pins\n")
+            for copyright in copyrights:
+                try:
+                    start, end = copyright.years
+                except TypeError:
+                    years = str(copyright.years)
+                else:
+                    years = '{start}-{end}'.format(start=start, end=end)
+                content.append(
+                    prefix + " Copyright (c) {years} "
+                    "{copyright.author} <{copyright.email}>\n"
+                    "".format(years=years, copyright=copyright))
+            content.append(prefix + '\n')
+            content.extend(
+                (prefix + ' ' + l).strip() + '\n'
+                for l in license
+            )
+        else:
+            content.append(line)
+    # Yes, if I was doing this "properly" I'd write to a temporary file and
+    # rename it over the target. However, I'm assuming you're running this
+    # under a git clone ... after all, you are ... aren't you?
+    with filename.open('w') as target:
+        for line in content:
+            target.write(line)
+
+
+@lru_cache()
+def get_license():
+    with io.open('LICENSE.rst', 'r') as text:
+        return text.read().splitlines()
+
+
+if __name__ == '__main__':
+    main()

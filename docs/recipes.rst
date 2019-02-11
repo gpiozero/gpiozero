@@ -1,3 +1,35 @@
+.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2016-2018 Ben Nuttall <ben@bennuttall.com>
+.. Copyright (c) 2016 Barry Byford <barry_byford@yahoo.co.uk>
+.. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+..
+.. Redistribution and use in source and binary forms, with or without
+.. modification, are permitted provided that the following conditions are met:
+..
+.. * Redistributions of source code must retain the above copyright notice,
+..   this list of conditions and the following disclaimer.
+..
+.. * Redistributions in binary form must reproduce the above copyright notice,
+..   this list of conditions and the following disclaimer in the documentation
+..   and/or other materials provided with the distribution.
+..
+.. * Neither the name of the copyright holder nor the names of its contributors
+..   may be used to endorse or promote products derived from this software
+..   without specific prior written permission.
+..
+.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.. POSSIBILITY OF SUCH DAMAGE.
+
 =============
 Basic Recipes
 =============
@@ -136,11 +168,11 @@ Run a function every time the button is pressed:
 .. note::
 
     Note that the line ``button.when_pressed = say_hello`` does not run the
-    function ``say_hello``, rather it creates a reference to the function to
-    be called when the button is pressed. Accidental use of
-    ``button.when_pressed = say_hello()`` would set the ``when_pressed`` action
-    to ``None`` (the return value of this function) which would mean nothing
-    happens when the button is pressed.
+    function ``say_hello``, rather it creates a reference to the function to be
+    called when the button is pressed. Accidental use of ``button.when_pressed
+    = say_hello()`` would set the ``when_pressed`` action to :data:`None` (the
+    return value of this function) which would mean nothing happens when the
+    button is pressed.
 
 Similarly, functions can be attached to button releases:
 
@@ -327,7 +359,7 @@ Distance sensor
     In the diagram above, the wires leading from the sensor to the breadboard
     can be omitted; simply plug the sensor directly into the breadboard facing
     the edge (unfortunately this is difficult to illustrate in the diagram
-    without sensor's diagram obscuring most of the breadboard!)
+    without the sensor's diagram obscuring most of the breadboard!)
 
 Have a :class:`DistanceSensor` detect the distance to the nearest object:
 
@@ -440,11 +472,6 @@ Alternatively, the following example is identical, but uses the
 
 .. literalinclude:: examples/rgbled_pot_2.py
     :emphasize-lines: 9
-
-.. note::
-
-    Please note the example above requires Python 3. In Python 2, :func:`zip`
-    doesn't support lazy evaluation so the script will simply hang.
 
 Timed heat lamp
 ===============

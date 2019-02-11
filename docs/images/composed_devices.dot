@@ -18,9 +18,20 @@ digraph classes {
     TrafficLightsBuzzer->Buzzer;
     TrafficLightsBuzzer->Button;
 
+    StatusBoard->LEDBoard;
+    StatusBoard->Button;
+
+    JamHat->LEDBoard;
+    JamHat->Button;
+    JamHat->TonalBuzzer;
+
     Robot->Motor;
     Motor->DigitalOutputDevice;
     Motor->PWMOutputDevice;
+
+    PhaseEnableRobot->PhaseEnableMotor;
+    PhaseEnableMotor->DigitalOutputDevice;
+    PhaseEnableMotor->PWMOutputDevice;
 
     Servo->PWMOutputDevice;
 }

@@ -1,4 +1,35 @@
 # vim: set fileencoding=utf-8:
+#
+# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import (
     unicode_literals,
@@ -50,8 +81,8 @@ def _normalize(values):
 
 def negated(values):
     """
-    Returns the negation of the supplied values (``True`` becomes ``False``,
-    and ``False`` becomes ``True``). For example::
+    Returns the negation of the supplied values (:data:`True` becomes
+    :data:`False`, and :data:`False` becomes :data:`True`). For example::
 
         from gpiozero import Button, LED
         from gpiozero.tools import negated
@@ -214,7 +245,7 @@ def booleanized(values, min_value, max_value, hysteresis=0):
     add `hysteresis`_ which prevents the output value rapidly flipping when
     the input value is fluctuating near the *min_value* or *max_value*
     thresholds. For example, to light an LED only when a potentiometer is
-    between 1/4 and 3/4 of its full range::
+    between ¼ and ¾ of its full range::
 
         from gpiozero import LED, MCP3008
         from gpiozero.tools import booleanized
@@ -239,7 +270,8 @@ def booleanized(values, min_value, max_value, hysteresis=0):
     else:
         hysteresis = float(hysteresis)
     if (max_value - min_value) <= hysteresis:
-        raise ValueError('The gap between min_value and max_value must be larger than hysteresis')
+        raise ValueError('The gap between min_value and max_value must be '
+                         'larger than hysteresis')
     last_state = None
     for v in values:
         if v < min_value:
@@ -272,9 +304,9 @@ def booleanized(values, min_value, max_value, hysteresis=0):
 def all_values(*values):
     """
     Returns the `logical conjunction`_ of all supplied values (the result is
-    only ``True`` if and only if all input values are simultaneously ``True``).
-    One or more *values* can be specified. For example, to light an
-    :class:`LED` only when *both* buttons are pressed::
+    only :data:`True` if and only if all input values are simultaneously
+    :data:`True`). One or more *values* can be specified. For example, to light
+    an :class:`~gpiozero.LED` only when *both* buttons are pressed::
 
         from gpiozero import LED, Button
         from gpiozero.tools import all_values
@@ -299,9 +331,9 @@ def all_values(*values):
 def any_values(*values):
     """
     Returns the `logical disjunction`_ of all supplied values (the result is
-    ``True`` if any of the input values are currently ``True``). One or more
-    *values* can be specified. For example, to light an :class:`LED` when
-    *any* button is pressed::
+    :data:`True` if any of the input values are currently :data:`True`). One or
+    more *values* can be specified. For example, to light an
+    :class:`~gpiozero.LED` when *any* button is pressed::
 
         from gpiozero import LED, Button
         from gpiozero.tools import any_values
@@ -325,8 +357,8 @@ def any_values(*values):
 def averaged(*values):
     """
     Returns the mean of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the average of
-    several potentiometers connected to an :class:`MCP3008` ADC::
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the average
+    of several potentiometers connected to an :class:`~gpiozero.MCP3008` ADC::
 
         from gpiozero import MCP3008, PWMLED
         from gpiozero.tools import averaged
@@ -349,8 +381,9 @@ def averaged(*values):
 def summed(*values):
     """
     Returns the sum of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the (scaled) sum of
-    several potentiometers connected to an :class:`MCP3008` ADC::
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the
+    (scaled) sum of several potentiometers connected to an
+    :class:`~gpiozero.MCP3008` ADC::
 
         from gpiozero import MCP3008, PWMLED
         from gpiozero.tools import summed, scaled
@@ -373,8 +406,9 @@ def summed(*values):
 def multiplied(*values):
     """
     Returns the product of all supplied values. One or more *values* can be
-    specified. For example, to light a :class:`PWMLED` as the product (i.e.
-    multiplication) of several potentiometers connected to an :class:`MCP3008`
+    specified. For example, to light a :class:`~gpiozero.PWMLED` as the product
+    (i.e. multiplication) of several potentiometers connected to an
+    :class:`~gpiozero.MCP3008`
     ADC::
 
         from gpiozero import MCP3008, PWMLED
@@ -644,9 +678,9 @@ def cos_values(period=360):
 
 def alternating_values(initial_value=False):
     """
-    Provides an infinite source of values alternating between ``True`` and
-    ``False``, starting wth *initial_value* (which defaults to ``False``). For
-    example, to produce a flashing LED::
+    Provides an infinite source of values alternating between :data:`True` and
+    :data:`False`, starting wth *initial_value* (which defaults to
+    :data:`False`). For example, to produce a flashing LED::
 
         from gpiozero import LED
         from gpiozero.tools import alternating_values
@@ -698,3 +732,25 @@ def ramping_values(period=360):
         elif value > 1 or value < 0:
             step *= -1
             value += step
+
+def zip_values(*devices):
+    """
+    Provides a source constructed from the values of each item, for example::
+
+        from gpiozero import MCP3008, Robot
+        from gpiozero.tools import zip_values
+        from signal import pause
+
+        robot = Robot(left=(4, 14), right=(17, 18))
+
+        left = MCP3008(0)
+        right = MCP3008(1)
+
+        robot.source = zip_values(left, right)
+
+        pause()
+
+    ``zip_values(left, right)`` is equivalent to ``zip(left.values,
+    right.values)``.
+    """
+    return zip(*[d.values for d in devices])
