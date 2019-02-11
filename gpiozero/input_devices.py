@@ -734,6 +734,9 @@ class DistanceSensor(SmoothedInputDevice):
 
     6. Finally, connect the VCC pin of the sensor to a 5V pin on the Pi.
 
+    Alternatively, 3V3 tolerant sensors (which no not require a voltage divider)
+    are also available.
+
     .. note::
 
         If you do not have the precise values of resistor specified above,
