@@ -43,14 +43,15 @@ Release 1.5.0 (2019-02-11)
 * Further improvements to :class:`DistanceSensor` (ignoring missed edges).
   (`#719`_)
 * Allow :attr:`~Device.source` to take a device object as well as
-  :attr:`~Device.values` or other ``values``. (`#640`_)
+  :attr:`~Device.values` or other ``values``. See :doc:`Source/Values
+  <source_values>`. (`#640`_)
 * Added internal device classes :class:`LoadAverage` and :class:`DiskUsage`
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
 * Added :class:`TonalBuzzer` class with musical notation API :class:`Tone`.
   (`#681`_, `#717`_)
-* Added :class:`PiHutXmasTree` (`#502`_)
+* Added :class:`PiHutXmasTree`. (`#502`_)
 * Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
   (`#680`_, `#681`_, `#717`_)
 * Added support for various pin numbering mechanisms. (`#470`_)
@@ -69,7 +70,7 @@ Release 1.5.0 (2019-02-11)
   Muller. (`#593`_, `#658`_)
 * Minor changes to support Python 3.7, thanks to Russel Winder and Rick Ansell.
   (`#666`_, `#668`_, `#669`_, `#671`_, `#673`_)
-* Added :func:`zip_values` source tool.
+* Added :func:`~tools.zip_values` source tool.
 * Correct row/col numbering logic in :class:`PinInfo`. (`#674`_)
 * Many additional tests, and other improvements to the test suite.
 * Many documentation corrections, additions and clarifications.

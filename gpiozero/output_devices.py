@@ -42,7 +42,7 @@ str = type('')
 
 from threading import Lock
 from itertools import repeat, cycle, chain
-from colorzero import Color, Red, Green, Blue
+from colorzero import Color
 from collections import OrderedDict
 try:
     from math import log2

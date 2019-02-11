@@ -471,7 +471,6 @@ Alternatively, the following example is identical, but uses the
 :attr:`~SourceMixin.source` property rather than a :keyword:`while` loop:
 
 .. literalinclude:: examples/rgbled_pot_2.py
-    :emphasize-lines: 9
 
 Timed heat lamp
 ===============

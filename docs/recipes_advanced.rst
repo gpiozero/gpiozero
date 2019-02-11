@@ -107,7 +107,7 @@ Use two potentiometers to control the left and right motor speed of a robot:
 
 .. literalinclude:: examples/robot_pots_1.py
 
-To include reverse direction, scale the potentiometer values from 0-1 to -1-1:
+To include reverse direction, scale the potentiometer values from 0->1 to -1->1:
 
 .. literalinclude:: examples/robot_pots_2.py
 
@@ -180,7 +180,7 @@ run the following commands:
     with GPIO16 (after disabling its trigger as above) but the power LED is
     hard-wired on.
 
-    On the Pi 3B the LEDs are controlled by a GPIO expander which is not
+    On the Pi 3 the LEDs are controlled by a GPIO expander which is not
     accessible from gpiozero (yet).
 
 
