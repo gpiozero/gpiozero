@@ -47,11 +47,12 @@ which is equivalent to:
 
 .. literalinclude:: examples/led_button_loop.py
 
-except that the former is updated in a background thread.
+except that the former is updated in a background thread, which enables you to
+do other things at the same time.
 
 Every device has a :attr:`~Device.value` property (the device's current value).
-Input devices can only have their values read, but output devices can also have
-their value set to alter the state of the device:
+Input devices (like buttons) can only have their values read, but output devices
+(like LEDs) can also have their value set to alter the state of the device:
 
 .. code-block:: pycon
 
@@ -63,12 +64,15 @@ their value set to alter the state of the device:
     1.0
     >>> led.value = 0  # LED is now off
 
-Every device also has a :attr:`~ValuesMixin.values` property (a generator
+Every device also has a :attr:`~ValuesMixin.values` property (a `generator`_
 continuously yielding the device's current value). All output devices have a
-:attr:`~SourceMixin.source` property which can be set to any iterator. The
-device will iterate over the values of the device provided, setting the
-device's value to each element at a rate specified in the
+:attr:`~SourceMixin.source` property which can be set to any `iterator`_. The
+device will iterate over the values of the device provided, setting the device's
+value to each element at a rate specified in the
 :attr:`~SourceMixin.source_delay` property.
+
+.. _generator: https://wiki.python.org/moin/Generators
+.. _iterator: https://wiki.python.org/moin/Iterator
 
 .. image:: images/source_values/source_values.*
     :align: center
