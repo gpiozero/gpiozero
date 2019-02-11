@@ -208,3 +208,6 @@ class ThresholdOutOfRange(GPIOZeroWarning):
 
 class CallbackSetToNone(GPIOZeroWarning):
     "Warning raised when a callback is set to None when its previous value was None"
+
+class AmbiguousTone(GPIOZeroWarning):
+    "Warning raised when a Tone is constructed with an ambiguous number"

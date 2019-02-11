@@ -198,6 +198,7 @@ def test_cputemperature(mock_factory):
             assert cpu.temperature == 37.0
             assert cpu.value == 0.37
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             with CPUTemperature(min_temp=30, max_temp=40) as cpu:
                 assert cpu.value == 0.7
                 assert not cpu.is_active
@@ -251,6 +252,7 @@ def test_loadaverage(mock_factory):
             assert la.value == 0.6
             assert la.is_active
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             with LoadAverage(min_load_average=1, max_load_average=2,
                          threshold=0.8, minutes=5) as la:
                 assert len(w) == 1
@@ -280,6 +282,7 @@ def test_diskusage(mock_factory):
         with DiskUsage(threshold=50.0) as disk:
             assert disk.is_active == True
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             with DiskUsage(threshold=125) as disk:
                 assert disk.threshold == 125
                 assert not disk.is_active
