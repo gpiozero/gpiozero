@@ -115,7 +115,7 @@ class Tone(float):
         followed by an octave number (0 through 9).
 
         For example `concert A`_, the typical tuning note at 440Hz, would be
-        represent as "A4". One semi-tone above this would be "A#4" or
+        represented as "A4". One semi-tone above this would be "A#4" or
         alternatively "Bb4". Unicode representations of sharp and flat are also
         accepted.
         """

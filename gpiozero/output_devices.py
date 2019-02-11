@@ -559,7 +559,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
             except ValueError:
                 raise ValueError(
                     '%r is too high for %d octaves' %
-                    (self._max_tone, self._octaves))
+                    (self._mid_tone, self._octaves))
             self.value = initial_value
         except:
             self.close()
@@ -568,10 +568,10 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     def __repr__(self):
         try:
             if self.value is None:
-                return '<gpiozero.TonalBuzzer on pin %r, silent>' % (
+                return '<gpiozero.TonalBuzzer object on pin %r, silent>' % (
                     self.pwm_device.pin,)
             else:
-                return '<gpiozero.TonalBuzzer on pin %r, playing %s>' % (
+                return '<gpiozero.TonalBuzzer object on pin %r, playing %s>' % (
                     self.pwm_device.pin, self.tone.note)
         except:
             return super(TonalBuzzer, self).__repr__()
@@ -632,7 +632,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def value(self):
         """
-        Represents the state of the buzzer as a value between 0 (representing
+        Represents the state of the buzzer as a value between -1 (representing
         the minimum note) and 1 (representing the maximum note). This can also
         be the special value :data:`None` indicating that the buzzer is
         currently silent.
