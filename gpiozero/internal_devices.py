@@ -343,8 +343,8 @@ class TimeOfDay(InternalDevice):
 
         pause()
 
-    Note that *start_time* and *end_time* may be reversed, indicating a time
-    period which cross midnight.
+    Note that *start_time* may be greater than *end_time*, indicating a time
+    period which crosses midnight.
 
     :param ~datetime.time start_time:
         The time from which the device will be considered active.
@@ -415,9 +415,10 @@ class TimeOfDay(InternalDevice):
         """
         Returns :data:`True` when the system clock reads between
         :attr:`start_time` and :attr:`end_time`, and :data:`False` otherwise.
-        If :attr:`start_time` and :attr:`end_time` are reversed (indicating a
+        If :attr:`start_time` is greater than :attr:`end_time` (indicating a
         period that crosses midnight), then this returns :data:`True` when the
-        is greater than :attr:`start_time` or less than :attr:`end_time`.
+        current time is greater than :attr:`start_time` or less than
+        :attr:`end_time`.
         """
         now = datetime.utcnow().time() if self.utc else datetime.now().time()
         if self.start_time < self.end_time:
