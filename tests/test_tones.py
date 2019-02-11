@@ -1,5 +1,8 @@
+import warnings
+
 import pytest
 
+from gpiozero.exc import AmbiguousTone
 from gpiozero.tones import Tone
 
 
@@ -8,9 +11,23 @@ def A4(request):
     return Tone.from_frequency(440.0)
 
 def test_tone_init(A4):
-    assert Tone(440) == A4
-    assert Tone("A4") == A4
-    assert Tone(69) == A4
+    with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
+        assert Tone(440) == A4
+        assert Tone("A4") == A4
+        assert len(w) == 0
+        assert Tone(69) == A4
+        assert len(w) == 1
+        assert isinstance(w[0].message, AmbiguousTone)
+    assert Tone(frequency=440) == A4
+    assert Tone(note="A4") == A4
+    assert Tone(midi=69) == A4
+    with pytest.raises(TypeError):
+        Tone()
+    with pytest.raises(TypeError):
+        Tone(foo=1)
+    with pytest.raises(TypeError):
+        Tone(frequency=440, midi=69)
 
 def test_tone_str(A4):
     assert str(A4) == "A4"

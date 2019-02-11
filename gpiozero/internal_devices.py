@@ -407,8 +407,12 @@ class DiskUsage(InternalDevice):
         Returns the current disk usage in percentage.
         """
         df = subprocess.Popen(['df', '--output=pcent', self.filesystem], stdout=subprocess.PIPE)
-        output = df.communicate()[0].split(b'\n')[1].split()[0]
-        return float(output.decode('UTF-8').rstrip('%'))
+        try:
+            output = df.communicate()[0].split(b'\n')[1].split()[0]
+            return float(output.decode('UTF-8').rstrip('%'))
+        finally:
+            df.stdout.close()
+            df.wait()
 
     @property
     def value(self):

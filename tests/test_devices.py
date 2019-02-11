@@ -30,6 +30,7 @@ def test_default_pin_factory_order():
         # ensure pin factory not set in env var
         get.return_value = None
         with warnings.catch_warnings(record=True) as ws:
+            warnings.resetwarnings()
             with pytest.raises(BadPinFactory):
                 device = GPIODevice(2)
             assert len(ws) == 4
@@ -59,6 +60,7 @@ def test_device_bad_pin(mock_factory):
 
 def test_device_non_physical(mock_factory):
     with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
         device = GPIODevice('GPIO37')
         assert len(w) == 1
         assert w[0].category == PinNonPhysical

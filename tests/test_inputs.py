@@ -109,12 +109,14 @@ def test_input_activated_callback_warning(mock_factory):
 
     with DigitalInputDevice(4) as device:
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             device.when_activated = foo()
             assert len(w) == 1
             assert w[0].category == CallbackSetToNone
 
     with DigitalInputDevice(4) as device:
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             device.when_deactivated = foo()
             assert len(w) == 1
             assert w[0].category == CallbackSetToNone
@@ -301,6 +303,7 @@ def test_input_distance_sensor_edge_cases(mock_factory):
     echo_pin = mock_factory.pin(4)
     trig_pin = mock_factory.pin(5)  # note: normal pin
     with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
         with DistanceSensor(4, 5, queue_len=5, max_distance=1, partial=True) as sensor:
             # Test we get a warning about the echo pin being set high
             echo_pin.drive_high()
