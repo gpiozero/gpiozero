@@ -93,6 +93,7 @@ def median(data):
         return (data[i - 1] + data[i]) / 2
 
 
+# Backported from py3.3
 def log2(x):
     return math.log(x, 2)
 

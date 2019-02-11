@@ -140,6 +140,11 @@ def test_mock_pin_pull(mock_factory):
     assert pin.state
     pin.pull = 'down'
     assert not pin.state
+    with pytest.raises(PinInvalidPull):
+        pin.pull = 'foo'
+    pin.function = 'output'
+    with pytest.raises(PinFixedPull):
+        pin.pull = 'floating'
     pin.close()
     pin = Device.pin_factory.pin(2)
     pin.function = 'input'

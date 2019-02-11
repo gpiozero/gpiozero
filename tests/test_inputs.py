@@ -110,10 +110,15 @@ def test_input_is_active_high_externally_pulled_down(mock_factory):
     assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=False>'
     assert not device.is_active
 
-def test_input_invalid_external_pull_configuration(mock_factory):
+def test_input_invalid_pull_up(mock_factory):
     with pytest.raises(PinInvalidState) as exc:
         InputDevice(4, pull_up=None)
     assert str(exc.value) == 'Pin 4 is defined as floating, but "active_state" is not defined'
+
+def test_input_invalid_active_state(mock_factory):
+    with pytest.raises(PinInvalidState) as exc:
+        InputDevice(4, active_state=True)
+    assert str(exc.value) == 'Pin 4 is not floating, but "active_state" is not None'
 
 def test_input_event_activated(mock_factory):
     event = Event()
@@ -141,12 +146,14 @@ def test_input_activated_callback_warning(mock_factory):
 
     with DigitalInputDevice(4) as device:
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             device.when_activated = foo()
             assert len(w) == 1
             assert w[0].category == CallbackSetToNone
 
     with DigitalInputDevice(4) as device:
         with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
             device.when_deactivated = foo()
             assert len(w) == 1
             assert w[0].category == CallbackSetToNone
@@ -323,6 +330,7 @@ def test_input_distance_sensor_edge_cases(mock_factory):
     echo_pin = mock_factory.pin(4)
     trig_pin = mock_factory.pin(5)  # note: normal pin
     with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
         with DistanceSensor(4, 5, queue_len=5, max_distance=1, partial=True) as sensor:
             # Test we get a warning about the echo pin being set high
             echo_pin.drive_high()
