@@ -7,9 +7,9 @@ digraph {
     /* Devices */
     node [shape=rect, style=filled, color="#2980b9", fontname=Sans, fontcolor="#ffffff", fontsize=10];
 
-    output [label="Output Device"]
-    input_1 [label="Input Device 1"]
-    input_2 [label="Input Device 2"]
+    output [label="Output device"]
+    input_1 [label="Input device 1"]
+    input_2 [label="Input device 2"]
 
     /* functions */
     node [shape=oval, style=filled, color="#9ec6e0", fontcolor="#ffffff"];

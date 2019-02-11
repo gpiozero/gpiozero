@@ -5,5 +5,7 @@ digraph {
     node [shape=rect, style=filled, color="#2980b9", fontname=Sans, fontcolor="#ffffff", fontsize=10];
     edge [arrowhead=normal, style=solid];
 
-    Potentiometer -> PWMLED;
+    pwmled [label="PWM LED"]
+
+    Potentiometer -> pwmled;
 }

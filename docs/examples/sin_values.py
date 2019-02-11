@@ -7,7 +7,7 @@ servo = Servo(4)
 buzzer = TonalBuzzer(5)
 
 motor.source = sin_values()
-servo.source = sin_values()
-buzzer.source = sin_values()
+servo.source = motor
+buzzer.source = motor
 
 pause()

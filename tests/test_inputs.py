@@ -183,16 +183,6 @@ def test_input_init_fail(mock_factory):
         DigitalInputDevice(4, bounce_time='foo')
     with pytest.raises(ValueError):
         SmoothedInputDevice(4, threshold='foo')
-    with mock.patch('gpiozero.threads.GPIOThread.start') as start:
-        start.side_effect = RuntimeError('failed to start thread')
-        with pytest.raises(RuntimeError):
-            LineSensor(4)
-        with pytest.raises(RuntimeError):
-            MotionSensor(4)
-        with pytest.raises(RuntimeError):
-            LightSensor(4)
-        with pytest.raises(RuntimeError):
-            DistanceSensor(4, 5)
 
 def test_input_smoothed_attrib(mock_factory):
     pin = mock_factory.pin(4)
