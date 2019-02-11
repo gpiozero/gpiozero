@@ -38,13 +38,14 @@ from __future__ import (
     )
 str = type('')
 
-import warnings
-from mock import patch
 import io
 import errno
+import warnings
+from posix import statvfs_result
 from subprocess import CalledProcessError
 
 import pytest
+from mock import patch
 
 from gpiozero import *
 from datetime import datetime, time
@@ -258,21 +259,15 @@ def test_loadaverage(mock_factory):
                 assert la.load_average == 1.4
 
 def test_diskusage_bad_init(mock_factory):
-    with pytest.raises(ValueError):
+    with pytest.raises(OSError):
         DiskUsage(filesystem='badfilesystem')
 
-def test_diskusage_init(mock_factory):
-    with patch('gpiozero.internal_devices.os.path') as ospath:
-        ospath.ismount.return_value = True
-        with DiskUsage('/home') as disk:
-            assert repr(disk).startswith('<gpiozero.DiskUsage object')
-            assert disk.filesystem == '/home'
-            assert disk.threshold == 90.0
-
 def test_diskusage(mock_factory):
-    with patch('gpiozero.internal_devices.subprocess.Popen.communicate') as communicate:
-        communicate.return_value = (b'Use%\n 52%\n', None)
+    with patch('os.statvfs') as statvfs:
+        statvfs.return_value = statvfs_result((
+            4096, 4096, 100000, 48000, 48000, 0, 0, 0, 0, 255))
         with DiskUsage() as disk:
+            assert repr(disk).startswith('<gpiozero.DiskUsage object')
             assert disk.filesystem == '/'
             assert disk.usage == 52.0
             assert disk.is_active == False

@@ -447,8 +447,8 @@ class DiskUsage(InternalDevice):
         pause()
 
     :param str filesystem:
-        The filesystem for which the disk usage needs to be computed. This
-        defaults to :file:`/`, which is the root filesystem.
+        A path within the filesystem for which the disk usage needs to be
+        computed. This defaults to :file:`/`, which is the root filesystem.
 
     :param float threshold:
         The disk usage percentage above which the device will be considered
@@ -461,8 +461,7 @@ class DiskUsage(InternalDevice):
     """
     def __init__(self, filesystem='/', threshold=90.0, pin_factory=None):
         super(DiskUsage, self).__init__(pin_factory=pin_factory)
-        if not os.path.ismount(filesystem):
-            raise ValueError('invalid filesystem')
+        os.statvfs(filesystem)
         if not 0 <= threshold <= 100:
             warnings.warn(ThresholdOutOfRange(
                 'threshold is outside of the range (0, 100)'))
@@ -481,10 +480,7 @@ class DiskUsage(InternalDevice):
         """
         Returns the current disk usage in percentage.
         """
-        # XXX Use os.statvfs?
-        df = subprocess.Popen(['df', '--output=pcent', self.filesystem], stdout=subprocess.PIPE)
-        output = df.communicate()[0].split(b'\n')[1].split()[0]
-        return float(output.decode('UTF-8').rstrip('%'))
+        return self.value * 100
 
     @property
     def value(self):
@@ -492,7 +488,15 @@ class DiskUsage(InternalDevice):
         Returns the current disk usage as a value between 0.0 and 1.0 by
         dividing :attr:`usage` by 100.
         """
-        return self.usage / 100.0
+        # This slightly convoluted calculation is equivalent to df's "Use%";
+        # it calculates the percentage of FS usage as a proportion of the
+        # space available to *non-root users*. Technically this means it can
+        # exceed 100% (when FS is filled to the point that only root can write
+        # to it), hence the clamp.
+        vfs = os.statvfs(self.filesystem)
+        used = vfs.f_blocks - vfs.f_bfree
+        total = used + vfs.f_bavail
+        return min(1.0, used / total)
 
     @property
     def is_active(self):
