@@ -9,11 +9,14 @@ from __future__ import (
 str = type('')
 
 import re
+import warnings
 from collections import namedtuple
 try:
     from math import log2
 except ImportError:
     from .compat import log2
+
+from .exc import AmbiguousTone
 
 
 class Tone(float):
@@ -36,8 +39,17 @@ class Tone(float):
 
     If you do not want the constructor to guess which format you are using
     (there is some ambiguity between frequencies and MIDI notes at the bottom
-    of the MIDI scale), you can use one of the explicit constructors,
-    :meth:`from_frequency`, :meth:`from_midi`, or :meth:`from_note`.
+    end of the frequencies, from 128Hz down), you can use one of the explicit
+    constructors, :meth:`from_frequency`, :meth:`from_midi`, or
+    :meth:`from_note`, or you can specify a keyword argument when
+    constructing::
+
+        >>> Tone.from_frequency(440.0)
+        >>> Tone.from_midi(69)
+        >>> Tone.from_note('A4')
+        >>> Tone(frequency=440.0)
+        >>> Tone(midi=69)
+        >>> Tone(note='A4')
 
     Several attributes are provided to permit conversion to any of the
     supported construction formats: :attr:`frequency`, :attr:`midi`, and
@@ -61,16 +73,37 @@ class Tone(float):
         r'(?P<semi>[%s]?)'
         r'(?P<octave>[0-9])' % ''.join(semitones.keys()))
 
-    def __new__(cls, value):
-        if isinstance(value, int):
-            if 0 <= value < 128:
-                return cls.from_midi(value)
+    def __new__(cls, value=None, **kwargs):
+        if value is None:
+            if len(kwargs) != 1:
+                raise TypeError('expected precisely one keyword argument')
+            key, value = kwargs.popitem()
+            try:
+                return {
+                    'frequency': cls.from_frequency,
+                    'midi': cls.from_midi,
+                    'note': cls.from_note,
+                }[key](value)
+            except KeyError:
+                raise TypeError('unexpected keyword argument %r' % key)
+        else:
+            if kwargs:
+                raise TypeError('cannot specify keywords with a value')
+            if isinstance(value, (int, float)):
+                if 0 <= value < 128:
+                    warnings.warn(
+                        AmbiguousTone(
+                            "Ambiguous tone specification; assuming you want "
+                            "a MIDI note. To suppress this warning use, e.g. "
+                            "Tone(midi=60), or to obtain a frequency instead "
+                            "use, e.g. Tone(frequency=60)"))
+                    return cls.from_midi(value)
+                else:
+                    return cls.from_frequency(value)
+            elif isinstance(value, (bytes, str)):
+                return cls.from_note(value)
             else:
                 return cls.from_frequency(value)
-        elif isinstance(value, (bytes, str)):
-            return cls.from_note(value)
-        else:
-            return cls.from_frequency(value)
 
     def __str__(self):
         return self.note
