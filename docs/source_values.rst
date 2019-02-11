@@ -203,7 +203,8 @@ In this example, the LED is lit only if both buttons are pressed (like an
 
 .. literalinclude:: examples/combining_sources.py
 
-Similarly, :func:`any_values` with two buttons would simulate an `OR`_ gate.
+Similarly, :func:`~tools.any_values` with two buttons would simulate an `OR`_
+gate.
 
 .. _AND: https://en.wikipedia.org/wiki/AND_gate
 .. _OR: https://en.wikipedia.org/wiki/OR_gate
@@ -302,8 +303,8 @@ To include reverse direction, scale the potentiometer values from 0->1 to -1->1:
 .. literalinclude:: examples/robot_pots_2.py
 
 Note that this example uses the built-in :func:`zip` rather than the tool
-:func:`zip_values` as the :func:`scaled` tool yields values which do not need
-converting, just zipping. Also note that this use of :func:`zip` will not work
-in Python 2, instead use `izip`_.
+:func:`~tools.zip_values` as the :func:`~tools.scaled` tool yields values which
+do not need converting, just zipping. Also note that this use of :func:`zip`
+will not work in Python 2, instead use `izip`_.
 
 .. _izip: https://docs.python.org/2/library/itertools.html#itertools.izip
