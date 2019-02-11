@@ -44,10 +44,10 @@ class Tone(float):
     :meth:`from_note`, or you can specify a keyword argument when
     constructing::
 
-        >>> Tone.from_frequency(440.0)
+        >>> Tone.from_frequency(440)
         >>> Tone.from_midi(69)
         >>> Tone.from_note('A4')
-        >>> Tone(frequency=440.0)
+        >>> Tone(frequency=440)
         >>> Tone(midi=69)
         >>> Tone(note='A4')
 
@@ -91,12 +91,14 @@ class Tone(float):
                 raise TypeError('cannot specify keywords with a value')
             if isinstance(value, (int, float)):
                 if 0 <= value < 128:
-                    warnings.warn(
-                        AmbiguousTone(
-                            "Ambiguous tone specification; assuming you want "
-                            "a MIDI note. To suppress this warning use, e.g. "
-                            "Tone(midi=60), or to obtain a frequency instead "
-                            "use, e.g. Tone(frequency=60)"))
+                    if value > 0:
+                        warnings.warn(
+                            AmbiguousTone(
+                                "Ambiguous tone specification; assuming you "
+                                "want a MIDI note. To suppress this warning "
+                                "use, e.g. Tone(midi=60), or to obtain a "
+                                "frequency instead use, e.g. Tone(frequency="
+                                "60)"))
                     return cls.from_midi(value)
                 else:
                     return cls.from_frequency(value)
