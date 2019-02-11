@@ -110,10 +110,15 @@ def test_input_is_active_high_externally_pulled_down(mock_factory):
     assert repr(device) == '<gpiozero.InputDevice object on pin GPIO4, pull_up=None, is_active=False>'
     assert not device.is_active
 
-def test_input_invalid_external_pull_configuration(mock_factory):
+def test_input_invalid_pull_up(mock_factory):
     with pytest.raises(PinInvalidState) as exc:
         InputDevice(4, pull_up=None)
     assert str(exc.value) == 'Pin 4 is defined as floating, but "active_state" is not defined'
+
+def test_input_invalid_active_state(mock_factory):
+    with pytest.raises(PinInvalidState) as exc:
+        InputDevice(4, active_state=True)
+    assert str(exc.value) == 'Pin 4 is not floating, but "active_state" is not None'
 
 def test_input_event_activated(mock_factory):
     event = Event()

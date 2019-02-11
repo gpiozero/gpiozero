@@ -188,9 +188,25 @@ def test_spi_software_write(mock_factory):
         master.write([0])
         assert test_device.rx_word() == 0
         master.write([2, 0])
+        # 0b 0000_0010 0000_0000
         assert test_device.rx_word() == 512
         master.write([0, 1, 1])
+        # 0b 0000_0000 0000_0001 0000_0001
         assert test_device.rx_word() == 257
+
+def test_spi_software_write_lsb_first(mock_factory):
+    with patch('gpiozero.pins.local.SpiDev', None), \
+            MockSPIDevice(11, 10, 9, 8, lsb_first=True) as test_device, \
+            mock_factory.spi() as master:
+        # lsb_first means the bit-strings above get reversed
+        master.write([0])
+        assert test_device.rx_word() == 0
+        master.write([2, 0])
+        # 0b 0000_0000 0100_0000
+        assert test_device.rx_word() == 64
+        master.write([0, 1, 1])
+        # 0b 1000_0000 1000_0000 0000_0000
+        assert test_device.rx_word() == 8421376
 
 def test_spi_software_clock_mode(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None), \

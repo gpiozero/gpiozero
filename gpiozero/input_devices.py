@@ -114,7 +114,7 @@ class InputDevice(GPIODevice):
         else:
             if active_state is not None:
                 raise PinInvalidState(
-                    'Pin %d is not floating, but "active_state" it not None' %
+                    'Pin %d is not floating, but "active_state" is not None' %
                     self.pin.number)
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state

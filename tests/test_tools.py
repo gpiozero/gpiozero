@@ -93,6 +93,34 @@ def test_negated(mock_factory):
     assert list(negated(())) == []
     assert list(negated((True, True, False, False))) == [False, False, True, True]
 
+def test_negated_source_by_value(mock_factory):
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = negated(btn.values)
+        sleep(epsilon)
+        assert led.value
+        assert not btn.value
+        btn.pin.drive_low()
+        sleep(epsilon)
+        assert not led.value
+        assert btn.value
+
+def test_negated_source_by_device(mock_factory):
+    with LED(2) as led, Button(3) as btn:
+        led.source_delay = 0
+        assert not led.value
+        assert not btn.value
+        led.source = negated(btn)
+        sleep(epsilon)
+        assert led.value
+        assert not btn.value
+        btn.pin.drive_low()
+        sleep(epsilon)
+        assert not led.value
+        assert btn.value
+
 def test_inverted():
     with pytest.raises(ValueError):
         list(inverted((), 0, 0))
@@ -358,6 +386,7 @@ def test_cos_values():
 
 def test_ramping_values():
     assert list(islice(ramping_values(2), 2)) == [0, 1]
+    assert list(islice(ramping_values(3), 5)) == [0, 2/3, 2/3, 0, 2/3]
     assert list(islice(ramping_values(4), 4)) == [0, 0.5, 1, 0.5]
     assert list(islice(ramping_values(8), 8)) == [0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25]
     firstval = None
