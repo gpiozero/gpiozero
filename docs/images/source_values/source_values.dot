@@ -5,8 +5,8 @@ digraph {
     node [shape=rect, style=filled, color="#2980b9", fontname=Sans, fontcolor="#ffffff", fontsize=10];
     edge [arrowhead=normal, style=solid];
 
-    input [label="Input Device"]
-    output [label="Output Device"]
+    input [label="Input device"]
+    output [label="Output device"]
 
     input -> output;
 }

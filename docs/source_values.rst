@@ -69,7 +69,7 @@ continuously yielding the device's current value). All output devices have a
 :attr:`~SourceMixin.source` property which can be set to any `iterator`_. The
 device will iterate over the values of the device provided, setting the device's
 value to each element at a rate specified in the
-:attr:`~SourceMixin.source_delay` property.
+:attr:`~SourceMixin.source_delay` property (the default is 0.01 seconds).
 
 .. _generator: https://wiki.python.org/moin/Generators
 .. _iterator: https://wiki.python.org/moin/Iterator
@@ -86,8 +86,8 @@ example would be a potentiometer controlling the brightness of an LED:
 
 .. literalinclude:: examples/pwmled_pot.py
 
-The way this works is that the device's :attr:`~ValuesMixin.values` property is
-used to feed values into the device. Prior to v1.5, the
+The way this works is that the input device's :attr:`~ValuesMixin.values`
+property is used to feed values into the output device. Prior to v1.5, the
 :attr:`~SourceMixin.source` had to be set directly to a device's
 :attr:`~ValuesMixin.values` property:
 
@@ -99,7 +99,9 @@ used to feed values into the device. Prior to v1.5, the
     the :attr:`~SourceMixin.source` to a device object.
 
 It is also possible to set an output device's :attr:`~SourceMixin.source` to
-another output device, to keep them matching:
+another output device, to keep them matching. In this example, the red LED is
+set to match the button, and the green LED is set to match the red LED, so both
+LEDs will be on when the button is pressed:
 
 .. image:: images/source_values/matching_leds.*
     :align: center
@@ -165,6 +167,11 @@ a flickering candle effect:
 
 .. literalinclude:: examples/random_values.py
 
+Note that in the above example, :attr:`~SourceMixin.source_delay` is used to
+make the LED iterate over the random values slightly slower.
+:attr:`~SourceMixin.source_delay` can be set to a larger number (e.g. 1 for a
+one second delay) or set to 0 to disable any delay.
+
 Some tools take a single source and process its values:
 
 .. image:: images/source_values/source_tool_value_processor.*
@@ -196,7 +203,10 @@ In this example, the LED is lit only if both buttons are pressed (like an
 
 .. literalinclude:: examples/combining_sources.py
 
+Similarly, :func:`any_values` with two buttons would simulate an `OR`_ gate.
+
 .. _AND: https://en.wikipedia.org/wiki/AND_gate
+.. _OR: https://en.wikipedia.org/wiki/OR_gate
 
 While most devices have a :attr:`~Device.value` range between 0 and 1, some have
 a range between -1 and 1 (e.g. :class:`Motor`, :class:`Servo` and
@@ -209,12 +219,14 @@ are ideal for these devices, for example passing :func:`~tools.sin_values` in:
 .. literalinclude:: examples/sin_values.py
 
 In this example, all three devices are following the `sine wave`_. The motor
-ramps up from 0 (stopped) to 1 (full speed forwards), then back down to 0 and on
-to -1 (full speed backwards) in a cycle. Similarly, the servo moves from its mid
-point to the right, then towards the left; and the buzzer starts with its mid
-tone, gradually raises its frequency, to its highest tone, then down towards its
-lowest tone. Note that setting :attr:`~SourceMixin.source_delay` will alter
-the speed at which the device iterates through the values.
+value ramps up from 0 (stopped) to 1 (full speed forwards), then back down to 0
+and on to -1 (full speed backwards) in a cycle. Similarly, the servo moves from
+its mid point to the right, then towards the left; and the buzzer starts with
+its mid tone, gradually raises its frequency, to its highest tone, then down
+towards its lowest tone. Note that setting :attr:`~SourceMixin.source_delay`
+will alter the speed at which the device iterates through the values.
+Alternatively, the tool :func:`~tools.cos_values` could be used to start from -1
+and go up to 1, and so on.
 
 .. _sine wave: https://en.wikipedia.org/wiki/Sine_wave
 
@@ -227,7 +239,7 @@ to react to things like the time of day, or whether a server is available on the
 network. These classes include a :attr:`~ValuesMixin.values` property which can
 be used to feed values into a device's :attr:`~SourceMixin.source`. For example,
 a lamp connected to an :class:`Energenie` socket can be controlled by a
-:class:`TimeOfDay` object so that it is on during the hours of 8am and 8pm:
+:class:`TimeOfDay` object so that it is on between the hours of 8am and 8pm:
 
 .. image:: images/source_values/timed_heat_lamp.*
     :align: center
@@ -288,3 +300,10 @@ To include reverse direction, scale the potentiometer values from 0->1 to -1->1:
     :align: center
 
 .. literalinclude:: examples/robot_pots_2.py
+
+Note that this example uses the built-in :func:`zip` rather than the tool
+:func:`zip_values` as the :func:`scaled` tool yields values which do not need
+converting, just zipping. Also note that this use of :func:`zip` will not work
+in Python 2, instead use `izip`_.
+
+.. _izip: https://docs.python.org/2/library/itertools.html#itertools.izip
