@@ -77,6 +77,9 @@ class EnergenieSocketMissing(CompositeDeviceError, ValueError):
 class EnergenieBadSocket(CompositeDeviceError, ValueError):
     "Error raised when an invalid socket number is passed to :class:`Energenie`"
 
+class EnergenieBadInitialValue(CompositeDeviceError, ValueError):
+    "Error raised when an invalid initial value is passed to :class:`Energenie`"
+
 class SPIError(GPIOZeroError):
     "Base class for errors related to the SPI implementation"
 
