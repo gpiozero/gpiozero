@@ -56,21 +56,21 @@ Button
 ------
 
 .. autoclass:: Button(pin, \*, pull_up=True, active_state=None, bounce_time=None, hold_time=1, hold_repeat=False, pin_factory=None)
-    :members: wait_for_press, wait_for_release, pin, is_pressed, is_held, hold_time, held_time, hold_repeat, pull_up, when_pressed, when_released, when_held
+    :members: wait_for_press, wait_for_release, pin, is_pressed, is_held, hold_time, held_time, hold_repeat, pull_up, when_pressed, when_released, when_held, value
 
 
 LineSensor (TRCT5000)
 ---------------------
 
 .. autoclass:: LineSensor(pin, \*, queue_len=5, sample_rate=100, threshold=0.5, partial=False, pin_factory=None)
-    :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line
+    :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line, value
 
 
 MotionSensor (D-SUN PIR)
 ------------------------
 
 .. autoclass:: MotionSensor(pin, \*, queue_len=1, sample_rate=10, threshold=0.5, partial=False, pin_factory=None)
-    :members: wait_for_motion, wait_for_no_motion, pin, motion_detected, when_motion, when_no_motion
+    :members: wait_for_motion, wait_for_no_motion, pin, motion_detected, when_motion, when_no_motion, value
 
 
 LightSensor (LDR)

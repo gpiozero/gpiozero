@@ -134,9 +134,8 @@ class OutputDevice(SourceMixin, GPIODevice):
     @property
     def value(self):
         """
-        Returns :data:`True` if the device is currently active and
-        :data:`False` otherwise. Setting this property changes the state of the
-        device.
+        Returns 1 if the device is currently active and 0 otherwise. Setting
+        this property changes the state of the device.
         """
         return super(OutputDevice, self).value
 
@@ -214,7 +213,7 @@ class DigitalOutputDevice(OutputDevice):
 
     @property
     def value(self):
-        return self._read()
+        return super(DigitalOutputDevice, self).value
 
     @value.setter
     def value(self, value):
@@ -451,7 +450,7 @@ class PWMOutputDevice(OutputDevice):
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
         """
-        return self._read()
+        return super(PWMOutputDevice, self).value
 
     @value.setter
     def value(self, value):

@@ -191,7 +191,10 @@ class DigitalInputDevice(EventsMixin, InputDevice):
             raise
 
     def _pin_changed(self, ticks, state):
-        self._fire_events(ticks, self._state_to_value(state))
+        # XXX This is a bit of a hack; _fire_events takes *is_active* rather
+        # than *value*. Here we're assuming no-one's overridden the default
+        # implementation of *is_active*.
+        self._fire_events(ticks, bool(self._state_to_value(state)))
 
 
 class SmoothedInputDevice(EventsMixin, InputDevice):
@@ -420,10 +423,6 @@ class Button(HoldMixin, DigitalInputDevice):
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
-
-    .. attribute:: value
-
-        Returns 1 if the button is currently pressed, and 0 if it is not.
     """
     def __init__(
             self, pin=None, pull_up=True, active_state=None, bounce_time=None,
@@ -433,6 +432,13 @@ class Button(HoldMixin, DigitalInputDevice):
             bounce_time=bounce_time, pin_factory=pin_factory)
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
+
+    @property
+    def value(self):
+        """
+        Returns 1 if the button is currently pressed, and 0 if it is not.
+        """
+        return super(Button, self).value
 
 Button.is_pressed = Button.is_active
 Button.pressed_time = Button.active_time
@@ -504,12 +510,6 @@ class LineSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
-
-    .. attribute:: value
-
-        Returns a value representing the average of the queued values. This
-        is nearer 0 for black under the sensor, and nearer 1 for white under
-        the sensor.
     """
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=5,
@@ -524,6 +524,15 @@ class LineSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
+
+    @property
+    def value(self):
+        """
+        Returns a value representing the average of the queued values. This
+        is nearer 0 for black under the sensor, and nearer 1 for white under
+        the sensor.
+        """
+        return super(LineSensor, self).value
 
     @property
     def line_detected(self):
@@ -594,13 +603,6 @@ class MotionSensor(SmoothedInputDevice):
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
-
-    .. attribute:: value
-
-        With the default *queue_len* of 1, this is effectively boolean where 0
-        means no motion detected and 1 means motion detected. If you specify
-        a *queue_len* greater than 1, this will be an averaged value where
-        values closer to 1 imply motion detection.
     """
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=1,
@@ -614,6 +616,16 @@ class MotionSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
+
+    @property
+    def value(self):
+        """
+        With the default *queue_len* of 1, this is effectively boolean where 0
+        means no motion detected and 1 means motion detected. If you specify
+        a *queue_len* greater than 1, this will be an averaged value where
+        values closer to 1 imply motion detection.
+        """
+        return super(MotionSensor, self).value
 
 MotionSensor.motion_detected = MotionSensor.is_active
 MotionSensor.when_motion = MotionSensor.when_activated
@@ -675,10 +687,6 @@ class LightSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #2 EduKit: http://camjam.me/?page_id=623
-
-    .. attribute:: value
-
-        Returns a value between 0 (dark) and 1 (light).
     """
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
@@ -723,6 +731,13 @@ class LightSensor(SmoothedInputDevice):
             return 1.0 - (
                 self.pin_factory.ticks_diff(self._charge_time, start) /
                 self.charge_time_limit)
+
+    @property
+    def value(self):
+        """
+        Returns a value between 0 (dark) and 1 (light).
+        """
+        return super(LightSensor, self).value
 
 LightSensor.light_detected = LightSensor.is_active
 LightSensor.when_light = LightSensor.when_activated
@@ -827,13 +842,6 @@ class DistanceSensor(SmoothedInputDevice):
         which most users can ignore).
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
-
-    .. attribute:: value
-
-        Returns a value between 0, indicating the reflector is either touching
-        the sensor or is sufficiently near that the sensor can't tell the
-        difference, and 1, indicating the reflector is at or beyond the
-        specified *max_distance*.
     """
     ECHO_LOCK = Lock()
 
@@ -915,6 +923,16 @@ class DistanceSensor(SmoothedInputDevice):
         :attr:`max_distance`.
         """
         return self.value * self._max_distance
+
+    @property
+    def value(self):
+        """
+        Returns a value between 0, indicating the reflector is either touching
+        the sensor or is sufficiently near that the sensor can't tell the
+        difference, and 1, indicating the reflector is at or beyond the
+        specified *max_distance*.
+        """
+        return super(DistanceSensor, self).value
 
     @property
     def trigger(self):
