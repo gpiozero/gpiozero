@@ -801,9 +801,10 @@ class DistanceSensor(SmoothedInputDevice):
 
     .. note::
 
-        For improved accuracy, use the pigpio pin driver rather than the
-        default RPi.GPIO driver (pigpio uses DMA sampling for much more precise
-        edge timing). See :ref:`changing-pin-factory` for further information.
+        For improved accuracy, use the pigpio pin driver rather than the default
+        RPi.GPIO driver (pigpio uses DMA sampling for much more precise edge
+        timing). This is particularly relevant if you're using Pi 1 or Pi Zero.
+        See :ref:`changing-pin-factory` for further information.
 
     :type echo: int or str
     :param echo:
