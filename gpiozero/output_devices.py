@@ -605,9 +605,9 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         If :data:`None` (the default), the buzzer will be off initially. Values
         between -1 and 1 can be specified as an initial value for the buzzer.
 
-    :type mid_note: int or str
-    :param mid_note:
-        The note which is represented the device's middle value (0). The
+    :type mid_tone: int or str
+    :param mid_tone:
+        The tone which is represented the device's middle value (0). The
         default is "A4" (MIDI note 69).
 
     :param int octaves:
@@ -723,7 +723,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     def value(self):
         """
         Represents the state of the buzzer as a value between -1 (representing
-        the minimum note) and 1 (representing the maximum note). This can also
+        the minimum tone) and 1 (representing the maximum tone). This can also
         be the special value :data:`None` indicating that the buzzer is
         currently silent.
         """
@@ -760,7 +760,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     @property
     def octaves(self):
         """
-        The number of octaves available (above and below mid_note).
+        The number of octaves available (above and below mid_tone).
         """
         return self._octaves
 
