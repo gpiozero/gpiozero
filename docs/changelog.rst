@@ -49,7 +49,7 @@ Release 1.5.0 (2019-02-12)
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`TonalBuzzer` with :class:`Tone` API for specifying frequencies
+* Added :class:`TonalBuzzer` with :class:`~tones.Tone` API for specifying frequencies
   raw or via MIDI or musical notes. (`#681`_, `#717`_)
 * Added :class:`PiHutXmasTree`. (`#502`_)
 * Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
