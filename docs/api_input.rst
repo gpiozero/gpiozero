@@ -77,14 +77,14 @@ LightSensor (LDR)
 -----------------
 
 .. autoclass:: LightSensor(pin, \*, queue_len=5, charge_time_limit=0.01, threshold=0.1, partial=False, pin_factory=None)
-    :members: wait_for_light, wait_for_dark, pin, light_detected, when_light, when_dark
+    :members: wait_for_light, wait_for_dark, pin, light_detected, when_light, when_dark, value
 
 
 DistanceSensor (HC-SR04)
 ------------------------
 
 .. autoclass:: DistanceSensor(echo, trigger, \*, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False, pin_factory=None)
-    :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance
+    :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance, value
 
 
 Base Classes
