@@ -487,7 +487,7 @@ class LineSensor(SmoothedInputDevice):
         internal queue) per second. Defaults to 100.
 
     :param float threshold:
-        Defaults to 0.5. When the mean of all values in the internal queue
+        Defaults to 0.5. When the average of all values in the internal queue
         rises above this value, the sensor will be considered "active" by the
         :attr:`~SmoothedInputDevice.is_active` property, and all appropriate
         events will be fired.
@@ -579,7 +579,7 @@ class MotionSensor(SmoothedInputDevice):
         internal queue) per second. Defaults to 100.
 
     :param float threshold:
-        Defaults to 0.5. When the mean of all values in the internal queue
+        Defaults to 0.5. When the average of all values in the internal queue
         rises above this value, the sensor will be considered "active" by the
         :attr:`~SmoothedInputDevice.is_active` property, and all appropriate
         events will be fired.
@@ -597,7 +597,10 @@ class MotionSensor(SmoothedInputDevice):
 
     .. attribute:: value
 
-        Returns 1 if the motion is currently detected, and 0 otherwise.
+        With the default *queue_len* of 1, this is effectively boolean where 0
+        means no motion detected and 1 means motion detected. If you specify
+        a *queue_len* greater than 1, this will be an averaged value where
+        values closer to 1 imply motion detection.
     """
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=1,
@@ -656,7 +659,7 @@ class LightSensor(SmoothedInputDevice):
         valued capacitors or LDRs.
 
     :param float threshold:
-        Defaults to 0.1. When the mean of all values in the internal queue
+        Defaults to 0.1. When the average of all values in the internal queue
         rises above this value, the area will be considered "light", and all
         appropriate events will be fired.
 
