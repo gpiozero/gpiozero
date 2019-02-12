@@ -4,6 +4,7 @@
 # Copyright (c) 2017-2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2019 Jeevan M R <14.jeevan@gmail.com>
+# Copyright (c) 2019 Andrew Scheller <github@loowis.durge.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:

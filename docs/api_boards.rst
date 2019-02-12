@@ -2,8 +2,8 @@
 .. Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
 .. Copyright (c) 2018 Claire Pollard <claire.r.pollard@gmail.com>
-.. Copyright (c) 2016 Andrew Scheller <lurch@durge.org>
 .. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
+.. Copyright (c) 2016 Andrew Scheller <lurch@durge.org>
 ..
 .. Redistribution and use in source and binary forms, with or without
 .. modification, are permitted provided that the following conditions are met:
