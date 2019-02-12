@@ -5,7 +5,7 @@ digraph {
     edge [arrowhead=normal, style=solid];
 
     /* Devices */
-    node [shape=rect, style=filled, color="#2980b9", fontname=Sans, fontcolor="#ffffff", fontsize=10];
+    node [shape=rect, style=filled, color="#2980b9", fontname=Arial, fontcolor="#ffffff", fontsize=10];
 
     led [label="Garden light"]
     light [label="Light sensor"]

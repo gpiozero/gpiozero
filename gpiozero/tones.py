@@ -53,7 +53,15 @@ class Tone(float):
 
     Several attributes are provided to permit conversion to any of the
     supported construction formats: :attr:`frequency`, :attr:`midi`, and
-    :attr:`note`.
+    :attr:`note`. Methods are provided to step :meth:`up` or :meth:`down` to
+    adjacent MIDI notes.
+
+    .. warning::
+
+        Currently :class:`Tone` derives from :class:`float` and can be used as
+        a floating point number in most circumstances (addition, subtraction,
+        etc). This part of the API is not yet considered "stable"; i.e. we may
+        decide to enhance / change this behaviour in future versions.
 
     .. _Hz: https://en.wikipedia.org/wiki/Hertz
     .. _concert A: https://en.wikipedia.org/wiki/Concert_pitch

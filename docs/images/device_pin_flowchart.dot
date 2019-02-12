@@ -2,8 +2,8 @@
 
 digraph device_pins {
     graph [rankdir=TB];
-    node [shape=rect, style=filled, color="#660033", fontname=Sans, fontcolor="#ffffff", fontsize=10];
-    edge [fontname=Sans, fontsize=10];
+    node [shape=rect, style=filled, color="#660033", fontname=Arial, fontcolor="#ffffff", fontsize=10];
+    edge [fontname=Arial, fontsize=10];
 
     constructor [label="LED(pin_spec, ...,\npin_factory=None)"];
     pin_factory_kwarg [shape=diamond,label="pin_factory\nis None?"];

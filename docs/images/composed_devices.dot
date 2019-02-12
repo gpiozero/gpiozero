@@ -2,7 +2,7 @@
 
 digraph classes {
     graph [rankdir=TB];
-    node [shape=rect, style=filled, color="#298029", fontname=Sans, fontcolor="#ffffff", fontsize=10];
+    node [shape=rect, style=filled, color="#298029", fontname=Arial, fontcolor="#ffffff", fontsize=10];
     edge [arrowhead=onormal, style=dashed];
 
     RGBLED->LED;

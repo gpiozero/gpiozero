@@ -117,7 +117,7 @@ Broadcom (BCM) layout shown above.
 LED
 ===
 
-.. image:: images/led.*
+.. image:: images/led_bb.*
 
 Turn an :class:`LED` on and off repeatedly:
 
@@ -136,6 +136,8 @@ Alternatively:
 LED with variable brightness
 ============================
 
+.. image:: images/led_bb.*
+
 Any regular LED can have its brightness value set using PWM
 (pulse-width-modulation). In GPIO Zero, this can be achieved using
 :class:`PWMLED` using values between 0 and 1:
@@ -150,7 +152,7 @@ out continuously):
 Button
 ======
 
-.. image:: images/button.*
+.. image:: images/button_bb.*
 
 Check if a :class:`Button` is pressed:
 
@@ -220,6 +222,8 @@ the Raspberry Pi when the button is held for 2 seconds:
 LEDBoard
 ========
 
+.. image:: images/ledboard_bb.*
+
 A collection of LEDs can be accessed using :class:`LEDBoard`:
 
 .. literalinclude:: examples/led_board_1.py
@@ -234,6 +238,8 @@ See more :class:`LEDBoard` examples in the :ref:`advanced LEDBoard recipes
 
 LEDBarGraph
 ===========
+
+.. image:: images/ledbargraph_bb.*
 
 A collection of LEDs can be treated like a bar graph using
 :class:`LEDBarGraph`:
@@ -289,6 +295,8 @@ See `Quick Reaction Game`_ for a full resource.
 
 GPIO Music Box
 ==============
+
+.. image:: images/music_box_bb.*
 
 Each button plays a different sound!
 
@@ -381,7 +389,7 @@ Spin a :class:`Motor` around forwards and backwards:
 Robot
 =====
 
-.. IMAGE TBD
+.. image:: images/robot_bb.*
 
 Make a :class:`Robot` drive around in (roughly) a square:
 
@@ -395,12 +403,16 @@ Make a robot with a distance sensor that runs away when things get within
 Button controlled robot
 =======================
 
+.. image:: images/button_robot_bb.*
+
 Use four GPIO buttons as forward/back/left/right controls for a robot:
 
 .. literalinclude:: examples/robot_buttons_1.py
 
 Keyboard controlled robot
 =========================
+
+.. image:: images/robot_bb.*
 
 Use up/down/left/right keys to control a robot:
 
@@ -425,6 +437,8 @@ suffice:
 
 Motion sensor robot
 ===================
+
+.. image:: images/motion_robot_bb.*
 
 Make a robot drive forward when it detects motion:
 
@@ -461,6 +475,8 @@ analog to digital converter:
 
 Full color LED controlled by 3 potentiometers
 =============================================
+
+.. image:: images/rgbled_pot_bb.*
 
 Wire up three potentiometers (for red, green and blue) and use each of their
 values to make up the colour of the LED:
