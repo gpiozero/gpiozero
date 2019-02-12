@@ -49,11 +49,15 @@ Release 1.5.0 (2019-02-12)
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`TonalBuzzer` class with musical notation API :class:`Tone`.
-  (`#681`_, `#717`_)
+* Added :class:`TonalBuzzer` with :class:`Tone` API for specifying frequencies
+  raw or via MIDI or musical notes. (`#681`_, `#717`_)
 * Added :class:`PiHutXmasTree`. (`#502`_)
 * Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
   (`#680`_, `#681`_, `#717`_)
+* Ensured gpiozero can be imported without a valid pin factory set. (`#591`_,
+  `#713`_)
+* Reduced import time by not computing default pin factory at the point of
+  import. (`#675`_, `#722`_)
 * Added support for various pin numbering mechanisms. (`#470`_)
 * :class:`Motor` instances now use :class:`DigitalOutputDevice` for non-PWM
   pins.
@@ -89,6 +93,10 @@ Release 1.5.0 (2019-02-12)
 .. _#717: https://github.com/RPi-Distro/python-gpiozero/issues/717
 .. _#680: https://github.com/RPi-Distro/python-gpiozero/issues/680
 .. _#502: https://github.com/RPi-Distro/python-gpiozero/issues/502
+.. _#591: https://github.com/RPi-Distro/python-gpiozero/issues/591
+.. _#713: https://github.com/RPi-Distro/python-gpiozero/issues/713
+.. _#675: https://github.com/RPi-Distro/python-gpiozero/issues/675
+.. _#722: https://github.com/RPi-Distro/python-gpiozero/issues/722
 .. _#470: https://github.com/RPi-Distro/python-gpiozero/issues/470
 .. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481
 .. _#366: https://github.com/RPi-Distro/python-gpiozero/issues/366

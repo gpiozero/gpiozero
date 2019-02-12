@@ -30,7 +30,7 @@ class Tone(float):
     representation of a musical note.
 
     All the following constructors are equivalent ways to construct the typical
-    tuning note, `concert A`_ at 440Hz which is MIDI note #69):
+    tuning note, `concert A`_ at 440Hz, which is MIDI note #69:
 
         >>> from gpiozero.tones import Tone
         >>> Tone(440.0)
