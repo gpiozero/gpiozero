@@ -19,10 +19,6 @@ sdist
 develop-eggs
 .installed.cfg
 
-# Installer logs
-pip-log.txt
-get-pip*.py
-
 # Unit test / coverage reports
 coverage
 .coverage*
