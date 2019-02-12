@@ -35,7 +35,7 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 1.5.0 (2019-02-11)
+Release 1.5.0 (2019-02-12)
 ==========================
 
 * Introduced pin event timing to increase accuracy of certain devices such as
