@@ -524,7 +524,7 @@ class GPIODevice(Device):
         self._inactive_state = False
 
     def _state_to_value(self, state):
-        return bool(state == self._active_state)
+        return int(state == self._active_state)
 
     def _read(self):
         try:

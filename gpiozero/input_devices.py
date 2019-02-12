@@ -191,7 +191,10 @@ class DigitalInputDevice(EventsMixin, InputDevice):
             raise
 
     def _pin_changed(self, ticks, state):
-        self._fire_events(ticks, self._state_to_value(state))
+        # XXX This is a bit of a hack; _fire_events takes *is_active* rather
+        # than *value*. Here we're assuming no-one's overridden the default
+        # implementation of *is_active*.
+        self._fire_events(ticks, bool(self._state_to_value(state)))
 
 
 class SmoothedInputDevice(EventsMixin, InputDevice):
@@ -330,8 +333,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
     @property
     def value(self):
         """
-        Returns the mean of the values in the internal queue. This is compared
-        to :attr:`~SmoothedInputDevice.threshold` to determine whether
+        Returns the average of the values in the internal queue. This is
+        compared to :attr:`~SmoothedInputDevice.threshold` to determine whether
         :attr:`is_active` is :data:`True`.
         """
         self._check_open()
@@ -430,6 +433,13 @@ class Button(HoldMixin, DigitalInputDevice):
         self.hold_time = hold_time
         self.hold_repeat = hold_repeat
 
+    @property
+    def value(self):
+        """
+        Returns 1 if the button is currently pressed, and 0 if it is not.
+        """
+        return super(Button, self).value
+
 Button.is_pressed = Button.is_active
 Button.pressed_time = Button.active_time
 Button.when_pressed = Button.when_activated
@@ -440,8 +450,8 @@ Button.wait_for_release = Button.wait_for_inactive
 
 class LineSensor(SmoothedInputDevice):
     """
-    Extends :class:`SmoothedInputDevice` and represents a single pin line sensor
-    like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
+    Extends :class:`SmoothedInputDevice` and represents a single pin line
+    sensor like the TCRT5000 infra-red proximity sensor found in the `CamJam #3
     EduKit`_.
 
     A typical line sensor has a small circuit board with three pins: VCC, GND,
@@ -483,7 +493,7 @@ class LineSensor(SmoothedInputDevice):
         internal queue) per second. Defaults to 100.
 
     :param float threshold:
-        Defaults to 0.5. When the mean of all values in the internal queue
+        Defaults to 0.5. When the average of all values in the internal queue
         rises above this value, the sensor will be considered "active" by the
         :attr:`~SmoothedInputDevice.is_active` property, and all appropriate
         events will be fired.
@@ -514,6 +524,15 @@ class LineSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
+
+    @property
+    def value(self):
+        """
+        Returns a value representing the average of the queued values. This
+        is nearer 0 for black under the sensor, and nearer 1 for white under
+        the sensor.
+        """
+        return super(LineSensor, self).value
 
     @property
     def line_detected(self):
@@ -569,7 +588,7 @@ class MotionSensor(SmoothedInputDevice):
         internal queue) per second. Defaults to 100.
 
     :param float threshold:
-        Defaults to 0.5. When the mean of all values in the internal queue
+        Defaults to 0.5. When the average of all values in the internal queue
         rises above this value, the sensor will be considered "active" by the
         :attr:`~SmoothedInputDevice.is_active` property, and all appropriate
         events will be fired.
@@ -597,6 +616,16 @@ class MotionSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
+
+    @property
+    def value(self):
+        """
+        With the default *queue_len* of 1, this is effectively boolean where 0
+        means no motion detected and 1 means motion detected. If you specify
+        a *queue_len* greater than 1, this will be an averaged value where
+        values closer to 1 imply motion detection.
+        """
+        return super(MotionSensor, self).value
 
 MotionSensor.motion_detected = MotionSensor.is_active
 MotionSensor.when_motion = MotionSensor.when_activated
@@ -642,7 +671,7 @@ class LightSensor(SmoothedInputDevice):
         valued capacitors or LDRs.
 
     :param float threshold:
-        Defaults to 0.1. When the mean of all values in the internal queue
+        Defaults to 0.1. When the average of all values in the internal queue
         rises above this value, the area will be considered "light", and all
         appropriate events will be fired.
 
@@ -702,6 +731,13 @@ class LightSensor(SmoothedInputDevice):
             return 1.0 - (
                 self.pin_factory.ticks_diff(self._charge_time, start) /
                 self.charge_time_limit)
+
+    @property
+    def value(self):
+        """
+        Returns a value between 0 (dark) and 1 (light).
+        """
+        return super(LightSensor, self).value
 
 LightSensor.light_detected = LightSensor.is_active
 LightSensor.when_light = LightSensor.when_activated
@@ -888,6 +924,16 @@ class DistanceSensor(SmoothedInputDevice):
         :attr:`max_distance`.
         """
         return self.value * self._max_distance
+
+    @property
+    def value(self):
+        """
+        Returns a value between 0, indicating the reflector is either touching
+        the sensor or is sufficiently near that the sensor can't tell the
+        difference, and 1, indicating the reflector is at or beyond the
+        specified *max_distance*.
+        """
+        return super(DistanceSensor, self).value
 
     @property
     def trigger(self):
