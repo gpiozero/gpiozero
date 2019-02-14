@@ -2219,7 +2219,7 @@ class JamHat(CompositeOutputDevice):
                               pin_factory=pin_factory),
             button_1=Button(19, pull_up=False, pin_factory=pin_factory),
             button_2=Button(18, pull_up=False, pin_factory=pin_factory),
-            buzzer=TonalBuzzer(20, pin_factory=pin_factory),
+            buzzer=TonalBuzzer(20, octaves=4, pin_factory=pin_factory),
             _order=('lights_1', 'lights_2', 'button_1', 'button_2', 'buzzer'),
             pin_factory=pin_factory
         )
