@@ -2207,7 +2207,7 @@ class JamHat(CompositeOutputDevice):
 
     .. attribute:: buzzer
 
-        The :class:`Buzzer` at the bottom right of the JamHat.
+        The :class:`TonalBuzzer` at the bottom right of the JamHat.
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(JamHat, self).__init__(
