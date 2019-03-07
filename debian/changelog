@@ -1,3 +1,9 @@
+gpiozero (1.5.0ubuntu1) xenial; urgency=medium
+
+  * Ubuntu release
+
+ -- Dave Jones <dave@waveform.org.uk>  Thu, 07 Mar 2019 15:03:34 +0000
+
 gpiozero (1.5.0) stable; urgency=medium
 
   * Introduced pin event timing to increase accuracy of certain devices such

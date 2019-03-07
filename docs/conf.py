@@ -74,6 +74,7 @@ sys.modules['RPIO.Exceptions'] = sys.modules['RPIO'].Exceptions
 sys.modules['pigpio'] = Mock()
 sys.modules['w1thermsensor'] = Mock()
 sys.modules['spidev'] = Mock()
+sys.modules['colorzero'] = Mock()
 
 # -- General configuration ------------------------------------------------
 
