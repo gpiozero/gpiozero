@@ -1787,7 +1787,6 @@ class AngularServo(Servo):
                 "AngularServo angle must be between %s and %s, or None" %
                 (self.min_angle, self.max_angle))
 
-
 class StepperMotor:
     def __init__(self, pins, sequence, delay=3/1000):
         self.pins = pins

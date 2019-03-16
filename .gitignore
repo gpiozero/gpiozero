@@ -5,6 +5,7 @@
 *.swp
 tags
 .idea
+*~
 
 # Packaging detritus
 *.egg
