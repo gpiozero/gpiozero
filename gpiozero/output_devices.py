@@ -1789,6 +1789,45 @@ class AngularServo(Servo):
 
 
 class StepperMotor:
+    """
+    Represents a stepper motor.
+
+    You can the stepper motor that you want. The following motor is used
+    for the example below:
+    
+    http://www.savagehomeautomation.com/projects/raspberry-pi-stepper-motor-control-breakout-board.html
+
+        >>> from time import sleep
+        >>> from gpiozero import StepperMotor
+        >>> 
+        >>> motor = StepperMotor(pins=(18,22,17,27),
+        ...                  sequence=((1, 0, 1, 0),(0, 1, 1, 0),(0, 1, 0, 1),(1, 0, 0, 1)),
+        ...                  delay=4/1000)
+        >>> motor.forward(100) # Move 100 steps
+        >>> motor.backward() # Move unlimited time
+        >>> sleep(3)
+        >>> motor.stop() # Stop motor
+        >>> 
+    
+    :class:`StepperMotor` descendents can also be used as context managers using
+    the :keyword:`with` statement. For example:
+    
+        >>> with StepperMotor(...) as motor:
+                motor.forward(100)
+
+    :type pins: list or tuple
+    :param pins:
+        The list of pins where the stepper motor is connected.
+
+    :type sequence: list or tuple
+    :param sequence:
+        The pins blinking set for move the motor
+
+    :param float delay:
+        The sleep time (in milliseconds) between pin pulses. It controls the
+        velocity of the motor. With a smaller delay, motor will rotate faster,
+        and viceversa. Default to 3 ms
+    """
     def __init__(self, pins, sequence, delay=3/1000):
         self.pins = pins
         self.motor_pins = CompositeDevice(*[OutputDevice(pin) for pin in self.pins])
@@ -1798,7 +1837,10 @@ class StepperMotor:
         
         self.max_steps = None
 
-    def cleanup(self):
+    def stop(self):
+        """
+        Stop the motor
+        """
         if self.thread.is_alive():
             self.state = False
             self.thread.join()
@@ -1807,11 +1849,26 @@ class StepperMotor:
             device.off()
 
         return True
-
+    
+    def cleanup(self):
+        """
+        Shut down the pins used for the motor, for other usage
+        """
+        self.stop()
+        
+        for pin in self.motor_pins:
+            pin.close()
 
     def forward(self, steps=None):
+        """
+        Drive the motor forwards.
+
+        :param int steps:
+            The number os steps to move. If it is not specified, the motor will
+            rotate until :attr:`stop` is called.
+        """
         if self.state:
-            self.cleanup()
+            self.stop()
 
         self.direction = 1
         self.step_counter = 0
@@ -1825,8 +1882,15 @@ class StepperMotor:
             self.thread.join()
 
     def backward(self, steps=None):
+        """
+        Drive the motor backwards.
+
+        :param int steps:
+            The number os steps to move. If it is not specified, the motor will
+            rotate until :attr:`stop` is called.
+        """
         if self.state:
-            self.cleanup()
+            self.stop()
 
         self.direction = -1
         self.step_counter = 0
@@ -1840,6 +1904,9 @@ class StepperMotor:
             self.thread.join()
         
     def _run(self):
+        """
+        Internal function. Do not use.
+        """
         step_count = len(self.seq)
         steps = 0
         
@@ -1862,3 +1929,9 @@ class StepperMotor:
             
             if self.max_steps and steps >= self.max_steps:
                 break
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.cleanup()
