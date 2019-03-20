@@ -1790,9 +1790,10 @@ class AngularServo(Servo):
 
 class StepperMotor:
     """
-    Represents a stepper motor.
+    Represents a stepper motor. You should use any subclass of ``StepperMotor``
+    for predefined attributes and a easy usage.
 
-    You can the stepper motor that you want. The following motor is used
+    You can use the stepper motor that you want. The following motor is used
     for the example below:
     
     http://www.savagehomeautomation.com/projects/raspberry-pi-stepper-motor-control-breakout-board.html
@@ -1814,6 +1815,8 @@ class StepperMotor:
     
         >>> with StepperMotor(...) as motor:
                 motor.forward(100)
+    
+    StepperMotor will close the pins automatically when you go out of the context.
 
     :type pins: list or tuple
     :param pins:
@@ -1828,18 +1831,29 @@ class StepperMotor:
         velocity of the motor. With a smaller delay, motor will rotate faster,
         and viceversa. Default to 3 ms
     """
-    def __init__(self, pins, sequence, delay=3/1000):
-        self.pins = pins
-        self.motor_pins = CompositeDevice(*[OutputDevice(pin) for pin in self.pins])
-        self.seq = sequence
-        self.state = False
-        self.delay = delay
+    def __init__(self, **kwargs):
+        pins = kwargs.pop('pins', None)
+        if pins:
+            self.pins = pins
         
-        self.max_steps = None
+        sequence = kwargs.pop('sequence', None)
+        if sequence:
+            self.sequence = sequence
+        
+        delay = kwargs.pop('delay', None)
+        if delay:
+            self.delay = delay
+        
+        # Initialize pins
+        self.motor_pins = CompositeDevice(*[OutputDevice(pin) for pin in self.pins])
+        self.state = False
+        
+        # Internal variable
+        self._max_steps = None
 
     def stop(self):
         """
-        Stop the motor
+        Stop the motor.
         """
         if self.thread.is_alive():
             self.state = False
@@ -1859,13 +1873,16 @@ class StepperMotor:
         for pin in self.motor_pins:
             pin.close()
 
-    def forward(self, steps=None):
+    def forward(self, speed=1, _start_roatating=True):
         """
-        Drive the motor forwards.
-
-        :param int steps:
-            The number os steps to move. If it is not specified, the motor will
-            rotate until :attr:`stop` is called.
+        Drive the motor forwards. The motor will rotate until :attr:`stop`
+        is called.
+        
+        :param float speed:
+            Any number greater than 0.
+            The relative velocity of the motor, depending of the delay
+            value. If :attr:`speed` is 2, the motor will move 2 time faster
+            than without specific speed.
         """
         if self.state:
             self.stop()
@@ -1875,19 +1892,35 @@ class StepperMotor:
         self.state = True
         self.thread = Thread(target=self._run)
         self.thread.daemon = True
-        self.max_steps = steps
-        self.thread.start()
+        self._max_steps = None
+        self._speed = speed
         
-        if steps:
-            self.thread.join()
-
-    def backward(self, steps=None):
+        if _start_roatating:
+            self.thread.start()
+    
+    def forward_steps(self, steps):
         """
-        Drive the motor backwards.
+        Drive the motor forwards.
 
         :param int steps:
-            The number os steps to move. If it is not specified, the motor will
-            rotate until :attr:`stop` is called.
+            The number os steps to move.
+        """
+        self.forward(_start_roatating=False)
+        self._max_steps = steps
+        self._speed = 1
+        self.thread.start()
+        self.thread.join()
+
+    def backward(self, speed=1, _start_roatating=True):
+        """
+        Drive the motor backwards. The motor will rotate until :attr:`stop`
+        is called.
+        
+        :param float speed:
+            Any number greater than 0.
+            The relative velocity of the motor, depending of the delay
+            value. If :attr:`speed` is 2, the motor will move 2 time faster
+            than without specific speed.
         """
         if self.state:
             self.stop()
@@ -1897,28 +1930,41 @@ class StepperMotor:
         self.state = True
         self.thread = Thread(target=self._run)
         self.thread.daemon = True
-        self.max_steps = steps
+        self._max_steps = None
+        self._speed = speed
+        
+        if _start_roatating:
+            self.thread.start()
+        
+    def backward_steps(self, steps):
+        """
+        Drive the motor backwards.
+
+        :param int steps:
+            The number os steps to move.
+        """
+        self.backward(_start_roatating=False)
+        self._max_steps = steps
+        self._speed = 1
         self.thread.start()
-        
-        if steps:
-            self.thread.join()
-        
+        self.thread.join()
+    
     def _run(self):
         """
         Internal function. Do not use.
         """
-        step_count = len(self.seq)
+        step_count = len(self.sequence)
         steps = 0
         
         while self.state:
             for n in range(len(self.pins)):
                 pin = self.motor_pins[n]
-                if self.seq[self.step_counter][n]:
+                if self.sequence[self.step_counter][n]:
                     pin.on()
                 else:
                     pin.off()
             
-            sleep(self.delay)
+            sleep(self.delay / self._speed)
             steps += 1
             
             self.step_counter += self.direction
@@ -1927,7 +1973,7 @@ class StepperMotor:
             if self.step_counter < 0:
                 self.step_counter = step_count + self.direction
             
-            if self.max_steps and steps >= self.max_steps:
+            if self._max_steps and steps >= self._max_steps:
                 break
     
     def __enter__(self):
@@ -1935,3 +1981,22 @@ class StepperMotor:
     
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.cleanup()
+
+
+class BasicStepperMotor(StepperMotor):
+    """
+    Represents a basic ``StepperMotor`` with predefined attributes for
+    a basic usage.
+    
+    Works fine with the 28BYJ-48 stepper motor.
+    """
+    
+    pins = (18,22,17,27)
+    sequence = ((1, 0, 1, 0),
+                (0, 1, 1, 0),
+                (0, 1, 0, 1),
+                (1, 0, 0, 1))
+    delay = 5/1000
+    
+    def __init__(self, **kwargs):
+        super(BasicStepperMotor, self).__init__(**kwargs)
