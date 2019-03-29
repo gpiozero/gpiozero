@@ -55,7 +55,9 @@ from ..exc import (
     PinInvalidState,
     SPIBadArgs,
     SPIInvalidClockMode,
-    )
+    PinPWMFixedValue,
+    DeviceClosed
+)
 
 
 class PiGPIOFactory(PiFactory):
@@ -525,7 +527,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
-            raise SPIInvalidClockmode("%d is not a valid SPI clock mode" % value)
+            raise SPIInvalidClockMode("%d is not a valid SPI clock mode" % value)
         self._factory.connection.bb_spi_close(self._select_pin)
         self._spi_flags = (self._spi_flags & ~0x3) | value
         self._factory.connection.bb_spi_open(
