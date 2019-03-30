@@ -1830,6 +1830,12 @@ class StepperMotor:
         The sleep time (in milliseconds) between pin pulses. It controls the
         velocity of the motor. With a smaller delay, motor will rotate faster,
         and viceversa. Default to 3 ms
+    
+    :param float steps:
+        The numbers of steps that the motor moves in one revolution.
+    
+    :param int max_rpm:
+        The maximum revolutions per minute that the motor can move.
     """
     def __init__(self, **kwargs):
         pins = kwargs.pop('pins', None)
@@ -1843,6 +1849,14 @@ class StepperMotor:
         delay = kwargs.pop('delay', None)
         if delay:
             self.delay = delay
+        
+        max_rpm = kwargs.pop('max_rpm', None)
+        if max_rpm:
+            self.max_rpm = max_rpm
+        
+        steps = kwargs.pop('steps', None)
+        if steps:
+            self.steps = steps
         
         # Initialize pins
         self.motor_pins = CompositeDevice(*[OutputDevice(pin) for pin in self.pins])
@@ -1879,10 +1893,8 @@ class StepperMotor:
         is called.
         
         :param float speed:
-            Any number greater than 0.
-            The relative velocity of the motor, depending of the delay
-            value. If :attr:`speed` is 2, the motor will move 2 time faster
-            than without specific speed.
+            The speed at which the motor should turn. Can be any value higher
+            than 0 (stopped) and the default 1 (maximum speed) 
         """
         if self.state:
             self.stop()
@@ -1893,7 +1905,7 @@ class StepperMotor:
         self.thread = Thread(target=self._run)
         self.thread.daemon = True
         self._max_steps = None
-        self._speed = speed
+        self._delay = 60 / (speed * self.steps * self.max_rpm) # speed can not be 0
         
         if _start_roatating:
             self.thread.start()
@@ -1917,10 +1929,8 @@ class StepperMotor:
         is called.
         
         :param float speed:
-            Any number greater than 0.
-            The relative velocity of the motor, depending of the delay
-            value. If :attr:`speed` is 2, the motor will move 2 time faster
-            than without specific speed.
+            The speed at which the motor should turn. Can be any value higher
+            than 0 (stopped) and the default 1 (maximum speed) 
         """
         if self.state:
             self.stop()
@@ -1931,7 +1941,7 @@ class StepperMotor:
         self.thread = Thread(target=self._run)
         self.thread.daemon = True
         self._max_steps = None
-        self._speed = speed
+        self._delay = 60 / (speed * self.steps * self.max_rpm) # speed can not be 0
         
         if _start_roatating:
             self.thread.start()
@@ -1964,7 +1974,7 @@ class StepperMotor:
                 else:
                     pin.off()
             
-            sleep(self.delay / self._speed)
+            sleep(self._delay)
             steps += 1
             
             self.step_counter += self.direction
@@ -1996,7 +2006,9 @@ class BasicStepperMotor(StepperMotor):
                 (0, 1, 1, 0),
                 (0, 1, 0, 1),
                 (1, 0, 0, 1))
-    delay = 5/1000
+    delay = 3 / 1000
+    steps = 2048
+    max_rpm = 25
     
     def __init__(self, **kwargs):
         super(BasicStepperMotor, self).__init__(**kwargs)
