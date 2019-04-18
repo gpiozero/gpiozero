@@ -103,7 +103,7 @@ class PiGPIOFactory(PiFactory):
         bug in our pin implementation). A workaround for now is simply to
         restart the :command:`pigpiod` daemon.
 
-    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    .. _pigpio: https://pypi.org/project/pigpio/
     """
     def __init__(self, host=None, port=None):
         super(PiGPIOFactory, self).__init__()
