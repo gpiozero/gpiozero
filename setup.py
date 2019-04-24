@@ -1,10 +1,10 @@
+"A simple interface to GPIO devices with Raspberry Pi."
+
 import io
 import os
 import sys
 import errno
 from setuptools import setup, find_packages
-
-"A simple interface to GPIO devices with Raspberry Pi."
 
 if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):
