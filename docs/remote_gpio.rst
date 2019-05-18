@@ -233,8 +233,9 @@ Or for Python 2:
 Windows
 -------
 
-First, install pip by `following this guide`_. Next, install GPIO Zero and
-pigpio with pip:
+Modern Python installers for Windows bundle pip with Python. If pip is not
+installed, you can `follow this guide`_. Next, install GPIO Zero and pigpio with
+pip:
 
 .. code-block:: doscon
 
@@ -371,5 +372,5 @@ Continue to:
 .. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
 .. _Raspberry Pi Desktop x86: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
-.. _following this guide: https://www.raspberrypi.org/learning/using-pip-on-windows/worksheet/
+.. _follow this guide: https://projects.raspberrypi.org/en/projects/using-pip-on-windows
 .. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/

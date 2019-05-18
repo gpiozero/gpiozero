@@ -525,7 +525,7 @@ Continue to:
 * :doc:`recipes_remote_gpio`
 
 
-.. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
-.. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
-.. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
+.. _Push Button Stop Motion: https://projects.raspberrypi.org/en/projects/push-button-stop-motion
+.. _Quick Reaction Game: https://projects.raspberrypi.org/en/projects/python-quick-reaction-game
+.. _GPIO Music Box: https://projects.raspberrypi.org/en/projects/gpio-music-box
 .. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI
