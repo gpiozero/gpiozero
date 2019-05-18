@@ -377,6 +377,26 @@ Run a function when something gets near the sensor:
 
 .. literalinclude:: examples/distance_sensor_2.py
 
+Servo
+=====
+
+Control a servo between its minimum, mid-point and maximum positions in
+sequence:
+
+.. literalinclude:: examples/servo_1.py
+
+Use a button to control the servo between its minimum and maximum positions:
+
+.. literalinclude:: examples/servo_2.py
+
+Automate the servo to continuously slowly sweep:
+
+.. literalinclude:: examples/servo_sweep.py
+
+Use :class:`AngularServo` so you can specify an angle:
+
+.. literalinclude:: examples/angular_servo.py
+
 Motors
 ======
 

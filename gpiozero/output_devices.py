@@ -1461,6 +1461,7 @@ class Servo(SourceMixin, CompositeDevice):
         from time import sleep
 
         servo = Servo(17)
+
         while True:
             servo.min()
             sleep(1)
@@ -1468,6 +1469,16 @@ class Servo(SourceMixin, CompositeDevice):
             sleep(1)
             servo.max()
             sleep(1)
+
+    You can also use the :attr:`value` property to move the servo to a
+    particular position, on a scale from -1 (mid) to 1 (max) where 0 is the
+    mid-point::
+
+        from gpiozero import Servo
+
+        servo = Servo(17)
+
+        servo.value = 0.5
 
     :type pin: int or str
     :param pin:
