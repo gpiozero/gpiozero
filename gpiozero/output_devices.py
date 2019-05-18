@@ -1471,7 +1471,7 @@ class Servo(SourceMixin, CompositeDevice):
             sleep(1)
 
     You can also use the :attr:`value` property to move the servo to a
-    particular position, on a scale from -1 (mid) to 1 (max) where 0 is the
+    particular position, on a scale from -1 (min) to 1 (max) where 0 is the
     mid-point::
 
         from gpiozero import Servo
