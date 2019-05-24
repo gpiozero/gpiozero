@@ -58,12 +58,47 @@ together:
 
     pause()
 
+You can advance to using the declarative paradigm along with provided
+:doc:`source tools <api_tools>` to describe the behaviour of devices and their
+interactions:
+
+.. code:: python
+
+    from gpiozero import LED, MotionSensor, LightSensor
+    from gpiozero.tools import booleanized, all_values
+    from signal import pause
+
+    garden = LED(17)
+    motion = MotionSensor(4)
+    light = LightSensor(5)
+
+    garden.source = all_values(booleanized(light, 0, 0.1), motion)
+
+    pause()
+
+See the chapter on :doc:`Source/Values <source_values>` for more information.
+
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
 colour LEDs, robotics kits and more. See the `Recipes`_ chapter of the
 documentation for ideas on how to get started.
 
 .. _Recipes: https://gpiozero.readthedocs.io/en/stable/recipes.html
+
+Pin factories
+=============
+
+GPIO Zero builds on a number of underlying pin libraries, including `RPi.GPIO`_
+and `pigpio`_, each with their own benefits. You can select a particular pin
+library to be used, either for the whole script or per-device, according to your
+needs. See the section on :ref:`changing the pin factory
+<changing-pin-factory>`.
+
+.. _RPi.GPIO: https://pypi.org/project/RPi.GPIO/
+.. _pigpio: https://pypi.org/project/pigpio
+
+A "mock pin" interface is also provided for testing purposes. Read more about
+this in the section on :ref:`mock pins <mock-pins>`.
 
 Installation
 ============

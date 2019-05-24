@@ -377,6 +377,26 @@ Run a function when something gets near the sensor:
 
 .. literalinclude:: examples/distance_sensor_2.py
 
+Servo
+=====
+
+Control a servo between its minimum, mid-point and maximum positions in
+sequence:
+
+.. literalinclude:: examples/servo_1.py
+
+Use a button to control the servo between its minimum and maximum positions:
+
+.. literalinclude:: examples/servo_2.py
+
+Automate the servo to continuously slowly sweep:
+
+.. literalinclude:: examples/servo_sweep.py
+
+Use :class:`AngularServo` so you can specify an angle:
+
+.. literalinclude:: examples/angular_servo.py
+
 Motors
 ======
 
@@ -525,7 +545,7 @@ Continue to:
 * :doc:`recipes_remote_gpio`
 
 
-.. _Push Button Stop Motion: https://www.raspberrypi.org/learning/quick-reaction-game/
-.. _Quick Reaction Game: https://www.raspberrypi.org/learning/quick-reaction-game/
-.. _GPIO Music Box: https://www.raspberrypi.org/learning/gpio-music-box/
+.. _Push Button Stop Motion: https://projects.raspberrypi.org/en/projects/push-button-stop-motion
+.. _Quick Reaction Game: https://projects.raspberrypi.org/en/projects/python-quick-reaction-game
+.. _GPIO Music Box: https://projects.raspberrypi.org/en/projects/gpio-music-box
 .. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI
