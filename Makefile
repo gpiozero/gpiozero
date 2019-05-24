@@ -138,20 +138,14 @@ $(DIST_ZIP): $(PY_SOURCES) $(SUBDIRS)
 $(DIST_WHEEL): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py bdist_wheel --universal
 
-$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES)
-	# build the binary package in the parent directory then rename it to
-	# project_version.orig.tar.gz
-	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
-	rename -f 's/$(NAME)-(.*)\.tar\.gz/$(NAME)_$$1\.orig\.tar\.gz/' ../*
+$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(DIST_TAR)
+	cp $(DIST_TAR) ../$(NAME)_$(VER).orig.tar.gz
 	debuild -b
 	mkdir -p dist/
 	for f in $(DIST_DEB); do cp ../$${f##*/} dist/; done
 
-$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES)
-	# build the source package in the parent directory then rename it to
-	# project_version.orig.tar.gz
-	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
-	rename -f 's/$(NAME)-(.*)\.tar\.gz/$(NAME)_$$1\.orig\.tar\.gz/' ../*
+$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(DIST_TAR)
+	cp $(DIST_TAR) ../$(NAME)_$(VER).orig.tar.gz
 	debuild -S
 	mkdir -p dist/
 	for f in $(DIST_DSC); do cp ../$${f##*/} dist/; done
