@@ -90,9 +90,10 @@ class LocalPiFactory(PiFactory):
         self._res_lock = LocalPiFactory._res_lock
 
     def _get_revision(self):
+        revision = None
         try:
             with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-                return struct.unpack(nstr('>L'), f.read(4))[0]
+                revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
         except IOError as e:
             if e.errno != errno.ENOENT:
                 raise e
@@ -100,11 +101,12 @@ class LocalPiFactory(PiFactory):
                 for line in f:
                     if line.startswith('Revision'):
                         revision = line.split(':')[1].strip().lower()
-                        overvolted = revision.startswith('100')
-                        if overvolted:
-                            revision = revision[-4:]
-                        return int(revision, base=16)
-        raise PinUnknownPi('unable to locate Pi revision in /proc/cpuinfo or /proc/device-tree')
+        if revision is not None:
+            overvolted = revision.startswith('100')
+            if overvolted:
+                revision = revision[-4:]
+            return int(revision, base=16)
+        raise PinUnknownPi('unable to locate Pi revision in /proc/device-tree or /proc/cpuinfo')
 
     @staticmethod
     def ticks():

@@ -173,7 +173,7 @@ B3PLUS_BOARD = """\
 {style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:on green}                  |{style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}                  |{style:reset}
 {style:white on green}|                   {style:on black}|C|{style:on green}     {style:black on white}+======{style:reset}
 {style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
 {style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
@@ -203,7 +203,7 @@ A3PLUS_BOARD = """\
 {style:white on green}|        {style:black on white},----.{style:on green}         {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}         {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}         {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:on green}            |{style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}            |{style:reset}
 {style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
 {style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
 {style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
