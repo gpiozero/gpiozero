@@ -359,7 +359,6 @@ class NativePin(LocalPiPin):
         'up':       0b10,
         'down':     0b01,
         'floating': 0b00,
-        'reserved': 0b11,
         }
 
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
