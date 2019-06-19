@@ -2207,7 +2207,7 @@ class JamHat(CompositeOutputDevice):
 
     .. attribute:: buzzer
 
-        The :class:`Buzzer` at the bottom right of the JamHat.
+        The :class:`TonalBuzzer` at the bottom right of the JamHat.
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(JamHat, self).__init__(
@@ -2257,16 +2257,15 @@ class Pibrella(CompositeOutputDevice):
         pb.off()
 
     :param bool pwm:
-        If :data:`True`, construct :class: PWMLED instances to represent each
-        LED on the board. If :data:`False` (the default), construct regular
-        :class:`LED` instances.
+        If :data:`True` (the default), construct :class: PWMLED instances to represent each
+        LED on the board. If :data:`False`, construct regular :class:`LED` instances.
 
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Pibrella: https://www.pibrella.com/
+    .. _Pibrella: http://www.pibrella.com/
 
     .. attribute:: lights, outputs
 
@@ -2300,9 +2299,9 @@ class Pibrella(CompositeOutputDevice):
         
     .. attribute:: buzzer
 
-        The :class:`Buzzer` to the right of the red, yellow and green LEDs.
+        The :class:`TonalBuzzer` to the right of the red, yellow and green LEDs.
     """
-    def __init__(self, pwm=False, pin_factory=None):
+    def __init__(self, pwm=True, pin_factory=None):
         super(Pibrella, self).__init__(
             lights=LEDBoard(red=27, yellow=17, green=4,
                               pwm=pwm, _order=('red', 'yellow', 'green'),
