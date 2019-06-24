@@ -167,9 +167,9 @@ BPLUS_BOARD = """\
 B3PLUS_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
-{style:white on green}| {J8:{style} col1}{style:white on green}      P {style:black on white}| USB{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                    {style:white on black}oo{style:on green}o {style:black on white}+===={style:reset}
-{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}  {style:white on black}oo{style:on green}E    |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}  PoE   {style:black on white}| USB{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {style:white on black}oo{style:on green}   {style:black on white}+===={style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {style:white on black}oo{style:on green}      |{style:reset}
 {style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
@@ -178,6 +178,21 @@ B3PLUS_BOARD = """\
 {style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
 {style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
 {style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+
+B4_BOARD = """\
+{style:white on green},--------------------------------.{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8   {style:black on white}+======{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}  PoE {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {style:white on black}oo{style:on green} {style:black on white}+======{style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {style:white on black}oo{style:on green}      |{style:reset}
+{style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}|USB3{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}                  |{style:reset}
+{style:white on green}|                   {style:on black}|C|{style:on green}       {style:black on white}+===={style:reset}
+{style:white on green}|                   {style:on black}|S|{style:on green}       {style:black on white}|USB2{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|HD|{style:white on green}   {style:black on white}|HD|{style:white on green} {style:on black}|I||A|{style:on green}    {style:black on white}+===={style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|MI|{style:white on green}---{style:black on white}|MI|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
 
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
@@ -930,6 +945,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     13: '3B+',
                     14: '3A+',
                     16: 'CM3+',
+                    17: '4B',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -943,6 +959,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'BCM2835',
                     1: 'BCM2836',
                     2: 'BCM2837',
+                    3: 'BCM2711',
                     }.get(revcode_processor, 'Unknown')
                 manufacturer = {
                     0: 'Sony',
@@ -956,6 +973,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 256,
                     1: 512,
                     2: 1024,
+                    3: 2048,
+                    4: 4096,
                     }.get(revcode_memory, None)
                 released = {
                     'A':      '2013Q1',
@@ -971,6 +990,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3B+':    '2018Q1',
                     '3A+':    '2018Q4',
                     'CM3+':   '2019Q1',
+                    '4B':     '2019Q2',
                     }.get(model, 'Unknown')
                 storage = {
                     'A':    'SD',
@@ -1005,12 +1025,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': True,
                     '3B+':    True,
                     '3A+':    True,
+                    '4B':     True,
                     }.get(model, False)
                 bluetooth = {
                     '3B':     True,
                     'Zero W': True,
                     '3B+':    True,
                     '3A+':    True,
+                    '4B':     True,
                     }.get(model, False)
                 csi = {
                     'Zero':   0 if pcb_revision == '1.0' else 1,
@@ -1044,6 +1066,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': ZERO13_BOARD,
                     '3A+':    A3PLUS_BOARD,
                     '3B+':    B3PLUS_BOARD,
+                    '4B':     B4_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
