@@ -108,6 +108,10 @@ class GPIOMemory(object):
         self.mem.close()
         os.close(self.fd)
 
+    @property
+    def is_2711(self):
+        return self.mem[self.GPPUD_OFFSET_BCM2711:self.GPPUD_OFFSET_BCM2711+4] == [0x67, 0x70, 0x69, 0x6f]
+
     def peripheral_base(self, soc):
         try:
             with io.open('/proc/device-tree/soc/ranges', 'rb') as f:
@@ -377,7 +381,7 @@ class NativePin(LocalPiPin):
         self._clear_shift = number % 32
         self._level_offset = self.factory.mem.GPLEV_OFFSET + (number // 32)
         self._level_shift = number % 32
-        if self.pi_info.soc != "BCM2711":
+        if not self.mem.is_2711:
             self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
         else:
             self._pull_offset = self.factory.mem.GPPUD_OFFSET_BCM2711 + (number // 32)
@@ -442,7 +446,7 @@ class NativePin(LocalPiPin):
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
-        if self.pi_info.soc != "BCM2711":
+        if not self.mem.is_2711:
             self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
             sleep(0.000000214)
             self.factory.mem[self._pull_offset] = 1 << self._pull_shift
