@@ -53,8 +53,7 @@ Usage from Windows and Mac OS is not supported at present.
 Raspberry Pi Desktop x86 setup
 ------------------------------
 
-1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.org (this
-   must be the Stretch release, not the older Jessie image).
+1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.org
 
 2. Write the image to a USB stick or burn to a DVD.
 
