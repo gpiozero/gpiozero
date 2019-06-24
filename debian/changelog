@@ -1,3 +1,10 @@
+gpiozero (1.5.1) stable; urgency=medium
+
+  * Added Raspberry Pi 4 data for "pi_info" and "pinout"
+  * Minor docs updates
+
+ --  <ben@raspberrypi.org>  Mon, 24 Jun 2019 23:11:24 +0100
+
 gpiozero (1.5.0ubuntu1) xenial; urgency=medium
 
   * Ubuntu release
