@@ -69,22 +69,24 @@ class GPIOMemory(object):
         'BCM2835': 0x20000000,
         'BCM2836': 0x3f000000,
         'BCM2837': 0x3f000000,
+        'BCM2711': 0xfe000000
     }
 
     # From BCM2835 data-sheet, p.91
-    GPFSEL_OFFSET   = 0x00 >> 2
-    GPSET_OFFSET    = 0x1c >> 2
-    GPCLR_OFFSET    = 0x28 >> 2
-    GPLEV_OFFSET    = 0x34 >> 2
-    GPEDS_OFFSET    = 0x40 >> 2
-    GPREN_OFFSET    = 0x4c >> 2
-    GPFEN_OFFSET    = 0x58 >> 2
-    GPHEN_OFFSET    = 0x64 >> 2
-    GPLEN_OFFSET    = 0x70 >> 2
-    GPAREN_OFFSET   = 0x7c >> 2
-    GPAFEN_OFFSET   = 0x88 >> 2
-    GPPUD_OFFSET    = 0x94 >> 2
-    GPPUDCLK_OFFSET = 0x98 >> 2
+    GPFSEL_OFFSET        = 0x00 >> 2
+    GPSET_OFFSET         = 0x1c >> 2
+    GPCLR_OFFSET         = 0x28 >> 2
+    GPLEV_OFFSET         = 0x34 >> 2
+    GPEDS_OFFSET         = 0x40 >> 2
+    GPREN_OFFSET         = 0x4c >> 2
+    GPFEN_OFFSET         = 0x58 >> 2
+    GPHEN_OFFSET         = 0x64 >> 2
+    GPLEN_OFFSET         = 0x70 >> 2
+    GPAREN_OFFSET        = 0x7c >> 2
+    GPAFEN_OFFSET        = 0x88 >> 2
+    GPPUD_OFFSET         = 0x94 >> 2
+    GPPUD_OFFSET_BCM2711 = 0xe4 >> 2
+    GPPUDCLK_OFFSET      = 0x98 >> 2
 
     def __init__(self, soc):
         try:
@@ -375,7 +377,10 @@ class NativePin(LocalPiPin):
         self._clear_shift = number % 32
         self._level_offset = self.factory.mem.GPLEV_OFFSET + (number // 32)
         self._level_shift = number % 32
-        self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
+        if self.pi_info.soc != "BCM2711":
+            self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
+        else:
+            self._pull_offset = self.factory.mem.GPPUD_OFFSET_BCM2711 + (number // 32)
         self._pull_shift = number % 32
         self._edge_offset = self.factory.mem.GPEDS_OFFSET + (number // 32)
         self._edge_shift = number % 32
@@ -437,12 +442,15 @@ class NativePin(LocalPiPin):
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
-        self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
-        sleep(0.000000214)
-        self.factory.mem[self._pull_offset] = 1 << self._pull_shift
-        sleep(0.000000214)
-        self.factory.mem[self.factory.mem.GPPUD_OFFSET] = 0
-        self.factory.mem[self._pull_offset] = 0
+        if self.pi_info.soc != "BCM2711":
+            self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
+            sleep(0.000000214)
+            self.factory.mem[self._pull_offset] = 1 << self._pull_shift
+            sleep(0.000000214)
+            self.factory.mem[self.factory.mem.GPPUD_OFFSET] = 0
+            self.factory.mem[self._pull_offset] = 0
+        else:
+            self.factory.mem[self._pull_offset] = value << self._pull_shift
         self._pull = value
 
     def _get_bounce(self):
