@@ -917,19 +917,20 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             revcode_revision     = (revision & 0x0f)
             try:
                 model = {
-                    0:  'A',
-                    1:  'B',
-                    2:  'A+',
-                    3:  'B+',
-                    4:  '2B',
-                    6:  'CM',
-                    8:  '3B',
-                    9:  'Zero',
-                    10: 'CM3',
-                    12: 'Zero W',
-                    13: '3B+',
-                    14: '3A+',
-                    16: 'CM3+',
+                    0x00:  'A',
+                    0x01:  'B',
+                    0x02:  'A+',
+                    0x03:  'B+',
+                    0x04:  '2B',
+                    0x06:  'CM',
+                    0x08:  '3B',
+                    0x09:  'Zero',
+                    0x0a: 'CM3',
+                    0x0b: 'Zero W',
+                    0x0d: '3B+',
+                    0x0e: '3A+',
+                    0x10: 'CM3+',
+                    0x11: '4B',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -943,6 +944,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 'BCM2835',
                     1: 'BCM2836',
                     2: 'BCM2837',
+                    3: 'BCM2711',
                     }.get(revcode_processor, 'Unknown')
                 manufacturer = {
                     0: 'Sony',
@@ -956,6 +958,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     0: 256,
                     1: 512,
                     2: 1024,
+                    3: 2048,
+                    4: 4096,
                     }.get(revcode_memory, None)
                 released = {
                     'A':      '2013Q1',
@@ -971,6 +975,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3B+':    '2018Q1',
                     '3A+':    '2018Q4',
                     'CM3+':   '2019Q1',
+                    '4B':     '2019Q2'
                     }.get(model, 'Unknown')
                 storage = {
                     'A':    'SD',
@@ -989,6 +994,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM3':    1,
                     '3A+':    1,
                     'CM3+':   1,
+                    '4B':     4
                     }.get(model, 4)
                 ethernet = {
                     'A':      0,
@@ -1005,12 +1011,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'Zero W': True,
                     '3B+':    True,
                     '3A+':    True,
+                    '4B':     True
                     }.get(model, False)
                 bluetooth = {
                     '3B':     True,
                     'Zero W': True,
                     '3B+':    True,
                     '3A+':    True,
+                    '4B':     True
                     }.get(model, False)
                 csi = {
                     'Zero':   0 if pcb_revision == '1.0' else 1,
