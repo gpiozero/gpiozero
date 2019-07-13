@@ -57,9 +57,8 @@ from .threads import GPIOThread
 from .tones import Tone
 try:
     from .pins.pigpio import PiGPIOFactory
-    pigpio = True
 except ImportError:
-    pigpio = False
+    PiGPIOFactory = None
 
 class OutputDevice(SourceMixin, GPIODevice):
     """
@@ -1540,7 +1539,7 @@ class Servo(SourceMixin, CompositeDevice):
             pin_factory=pin_factory
         )
         
-        if not pigpio and not isinstance(self.pin_factory, PiGPIOFactory):
+        if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
             warnings.warn(PWMSoftwareFallback(
                 'To reduce servo jitter, use the pigpio pin factory.'
                 'See https://gpiozero.readthedocs.io/en/stable/api_output.html#servo for more info'

@@ -54,9 +54,8 @@ from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
 try:
     from .pins.pigpio import PiGPIOFactory
-    pigpio = True
 except ImportError:
-    pigpio = False
+    PiGPIOFactory = None
 
 class InputDevice(GPIODevice):
     """
@@ -879,7 +878,7 @@ class DistanceSensor(SmoothedInputDevice):
             self.close()
             raise
         
-        if not pigpio and not isinstance(self.pin_factory, PiGPIOFactory):
+        if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
             warnings.warn(PWMSoftwareFallback(
                 'For more accurate readings, use the pigpio pin factory.'
                 'See https://gpiozero.readthedocs.io/en/stable/api_input.html#distancesensor-hc-sr04 for more info'
