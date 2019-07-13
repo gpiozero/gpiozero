@@ -48,15 +48,18 @@ try:
     from math import log2
 except ImportError:
     from .compat import log2
+import warnings
 
 from .exc import OutputDeviceBadValue, GPIOPinMissing, PWMSoftwareFallback
 from .devices import GPIODevice, Device, CompositeDevice
 from .mixins import SourceMixin
 from .threads import GPIOThread
 from .tones import Tone
-from .pins.pigpio import PiGPIOFactory
-
-import warnings
+try:
+    from .pins.pigpio import PiGPIOFactory
+    pigpio = True
+except ImportError:
+    pigpio = False
 
 class OutputDevice(SourceMixin, GPIODevice):
     """
@@ -1537,8 +1540,7 @@ class Servo(SourceMixin, CompositeDevice):
             pin_factory=pin_factory
         )
         
-        #print ('pin_factory is:', self.pin_factory)
-        if not isinstance(self.pin_factory, PiGPIOFactory):
+        if not pigpio and not isinstance(self.pin_factory, PiGPIOFactory):
             warnings.warn(PWMSoftwareFallback(
                 'To reduce servo jitter, use the pigpio pin factory.'
                 'See https://gpiozero.readthedocs.io/en/stable/api_output.html#servo for more info'
