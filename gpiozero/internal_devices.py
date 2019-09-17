@@ -182,8 +182,10 @@ class CPUTemperature(InternalDevice):
         self.min_temp = min_temp
         self.max_temp = max_temp
         if not min_temp <= threshold <= max_temp:
-            warnings.warn(ThresholdOutOfRange(
-                'threshold is outside of the range (min_temp, max_temp)'))
+            warnings.warn(
+                'threshold is outside of the range (min_temp, max_temp)',
+                ThresholdOutOfRange
+                )
         self.threshold = threshold
         self._fire_events(self.pin_factory.ticks(), None)
 
@@ -275,9 +277,11 @@ class LoadAverage(InternalDevice):
         self.min_load_average = min_load_average
         self.max_load_average = max_load_average
         if not min_load_average <= threshold <= max_load_average:
-            warnings.warn(ThresholdOutOfRange(
+            warnings.warn(
                 'threshold is outside of the range (min_load_average, '
-                'max_load_average)'))
+                'max_load_average)',
+                ThresholdOutOfRange
+                )
         self.threshold = threshold
         if minutes not in (1, 5, 15):
             raise ValueError('minutes must be 1, 5 or 15')
@@ -464,8 +468,10 @@ class DiskUsage(InternalDevice):
         super(DiskUsage, self).__init__(pin_factory=pin_factory)
         os.statvfs(filesystem)
         if not 0 <= threshold <= 100:
-            warnings.warn(ThresholdOutOfRange(
-                'threshold is outside of the range (0, 100)'))
+            warnings.warn(
+                'threshold is outside of the range (0, 100)',
+                ThresholdOutOfRange
+                )
         self.filesystem = filesystem
         self.threshold = threshold
         self._fire_events(self.pin_factory.ticks(), None)

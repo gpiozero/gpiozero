@@ -247,7 +247,7 @@ class EventsMixin(object):
     @when_activated.setter
     def when_activated(self, value):
         if self.when_activated is None and value is None:
-            warnings.warn(CallbackSetToNone(callback_warning))
+            warnings.warn(callback_warning, CallbackSetToNone)
         self._when_activated = self._wrap_callback(value)
 
     @property
@@ -269,7 +269,7 @@ class EventsMixin(object):
     @when_deactivated.setter
     def when_deactivated(self, value):
         if self.when_deactivated is None and value is None:
-            warnings.warn(CallbackSetToNone(callback_warning))
+            warnings.warn(callback_warning, CallbackSetToNone)
         self._when_deactivated = self._wrap_callback(value)
 
     @property

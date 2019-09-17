@@ -275,8 +275,9 @@ class Device(ValuesMixin, GPIOBase):
                     return getattr(module, cls_name)()
                 except Exception as e:
                     warnings.warn(
-                        PinFactoryFallback(
-                            'Falling back from %s: %s' % (name, str(e))))
+                        'Falling back from %s: %s' % (name, str(e)),
+                        PinFactoryFallback
+                        )
             raise BadPinFactory('Unable to load any default pin factory!')
         elif name in default_factories:
             # As above, this is a fast-path optimization to avoid loading

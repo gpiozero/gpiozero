@@ -131,12 +131,12 @@ class Tone(float):
                 if 0 <= value < 128:
                     if value > 0:
                         warnings.warn(
-                            AmbiguousTone(
-                                "Ambiguous tone specification; assuming you "
-                                "want a MIDI note. To suppress this warning "
-                                "use, e.g. Tone(midi=60), or to obtain a "
-                                "frequency instead use, e.g. Tone(frequency="
-                                "60)"))
+                            "Ambiguous tone specification; assuming you want a "
+                            "MIDI note. To suppress this warning use, e.g. "
+                            "Tone(midi=60), or to obtain a frequency instead "
+                            "use e.g. Tone(frequency=60)",
+                            AmbiguousTone
+                            )
                     return cls.from_midi(value)
                 else:
                     return cls.from_frequency(value)

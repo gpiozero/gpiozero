@@ -158,9 +158,10 @@ class PiFactory(Factory):
                         )
                 except Exception as e:
                     warnings.warn(
-                        SPISoftwareFallback(
-                            'failed to initialize hardware SPI, falling back to '
-                            'software (error was: %s)' % str(e)))
+                        'failed to initialize hardware SPI, falling back to '
+                        'software (error was: %s)' % str(e),
+                        SPISoftwareFallback
+                        )
                     break
         return self.spi_classes[('software', shared)](self, **spi_args)
 
@@ -266,8 +267,9 @@ class PiPin(Pin):
             factory.pi_info.physical_pin(repr(self))
         except PinNoPins:
             warnings.warn(
-                PinNonPhysical(
-                    'no physical pins exist for %s' % repr(self)))
+                'no physical pins exist for %s' % repr(self),
+                PinNonPhysical
+                )
 
     @property
     def number(self):

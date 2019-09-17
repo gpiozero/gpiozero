@@ -775,7 +775,7 @@ class DistanceSensor(SmoothedInputDevice):
 
     Alternatively, the 3V3 tolerant HC-SR04P sensor (which does not require a
     voltage divider) will work with this class.
-    
+
 
     .. note::
 
@@ -877,12 +877,14 @@ class DistanceSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
-        
+
         if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
-            warnings.warn(PWMSoftwareFallback(
-                'For more accurate readings, use the pigpio pin factory.'
-                'See https://gpiozero.readthedocs.io/en/stable/api_input.html#distancesensor-hc-sr04 for more info'
-            ))
+            warnings.warn(
+                'For more accurate readings, use the pigpio pin factory. See '
+                'https://gpiozero.readthedocs.io/en/stable/api_input.html#distancesensor-hc-sr04 '
+                'for more info',
+                PWMSoftwareFallback
+            )
 
     def close(self):
         try:
@@ -973,7 +975,7 @@ class DistanceSensor(SmoothedInputDevice):
         # horribly wrong (most likely at the hardware level)
         if self.pin.state:
             if not self._echo.wait(0.05):
-                warnings.warn(DistanceSensorNoEcho('echo pin set high'))
+                warnings.warn('echo pin set high', DistanceSensorNoEcho)
                 return None
         self._echo.clear()
         self._echo_fall = None
@@ -1003,7 +1005,7 @@ class DistanceSensor(SmoothedInputDevice):
             else:
                 # The echo pin never rose or fell; something's gone horribly
                 # wrong
-                warnings.warn(DistanceSensorNoEcho('no echo received'))
+                warnings.warn('no echo received', DistanceSensorNoEcho)
                 return None
 
     @property
