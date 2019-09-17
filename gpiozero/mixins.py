@@ -376,7 +376,6 @@ class EventsMixin(object):
                 self._fire_deactivated()
 
 
-
 class HoldMixin(EventsMixin):
     """
     Extends :class:`EventsMixin` to add the :attr:`when_held` event and the

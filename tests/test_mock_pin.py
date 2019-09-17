@@ -200,5 +200,4 @@ def test_mock_pin_edges(mock_factory):
     pin.drive_high()
     assert pin.state
     assert not fired.is_set()
-
     assert pin.edges == 'falling'
