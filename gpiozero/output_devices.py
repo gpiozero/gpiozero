@@ -1225,12 +1225,15 @@ class Motor(SourceMixin, CompositeDevice):
             )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         devices = OrderedDict((
-            ('forward_device', PinClass(forward)),
-            ('backward_device', PinClass(backward)),
+            ('forward_device', PinClass(forward, pin_factory=pin_factory)),
+            ('backward_device', PinClass(backward, pin_factory=pin_factory)),
         ))
         if enable is not None:
-            devices['enable_device'] = DigitalOutputDevice(enable,
-                                                           initial_value=True)
+            devices['enable_device'] = DigitalOutputDevice(
+                enable,
+                initial_value=True,
+                pin_factory=pin_factory
+            )
         super(Motor, self).__init__(_order=devices.keys(), **devices)
 
     @property
