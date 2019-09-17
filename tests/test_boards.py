@@ -1531,3 +1531,13 @@ def test_jamhat_pwm(mock_factory, pwm):
             False, False,           # buttons
             None                    # buzzer
         )
+
+def test_release_events_fire(mock_factory, capsys):
+    with ButtonBoard(2, 3) as bb:
+        pins = bb[0].pin, bb[1].pin
+        bb.when_pressed = lambda: print("bb pressed", tuple(bb.value))
+        bb.when_released = lambda: print("bb released", tuple(bb.value))
+        pins[0].drive_low()
+        assert capsys.readouterr().out == "bb pressed (1, 0)\n"
+        pins[0].drive_high()
+        assert capsys.readouterr().out == "bb released (0, 0)\n"

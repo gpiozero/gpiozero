@@ -200,15 +200,5 @@ def test_mock_pin_edges(mock_factory):
     pin.drive_high()
     assert pin.state
     assert not fired.is_set()
+
     assert pin.edges == 'falling'
-
-
-def test_release_events_fire(mock_factory, capsys):
-    bb = ButtonBoard(2, 3)
-    pins = bb[0].pin, bb[1].pin
-    bb.when_pressed = lambda: print("bb pressed", tuple(bb.value))
-    bb.when_released = lambda: print("bb released", tuple(bb.value))
-    pins[0].drive_low()
-    assert capsys.readouterr().out == "bb pressed (1, 0)\n"
-    pins[0].drive_high()
-    assert capsys.readouterr().out == "bb released (0, 0)\n"

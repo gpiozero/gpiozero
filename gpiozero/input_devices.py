@@ -107,6 +107,7 @@ class InputDevice(GPIODevice):
         except:
             self.close()
             raise
+
         if pull_up is None:
             if active_state is None:
                 raise PinInvalidState(
