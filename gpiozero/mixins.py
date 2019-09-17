@@ -363,7 +363,7 @@ class EventsMixin(object):
         elif old_active != new_active:
             self._last_changed = ticks
             if hasattr(new_active, '_asdict'):
-                condition = any([getattr(new_active, i) for i in new_active._asdict()])
+                condition = any(new_active._asdict().values())
             else:
                 condition = new_active
             if condition:
