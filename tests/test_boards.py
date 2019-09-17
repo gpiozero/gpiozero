@@ -1538,6 +1538,8 @@ def test_release_events_fire(mock_factory, capsys):
         bb.when_pressed = lambda: print("bb pressed", tuple(bb.value))
         bb.when_released = lambda: print("bb released", tuple(bb.value))
         pins[0].drive_low()
-        assert capsys.readouterr().out == "bb pressed (1, 0)\n"
+        out, _ = capsys.readouterr()
+        assert out == "bb pressed (1, 0)\n"
         pins[0].drive_high()
-        assert capsys.readouterr().out == "bb released (0, 0)\n"
+        out, _ = capsys.readouterr()
+        assert out == "bb released (0, 0)\n"
