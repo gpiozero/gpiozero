@@ -1483,9 +1483,9 @@ class FishDish(CompositeOutputDevice):
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(FishDish, self).__init__(
-            TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
-            Buzzer(8, pin_factory=pin_factory),
-            Button(7, pull_up=False, pin_factory=pin_factory),
+            lights=TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
+            buzzer=Buzzer(8, pin_factory=pin_factory),
+            button=Button(7, pull_up=False, pin_factory=pin_factory),
             _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
@@ -1520,9 +1520,9 @@ class TrafficHat(CompositeOutputDevice):
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
-            TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
-            Buzzer(5, pin_factory=pin_factory),
-            Button(25, pin_factory=pin_factory),
+            lights=TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
+            buzzer=Buzzer(5, pin_factory=pin_factory),
+            button=Button(25, pin_factory=pin_factory),
             _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
