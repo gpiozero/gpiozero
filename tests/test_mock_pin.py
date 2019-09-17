@@ -201,4 +201,4 @@ def test_mock_pin_edges(mock_factory):
     assert pin.state
     assert not fired.is_set()
     assert pin.edges == 'falling'
-    
+
