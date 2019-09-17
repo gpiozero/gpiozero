@@ -2237,3 +2237,97 @@ class JamHat(CompositeOutputDevice):
         """
         self.buzzer.value = None
         super(JamHat, self).off()
+
+class Pibrella(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice` for the `Cyntech/Pimoroni Pibrella`_ board.
+
+    There are 3 LEDs, one button, a tonal buzzer, 4 outputs (with LEDs) and 4 inputs. The pins are fixed.
+    Usage::
+
+        from gpiozero import Pibrella
+
+        pb = Pibrella()
+
+        pb.lights.on()
+        pb.button.wait_for_press()
+        pb.outputs.on()
+        pb.buzzer.play('A4')
+        pb.inputs.a.wait_for_press()
+        pb.off()
+
+    :param bool pwm:
+        If :data:`True` (the default), construct :class: PWMLED instances to represent each
+        LED on the board. If :data:`False`, construct regular :class:`LED` instances.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pibrella: http://www.pibrella.com/
+
+    .. attribute:: lights, outputs
+
+        :class:`LEDBoard` instance representing the three LEDs  
+
+        .. attribute:: red, yellow, green
+
+            :class:`LED` or :class:`PWMLED` instances representing the red,
+            yellow, and green LEDs .
+
+    .. attribute:: outputs
+    
+        :class:`LEDBoard` instance representing the 4 Out headers on the Pibrella.  
+        The Out headers are connected via a ULN2008 to 5V and can drive motors/steppers
+
+        .. attribute:: e, f, g, h
+
+            :class:`LED` or :class:`PWMLED` instances representing the 4 outputs .
+        
+    .. attribute:: button
+
+        The red :class:`Button` objects on the Pibrella.
+
+    .. attribute:: inputs
+    
+        :class:`ButtonBoard` instance representing the 4 In headers on the Pibrella.  
+
+        .. attribute:: a, b, c, d
+
+            :class:`Button` instances representing the 4 inputs .
+        
+    .. attribute:: buzzer
+
+        The :class:`TonalBuzzer` to the right of the red, yellow and green LEDs.
+    """
+    def __init__(self, pwm=True, pin_factory=None):
+        super(Pibrella, self).__init__(
+            lights=LEDBoard(red=27, yellow=17, green=4,
+                              pwm=pwm, _order=('red', 'yellow', 'green'),
+                              pin_factory=pin_factory),
+            inputs=ButtonBoard(a=9, b=7, c=8, d=10,
+                              pull_up = False, _order=('a', 'b', 'c', 'd'),
+                              pin_factory=pin_factory),
+            button=Button(11, pull_up=False, pin_factory=pin_factory),
+            outputs=LEDBoard(e=22, f=23, g=24, h=25,
+                              pwm=pwm, _order=('e', 'f', 'g', 'h'),
+                              pin_factory=pin_factory),
+            buzzer=TonalBuzzer(18, pin_factory=pin_factory),
+            _order=('lights', 'inputs', 'button', 'outputs', 'buzzer'),
+            pin_factory=pin_factory
+        )
+
+    def on(self):
+        """
+        Turns all the LEDs on and makes the buzzer play its mid tone.
+        """
+        self.buzzer.value = 0
+        super(Pibrella, self).on()
+
+    def off(self):
+        """
+        Turns all the LEDs off and stops the buzzer.
+        """
+        self.buzzer.value = None
+        super(Pibrella, self).off()
