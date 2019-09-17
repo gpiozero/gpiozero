@@ -49,7 +49,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
-from collections import OrderedDict, Counter
+from collections import OrderedDict, Counter, namedtuple
 
 from .exc import (
     DeviceClosed,
@@ -2242,25 +2242,40 @@ class JamHat(CompositeOutputDevice):
 
 class Pibrella(CompositeOutputDevice):
     """
-    Extends :class:`CompositeOutputDevice` for the `Cyntech/Pimoroni Pibrella`_ board.
+    Extends :class:`CompositeOutputDevice` for the Cyntech/Pimoroni `Pibrella`_
+    board.
 
-    There are 3 LEDs, one button, a tonal buzzer, 4 outputs (with LEDs) and 4 inputs. The pins are fixed.
+    The Pibrella board comprises 3 LEDs, a button, a tonal buzzer, four general
+    purpose input channels, and four general purpose output channels (with LEDs).
+
+    This class exposes the LEDs, button and buzzer.
+
     Usage::
 
         from gpiozero import Pibrella
 
         pb = Pibrella()
 
-        pb.lights.on()
         pb.button.wait_for_press()
-        pb.outputs.on()
+        pb.lights.on()
         pb.buzzer.play('A4')
-        pb.inputs.a.wait_for_press()
         pb.off()
 
+    The four input and output channels are not provided by this class. Instead,
+    you can create GPIO Zero devices using these pins::
+
+        from gpiozero import Pibrella, LED, Button
+
+        pb = Pibrella()
+        btn = Button(pb.inputs.a)
+        led = LED(pb.outputs.e)
+
+        btn.when_pressed = led.on
+
     :param bool pwm:
-        If :data:`True` (the default), construct :class: PWMLED instances to represent each
-        LED on the board. If :data:`False`, construct regular :class:`LED` instances.
+        If :data:`True` (the default), construct :class: PWMLED instances to
+        represent each LED on the board. If :data:`False`, construct regular
+        :class:`LED` instances.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -2269,56 +2284,48 @@ class Pibrella(CompositeOutputDevice):
 
     .. _Pibrella: http://www.pibrella.com/
 
-    .. attribute:: lights, outputs
+    .. attribute:: lights
 
-        :class:`LEDBoard` instance representing the three LEDs  
+        :class:`TrafficLights` instance representing the three LEDs
 
-        .. attribute:: red, yellow, green
+        .. attribute:: red, amber, green
 
             :class:`LED` or :class:`PWMLED` instances representing the red,
-            yellow, and green LEDs .
+            amber, and green LEDs
 
-    .. attribute:: outputs
-    
-        :class:`LEDBoard` instance representing the 4 Out headers on the Pibrella.  
-        The Out headers are connected via a ULN2008 to 5V and can drive motors/steppers
-
-        .. attribute:: e, f, g, h
-
-            :class:`LED` or :class:`PWMLED` instances representing the 4 outputs .
-        
     .. attribute:: button
 
-        The red :class:`Button` objects on the Pibrella.
+        The red :class:`Button` objects on the Pibrella
+
+    .. attribute:: buzzer
+
+        A :class:`TonalBuzzer` object representing the buzzer
 
     .. attribute:: inputs
-    
-        :class:`ButtonBoard` instance representing the 4 In headers on the Pibrella.  
+
+        A namedtuple of the input pin numbers
 
         .. attribute:: a, b, c, d
 
-            :class:`Button` instances representing the 4 inputs .
-        
-    .. attribute:: buzzer
+    .. attribute:: outputs
 
-        The :class:`TonalBuzzer` to the right of the red, yellow and green LEDs.
+        A namedtuple of the output pin numbers
+
+        .. attribute:: e, f, g, h
     """
     def __init__(self, pwm=True, pin_factory=None):
         super(Pibrella, self).__init__(
-            lights=LEDBoard(red=27, yellow=17, green=4,
-                              pwm=pwm, _order=('red', 'yellow', 'green'),
-                              pin_factory=pin_factory),
-            inputs=ButtonBoard(a=9, b=7, c=8, d=10,
-                              pull_up = False, _order=('a', 'b', 'c', 'd'),
+            lights=TrafficLights(red=27, amber=17, green=4, pwm=pwm,
                               pin_factory=pin_factory),
             button=Button(11, pull_up=False, pin_factory=pin_factory),
-            outputs=LEDBoard(e=22, f=23, g=24, h=25,
-                              pwm=pwm, _order=('e', 'f', 'g', 'h'),
-                              pin_factory=pin_factory),
             buzzer=TonalBuzzer(18, pin_factory=pin_factory),
-            _order=('lights', 'inputs', 'button', 'outputs', 'buzzer'),
+            _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
+        InputPins = namedtuple('InputPins', ['a', 'b', 'c', 'd'])
+        OutputPins = namedtuple('OutputPins', ['e', 'f', 'g', 'h'])
+        self.inputs = InputPins(a=9, b=7, c=8, d=10)
+        self.outputs = OutputPins(e=22, f=23, g=24, h=25)
 
     def on(self):
         """
