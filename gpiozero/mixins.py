@@ -353,23 +353,50 @@ class EventsMixin(object):
         # ticks and *is_active* (i.e. the device's .is_active) as opposed to a
         # pin's *state*.
         old_active, self._last_active = self._last_active, new_active
+        breakpoint()
         if old_active is None:
-            # Initial "indeterminate" state; set events but don't fire
-            # callbacks as there's not necessarily an edge
             if new_active:
                 self._active_event.set()
             else:
                 self._inactive_event.set()
-        elif old_active != new_active:
-            self._last_changed = ticks
-            if new_active:
-                self._inactive_event.clear()
-                self._active_event.set()
-                self._fire_activated()
-            else:
-                self._active_event.clear()
-                self._inactive_event.set()
-                self._fire_deactivated()
+        elif hasattr(new_active, 'device_1'):
+            for i in range(2):
+                if getattr(old_active, 'device_{}'.format(i)) is None:
+                    # Initial "indeterminate" state; set events but don't fire
+                    # callbacks as there's not necessarily an edge
+                    if getattr(new_active, 'device_{}'.format(i)):
+                        self._active_event.set()
+                    else:
+                        self._inactive_event.set()
+                elif getattr(old_active, 'device_{}'.format(i)) != getattr(new_active, 'device_{}'.format(i)):
+                    self._last_changed = ticks
+                    if getattr(new_active, 'device_{}'.format(i)):
+                        self._inactive_event.clear()
+                        self._active_event.set()
+                        self._fire_activated()
+                    else:
+                        self._active_event.clear()
+                        self._inactive_event.set()
+                        self._fire_deactivated()
+        else:
+            if old_active is None:
+                # Initial "indeterminate" state; set events but don't fire
+                # callbacks as there's not necessarily an edge
+                if new_active:
+                    self._active_event.set()
+                else:
+                    self._inactive_event.set()
+            elif old_active != new_active:
+                self._last_changed = ticks
+                if new_active:
+                    self._inactive_event.clear()
+                    self._active_event.set()
+                    self._fire_activated()
+                else:
+                    self._active_event.clear()
+                    self._inactive_event.set()
+                    self._fire_deactivated()
+
 
 
 class HoldMixin(EventsMixin):
