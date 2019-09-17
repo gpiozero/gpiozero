@@ -194,7 +194,7 @@ class SPIWarning(GPIOZeroWarning):
 class SPISoftwareFallback(SPIWarning):
     "Warning raised when falling back to the SPI software implementation"
 
-class PWMSoftwareFallback(SPIWarning):
+class PWMSoftwareFallback(PinPWMError):
     "Warning raised when falling back to the PWM software implementation"
 
 class PinWarning(GPIOZeroWarning):
@@ -214,4 +214,3 @@ class CallbackSetToNone(GPIOZeroWarning):
 
 class AmbiguousTone(GPIOZeroWarning):
     "Warning raised when a Tone is constructed with an ambiguous number"
-
