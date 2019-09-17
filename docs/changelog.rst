@@ -87,40 +87,40 @@ Release 1.5.0 (2019-02-12)
 * Automatic documentation class hierarchy diagram generation.
 * Automatic copyright attribution in source files.
 
-.. _#640: https://github.com/RPi-Distro/python-gpiozero/issues/640
-.. _#664: https://github.com/RPi-Distro/python-gpiozero/issues/664
-.. _#665: https://github.com/RPi-Distro/python-gpiozero/issues/665
-.. _#719: https://github.com/RPi-Distro/python-gpiozero/issues/719
-.. _#532: https://github.com/RPi-Distro/python-gpiozero/issues/532
-.. _#714: https://github.com/RPi-Distro/python-gpiozero/issues/714
+.. _#640: https://github.com/gpiozero/gpiozero/issues/640
+.. _#664: https://github.com/gpiozero/gpiozero/issues/664
+.. _#665: https://github.com/gpiozero/gpiozero/issues/665
+.. _#719: https://github.com/gpiozero/gpiozero/issues/719
+.. _#532: https://github.com/gpiozero/gpiozero/issues/532
+.. _#714: https://github.com/gpiozero/gpiozero/issues/714
 .. _colorzero: https://colorzero.readthedocs.io/en/stable
-.. _#655: https://github.com/RPi-Distro/python-gpiozero/issues/655
-.. _#681: https://github.com/RPi-Distro/python-gpiozero/issues/681
-.. _#717: https://github.com/RPi-Distro/python-gpiozero/issues/717
-.. _#680: https://github.com/RPi-Distro/python-gpiozero/issues/680
-.. _#502: https://github.com/RPi-Distro/python-gpiozero/issues/502
-.. _#591: https://github.com/RPi-Distro/python-gpiozero/issues/591
-.. _#713: https://github.com/RPi-Distro/python-gpiozero/issues/713
-.. _#675: https://github.com/RPi-Distro/python-gpiozero/issues/675
-.. _#722: https://github.com/RPi-Distro/python-gpiozero/issues/722
-.. _#470: https://github.com/RPi-Distro/python-gpiozero/issues/470
-.. _#481: https://github.com/RPi-Distro/python-gpiozero/issues/481
-.. _#366: https://github.com/RPi-Distro/python-gpiozero/issues/366
+.. _#655: https://github.com/gpiozero/gpiozero/issues/655
+.. _#681: https://github.com/gpiozero/gpiozero/issues/681
+.. _#717: https://github.com/gpiozero/gpiozero/issues/717
+.. _#680: https://github.com/gpiozero/gpiozero/issues/680
+.. _#502: https://github.com/gpiozero/gpiozero/issues/502
+.. _#591: https://github.com/gpiozero/gpiozero/issues/591
+.. _#713: https://github.com/gpiozero/gpiozero/issues/713
+.. _#675: https://github.com/gpiozero/gpiozero/issues/675
+.. _#722: https://github.com/gpiozero/gpiozero/issues/722
+.. _#470: https://github.com/gpiozero/gpiozero/issues/470
+.. _#481: https://github.com/gpiozero/gpiozero/issues/481
+.. _#366: https://github.com/gpiozero/gpiozero/issues/366
 .. _pinout.xyz: https://pinout.xyz
-.. _#604: https://github.com/RPi-Distro/python-gpiozero/issues/604
-.. _#627: https://github.com/RPi-Distro/python-gpiozero/issues/627
-.. _#704: https://github.com/RPi-Distro/python-gpiozero/issues/704
-.. _#629: https://github.com/RPi-Distro/python-gpiozero/issues/629
-.. _#634: https://github.com/RPi-Distro/python-gpiozero/issues/634
-.. _#652: https://github.com/RPi-Distro/python-gpiozero/issues/652
-.. _#593: https://github.com/RPi-Distro/python-gpiozero/issues/593
-.. _#658: https://github.com/RPi-Distro/python-gpiozero/issues/658
-.. _#666: https://github.com/RPi-Distro/python-gpiozero/issues/666
-.. _#668: https://github.com/RPi-Distro/python-gpiozero/issues/668
-.. _#669: https://github.com/RPi-Distro/python-gpiozero/issues/669
-.. _#671: https://github.com/RPi-Distro/python-gpiozero/issues/671
-.. _#673: https://github.com/RPi-Distro/python-gpiozero/issues/673
-.. _#674: https://github.com/RPi-Distro/python-gpiozero/issues/674
+.. _#604: https://github.com/gpiozero/gpiozero/issues/604
+.. _#627: https://github.com/gpiozero/gpiozero/issues/627
+.. _#704: https://github.com/gpiozero/gpiozero/issues/704
+.. _#629: https://github.com/gpiozero/gpiozero/issues/629
+.. _#634: https://github.com/gpiozero/gpiozero/issues/634
+.. _#652: https://github.com/gpiozero/gpiozero/issues/652
+.. _#593: https://github.com/gpiozero/gpiozero/issues/593
+.. _#658: https://github.com/gpiozero/gpiozero/issues/658
+.. _#666: https://github.com/gpiozero/gpiozero/issues/666
+.. _#668: https://github.com/gpiozero/gpiozero/issues/668
+.. _#669: https://github.com/gpiozero/gpiozero/issues/669
+.. _#671: https://github.com/gpiozero/gpiozero/issues/671
+.. _#673: https://github.com/gpiozero/gpiozero/issues/673
+.. _#674: https://github.com/gpiozero/gpiozero/issues/674
 
 Release 1.4.1 (2018-02-20)
 ==========================
@@ -138,17 +138,17 @@ This release is mostly bug-fixes, but a few enhancements have made it in too:
 * A variety of other minor enhancements, largely thanks to Andrew Scheller!
   (`#479`_, `#489`_, `#491`_, `#492`_)
 
-.. _#306: https://github.com/RPi-Distro/python-gpiozero/issues/306
-.. _#386: https://github.com/RPi-Distro/python-gpiozero/issues/386
-.. _#479: https://github.com/RPi-Distro/python-gpiozero/issues/479
-.. _#489: https://github.com/RPi-Distro/python-gpiozero/issues/489
-.. _#491: https://github.com/RPi-Distro/python-gpiozero/issues/491
-.. _#492: https://github.com/RPi-Distro/python-gpiozero/issues/492
-.. _#584: https://github.com/RPi-Distro/python-gpiozero/issues/584
-.. _#595: https://github.com/RPi-Distro/python-gpiozero/issues/595
-.. _#617: https://github.com/RPi-Distro/python-gpiozero/issues/617
-.. _#618: https://github.com/RPi-Distro/python-gpiozero/issues/618
-.. _#619: https://github.com/RPi-Distro/python-gpiozero/issues/619
+.. _#306: https://github.com/gpiozero/gpiozero/issues/306
+.. _#386: https://github.com/gpiozero/gpiozero/issues/386
+.. _#479: https://github.com/gpiozero/gpiozero/issues/479
+.. _#489: https://github.com/gpiozero/gpiozero/issues/489
+.. _#491: https://github.com/gpiozero/gpiozero/issues/491
+.. _#492: https://github.com/gpiozero/gpiozero/issues/492
+.. _#584: https://github.com/gpiozero/gpiozero/issues/584
+.. _#595: https://github.com/gpiozero/gpiozero/issues/595
+.. _#617: https://github.com/gpiozero/gpiozero/issues/617
+.. _#618: https://github.com/gpiozero/gpiozero/issues/618
+.. _#619: https://github.com/gpiozero/gpiozero/issues/619
 
 Release 1.4.0 (2017-07-26)
 ==========================
@@ -176,27 +176,27 @@ Release 1.4.0 (2017-07-26)
 * Fixed a variety of packaging issues (`#535`_, `#518`_, `#519`_)
 * Improved text in factory fallback warnings (`#572`_)
 
-.. _#279: https://github.com/RPi-Distro/python-gpiozero/issues/279
-.. _#421: https://github.com/RPi-Distro/python-gpiozero/issues/421
-.. _#434: https://github.com/RPi-Distro/python-gpiozero/issues/434
-.. _#459: https://github.com/RPi-Distro/python-gpiozero/issues/459
-.. _#465: https://github.com/RPi-Distro/python-gpiozero/issues/465
-.. _#468: https://github.com/RPi-Distro/python-gpiozero/issues/468
-.. _#469: https://github.com/RPi-Distro/python-gpiozero/issues/469
-.. _#484: https://github.com/RPi-Distro/python-gpiozero/issues/484
-.. _#497: https://github.com/RPi-Distro/python-gpiozero/issues/497
-.. _#504: https://github.com/RPi-Distro/python-gpiozero/issues/504
-.. _#518: https://github.com/RPi-Distro/python-gpiozero/issues/518
-.. _#519: https://github.com/RPi-Distro/python-gpiozero/issues/519
-.. _#520: https://github.com/RPi-Distro/python-gpiozero/issues/520
-.. _#523: https://github.com/RPi-Distro/python-gpiozero/issues/523
-.. _#529: https://github.com/RPi-Distro/python-gpiozero/issues/529
-.. _#535: https://github.com/RPi-Distro/python-gpiozero/issues/535
-.. _#558: https://github.com/RPi-Distro/python-gpiozero/issues/558
-.. _#565: https://github.com/RPi-Distro/python-gpiozero/issues/565
-.. _#572: https://github.com/RPi-Distro/python-gpiozero/issues/572
-.. _#575: https://github.com/RPi-Distro/python-gpiozero/issues/575
-.. _#576: https://github.com/RPi-Distro/python-gpiozero/issues/576
+.. _#279: https://github.com/gpiozero/gpiozero/issues/279
+.. _#421: https://github.com/gpiozero/gpiozero/issues/421
+.. _#434: https://github.com/gpiozero/gpiozero/issues/434
+.. _#459: https://github.com/gpiozero/gpiozero/issues/459
+.. _#465: https://github.com/gpiozero/gpiozero/issues/465
+.. _#468: https://github.com/gpiozero/gpiozero/issues/468
+.. _#469: https://github.com/gpiozero/gpiozero/issues/469
+.. _#484: https://github.com/gpiozero/gpiozero/issues/484
+.. _#497: https://github.com/gpiozero/gpiozero/issues/497
+.. _#504: https://github.com/gpiozero/gpiozero/issues/504
+.. _#518: https://github.com/gpiozero/gpiozero/issues/518
+.. _#519: https://github.com/gpiozero/gpiozero/issues/519
+.. _#520: https://github.com/gpiozero/gpiozero/issues/520
+.. _#523: https://github.com/gpiozero/gpiozero/issues/523
+.. _#529: https://github.com/gpiozero/gpiozero/issues/529
+.. _#535: https://github.com/gpiozero/gpiozero/issues/535
+.. _#558: https://github.com/gpiozero/gpiozero/issues/558
+.. _#565: https://github.com/gpiozero/gpiozero/issues/565
+.. _#572: https://github.com/gpiozero/gpiozero/issues/572
+.. _#575: https://github.com/gpiozero/gpiozero/issues/575
+.. _#576: https://github.com/gpiozero/gpiozero/issues/576
 
 Release 1.3.2 (2017-03-03)
 ==========================
@@ -230,15 +230,15 @@ make a Raspbian freeze. As always, thanks to the community - your suggestions
 and PRs have been brilliant and even if we don't take stuff exactly as is, it's
 always great to see your ideas. Onto 1.4!
 
-.. _#248: https://github.com/RPi-Distro/python-gpiozero/issues/248
-.. _#289: https://github.com/RPi-Distro/python-gpiozero/issues/289
-.. _#294: https://github.com/RPi-Distro/python-gpiozero/issues/294
-.. _#295: https://github.com/RPi-Distro/python-gpiozero/issues/295
-.. _#305: https://github.com/RPi-Distro/python-gpiozero/issues/305
-.. _#320: https://github.com/RPi-Distro/python-gpiozero/issues/320
-.. _#340: https://github.com/RPi-Distro/python-gpiozero/issues/340
-.. _#359: https://github.com/RPi-Distro/python-gpiozero/issues/359
-.. _#385: https://github.com/RPi-Distro/python-gpiozero/issues/385
+.. _#248: https://github.com/gpiozero/gpiozero/issues/248
+.. _#289: https://github.com/gpiozero/gpiozero/issues/289
+.. _#294: https://github.com/gpiozero/gpiozero/issues/294
+.. _#295: https://github.com/gpiozero/gpiozero/issues/295
+.. _#305: https://github.com/gpiozero/gpiozero/issues/305
+.. _#320: https://github.com/gpiozero/gpiozero/issues/320
+.. _#340: https://github.com/gpiozero/gpiozero/issues/340
+.. _#359: https://github.com/gpiozero/gpiozero/issues/359
+.. _#385: https://github.com/gpiozero/gpiozero/issues/385
 
 Release 1.2.0 (2016-04-10)
 ==========================
@@ -278,23 +278,23 @@ reports in this version. Of particular note:
 As always, many thanks to the whole community - we look forward to hearing from
 you more in 1.3!
 
-.. _#69: https://github.com/RPi-Distro/python-gpiozero/issues/69
-.. _#109: https://github.com/RPi-Distro/python-gpiozero/issues/109
-.. _#114: https://github.com/RPi-Distro/python-gpiozero/issues/114
-.. _#115: https://github.com/RPi-Distro/python-gpiozero/issues/115
-.. _#130: https://github.com/RPi-Distro/python-gpiozero/issues/130
-.. _#140: https://github.com/RPi-Distro/python-gpiozero/issues/140
-.. _#162: https://github.com/RPi-Distro/python-gpiozero/issues/162
-.. _#164: https://github.com/RPi-Distro/python-gpiozero/issues/164
-.. _#175: https://github.com/RPi-Distro/python-gpiozero/issues/175
-.. _#180: https://github.com/RPi-Distro/python-gpiozero/issues/180
-.. _#181: https://github.com/RPi-Distro/python-gpiozero/issues/181
-.. _#182: https://github.com/RPi-Distro/python-gpiozero/issues/182
-.. _#189: https://github.com/RPi-Distro/python-gpiozero/issues/189
-.. _#193: https://github.com/RPi-Distro/python-gpiozero/issues/193
-.. _#222: https://github.com/RPi-Distro/python-gpiozero/issues/222
-.. _#229: https://github.com/RPi-Distro/python-gpiozero/issues/229
-.. _#251: https://github.com/RPi-Distro/python-gpiozero/issues/251
+.. _#69: https://github.com/gpiozero/gpiozero/issues/69
+.. _#109: https://github.com/gpiozero/gpiozero/issues/109
+.. _#114: https://github.com/gpiozero/gpiozero/issues/114
+.. _#115: https://github.com/gpiozero/gpiozero/issues/115
+.. _#130: https://github.com/gpiozero/gpiozero/issues/130
+.. _#140: https://github.com/gpiozero/gpiozero/issues/140
+.. _#162: https://github.com/gpiozero/gpiozero/issues/162
+.. _#164: https://github.com/gpiozero/gpiozero/issues/164
+.. _#175: https://github.com/gpiozero/gpiozero/issues/175
+.. _#180: https://github.com/gpiozero/gpiozero/issues/180
+.. _#181: https://github.com/gpiozero/gpiozero/issues/181
+.. _#182: https://github.com/gpiozero/gpiozero/issues/182
+.. _#189: https://github.com/gpiozero/gpiozero/issues/189
+.. _#193: https://github.com/gpiozero/gpiozero/issues/193
+.. _#222: https://github.com/gpiozero/gpiozero/issues/222
+.. _#229: https://github.com/gpiozero/gpiozero/issues/229
+.. _#251: https://github.com/gpiozero/gpiozero/issues/251
 
 Release 1.1.0 (2016-02-08)
 ==========================
@@ -319,22 +319,22 @@ Release 1.1.0 (2016-02-08)
 * Loads of new ADC chips supported (many thanks to GitHub user pcopa!)
   (`#150`_)
 
-.. _#80: https://github.com/RPi-Distro/python-gpiozero/issues/80
-.. _#82: https://github.com/RPi-Distro/python-gpiozero/issues/82
-.. _#94: https://github.com/RPi-Distro/python-gpiozero/issues/94
-.. _#101: https://github.com/RPi-Distro/python-gpiozero/issues/101
-.. _#118: https://github.com/RPi-Distro/python-gpiozero/issues/118
-.. _#119: https://github.com/RPi-Distro/python-gpiozero/issues/119
-.. _#126: https://github.com/RPi-Distro/python-gpiozero/issues/126
-.. _#135: https://github.com/RPi-Distro/python-gpiozero/issues/135
-.. _#141: https://github.com/RPi-Distro/python-gpiozero/issues/141
-.. _#143: https://github.com/RPi-Distro/python-gpiozero/issues/143
-.. _#150: https://github.com/RPi-Distro/python-gpiozero/issues/150
-.. _#154: https://github.com/RPi-Distro/python-gpiozero/issues/154
-.. _#161: https://github.com/RPi-Distro/python-gpiozero/issues/161
-.. _#168: https://github.com/RPi-Distro/python-gpiozero/issues/168
-.. _#174: https://github.com/RPi-Distro/python-gpiozero/issues/174
-.. _#176: https://github.com/RPi-Distro/python-gpiozero/issues/176
+.. _#80: https://github.com/gpiozero/gpiozero/issues/80
+.. _#82: https://github.com/gpiozero/gpiozero/issues/82
+.. _#94: https://github.com/gpiozero/gpiozero/issues/94
+.. _#101: https://github.com/gpiozero/gpiozero/issues/101
+.. _#118: https://github.com/gpiozero/gpiozero/issues/118
+.. _#119: https://github.com/gpiozero/gpiozero/issues/119
+.. _#126: https://github.com/gpiozero/gpiozero/issues/126
+.. _#135: https://github.com/gpiozero/gpiozero/issues/135
+.. _#141: https://github.com/gpiozero/gpiozero/issues/141
+.. _#143: https://github.com/gpiozero/gpiozero/issues/143
+.. _#150: https://github.com/gpiozero/gpiozero/issues/150
+.. _#154: https://github.com/gpiozero/gpiozero/issues/154
+.. _#161: https://github.com/gpiozero/gpiozero/issues/161
+.. _#168: https://github.com/gpiozero/gpiozero/issues/168
+.. _#174: https://github.com/gpiozero/gpiozero/issues/174
+.. _#176: https://github.com/gpiozero/gpiozero/issues/176
 
 Release 1.0.0 (2015-11-16)
 ==========================
@@ -346,11 +346,11 @@ Release 1.0.0 (2015-11-16)
 * :class:`Motor` PWM devices exposed, and :class:`Robot` motor devices exposed
   (`#107`_)
 
-.. _#44: https://github.com/RPi-Distro/python-gpiozero/issues/44
-.. _#58: https://github.com/RPi-Distro/python-gpiozero/issues/58
-.. _#93: https://github.com/RPi-Distro/python-gpiozero/issues/93
-.. _#75: https://github.com/RPi-Distro/python-gpiozero/issues/75
-.. _#107: https://github.com/RPi-Distro/python-gpiozero/issues/107
+.. _#44: https://github.com/gpiozero/gpiozero/issues/44
+.. _#58: https://github.com/gpiozero/gpiozero/issues/58
+.. _#93: https://github.com/gpiozero/gpiozero/issues/93
+.. _#75: https://github.com/gpiozero/gpiozero/issues/75
+.. _#107: https://github.com/gpiozero/gpiozero/issues/107
 
 Release 0.9.0 (2015-10-25)
 ==========================
@@ -361,9 +361,9 @@ Fourth public beta
 * Fix names of parameters in :class:`Motor` constructor (`#79`_)
 * Added wrappers for LED groups on add-on boards (`#81`_)
 
-.. _#76: https://github.com/RPi-Distro/python-gpiozero/issues/76
-.. _#79: https://github.com/RPi-Distro/python-gpiozero/issues/79
-.. _#81: https://github.com/RPi-Distro/python-gpiozero/issues/81
+.. _#76: https://github.com/gpiozero/gpiozero/issues/76
+.. _#79: https://github.com/gpiozero/gpiozero/issues/79
+.. _#81: https://github.com/gpiozero/gpiozero/issues/81
 
 Release 0.8.0 (2015-10-16)
 ==========================
@@ -374,8 +374,8 @@ Third public beta
   for the :class:`MCP3008` and :class:`MCP3004` (`#41`_)
 * Fixed :meth:`DigitalOutputDevice.blink` (`#57`_)
 
-.. _#41: https://github.com/RPi-Distro/python-gpiozero/issues/41
-.. _#57: https://github.com/RPi-Distro/python-gpiozero/issues/57
+.. _#41: https://github.com/gpiozero/gpiozero/issues/41
+.. _#57: https://github.com/gpiozero/gpiozero/issues/57
 
 Release 0.7.0 (2015-10-09)
 ==========================

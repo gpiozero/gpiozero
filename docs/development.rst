@@ -37,7 +37,7 @@ Development
 
 The main GitHub repository for the project can be found at:
 
-    https://github.com/RPi-Distro/python-gpiozero
+    https://github.com/gpiozero/gpiozero
 
 For anybody wishing to hack on the project, we recommend starting off by
 getting to grips with some simple device classes. Pick something like
@@ -76,7 +76,7 @@ restarted your shell, continue:
     $ cd
     $ mkvirtualenv -p /usr/bin/python3 python-gpiozero
     $ workon python-gpiozero
-    (python-gpiozero) $ git clone https://github.com/RPi-Distro/python-gpiozero.git
+    (python-gpiozero) $ git clone https://github.com/gpiozero/gpiozero.git
     (python-gpiozero) $ cd python-gpiozero
     (python-gpiozero) $ make develop
 

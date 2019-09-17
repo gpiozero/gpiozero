@@ -6,12 +6,12 @@ gpiozero
     :target: https://badge.fury.io/py/gpiozero
     :alt: Latest Version
 
-.. image:: https://travis-ci.org/RPi-Distro/python-gpiozero.svg?branch=master
-    :target: https://travis-ci.org/RPi-Distro/python-gpiozero
+.. image:: https://travis-ci.org/gpiozero/gpiozero.svg?branch=master
+    :target: https://travis-ci.org/gpiozero/gpiozero
     :alt: Build Tests
 
-.. image:: https://img.shields.io/codecov/c/github/RPi-Distro/python-gpiozero/master.svg?maxAge=2592000
-    :target: https://codecov.io/github/RPi-Distro/python-gpiozero
+.. image:: https://img.shields.io/codecov/c/github/gpiozero/gpiozero/master.svg?maxAge=2592000
+    :target: https://codecov.io/github/gpiozero/gpiozero
     :alt: Code Coverage
 
 A simple interface to GPIO devices with Raspberry Pi.

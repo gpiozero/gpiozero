@@ -96,6 +96,6 @@ The library is 100% compatible with both Python 2.7 and Python 3 from version
 `end-of-life`_.
 
 
-.. _docs: https://github.com/RPi-Distro/python-gpiozero/tree/master/docs
-.. _issue: https://github.com/RPi-Distro/python-gpiozero/issues
+.. _docs: https://github.com/gpiozero/gpiozero/tree/master/docs
+.. _issue: https://github.com/gpiozero/gpiozero/issues
 .. _end-of-life: http://legacy.python.org/dev/peps/pep-0373/
