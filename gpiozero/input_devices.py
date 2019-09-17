@@ -49,10 +49,13 @@ except ImportError:
     from .compat import median
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
-    PinInvalidState
+    PinInvalidState, PWMSoftwareFallback
 from .devices import GPIODevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
-
+try:
+    from .pins.pigpio import PiGPIOFactory
+except ImportError:
+    PiGPIOFactory = None
 
 class InputDevice(GPIODevice):
     """
@@ -874,6 +877,12 @@ class DistanceSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
+        
+        if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
+            warnings.warn(PWMSoftwareFallback(
+                'For more accurate readings, use the pigpio pin factory.'
+                'See https://gpiozero.readthedocs.io/en/stable/api_input.html#distancesensor-hc-sr04 for more info'
+            ))
 
     def close(self):
         try:
