@@ -58,8 +58,8 @@ This is illustrated in the following flow-chart:
 
 The default factory is constructed when the first device is initialised; if no
 default factory can be constructed (e.g. because no GPIO implementations are
-installed, or all of them fail to load for whatever reason), an
-:exc:`BadPinFactory` will be raised at construction time.
+installed, or all of them fail to load for whatever reason), a
+:exc:`BadPinFactory` exception will be raised at construction time.
 
 After importing gpiozero, until constructing a gpiozero device, the pin factory
 is :data:`None`, but at the point of first construction the default pin factory
@@ -75,7 +75,7 @@ will come into effect:
     >>> print(Device.pin_factory)
     None
     >>> led = LED(2)
-    >>> Device.pin_factory()
+    >>> Device.pin_factory
     <gpiozero.pins.rpigpio.RPiGPIOFactory object at 0xb667ae30>
     >>> led.pin_factory
     <gpiozero.pins.rpigpio.RPiGPIOFactory object at 0xb6323530>
@@ -117,7 +117,7 @@ The default pin factory can be replaced by specifying a value for the
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from gpiozero import Device
     >>> Device._default_pin_factory()
-    <gpiozero.pins.rpigpio.RPiGPIOFactory object at 0xb667ae30>
+    <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
 To set the :envvar:`GPIOZERO_PIN_FACTORY` for the rest of your session you can
 :command:`export` this value:
@@ -130,15 +130,15 @@ To set the :envvar:`GPIOZERO_PIN_FACTORY` for the rest of your session you can
     [GCC 8.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import gpiozero
-    >>> gpiozero.Device.pin_factory
+    >>> Device._default_pin_factory()
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
     >>> quit()
-    $ python3
+    pi@raspberrypi:~ $ python3
     Python 3.7.3 (default, Apr  3 2019, 05:39:12)
     [GCC 8.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import gpiozero
-    >>> gpiozero.Device.pin_factory
+    >>> Device._default_pin_factory()
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
 If you add the :command:`export` command to your :file:`~/.bashrc` file, you'll
@@ -172,8 +172,7 @@ If you need to change the default pin factory from within a script, either set
 
     Device.pin_factory = NativeFactory()
 
-    # These will now implicitly use NativePin instead of
-    # RPiGPIOPin
+    # These will now implicitly use NativePin instead of RPiGPIOPin
     led1 = LED(16)
     led2 = LED(17)
 
