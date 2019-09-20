@@ -206,6 +206,9 @@ class PinWarning(GPIOZeroWarning):
 class PinFactoryFallback(PinWarning):
     "Warning raised when a default pin factory fails to load and a fallback is tried"
 
+class NativePinFactoryFallback(PinWarning):
+    "Warning raised when all other default pin factories fail to load and NativeFactory is used"
+
 class PinNonPhysical(PinWarning):
     "Warning raised when a non-physical pin is specified in a constructor"
 
