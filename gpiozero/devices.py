@@ -279,9 +279,10 @@ class Device(ValuesMixin, GPIOBase):
                 try:
                     mod_name, cls_name = entry_point.split(':', 1)
                     module = __import__(mod_name, fromlist=(cls_name,))
+                    pin_factory = getattr(module, cls_name)()
                     if name == 'native':
                         warnings.warn(native_fallback_message, NativePinFactoryFallback)
-                    return getattr(module, cls_name)()
+                    return pin_factory
                 except Exception as e:
                     warnings.warn(
                         PinFactoryFallback(
