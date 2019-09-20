@@ -1454,9 +1454,9 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
         )
 
 
-class FishDish(TrafficLightsBuzzer):
+class FishDish(CompositeOutputDevice):
     """
-    Extends :class:`TrafficLightsBuzzer` for the `Pi Supply FishDish`_: traffic
+    Extends :class:`CompositeOutputDevice` for the `Pi Supply FishDish`_: traffic
     light LEDs, a button and a buzzer.
 
     The FishDish pins are fixed and therefore there's no need to specify them
@@ -1483,16 +1483,17 @@ class FishDish(TrafficLightsBuzzer):
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(FishDish, self).__init__(
-            TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
-            Buzzer(8, pin_factory=pin_factory),
-            Button(7, pull_up=False, pin_factory=pin_factory),
+            lights=TrafficLights(9, 22, 4, pwm=pwm, pin_factory=pin_factory),
+            buzzer=Buzzer(8, pin_factory=pin_factory),
+            button=Button(7, pull_up=False, pin_factory=pin_factory),
+            _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
 
 
-class TrafficHat(TrafficLightsBuzzer):
+class TrafficHat(CompositeOutputDevice):
     """
-    Extends :class:`TrafficLightsBuzzer` for the `Ryanteck Traffic HAT`_: traffic
+    Extends :class:`CompositeOutputDevice` for the `Ryanteck Traffic HAT`_: traffic
     light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
@@ -1519,9 +1520,10 @@ class TrafficHat(TrafficLightsBuzzer):
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
-            TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
-            Buzzer(5, pin_factory=pin_factory),
-            Button(25, pin_factory=pin_factory),
+            lights=TrafficLights(24, 23, 22, pwm=pwm, pin_factory=pin_factory),
+            buzzer=Buzzer(5, pin_factory=pin_factory),
+            button=Button(25, pin_factory=pin_factory),
+            _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
 

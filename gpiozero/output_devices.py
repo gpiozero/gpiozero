@@ -1549,7 +1549,6 @@ class Servo(SourceMixin, CompositeDevice):
                 'for more info',
                 PWMSoftwareFallback
                 )
-
         try:
             self.value = initial_value
         except:
@@ -1588,6 +1587,10 @@ class Servo(SourceMixin, CompositeDevice):
             return None
         else:
             return self.pwm_device.pin.state * self.frame_width
+
+    @pulse_width.setter
+    def pulse_width(self, value):
+        self.pwm_device.pin.state = value / self.frame_width
 
     def min(self):
         """
