@@ -417,7 +417,7 @@ class TimeOfDay(InternalDevice):
         Returns :data:`1` when the system clock reads between :attr:`start_time`
         and :attr:`end_time`, and :data:`0` otherwise. If :attr:`start_time` is
         greater than :attr:`end_time` (indicating a period that crosses
-        midnight), then this returns :data:`True` when the current time is
+        midnight), then this returns :data:`1` when the current time is
         greater than :attr:`start_time` or less than :attr:`end_time`.
         """
         now = datetime.utcnow().time() if self.utc else datetime.now().time()
