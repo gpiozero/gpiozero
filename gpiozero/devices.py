@@ -434,11 +434,17 @@ class CompositeDevice(Device):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
-                    self.__class__.__name__,
-                    len(self), ','.join(self._order),
-                    len(self) - len(self._named)
-                    )
+            if len(self) - len(self._named) > 0:
+                return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
+                        self.__class__.__name__,
+                        len(self), ', '.join(self._order),
+                        len(self) - len(self._named)
+                        )
+            else:
+                return "<gpiozero.%s object containing %d devices: %s>" % (
+                        self.__class__.__name__,
+                        len(self), ', '.join(self._order)
+                        )
         except DeviceClosed:
             return "<gpiozero.%s object closed>" % (self.__class__.__name__)
 
