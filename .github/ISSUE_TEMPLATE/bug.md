@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug in the gpioero library
+about: Report a bug in the gpiozero library
 ---
 
 Operating system: e.g. Raspbian Buster
