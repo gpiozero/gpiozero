@@ -138,7 +138,7 @@ def test_device_reopen_same_pin(mock_factory):
         assert device.pin is None
 
 def test_device_pin_parsing(mock_factory):
-    # MockFactory defaults to a Pi 2B layout
+    # MockFactory defaults to a Pi 3B layout
     pin = mock_factory.pin(2)
     with GPIODevice('GPIO2') as device:
         assert device.pin is pin
