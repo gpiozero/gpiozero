@@ -1531,3 +1531,71 @@ def test_jamhat_pwm(mock_factory, pwm):
             False, False,           # buttons
             None                    # buzzer
         )
+
+def test_pibrella(mock_factory, pwm):
+    with Pibrella() as pb:
+        assert repr(pb).startswith('<gpiozero.Pibrella object')
+        assert isinstance(pb.lights, TrafficLights)
+        assert isinstance(pb.lights.red, LED)
+        assert isinstance(pb.button, Button)
+        assert isinstance(pb.buzzer, TonalBuzzer)
+        assert pb.inputs == (9, 7, 8, 10)
+        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+        pb.on()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            0,          # button
+            0           # buzzer
+        )
+        pb.buzzer.play('A5')
+        pb.button.pin.drive_high()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            1,          # button
+            1           # buzzer
+        )
+        pb.off()
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            1,          # button
+            None        # buzzer
+        )
+
+def test_pibrella_pwm(mock_factory, pwm):
+    with Pibrella(pwm=True) as pb:
+        assert isinstance(pb.lights, TrafficLights)
+        assert isinstance(pb.lights.red, PWMLED)
+        assert isinstance(pb.button, Button)
+        assert isinstance(pb.buzzer, TonalBuzzer)
+        assert pb.inputs == (9, 7, 8, 10)
+        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+        pb.on()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            0,          # button
+            0           # buzzer
+        )
+        pb.off()
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+
+def test_pibrella_pins(mock_factory, pwm):
+    with Pibrella() as pb:
+        with LED(pb.outputs.e) as led:
+            assert isinstance(led, LED)
+            assert led.pin.number == 22
+        with Button(pb.inputs.a) as btn:
+            assert btn.pin.number == 9

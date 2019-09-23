@@ -2319,7 +2319,7 @@ class Pibrella(CompositeOutputDevice):
                               pin_factory=pin_factory),
             button=Button(11, pull_up=False, pin_factory=pin_factory),
             buzzer=TonalBuzzer(18, pin_factory=pin_factory),
-            _order=('lights', 'buzzer', 'button'),
+            _order=('lights', 'button', 'buzzer'),
             pin_factory=pin_factory
         )
         InputPins = namedtuple('InputPins', ['a', 'b', 'c', 'd'])
