@@ -218,20 +218,95 @@ Like the :envvar:`GPIOZERO_PIN_FACTORY` value, these can be exported from your
 Mock pins
 =========
 
-There's also a :class:`gpiozero.pins.mock.MockFactory` which generates entirely
+There's also a :class:`~gpiozero.pins.mock.MockFactory` which generates entirely
 fake pins. This was originally intended for GPIO Zero developers who wish to
 write tests for devices without having to have the physical device wired in to
-their Pi. However, they have also proven relatively useful in developing GPIO
-Zero scripts without having a Pi to hand. This pin factory will never be loaded
-by default; it must be explicitly specified. For example:
+their Pi. However, they have also proven useful in developing GPIO Zero scripts
+without having a Pi to hand. This pin factory will never be loaded by default;
+it must be explicitly specified, either by setting an environment variable or
+setting the pin factory within the script. For example:
 
-.. literalinclude:: examples/mock_demo.py
+.. code-block:: console
+
+    pi@raspberrypi:~ $ GPIOZERO_PIN_FACTORY=mock python3
+
+or:
+
+.. code-block:: python
+
+    from gpiozero import Device, LED
+    from gpiozero.pins.mock import MockFactory
+
+    Device.pin_factory = MockFactory()
+
+    led = LED(2)
+
+You can create device objects and inspect their value changing as you'd expect:
+
+.. code-block:: pycon
+
+    pi@raspberrypi:~ $ GPIOZERO_PIN_FACTORY=mock python3
+    Python 3.7.3 (default, Apr  3 2019, 05:39:12)
+    [GCC 8.2.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from gpiozero import LED
+    >>> led = LED(2)
+    >>> led.value
+    0
+    >>> led.on()
+    >>> led.value
+    1
+
+You can even control pin state changes to simulate device behaviour:
+
+.. code-block:: pycon
+
+    >>> from gpiozero import LED, Button
+
+    # Construct a couple of devices attached to mock pins 16 and 17, and link the devices
+    >>> led = LED(17)
+    >>> btn = Button(16)
+    >>> led.source = btn
+
+    # Initailly the button isn't "pressed" so the LED should be off
+    >>> led.value
+    0
+
+    # Drive the pin low (this is what would happen electrically when the button is pressed)
+    >>> btn.pin.drive_low()
+    # The LED is now on
+    >>> led.value
+    1
+
+    >>> btn.pin.drive_high()
+    # The button is now "released", so the LED should be off again
+    >>> led.value
+    0
 
 Several sub-classes of mock pins exist for emulating various other things
 (pins that do/don't support PWM, pins that are connected together, pins that
-drive high after a delay, etc). Interested users are invited to read the GPIO
-Zero test suite for further examples of usage.
+drive high after a delay, etc), for example, you have to use
+:class:`~gpiozero.pins.mock.MockPWMPin` to be able to use devices requiring PWM:
 
+.. code-block:: console
+
+    pi@raspberrypi:~ $ GPIOZERO_PIN_FACTORY=mock GPIOZERO_MOCK_PIN_CLASS=mockpwmpin python3
+
+or:
+
+.. code-block:: python
+
+    from gpiozero import Device, LED
+    from gpiozero.pins.mock import MockFactory, MockPWMPin
+
+    Device.pin_factory = MockFactory(pin_class=MockPWMPin)
+
+    led = LED(2)
+
+Interested users are invited to read the `GPIO Zero test suite`_ for further
+examples of usage.
+
+.. _`GPIO Zero test suite`: https://github.com/gpiozero/gpiozero/tree/master/tests
 
 Base classes
 ============

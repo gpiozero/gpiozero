@@ -200,3 +200,12 @@ report of coverage from all environments:
 
 
 .. _Dead Snakes PPA: https://launchpad.net/~deadsnakes/%2Barchive/ubuntu/ppa
+
+
+Mock pins
+=========
+
+The test suite largely depends on the existence of the mock pin factory
+:class:`~gpiozero.pins.mock.MockFactory`, which is also useful for manual
+testing, for example in the Python shell or another REPL. See the section on
+:ref:`mock-pins` in the :doc:`api_pins` chapter for more information.
