@@ -2273,9 +2273,9 @@ class Pibrella(CompositeOutputDevice):
         btn.when_pressed = led.on
 
     :param bool pwm:
-        If :data:`True` (the default), construct :class:`PWMLED` instances to
-        represent each LED on the board. If :data:`False`, construct regular
-        :class:`LED` instances.
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED on the board, otherwise if :data:`False` (the default), construct
+        regular :class:`LED` instances.
 
     :type pin_factory: Factory or None
     :param pin_factory:
