@@ -102,6 +102,7 @@ digraph classes {
     PiLiterBarGraph->LEDBarGraph;
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
     PingServer->InternalDevice;
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;

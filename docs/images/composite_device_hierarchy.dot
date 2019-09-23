@@ -35,6 +35,7 @@ digraph classes {
     PiLiterBarGraph->LEDBarGraph;
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;
     Robot->CompositeDevice;
