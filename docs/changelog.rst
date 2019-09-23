@@ -35,6 +35,29 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+Release 1.5.2 (unreleased)
+==========================
+
+* Added :class:`Pibrella` class (thanks to Carl Monk) (`#773`_, `#798`_)
+* Allow :class:`Motor` passes :param:`pin_factory` to its child
+  :class:`OutputDevice` objects (thanks to Yisrael Dov Lebow) (`#792`_)
+* Small SPI exception fix (thanks to Maksim Levental) (`#762`_)
+* Warn users when using default pin factory for Servos and Distance Sensors
+  (thanks to Sofiia Kosovan and Daniele Procida at the EuroPython sprints)
+  (`#780`_, `#781`_)
+* Add :attr:`~Servo.pulse_width` property to :class:`Servo` (suggested by
+  Daniele Procida at the PyCon UK sprints) (`#795`_, `#797`_)
+* Various docs updates
+
+.. _#773: https://github.com/gpiozero/gpiozero/issues/773
+.. _#798: https://github.com/gpiozero/gpiozero/issues/798
+.. _#792: https://github.com/gpiozero/gpiozero/issues/792
+.. _#762: https://github.com/gpiozero/gpiozero/issues/762
+.. _#780: https://github.com/gpiozero/gpiozero/issues/780
+.. _#781: https://github.com/gpiozero/gpiozero/issues/781
+.. _#795: https://github.com/gpiozero/gpiozero/issues/795
+.. _#797: https://github.com/gpiozero/gpiozero/issues/797
+
 Release 1.5.1 (2019-06-24)
 ==========================
 
