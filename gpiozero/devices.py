@@ -69,7 +69,7 @@ from .compat import frozendict
 
 native_fallback_message = (
 'Falling back to the experimental pin factory NativeFactory because no other '
-'pin factory could be loaded. For best results, install RPi.GPIO or pigpio.'
+'pin factory could be loaded. For best results, install RPi.GPIO or pigpio. '
 'See https://gpiozero.readthedocs.io/en/stable/api_pins.html for more information.'
 )
 
@@ -281,7 +281,7 @@ class Device(ValuesMixin, GPIOBase):
                     module = __import__(mod_name, fromlist=(cls_name,))
                     pin_factory = getattr(module, cls_name)()
                     if name == 'native':
-                        warnings.warn(native_fallback_message, NativePinFactoryFallback)
+                        warnings.warn(NativePinFactoryFallback(native_fallback_message))
                     return pin_factory
                 except Exception as e:
                     warnings.warn(
