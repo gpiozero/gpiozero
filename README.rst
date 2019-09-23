@@ -135,52 +135,64 @@ Core developers:
 
 Other contributors:
 
-- `Martin O'Hanlon`_
-- `Steve Amor`_
-- `David Glaude`_
-- `Edward Betts`_
 - `Alex Chan`_
-- `Thijs Triemstra`_
-- `Schelto van Doorn`_
 - `Alex Eames`_
 - `Barry Byford`_
-- `Clare Macrae`_
-- `Tim Golden`_
-- `Phil Howard`_
-- `Stewart Adcock`_
-- `Ian Harcombe`_
-- `Russel Winder`_
-- `Mike Kazantsev`_
-- `Fatih Sarhan`_
-- `Rick Ansell`_
-- `Jeevan M R`_
-- `Claire Pollard`_
-- `Philippe Muller`_
-- `Sofiia Kosovan`_
 - `Carl Monk`_
+- `Claire Pollard`_
+- `Clare Macrae`_
+- `David Glaude`_
+- `Daniele Procida`_
+- `Delcio Torres`_
+- `Edward Betts`_
+- `Fatih Sarhan`_
+- `Ian Harcombe`_
+- `Jeevan M R`_
+- `Mahallon`_
+- `Maksim Levental`_
+- `Martchus`_
+- `Martin O'Hanlon`_
+- `Mike Kazantsev`_
+- `Phil Howard`_
+- `Philippe Muller`_
+- `Rick Ansell`_
+- `Russel Winder`_
+- `Schelto van Doorn`_
+- `Sofiia Kosovan`_
+- `Steve Amor`_
+- `Stewart Adcock`_
+- `Thijs Triemstra`_
+- `Tim Golden`_
+- `Yisrael Dov Lebow`_
 
 
-.. _Andrew Scheller: https://github.com/lurch
+.. _Alex Chan: https://github.com/gpiozero/gpiozero/commits?author=alexwlchan
+.. _Alex Eames: https://github.com/gpiozero/gpiozero/commits?author=raspitv
+.. _Andrew Scheller: https://github.com/gpiozero/gpiozero/commits?author=lurch
+.. _Barry Byford: https://github.com/gpiozero/gpiozero/commits?author=ukBaz
+.. _Carl Monk: https://github.com/gpiozero/gpiozero/commits?author=ForToffee
+.. _Claire Pollard: https://github.com/gpiozero/gpiozero/commits?author=tuftii
+.. _Clare Macrae: https://github.com/gpiozero/gpiozero/commits?author=claremacrae
+.. _David Glaude: https://github.com/gpiozero/gpiozero/commits?author=dglaude
+.. _Daniele Procida: https://github.com/evildmp
+.. _Delcio Torres: https://github.com/gpiozero/gpiozero/commits?author=delciotorres
+.. _Edward Betts: https://github.com/gpiozero/gpiozero/commits?author=edwardbetts
+.. _Fatih Sarhan: https://github.com/gpiozero/gpiozero/commits?author=f9n
+.. _Ian Harcombe: https://github.com/gpiozero/gpiozero/commits?author=MrHarcombe
+.. _Jeevan M R: https://github.com/gpiozero/gpiozero/commits?author=jee1mr
+.. _Mahallon: https://github.com/gpiozero/gpiozero/commits?author=Mahallon
+.. _Maksim Levental: https://github.com/gpiozero/gpiozero/commits?author=makslevental
+.. _Martchus: https://github.com/gpiozero/gpiozero/commits?author=Martchus
 .. _Martin O'Hanlon: https://github.com/martinohanlon
-.. _Steve Amor: https://github.com/SteveAmor
-.. _David Glaude: https://github.com/dglaude
-.. _Edward Betts: https://github.com/edwardbetts
-.. _Alex Chan: https://github.com/alexwlchan
-.. _Thijs Triemstra: https://github.com/thijstriemstra
-.. _Schelto van Doorn: https://github.com/goloplo
-.. _Alex Eames: https://github.com/raspitv
-.. _Barry Byford: https://github.com/ukBaz
-.. _Clare Macrae: https://github.com/claremacrae
-.. _Tim Golden: https://github.com/tjguk
-.. _Phil Howard: https://github.com/Gadgetoid
-.. _Stewart Adcock: https://github.com/stewartadcock
-.. _Ian Harcombe: https://github.com/MrHarcombe
+.. _Mike Kazantsev: https://github.com/gpiozero/gpiozero/commits?author=mk-fg
+.. _Phil Howard: https://github.com/gpiozero/gpiozero/commits?author=Gadgetoid
+.. _Philippe Muller: https://github.com/gpiozero/gpiozero/commits?author=pmuller
+.. _Rick Ansell: https://github.com/gpiozero/gpiozero/commits?author=ricksbt
 .. _Russel Winder: https://github.com/russel
-.. _Mike Kazantsev: https://github.com/mk-fg
-.. _Fatih Sarhan: https://github.com/f9n
-.. _Rick Ansell: https://github.com/ricksbt
-.. _Jeevan M R: https://github.com/jee1mr
-.. _Claire Pollard: https://github.com/tuftii
-.. _Philippe Muller: https://github.com/pmuller
-.. _Sofiia Kosovan: https://github.com/SofiiaKosovan
-.. _Carl Monk: https://github.com/ForToffee
+.. _Schelto van Doorn: https://github.com/gpiozero/gpiozero/commits?author=goloplo
+.. _Sofiia Kosovan: https://github.com/gpiozero/gpiozero/commits?author=SofiiaKosovan
+.. _Steve Amor: https://github.com/gpiozero/gpiozero/commits?author=SteveAmor
+.. _Stewart Adcock: https://github.com/gpiozero/gpiozero/commits?author=stewartadcock
+.. _Thijs Triemstra: https://github.com/gpiozero/gpiozero/commits?author=thijstriemstra
+.. _Tim Golden: https://github.com/gpiozero/gpiozero/commits?author=tjguk
+.. _Yisrael Dov Lebow: https://github.com/gpiozero/gpiozero/commits?author=yisraeldov
