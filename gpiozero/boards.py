@@ -58,6 +58,7 @@ from .exc import (
     EnergenieBadSocket,
     EnergenieBadInitialValue,
     OutputDeviceBadValue,
+    CompositeDeviceBadDevice,
     )
 from .input_devices import Button
 from .output_devices import (

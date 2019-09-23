@@ -189,12 +189,6 @@ def test_led_board_pwm_init(mock_factory, pwm):
         assert isinstance(board[2], PWMLED)
         assert [b.pin for b in board] == pins
 
-def test_led_bar_graph_bad_init(mock_factory):
-    with pytest.raises(GPIOPinMissing):
-        LEDBarGraph()
-    with pytest.raises(GPIOPinMissing):
-        LEDBarGraph(pwm=True)
-
 def test_led_board_on_off(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
@@ -678,12 +672,18 @@ def test_led_bar_graph_bad_init(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
+    with pytest.raises(GPIOPinMissing):
+        LEDBarGraph()
+    with pytest.raises(GPIOPinMissing):
+        LEDBarGraph(pwm=True)
     with pytest.raises(TypeError):
         LEDBarGraph(2, 3, foo=4)
     with pytest.raises(ValueError):
         LEDBarGraph(2, 3, 4, initial_value=-2)
     with pytest.raises(ValueError):
         LEDBarGraph(2, 3, 4, initial_value=2)
+    with pytest.raises(ValueError):
+        LEDBarGraph(2, LEDBoard(3, 4))
 
 def test_led_bar_graph_initial_value(mock_factory):
     pin1 = mock_factory.pin(2)
