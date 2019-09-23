@@ -5,17 +5,17 @@ Contributions to the library are welcome! Here are some guidelines to follow.
 ## Suggestions
 
 Please make suggestions for additional components or enhancements to the
-codebase by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues)
+codebase by opening an [issue](https://github.com/gpiozero/gpiozero/issues)
 explaining your reasoning clearly.
 
 ## Bugs
 
-Please submit bug reports by opening an [issue](https://github.com/RPi-Distro/python-gpiozero/issues)
+Please submit bug reports by opening an [issue](https://github.com/gpiozero/gpiozero/issues)
 explaining the problem clearly using code examples.
 
 ## Documentation
 
-The documentation source lives in the [docs](https://github.com/RPi-Distro/python-gpiozero/tree/master/docs)
+The documentation source lives in the [docs](https://github.com/gpiozero/gpiozero/tree/master/docs)
 folder. Contributions to the documentation are welcome but should be easy to
 read and understand.
 

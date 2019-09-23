@@ -31,7 +31,7 @@ On your build Pi, perform the following steps:
 
 5. Ensure you have a valid public/private key-pair defined for GNUPG.
 
-6. In the ``python-gpiozero`` directory, run ``make release``. This will launch
+6. In the root ``gpiozero`` directory, run ``make release``. This will launch
    ``dch`` to update the Debian changelog. Fill this out properly (ticket
    references!) and the release will be generated, tagged, signed, and
    registered with GitHub and PyPI.
@@ -41,7 +41,7 @@ On your build Pi, perform the following steps:
        Although the release has been registered at this point, no packages
        have been generated or uploaded to any service.
 
-7. Still in the ``python-gpiozero`` directory, run ``make upload``. This will
+7. Still in the root ``gpiozero`` directory, run ``make upload``. This will
    generate the actual debian packages, upload them to Raspbian, and upload
    the source package to PyPI.
 
