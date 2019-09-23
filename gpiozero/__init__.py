@@ -135,6 +135,7 @@ from .boards import (
     Energenie,
     PumpkinPi,
     JamHat,
+    Pibrella,
 )
 from .internal_devices import (
     InternalDevice,

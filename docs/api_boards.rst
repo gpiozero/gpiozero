@@ -154,6 +154,15 @@ JamHat
 
 .. autoclass:: JamHat(\*, pwm=False, pin_factory=None)
     :members:
+        :members:
+
+
+Pibrella
+--------
+
+.. autoclass:: Pibrella(\*, pwm=False, pin_factory=None)
+    :members:
+        :members:
 
 
 Robot

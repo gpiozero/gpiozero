@@ -157,6 +157,7 @@ Other contributors:
 - `Claire Pollard`_
 - `Philippe Muller`_
 - `Sofiia Kosovan`_
+- `Carl Monk`_
 
 
 .. _Andrew Scheller: https://github.com/lurch
@@ -182,3 +183,4 @@ Other contributors:
 .. _Claire Pollard: https://github.com/tuftii
 .. _Philippe Muller: https://github.com/pmuller
 .. _Sofiia Kosovan: https://github.com/SofiiaKosovan
+.. _Carl Monk: https://github.com/ForToffee

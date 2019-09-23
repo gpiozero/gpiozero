@@ -49,7 +49,7 @@ except ImportError:
 from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
-from collections import OrderedDict, Counter
+from collections import OrderedDict, Counter, namedtuple
 
 from .exc import (
     DeviceClosed,
@@ -2182,7 +2182,7 @@ class JamHat(CompositeOutputDevice):
         hat.off()
 
     :param bool pwm:
-        If :data:`True`, construct :class: PWMLED instances to represent each
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
         LED on the board. If :data:`False` (the default), construct regular
         :class:`LED` instances.
 
@@ -2240,3 +2240,104 @@ class JamHat(CompositeOutputDevice):
         """
         self.buzzer.value = None
         super(JamHat, self).off()
+
+class Pibrella(CompositeOutputDevice):
+    """
+    Extends :class:`CompositeOutputDevice` for the Cyntech/Pimoroni `Pibrella`_
+    board.
+
+    The Pibrella board comprises 3 LEDs, a button, a tonal buzzer, four general
+    purpose input channels, and four general purpose output channels (with LEDs).
+
+    This class exposes the LEDs, button and buzzer.
+
+    Usage::
+
+        from gpiozero import Pibrella
+
+        pb = Pibrella()
+
+        pb.button.wait_for_press()
+        pb.lights.on()
+        pb.buzzer.play('A4')
+        pb.off()
+
+    The four input and output channels are not provided by this class. Instead,
+    you can create GPIO Zero devices using these pins::
+
+        from gpiozero import Pibrella, LED, Button
+
+        pb = Pibrella()
+        btn = Button(pb.inputs.a)
+        led = LED(pb.outputs.e)
+
+        btn.when_pressed = led.on
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED on the board, otherwise if :data:`False` (the default), construct
+        regular :class:`LED` instances.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pibrella: http://www.pibrella.com/
+
+    .. attribute:: lights
+
+        :class:`TrafficLights` instance representing the three LEDs
+
+        .. attribute:: red, amber, green
+
+            :class:`LED` or :class:`PWMLED` instances representing the red,
+            amber, and green LEDs
+
+    .. attribute:: button
+
+        The red :class:`Button` object on the Pibrella
+
+    .. attribute:: buzzer
+
+        A :class:`TonalBuzzer` object representing the buzzer
+
+    .. attribute:: inputs
+
+        A :func:`~collections.namedtuple` of the input pin numbers
+
+        .. attribute:: a, b, c, d
+
+    .. attribute:: outputs
+
+        A :func:`~collections.namedtuple` of the output pin numbers
+
+        .. attribute:: e, f, g, h
+    """
+    def __init__(self, pwm=False, pin_factory=None):
+        super(Pibrella, self).__init__(
+            lights=TrafficLights(red=27, amber=17, green=4, pwm=pwm,
+                              pin_factory=pin_factory),
+            button=Button(11, pull_up=False, pin_factory=pin_factory),
+            buzzer=TonalBuzzer(18, pin_factory=pin_factory),
+            _order=('lights', 'button', 'buzzer'),
+            pin_factory=pin_factory
+        )
+        InputPins = namedtuple('InputPins', ['a', 'b', 'c', 'd'])
+        OutputPins = namedtuple('OutputPins', ['e', 'f', 'g', 'h'])
+        self.inputs = InputPins(a=9, b=7, c=8, d=10)
+        self.outputs = OutputPins(e=22, f=23, g=24, h=25)
+
+    def on(self):
+        """
+        Turns all the LEDs on and makes the buzzer play its mid tone.
+        """
+        self.buzzer.value = 0
+        super(Pibrella, self).on()
+
+    def off(self):
+        """
+        Turns all the LEDs off and stops the buzzer.
+        """
+        self.buzzer.value = None
+        super(Pibrella, self).off()
