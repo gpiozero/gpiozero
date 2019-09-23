@@ -2181,7 +2181,7 @@ class JamHat(CompositeOutputDevice):
         hat.off()
 
     :param bool pwm:
-        If :data:`True`, construct :class: PWMLED instances to represent each
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
         LED on the board. If :data:`False` (the default), construct regular
         :class:`LED` instances.
 
@@ -2273,7 +2273,7 @@ class Pibrella(CompositeOutputDevice):
         btn.when_pressed = led.on
 
     :param bool pwm:
-        If :data:`True` (the default), construct :class: PWMLED instances to
+        If :data:`True` (the default), construct :class:`PWMLED` instances to
         represent each LED on the board. If :data:`False`, construct regular
         :class:`LED` instances.
 
@@ -2295,7 +2295,7 @@ class Pibrella(CompositeOutputDevice):
 
     .. attribute:: button
 
-        The red :class:`Button` objects on the Pibrella
+        The red :class:`Button` object on the Pibrella
 
     .. attribute:: buzzer
 
@@ -2303,13 +2303,13 @@ class Pibrella(CompositeOutputDevice):
 
     .. attribute:: inputs
 
-        A namedtuple of the input pin numbers
+        A :func:`~collections.namedtuple` of the input pin numbers
 
         .. attribute:: a, b, c, d
 
     .. attribute:: outputs
 
-        A namedtuple of the output pin numbers
+        A :func:`~collections.namedtuple` of the output pin numbers
 
         .. attribute:: e, f, g, h
     """
