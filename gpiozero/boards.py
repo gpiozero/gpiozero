@@ -2313,7 +2313,7 @@ class Pibrella(CompositeOutputDevice):
 
         .. attribute:: e, f, g, h
     """
-    def __init__(self, pwm=True, pin_factory=None):
+    def __init__(self, pwm=False, pin_factory=None):
         super(Pibrella, self).__init__(
             lights=TrafficLights(red=27, amber=17, green=4, pwm=pwm,
                               pin_factory=pin_factory),
