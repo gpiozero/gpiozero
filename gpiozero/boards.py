@@ -2268,7 +2268,7 @@ class Pibrella(CompositeOutputDevice):
         from gpiozero import Pibrella, LED, Button
 
         pb = Pibrella()
-        btn = Button(pb.inputs.a)
+        btn = Button(pb.inputs.a, pull_up=False)
         led = LED(pb.outputs.e)
 
         btn.when_pressed = led.on
