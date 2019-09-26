@@ -188,6 +188,7 @@ def test_composite_device_sequence(mock_factory):
 
 def test_composite_device_values(mock_factory):
     with CompositeDevice(InputDevice(4), InputDevice(5)) as device:
+        assert repr(device) == '<gpiozero.CompositeDevice object containing 2 unnamed devices>'
         assert device.value == (0, 0)
         assert not device.is_active
         device[0].pin.drive_high()
@@ -200,7 +201,18 @@ def test_composite_device_named(mock_factory):
             bar=InputDevice(5),
             _order=('foo', 'bar')
             ) as device:
+        assert repr(device) == '<gpiozero.CompositeDevice object containing 2 devices: foo, bar>'
         assert device.namedtuple._fields == ('foo', 'bar')
+        assert device.value == (0, 0)
+        assert not device.is_active
+
+def test_composite_device_some_named(mock_factory):
+    with CompositeDevice(
+            InputDevice(4),
+            foobar=InputDevice(5),
+            ) as device:
+        assert repr(device) == '<gpiozero.CompositeDevice object containing 2 devices: foobar and 1 unnamed>'
+        assert device.namedtuple._fields == ('device_0', 'foobar')
         assert device.value == (0, 0)
         assert not device.is_active
 
