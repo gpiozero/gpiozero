@@ -1,10 +1,12 @@
 digraph classes {
     graph [rankdir=RL];
-    node [shape=rect, style=filled, fontname=Arial, fontsize=10];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
+
+    
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
@@ -22,7 +24,7 @@ digraph classes {
     CompositeDevice->Device;
     CompositeOutputDevice->CompositeDevice;
     Energenie->Device;
-    FishDish->TrafficLightsBuzzer;
+    FishDish->CompositeOutputDevice;
     JamHat->CompositeOutputDevice;
     LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
@@ -33,6 +35,7 @@ digraph classes {
     PiLiterBarGraph->LEDBarGraph;
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;
     Robot->CompositeDevice;
@@ -41,7 +44,7 @@ digraph classes {
     StatusBoard->CompositeOutputDevice;
     StatusZero->LEDBoard;
     TonalBuzzer->CompositeDevice;
-    TrafficHat->TrafficLightsBuzzer;
+    TrafficHat->CompositeOutputDevice;
     TrafficLights->LEDBoard;
     TrafficLightsBuzzer->CompositeOutputDevice;
 }

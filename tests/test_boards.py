@@ -189,12 +189,6 @@ def test_led_board_pwm_init(mock_factory, pwm):
         assert isinstance(board[2], PWMLED)
         assert [b.pin for b in board] == pins
 
-def test_led_bar_graph_bad_init(mock_factory):
-    with pytest.raises(GPIOPinMissing):
-        LEDBarGraph()
-    with pytest.raises(GPIOPinMissing):
-        LEDBarGraph(pwm=True)
-
 def test_led_board_on_off(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
@@ -678,12 +672,18 @@ def test_led_bar_graph_bad_init(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)
     pin3 = mock_factory.pin(4)
+    with pytest.raises(GPIOPinMissing):
+        LEDBarGraph()
+    with pytest.raises(GPIOPinMissing):
+        LEDBarGraph(pwm=True)
     with pytest.raises(TypeError):
         LEDBarGraph(2, 3, foo=4)
     with pytest.raises(ValueError):
         LEDBarGraph(2, 3, 4, initial_value=-2)
     with pytest.raises(ValueError):
         LEDBarGraph(2, 3, 4, initial_value=2)
+    with pytest.raises(ValueError):
+        LEDBarGraph(2, LEDBoard(3, 4))
 
 def test_led_bar_graph_initial_value(mock_factory):
     pin1 = mock_factory.pin(2)
@@ -1531,3 +1531,71 @@ def test_jamhat_pwm(mock_factory, pwm):
             False, False,           # buttons
             None                    # buzzer
         )
+
+def test_pibrella(mock_factory, pwm):
+    with Pibrella() as pb:
+        assert repr(pb).startswith('<gpiozero.Pibrella object')
+        assert isinstance(pb.lights, TrafficLights)
+        assert isinstance(pb.lights.red, LED)
+        assert isinstance(pb.button, Button)
+        assert isinstance(pb.buzzer, TonalBuzzer)
+        assert pb.inputs == (9, 7, 8, 10)
+        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+        pb.on()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            0,          # button
+            0           # buzzer
+        )
+        pb.buzzer.play('A5')
+        pb.button.pin.drive_high()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            1,          # button
+            1           # buzzer
+        )
+        pb.off()
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            1,          # button
+            None        # buzzer
+        )
+
+def test_pibrella_pwm(mock_factory, pwm):
+    with Pibrella(pwm=True) as pb:
+        assert isinstance(pb.lights, TrafficLights)
+        assert isinstance(pb.lights.red, PWMLED)
+        assert isinstance(pb.button, Button)
+        assert isinstance(pb.buzzer, TonalBuzzer)
+        assert pb.inputs == (9, 7, 8, 10)
+        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+        pb.on()
+        assert pb.value == (
+            (1, 1, 1),  # lights
+            0,          # button
+            0           # buzzer
+        )
+        pb.off()
+        assert pb.value == (
+            (0, 0, 0),  # lights
+            0,          # button
+            None        # buzzer
+        )
+
+def test_pibrella_pins(mock_factory, pwm):
+    with Pibrella() as pb:
+        with LED(pb.outputs.e) as led:
+            assert isinstance(led, LED)
+            assert led.pin.number == 22
+        with Button(pb.inputs.a) as btn:
+            assert btn.pin.number == 9

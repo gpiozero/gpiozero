@@ -1,6 +1,6 @@
 ---
-name: GPIO Zero Issue
-about: Let us know about an issue with GPIO Zero
+name: Bug report
+about: Report a bug in the gpiozero library
 ---
 
 Operating system: e.g. Raspbian Buster

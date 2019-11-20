@@ -27,7 +27,7 @@ __project__      = 'gpiozero'
 __version__      = '1.5.1'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@raspberrypi.org'
-__url__          = 'https://github.com/RPi-Distro/python-gpiozero'
+__url__          = 'https://github.com/gpiozero/gpiozero'
 __platforms__    = 'ALL'
 
 __classifiers__ = [

@@ -192,7 +192,13 @@ class SPIWarning(GPIOZeroWarning):
     "Base class for warnings related to the SPI implementation"
 
 class SPISoftwareFallback(SPIWarning):
-    "Warning raised when falling back to the software implementation"
+    "Warning raised when falling back to the SPI software implementation"
+
+class PWMWarning(GPIOZeroWarning):
+    "Base class for PWM warnings"
+
+class PWMSoftwareFallback(PWMWarning):
+    "Warning raised when falling back to the PWM software implementation"
 
 class PinWarning(GPIOZeroWarning):
     "Base class for warnings related to pin implementations"

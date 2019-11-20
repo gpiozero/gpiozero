@@ -1,6 +1,6 @@
 digraph classes {
     graph [rankdir=RL];
-    node [shape=rect, style=filled, fontname=Arial, fontsize=10];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
     edge [];
 
     /* Mixin classes */
@@ -53,7 +53,7 @@ digraph classes {
     DistanceSensor->SmoothedInputDevice;
     Energenie->Device;
     Energenie->SourceMixin;
-    FishDish->TrafficLightsBuzzer;
+    FishDish->CompositeOutputDevice;
     GPIODevice->Device;
     HoldMixin->EventsMixin;
     InputDevice->GPIODevice;
@@ -102,6 +102,7 @@ digraph classes {
     PiLiterBarGraph->LEDBarGraph;
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
     PingServer->InternalDevice;
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;
@@ -121,7 +122,7 @@ digraph classes {
     TimeOfDay->InternalDevice;
     TonalBuzzer->CompositeDevice;
     TonalBuzzer->SourceMixin;
-    TrafficHat->TrafficLightsBuzzer;
+    TrafficHat->CompositeOutputDevice;
     TrafficLights->LEDBoard;
     TrafficLightsBuzzer->CompositeOutputDevice;
 }

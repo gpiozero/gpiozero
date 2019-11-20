@@ -114,11 +114,11 @@ and ``my_function()`` (the result of calling a function).
 
 .. note::
 
-    Note that as of v1.5, setting a callback to ``None`` when it was previously
-    ``None`` will raise a :class:`CallbackSetToNone` warning, with the intention
-    of alerting users when callbacks are set to ``None`` accidentally. However,
-    if this is intentional, the warning can be suppressed. See the
-    :mod:`warnings` module for reference.
+    Note that as of v1.5, setting a callback to :data:`None` when it was
+    previously :data:`None` will raise a :class:`CallbackSetToNone` warning,
+    with the intention of alerting users when callbacks are set to :data:`None`
+    accidentally. However, if this is intentional, the warning can be
+    suppressed. See the :mod:`warnings` module for reference.
 
 .. _pinfactoryfallback-warnings:
 
@@ -392,8 +392,8 @@ more advanced projects.
 
 
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
-.. _GitHub issues: https://github.com/RPi-Distro/python-gpiozero/issues
-.. _commits: https://github.com/RPi-Distro/python-gpiozero/commits/master
+.. _GitHub issues: https://github.com/gpiozero/gpiozero/issues
+.. _commits: https://github.com/gpiozero/gpiozero/commits/master
 .. _Pygame Zero: https://pygame-zero.readthedocs.io/en/stable/
 .. _NetworkZero: https://networkzero.readthedocs.io/en/latest/
 .. _guizero: https://lawsie.github.io/guizero/

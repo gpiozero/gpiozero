@@ -37,7 +37,7 @@ Development
 
 The main GitHub repository for the project can be found at:
 
-    https://github.com/RPi-Distro/python-gpiozero
+    https://github.com/gpiozero/gpiozero
 
 For anybody wishing to hack on the project, we recommend starting off by
 getting to grips with some simple device classes. Pick something like
@@ -74,11 +74,11 @@ restarted your shell, continue:
 .. code-block:: console
 
     $ cd
-    $ mkvirtualenv -p /usr/bin/python3 python-gpiozero
-    $ workon python-gpiozero
-    (python-gpiozero) $ git clone https://github.com/RPi-Distro/python-gpiozero.git
-    (python-gpiozero) $ cd python-gpiozero
-    (python-gpiozero) $ make develop
+    $ mkvirtualenv -p /usr/bin/python3 gpiozero
+    $ workon gpiozero
+    (gpiozero) $ git clone https://github.com/gpiozero/gpiozero.git
+    (gpiozero) $ cd gpiozero
+    (gpiozero) $ make develop
 
 You will likely wish to install one or more pin implementations within the
 virtual environment (if you don't, GPIO Zero will use the "native" pin
@@ -87,7 +87,7 @@ like PWM):
 
 .. code-block:: console
 
-    (python-gpiozero) $ pip install rpi.gpio pigpio
+    (gpiozero) $ pip install rpi.gpio pigpio
 
 If you are working on SPI devices you may also wish to install the ``spidev``
 package to provide hardware SPI capabilities (again, GPIO Zero will work
@@ -96,25 +96,25 @@ instead which limits bandwidth):
 
 .. code-block:: console
 
-    (python-gpiozero) $ pip install spidev
+    (gpiozero) $ pip install spidev
 
 To pull the latest changes from git into your clone and update your
 installation:
 
 .. code-block:: console
 
-    $ workon python-gpiozero
-    (python-gpiozero) $ cd ~/python-gpiozero
-    (python-gpiozero) $ git pull
-    (python-gpiozero) $ make develop
+    $ workon gpiozero
+    (gpiozero) $ cd ~/gpiozero
+    (gpiozero) $ git pull
+    (gpiozero) $ make develop
 
 To remove your installation, destroy the sandbox and the clone:
 
 .. code-block:: console
 
-    (python-gpiozero) $ deactivate
-    $ rmvirtualenv python-gpiozero
-    $ rm -fr ~/python-gpiozero
+    (gpiozero) $ deactivate
+    $ rmvirtualenv gpiozero
+    $ rm -rf ~/gpiozero
 
 
 Building the docs
@@ -135,9 +135,9 @@ documentation:
 
 .. code-block:: console
 
-    $ workon python-gpiozero
-    (python-gpiozero) $ cd ~/python-gpiozero
-    (python-gpiozero) $ make doc
+    $ workon gpiozero
+    (gpiozero) $ cd ~/gpiozero
+    (gpiozero) $ make doc
 
 The HTML output is written to :file:`build/html` while the PDF output
 goes to :file:`build/latex`.
@@ -152,10 +152,10 @@ You'll also need to install some pip packages:
 
 .. code-block:: console
 
-    $ workon python-gpiozero
-    (python-gpiozero) $ pip install coverage mock pytest
-    (python-gpiozero) $ cd ~/python-gpiozero
-    (python-gpiozero) $ make test
+    $ workon gpiozero
+    (gpiozero) $ pip install coverage mock pytest
+    (gpiozero) $ cd ~/gpiozero
+    (gpiozero) $ make test
 
 The test suite expects pins 22 and 27 (by default) to be wired together in
 order to run the "real" pin tests. The pins used by the test suite can be
@@ -200,3 +200,12 @@ report of coverage from all environments:
 
 
 .. _Dead Snakes PPA: https://launchpad.net/~deadsnakes/%2Barchive/ubuntu/ppa
+
+
+Mock pins
+=========
+
+The test suite largely depends on the existence of the mock pin factory
+:class:`~gpiozero.pins.mock.MockFactory`, which is also useful for manual
+testing, for example in the Python shell or another REPL. See the section on
+:ref:`mock-pins` in the :doc:`api_pins` chapter for more information.

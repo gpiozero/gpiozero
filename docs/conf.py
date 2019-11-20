@@ -106,7 +106,7 @@ autodoc_member_order = 'groupwise'
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5', None),
+    'python': ('https://docs.python.org/3.7', None),
     'picamera': ('https://picamera.readthedocs.io/en/latest', None),
     'colorzero': ('https://colorzero.readthedocs.io/en/latest', None),
     }

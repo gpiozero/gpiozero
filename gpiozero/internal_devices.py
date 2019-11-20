@@ -111,8 +111,8 @@ class PingServer(InternalDevice):
     @property
     def value(self):
         """
-        Returns :data:`True` if the host returned a single ping, and
-        :data:`False` otherwise.
+        Returns :data:`1` if the host returned a single ping, and :data:`0`
+        otherwise.
         """
         # XXX This is doing a DNS lookup every time it's queried; should we
         # call gethostbyname in the constructor and ping that instead (good
@@ -124,9 +124,9 @@ class PingServer(InternalDevice):
                     ['ping', '-c1', self.host],
                     stdout=devnull, stderr=devnull)
             except subprocess.CalledProcessError:
-                return False
+                return 0
             else:
-                return True
+                return 1
 
 
 class CPUTemperature(InternalDevice):
@@ -414,18 +414,17 @@ class TimeOfDay(InternalDevice):
     @property
     def value(self):
         """
-        Returns :data:`True` when the system clock reads between
-        :attr:`start_time` and :attr:`end_time`, and :data:`False` otherwise.
-        If :attr:`start_time` is greater than :attr:`end_time` (indicating a
-        period that crosses midnight), then this returns :data:`True` when the
-        current time is greater than :attr:`start_time` or less than
-        :attr:`end_time`.
+        Returns :data:`1` when the system clock reads between :attr:`start_time`
+        and :attr:`end_time`, and :data:`0` otherwise. If :attr:`start_time` is
+        greater than :attr:`end_time` (indicating a period that crosses
+        midnight), then this returns :data:`1` when the current time is
+        greater than :attr:`start_time` or less than :attr:`end_time`.
         """
         now = datetime.utcnow().time() if self.utc else datetime.now().time()
         if self.start_time < self.end_time:
-            return self.start_time <= now <= self.end_time
+            return int(self.start_time <= now <= self.end_time)
         else:
-            return not self.end_time < now < self.start_time
+            return int(not self.end_time < now < self.start_time)
 
 
 class DiskUsage(InternalDevice):
