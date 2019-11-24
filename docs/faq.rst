@@ -49,9 +49,9 @@ The following script looks like it should turn an :class:`LED` on::
     led = LED(17)
     led.on()
 
-And it does, if you're using the Python (or IPython or IDLE) shell. However,
-if you saved this script as a Python file and ran it, it would flash on
-briefly, then the script would end and it would turn off.
+And it does, if you're using the Python or IPython shell, or the IDLE, Thonny or
+Mu editors. However, if you saved this script as a Python file and ran it, it
+would flash on briefly, then the script would end and it would turn off.
 
 The following file includes an intentional :func:`~signal.pause` to keep the
 script alive::
