@@ -775,7 +775,7 @@ class DistanceSensor(SmoothedInputDevice):
 
     Alternatively, the 3V3 tolerant HC-SR04P sensor (which does not require a
     voltage divider) will work with this class.
-    
+
 
     .. note::
 
@@ -864,7 +864,7 @@ class DistanceSensor(SmoothedInputDevice):
             self._max_distance = max_distance
             self.threshold = threshold_distance / max_distance
             self.speed_of_sound = 343.26 # m/s
-            self._trigger = GPIODevice(trigger)
+            self._trigger = GPIODevice(trigger, pin_factory=pin_factory)
             self._echo = Event()
             self._echo_rise = None
             self._echo_fall = None
@@ -877,7 +877,7 @@ class DistanceSensor(SmoothedInputDevice):
         except:
             self.close()
             raise
-        
+
         if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
             warnings.warn(PWMSoftwareFallback(
                 'For more accurate readings, use the pigpio pin factory.'
