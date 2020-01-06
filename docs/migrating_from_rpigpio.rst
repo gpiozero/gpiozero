@@ -304,8 +304,8 @@ In GPIO Zero::
 
     led = PWMLED(2)
 
-    for b in range(100):
-        led.value = b / 100
+    for b in range(101):
+        led.value = b / 100.0
         sleep(0.01)
 
 :class:`PWMLED` has a :meth:`~PWMLED.blink` method which can be used the same
