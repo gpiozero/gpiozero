@@ -293,7 +293,7 @@ In `RPi.GPIO`_::
     pwm = GPIO.PWM(2, 100)
     pwm.start(0)
 
-    for dc in range(100):
+    for dc in range(101):
         pwm.changeDutyCycle(dc)
         sleep(0.01)
 
