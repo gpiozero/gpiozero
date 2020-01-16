@@ -236,7 +236,7 @@ class DigitalOutputDevice(OutputDevice):
         self._stop_blink()
         self._write(False)
 
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
+    def blink(self, on_time=1, off_time=1, end_state=None, n=None, background=True, on_end=None):
         """
         Make the device turn on and off repeatedly.
 
@@ -245,6 +245,11 @@ class DigitalOutputDevice(OutputDevice):
 
         :param float off_time:
             Number of seconds off. Defaults to 1 second.
+
+        :type end_state: bool or None
+        :param end_state:
+            State to set after a full uninterrupted blink.
+            Defaults to None, on which no state will be set.
 
         :type n: int or None
         :param n:
@@ -255,10 +260,18 @@ class DigitalOutputDevice(OutputDevice):
             continue blinking and return immediately. If :data:`False`, only
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        : param on_end:
+            callback function to call after blink ended with parameters
+                self: the
+                uninterrupted:
+
         """
         self._stop_blink()
+        sequence = [(True, on_time), (False, off_time)]
         self._blink_thread = GPIOThread(
-            target=self._blink_device, args=(on_time, off_time, n)
+            target=self._blink_device, args=(sequence, n, end_state, on_end)
         )
         self._blink_thread.start()
         if not background:
@@ -273,15 +286,20 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread.stop()
         self._blink_thread = None
 
-    def _blink_device(self, on_time, off_time, n):
+    def _blink_device(self, sequence, n, end_state, on_end):
         iterable = repeat(0) if n is None else repeat(0, n)
+        uninterrupted = True
         for _ in iterable:
-            self._write(True)
-            if self._blink_thread.stopping.wait(on_time):
-                break
-            self._write(False)
-            if self._blink_thread.stopping.wait(off_time):
-                break
+            for state, wait_time in sequence:
+                self._write(state)
+                if self._blink_thread.stopping.wait(wait_time):
+                    uninterrupted = False
+                    break
+
+        if uninterrupted and end_state is not None:
+            self._write(end_state)
+        if on_end:
+            on_end(self, uninterrupted)
 
 
 class LED(DigitalOutputDevice):
