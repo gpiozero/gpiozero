@@ -170,6 +170,48 @@ def test_output_blink_interrupt_off(mock_factory):
         device.off() # should interrupt while off
         pin.assert_states([False, True, False])
 
+def test_output_blink_interrupt_end_state(mock_factory):
+    pin = mock_factory.pin(4)
+    with DigitalOutputDevice(4) as device:
+        device.blink(0.1, 1, end_state=True)
+        sleep(0.2)
+        device.off() # should interrupt, end_state should not be set
+        pin.assert_states([False, True, False])
+
+    with DigitalOutputDevice(4) as device:
+        device.blink(0.1, 0.1, n=1, end_state=True)
+        sleep(0.4)
+        # blink sequence should have ended, end_state should be set
+        pin.assert_states([False, True, False, True])
+
+def test_output_blink_interrupt_on_end(mock_factory):
+    callback = None
+
+    def on_end(first_parameter, second_parameter):
+        callback['was called'] = False
+        callback['first_parameter'] = first_parameter
+        callback['second_parameter'] = second_parameter
+
+    pin = mock_factory.pin(4)
+    with DigitalOutputDevice(4) as device:
+        callback = {'was called': False, 'first_parameter': None, 'second_parameter': None}
+        device.blink(0.1, 1, on_end=on_end)
+        sleep(0.2)
+        device.off() # should interrupt
+        assert callback['called' ]
+        assert callback['first_parameter'] == device
+        assert callback['second_parameter'] == False
+
+    with DigitalOutputDevice(4) as device:
+        callback = {'was called': False, 'first_parameter': None, 'second_parameter': None}
+        device.blink(0.1, 0.1, n=1, end_state=True)
+        sleep(0.4)
+        device.off()
+        # blink sequence should have ended uninterrupted
+        assert callback['was called']
+        assert callback['first_parameter'] == device
+        assert callback['second_parameter'] == True
+
 def test_output_pwm_bad_initial_value(mock_factory):
     with pytest.raises(ValueError):
         PWMOutputDevice(2, initial_value=2)
