@@ -59,8 +59,7 @@ together:
     pause()
 
 You can advance to using the declarative paradigm along with provided
- to describe the behaviour of devices and their
-interactions:
+to describe the behaviour of devices and their interactions:
 
 .. code:: python
 
