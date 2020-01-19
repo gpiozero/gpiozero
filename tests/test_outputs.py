@@ -198,7 +198,7 @@ def test_output_blink_interrupt_on_end(mock_factory):
         device.blink(0.1, 1, on_end=on_end)
         sleep(0.2)
         device.off() # should interrupt
-        assert callback['called' ]
+        assert callback['called']
         assert callback['first_parameter'] == device
         assert callback['second_parameter'] == False
 
