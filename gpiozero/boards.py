@@ -358,6 +358,9 @@ class LEDCollection(CompositeOutputDevice):
     @property
     def active_high(self):
         return self[0].active_high
+    
+    
+LEDCollection.is_lit = LEDCollection.is_active
 
 
 class LEDBoard(LEDCollection):
