@@ -60,6 +60,7 @@ try:
 except ImportError:
     PiGPIOFactory = None
 
+
 class OutputDevice(SourceMixin, GPIODevice):
     """
     Represents a generic GPIO output device.
@@ -577,6 +578,9 @@ class PWMOutputDevice(OutputDevice):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 0.
 
+        :param float fps:
+            sequence steps frequence for fading in Hz (steps per second)
+
         :type end_state: bool or None
         :param end_state:
             State to set after a full uninterrupted blink.
@@ -680,7 +684,7 @@ class PWMOutputDevice(OutputDevice):
         if on_end:
             on_end(self, not aborted)
 
-    def pulse(self, fade_in_time=0, fade_out_time=0, fps=25,
+    def pulse(self, fade_in_time=1, fade_out_time=1, fps=25,
               end_state=None,
               n=None, background=True, on_end=None):
         """
@@ -691,6 +695,9 @@ class PWMOutputDevice(OutputDevice):
 
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 1.
+
+        :param float fps:
+            sequence steps frequence for fading in Hz (steps per second)
 
         :type end_state: bool or None
         :param end_state:
@@ -1183,6 +1190,9 @@ class RGBLED(SourceMixin, Device):
             *pwm* was :data:`False` when the class was constructed
             (:exc:`ValueError` will be raised if not).
 
+        :param float fps:
+            sequence steps frequence for fading in Hz (steps per second)
+
         :type on_color: ~colorzero.Color or tuple
         :param on_color:
             The color to use when the LED is "on". Defaults to white.
@@ -1205,7 +1215,6 @@ class RGBLED(SourceMixin, Device):
             continue blinking and return immediately. If :data:`False`, only
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
-
 
         :type on_end: Callable[[RGBLED, bool], None] or None
         : param on_end:
@@ -1253,6 +1262,9 @@ class RGBLED(SourceMixin, Device):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 1.
 
+        :param float fps:
+            sequence steps frequence for fading in Hz (steps per second)
+
         :type on_color: ~colorzero.Color or tuple
         :param on_color:
             The color to use when the LED is "on". Defaults to white.
@@ -1261,15 +1273,26 @@ class RGBLED(SourceMixin, Device):
         :param off_color:
             The color to use when the LED is "off". Defaults to black.
 
+        :type end_color: ~colorzero.Color or tuple or None
+        :param end_color:
+            color to set after a full uninterrupted blink.
+            Defaults to None, on which no color will be set.
+
         :type n: int or None
         :param n:
-            Number of times to pulse; :data:`None` (the default) means forever.
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
             If :data:`True` (the default), start a background thread to
-            continue pulsing and return immediately. If :data:`False`, only
-            return when the pulse is finished (warning: the default value of
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
+
+        :type on_end: Callable[[RGBLED, bool], None] or None
+        : param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
         """
 
         self.blink(
@@ -1312,8 +1335,6 @@ class RGBLED(SourceMixin, Device):
             self._write(end_color)
         if on_end:
             on_end(self, not aborted)
-
-
 
 
 class Motor(SourceMixin, CompositeDevice):
@@ -1403,7 +1424,7 @@ class Motor(SourceMixin, CompositeDevice):
                 raise OutputDeviceBadValue(e)
         elif value < 0:
             try:
-               self.backward(-value)
+                self.backward(-value)
             except ValueError as e:
                 raise OutputDeviceBadValue(e)
         else:
@@ -1902,7 +1923,7 @@ class AngularServo(Servo):
         if initial_angle is None:
             initial_value = None
         elif ((min_angle <= initial_angle <= max_angle) or
-            (max_angle <= initial_angle <= min_angle)):
+              (max_angle <= initial_angle <= min_angle)):
             initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
         else:
             raise OutputDeviceBadValue(
