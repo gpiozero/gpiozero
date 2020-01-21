@@ -204,7 +204,7 @@ def test_output_blink_interrupt_on_end(mock_factory):
 
     with DigitalOutputDevice(4) as device:
         callback = {'was called': False, 'first_parameter': None, 'second_parameter': None}
-        device.blink(0.1, 0.1, n=1, end_state=True)
+        device.blink(0.1, 0.1, n=1, on_end=on_end)
         sleep(0.4)
         device.off()
         # blink sequence should have ended uninterrupted
@@ -454,6 +454,7 @@ def test_output_pwm_pulse_foreground(mock_factory, pwm):
             (0.04, 0),
             ])
 
+
 def test_output_pwm_blink_interrupt(mock_factory, pwm):
     pin = mock_factory.pin(4)
     with PWMOutputDevice(4) as device:
@@ -461,6 +462,59 @@ def test_output_pwm_blink_interrupt(mock_factory, pwm):
         sleep(0.2)
         device.off() # should interrupt while on
         pin.assert_states([0, 1, 0])
+
+def test_output_pwm_blink_end_value(mock_factory, pwm):
+    pin = mock_factory.pin(4)
+
+    with PWMOutputDevice(4) as device:
+        start = time()
+        device.blink(0.1, 0.1, n=1, end_value=1)
+        device._blink_thread.join()
+        pin.assert_states(
+            [0, # initial state
+             1, # 1st blink step
+             0, # 2nd blink step
+             1  # end_value as specified
+             ])
+
+    with PWMOutputDevice(4) as device:
+        device.blink(1, 0.1, end_value=1)
+        sleep(0.2)
+        device.off()  # should interrupt while on
+        pin.assert_states(
+            [0, # initial state
+             1, # 1st blink step
+             0  # off  (no end_state set b/c blink was interrupted)
+             ])
+
+def test_output_pwm_blink_on_end(mock_factory, pwm):
+    callback = None
+
+    def on_end(first_parameter, second_parameter):
+        callback['was called'] = False
+        callback['first_parameter'] = first_parameter
+        callback['second_parameter'] = second_parameter
+
+    pin = mock_factory.pin(4)
+
+    with PWMOutputDevice(4) as device:
+        callback = {'was called': False, 'first_parameter': None, 'second_parameter': None}
+        device.blink(0.1, 0.1, n=1, on_end=on_end)
+        sleep(0.4)
+        device.off()
+        # blink sequence should have ended uninterrupted
+        assert callback['was called']
+        assert callback['first_parameter'] == device
+        assert callback['second_parameter'] == True
+
+    with PWMOutputDevice(4) as device:
+        callback = {'was called': False, 'first_parameter': None, 'second_parameter': None}
+        device.blink(0.1, 1, on_end=on_end)
+        sleep(0.2)
+        device.off() # should interrupt
+        assert callback['called']
+        assert callback['first_parameter'] == device
+        assert callback['second_parameter'] == False
 
 def test_rgbled_missing_pins(mock_factory):
     with pytest.raises(GPIOPinMissing):
