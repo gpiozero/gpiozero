@@ -43,7 +43,8 @@ str = type('')
 from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
+
 try:
     from math import log2
 except ImportError:
@@ -1043,9 +1044,11 @@ class RGBLED(SourceMixin, Device):
         self._blink_thread = None
         if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
-        LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__(pin_factory=pin_factory)
-        self._leds = tuple(
+        LEDTuple = namedtuple('LEDTuple', ['red', 'green', 'blue'])
+        self.pwm = pwm
+        LEDClass = PWMLED if pwm else LED
+        self._leds = LEDTuple(
             LEDClass(pin, active_high, pin_factory=pin_factory)
             for pin in (red, green, blue)
         )
@@ -1080,15 +1083,24 @@ class RGBLED(SourceMixin, Device):
         self._stop_blink()
         self._write(color)
 
-    def _write(self, color):
-        if isinstance(self._leds[0], LED):
-            for component in color:
-                if component not in (0, 1):
-                    raise OutputDeviceBadValue(
-                        'each RGB color component must be 0 or 1 with non-PWM '
-                        'RGBLEDs')
+    def _check_value(self, value):
+        if self.pwm:
+            "PWMLED._write will check parameter, so we don't need to"
+            pass
+        else:
+            if value not in (0, 1):
+                raise OutputDeviceBadValue(
+                    'each RGB color component must be 0 or 1 with non-PWM '
+                    'RGBLEDs')
 
-        "PWMLED._write will check for itself, so we don't need to"
+    def _write(self, color):
+        if self.pwm:
+            "PWMLED._write will check parameter, so we don't need to"
+            pass
+        else:
+            for value in color:
+                self._check_value(value)
+
         for led, component in zip(self._leds, color):
             led._write(component)
 
@@ -1119,12 +1131,11 @@ class RGBLED(SourceMixin, Device):
         Represents the red element of the LED as a :class:`~colorzero.Red`
         object.
         """
-        return self.color.red
+        return self._leds.red.value
 
     @red.setter
     def red(self, value):
-        r, g, b = self.value
-        self.value = value, g, b
+        self._set_led( self._leds.red, value)
 
     @property
     def green(self):
@@ -1132,12 +1143,11 @@ class RGBLED(SourceMixin, Device):
         Represents the green element of the LED as a :class:`~colorzero.Green`
         object.
         """
-        return self.color.green
+        return self._leds.green.value
 
     @green.setter
     def green(self, value):
-        r, g, b = self.value
-        self.value = r, value, b
+        self._set_led( self._leds.green, value)
 
     @property
     def blue(self):
@@ -1149,8 +1159,12 @@ class RGBLED(SourceMixin, Device):
 
     @blue.setter
     def blue(self, value):
-        r, g, b = self.value
-        self.value = r, g, value
+        self._set_led( self._leds.blue, value)
+
+    def _set_led(self, led, value):
+        self._check_value(value)
+        self._stop_blink()
+        led._write(value)
 
     def on(self):
         """
@@ -1236,7 +1250,7 @@ class RGBLED(SourceMixin, Device):
         def interpolate_color(p):
             return tuple(PWMLED.interpolate_value(p, low, high) for low, high in zip(off_color, on_color))
 
-        if isinstance(self._leds[0], LED):
+        if not self.pwm:
             if fade_in_time:
                 raise ValueError('fade_in_time must be 0 with non-PWM RGBLEDs')
             if fade_out_time:
@@ -1312,12 +1326,6 @@ class RGBLED(SourceMixin, Device):
             end_color=end_color,
             n=n, background=background, on_end=on_end)
 
-    def _stop_blink(self, led=None):
-        # If this is called with a single led, we stop all blinking anyway
-        if self._blink_thread:
-            self._blink_thread.stop()
-            self._blink_thread = None
-
     def blink_sequence(self, sequence, end_color, n, on_end, background):
         self._stop_blink()
         self._blink_thread = GPIOThread(
@@ -1327,6 +1335,12 @@ class RGBLED(SourceMixin, Device):
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
+            self._blink_thread = None
+
+    def _stop_blink(self, led=None):
+        # If this is called with a single led, we stop all blinking anyway
+        if self._blink_thread:
+            self._blink_thread.stop()
             self._blink_thread = None
 
     def _blink_device(self, sequence, n, end_color, on_end):
