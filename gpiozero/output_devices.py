@@ -561,7 +561,8 @@ class PWMOutputDevice(OutputDevice):
     def blink(
             self,
             on_time=1, off_time=1, fade_in_time=0, fade_out_time=0, fps=25,
-            end_state=None,
+            on_value=1,  off_value=0,
+            end_value=None,
             n=None, background=True, on_end=None):
         """
         Make the device turn on and off repeatedly.
@@ -581,10 +582,22 @@ class PWMOutputDevice(OutputDevice):
         :param float fps:
             sequence steps frequence for fading in Hz (steps per second)
 
-        :type end_state: bool or None
-        :param end_state:
-            State to set after a full uninterrupted blink.
-            Defaults to None, on which no state will be set.
+        :type on_value: int
+        :param on_value:
+            Duty cycle of the PWM device if on.
+            0.0 is fully off, 1.0 is fully on.
+            Defaults to 1 (fully on).
+
+        :type off_value: int
+        :param off_value:
+            Duty cycle of the PWM device if off.
+            0.0 is fully off, 1.0 is fully on.
+            Defaults to 0 (fully off).
+
+        :type end_value: int or None
+        :param end_value:
+            Duty cycle value to set after a full uninterrupted blink.
+            Defaults to None (no value will be set).
 
         :type n: int or None
         :param n:
@@ -602,8 +615,6 @@ class PWMOutputDevice(OutputDevice):
                 self: the device
                 uninterrupted: True if the blinking sequence ended gracefully else False
         """
-        off_value = 0
-        on_value = 1
         delta_t = 1 / fps
 
         sequence = []
@@ -621,9 +632,9 @@ class PWMOutputDevice(OutputDevice):
                 sequence += (self.interpolate_value(percent, off_value, on_value), delta_t)
                 t += delta_t
         sequence += (0, off_time)
-        self.blink_sequence(sequence, end_state, n, on_end, background)
+        self.blink_sequence(sequence, end_value, n, on_end, background)
 
-    def blink_sequence(self, sequence, end_state, n, on_end, background):
+    def blink_sequence(self, sequence, end_value, n, on_end, background):
         """
         make the device blink in a specified pattern
 
@@ -631,10 +642,10 @@ class PWMOutputDevice(OutputDevice):
         :param sequence:
             sequence of blink pattern as [(state, delay), ...]
 
-        :type end_state: bool or None
-        :param end_state:
-            State to set after a full uninterrupted blink.
-            Defaults to None, on which no state will be set.
+        :type end_value: bool or None
+        :param end_value:
+            value to set after a full uninterrupted blink.
+            Defaults to None, on which no value will be set.
 
         :type n: int or None
         :param n:
@@ -654,7 +665,7 @@ class PWMOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device, args=(sequence, n, end_state, on_end)
+            target=self._blink_device, args=(sequence, n, end_value, on_end)
         )
         self._blink_thread.start()
         if not background:
@@ -669,7 +680,7 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.stop()
         self._blink_thread = None
 
-    def _blink_device(self, sequence, n, end_state, on_end):
+    def _blink_device(self, sequence, n, end_value, on_end):
         iterable = repeat(0) if n is None else repeat(0, n)
         aborted = False
         for _ in iterable:
@@ -679,8 +690,8 @@ class PWMOutputDevice(OutputDevice):
                     aborted = True
                     break
 
-        if not aborted and end_state is not None:
-            self._write(end_state)
+        if not aborted and end_value is not None:
+            self._write(end_value)
         if on_end:
             on_end(self, not aborted)
 
@@ -722,7 +733,7 @@ class PWMOutputDevice(OutputDevice):
         """
         self.blink(
             on_time=0, off_time=0, fade_in_time=fade_in_time, fade_out_time=fade_out_time,
-            end_state=end_state, fps=fps,
+            end_value=end_state, fps=fps,
             n=n, background=background, on_end=on_end
         )
 
