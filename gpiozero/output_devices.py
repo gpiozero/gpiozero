@@ -238,7 +238,9 @@ class DigitalOutputDevice(OutputDevice):
         self._stop_blink()
         self._write(False)
 
-    def blink(self, on_time=1, off_time=1, end_state=None, n=None, background=True, on_end=None):
+    def blink(self,
+              on_time=1, off_time=1, end_state=None,
+              n=None, background=True, on_end=None):
         """
         Make the device turn on and off repeatedly.
 
@@ -583,13 +585,13 @@ class PWMOutputDevice(OutputDevice):
         :param float fps:
             sequence steps frequence for fading in Hz (steps per second)
 
-        :type on_value: int
+        :type on_value: float
         :param on_value:
             Duty cycle of the PWM device if on.
             0.0 is fully off, 1.0 is fully on.
             Defaults to 1 (fully on).
 
-        :type off_value: int
+        :type off_value: float
         :param off_value:
             Duty cycle of the PWM device if off.
             0.0 is fully off, 1.0 is fully on.
@@ -625,14 +627,14 @@ class PWMOutputDevice(OutputDevice):
                 percent = t / fade_in_time
                 sequence += (self.interpolate_value(percent, off_value, on_value), delta_t)
                 t += delta_t
-        sequence += (1, on_time)
+        sequence += (on_value, on_time)
         if fade_out_time > 0:
             t = delta_t
             while t <= fade_out_time:
                 percent = 1 - t / fade_out_time
                 sequence += (self.interpolate_value(percent, off_value, on_value), delta_t)
                 t += delta_t
-        sequence += (0, off_time)
+        sequence += (off_value, off_time)
         self.blink_sequence(sequence, end_value, n, on_end, background)
 
     def blink_sequence(self, sequence, end_value, n, on_end, background):
@@ -697,7 +699,7 @@ class PWMOutputDevice(OutputDevice):
             on_end(self, not aborted)
 
     def pulse(self, fade_in_time=1, fade_out_time=1, fps=25,
-              end_state=None,
+              on_value=1, off_value=0, end_value=None,
               n=None, background=True, on_end=None):
         """
         Make the device fade in and out repeatedly.
@@ -711,8 +713,18 @@ class PWMOutputDevice(OutputDevice):
         :param float fps:
             sequence steps frequence for fading in Hz (steps per second)
 
-        :type end_state: bool or None
-        :param end_state:
+        :param float on_value:
+            Duty cycle of the PWM device if on.
+            0.0 is fully off, 1.0 is fully on.
+            Defaults to 1 (fully on).
+
+        :param float off_value:
+            Duty cycle of the PWM device if off.
+            0.0 is fully off, 1.0 is fully on.
+            Defaults to 0 (fully off).
+
+        :type end_value: float or None
+        :param end_value:
             State to set after a full uninterrupted blink.
             Defaults to None, on which no state will be set.
 
@@ -734,7 +746,7 @@ class PWMOutputDevice(OutputDevice):
         """
         self.blink(
             on_time=0, off_time=0, fade_in_time=fade_in_time, fade_out_time=fade_out_time,
-            end_value=end_state, fps=fps,
+            fps=fps, on_value=on_value, off_value=off_value, end_value=end_value,
             n=n, background=background, on_end=on_end
         )
 
