@@ -597,7 +597,7 @@ class PWMOutputDevice(OutputDevice):
             0.0 is fully off, 1.0 is fully on.
             Defaults to 0 (fully off).
 
-        :type end_value: int or None
+        :type end_value: float or None
         :param end_value:
             Duty cycle value to set after a full uninterrupted blink.
             Defaults to None (no value will be set).
@@ -692,7 +692,6 @@ class PWMOutputDevice(OutputDevice):
                 if self._blink_thread.stopping.wait(delay):
                     aborted = True
                     break
-
         if not aborted and end_value is not None:
             self._write(end_value)
         if on_end:
