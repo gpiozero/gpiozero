@@ -210,8 +210,7 @@ def test_output_blink_interrupt_end_state(mock_factory):
 def test_output_blink_end_state(mock_factory):
     pin = mock_factory.pin(4)
     with DigitalOutputDevice(4) as device:
-        device.blink(0.1, 0.1, n=2, end_state=True)
-        sleep(0.5)
+        device.blink(0.1, 0.1, n=2, end_state=True, background=False)
         # blink sequence should have ended, end_state should be set
         assert len(pin.states) == 6
         assert pin.states[0].state == False   # initial         
@@ -250,13 +249,11 @@ def test_output_blink_interrupt_on_end(mock_factory):
         assert callback['second_parameter'] == True   
         pin.assert_states([False, True, False, True])
 
-
 def test_output_blink_sequence(mock_factory):
     pin = mock_factory.pin(4)
     with DigitalOutputDevice(4) as device:
-        sequence = []
-        device.blink(0.1, 0.1, n=2, end_state=True)
-        sleep(0.5)
+        sequence = [(True, 0.1), (False, 0.2), (True, 0.3), (False, 0.4)]
+        device.blink_sequence(sequence, n=2, end_state=True, background=False)
         # blink sequence should have ended, end_state should be set
         assert len(pin.states) == 6
         assert pin.states[0].state == False   # initial         

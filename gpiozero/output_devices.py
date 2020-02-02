@@ -236,7 +236,8 @@ class DigitalOutputDevice(OutputDevice):
         self._stop_blink()
         self._write(False)
 
-    def blink(self, on_time, off_time, n=None, background=True, end_state=None, on_end=None):
+    def blink(self, on_time=1, off_time=1, end_state=None,
+              n=None, background=True, on_end=None):
         """
         Make the device turn on and off repeatedly.
 
@@ -245,6 +246,11 @@ class DigitalOutputDevice(OutputDevice):
 
         :param float off_time:
             Number of seconds off. Defaults to 1 second.
+
+        :type end_state: bool or None
+        :param end_state:
+            State to set after a full uninterrupted blink.
+            Defaults to None, on which no state will be set.
 
         :type n: int or None
         :param n:
@@ -255,23 +261,51 @@ class DigitalOutputDevice(OutputDevice):
             continue blinking and return immediately. If :data:`False`, only
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
-            
-        :type end_state: bool or None
-        :param end_state:
-            the end state of the device after all sequences finished uninterrupted.
-            :data:`None` (the default) means no end state will be set.
-            
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        : param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
         """
         self._stop_blink()
-        sequence = [ (on_time, True), (off_time, False)]
+        sequence = [(True, on_time), (False, off_time)]
         self.blink_sequence(sequence, n, background, end_state, on_end)
-        
-     def blink_sequence(self, sequence, n=None, background=True, end_state=None, on_end=None):        
+
+    def blink_sequence(self, sequence, end_state=None, n=None, background=True, on_end=None):
+        """
+        Make the device turn on and off according to a sequence list.
+
+        :type sequence: List[Tuple(bool, float)]
+        :param sequence:
+            list of value sets. Each value set consists of a value and a duration for this value.
+
+        :type end_state: bool or None
+        :param end_state:
+            State to set after a full uninterrupted blink.
+            Defaults to None, on which no state will be set.
+
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        : param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
+        """
         self._blink_thread = GPIOThread(
             target=self._blink_device, args=(sequence, n, end_state, on_end)
         )
         self._blink_thread.start()
-        if not background:            
+        if not background:
             self._blink_thread.join()
             self._blink_thread = None
 
@@ -284,18 +318,18 @@ class DigitalOutputDevice(OutputDevice):
         self._blink_thread = None
 
     def _blink_device(self, sequence, n, end_state, on_end):            
-        def iterate_sequences(sequence, n):
-            if n is None:
-                n = 1
-            while n > 0:
-                for delay, value in sequence:
+        def iterate_sequence(times):
+            if times is None:
+                times = 1
+            while times > 0:
+                for value, duration in sequence:
                     self._write(value)
-                    if self._blink_thread.stopping.wait(delay):
+                    if self._blink_thread.stopping.wait(duration):
                         return True
-                n -= 1                
+                times -= 1
             return False
             
-        stopped = iterate_sequences(sequence, n)
+        stopped = iterate_sequence(times=n)
         if not stopped and end_state is not None:
             self._write(end_state)
         if on_end:
