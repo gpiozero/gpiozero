@@ -268,9 +268,10 @@ class DigitalOutputDevice(OutputDevice):
                 self: the device
                 uninterrupted: True if the blinking sequence ended gracefully else False
         """
-        self._stop_blink()
-        sequence = [(True, on_time), (False, off_time)]
-        self.blink_sequence(sequence, n, background, end_state, on_end)
+        self.blink_sequence(
+            sequence=[(True, on_time), (False, off_time)],
+            end_state=end_state, n=n, background=background, on_end=on_end
+        )
 
     def blink_sequence(self, sequence, end_state=None, n=None, background=True, on_end=None):
         """
@@ -301,6 +302,7 @@ class DigitalOutputDevice(OutputDevice):
                 self: the device
                 uninterrupted: True if the blinking sequence ended gracefully else False
         """
+        self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device, args=(sequence, n, end_state, on_end)
         )
@@ -318,22 +320,20 @@ class DigitalOutputDevice(OutputDevice):
         self._blink_thread = None
 
     def _blink_device(self, sequence, n, end_state, on_end):            
-        def iterate_sequence(times):
-            if times is None:
-                times = 1
-            while times > 0:
+        def iterate_sequence():
+            iterable = repeat(0) if n is None else repeat(0, n)           
+            for _ in iterable:
                 for value, duration in sequence:
                     self._write(value)
                     if self._blink_thread.stopping.wait(duration):
                         return True
-                times -= 1
             return False
             
-        stopped = iterate_sequence(times=n)
+        stopped = iterate_sequence()
         if not stopped and end_state is not None:
             self._write(end_state)
         if on_end:
-            on_end(id(self), not stopped)
+            on_end(self, not stopped)
 
 
 class LED(DigitalOutputDevice):

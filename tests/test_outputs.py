@@ -126,7 +126,7 @@ def test_output_blink_background(mock_factory):
     pin = mock_factory.pin(4)
     with DigitalOutputDevice(4) as device:
         start = time()
-        device.blink(0.1, 0.1, n=2)
+        device.blink(0.1, 0.1, n=2, background=True)
         assert isclose(time() - start, 0, abs_tol=0.05)
         device._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
         assert isclose(time() - start, 0.4, abs_tol=0.05)
@@ -177,11 +177,11 @@ def test_output_blink_interrupt_end_state(mock_factory):
         sleep(0.35)
         device.off() # should interrupt, end_state should not be set
         assert len(pin.states) == 5
-        assert pin.states[0].state == False   # initial     
-        assert pin.states[1].state == True    # blink on
-        assert pin.states[2].state == False   # blink off
-        assert pin.states[3].state == True    # blink on
-        assert pin.states[4].state == False   # blink off
+        assert pin.states[0].state is False   # initial
+        assert pin.states[1].state is True    # blink on
+        assert pin.states[2].state is False   # blink off
+        assert pin.states[3].state is True    # blink on
+        assert pin.states[4].state is False   # blink off
 
     pin = mock_factory.pin(5)
     with DigitalOutputDevice(5) as device:
@@ -189,65 +189,55 @@ def test_output_blink_interrupt_end_state(mock_factory):
         sleep(0.35)
         device.off() # should interrupt, end_state should not be set
         assert len(pin.states) == 5
-        assert pin.states[0].state == False   # initial     
-        assert pin.states[1].state == True    # blink on
-        assert pin.states[2].state == False   # blink off
-        assert pin.states[3].state == True    # blink on
-        assert pin.states[4].state == False   # blink off
-        
-    pin = mock_factory.pin(6)
-    with DigitalOutputDevice(6) as device:
-        device.blink(0.1, 0.1, n=3, end_state=False)
-        sleep(0.35)
-        device.off() # should interrupt, end_state should not be set
-        assert len(pin.states) == 5
-        assert pin.states[0].state == False   # initial     
-        assert pin.states[1].state == True    # blink on
-        assert pin.states[2].state == False   # blink off
-        assert pin.states[3].state == True    # blink on
-        assert pin.states[4].state == False   # blink off
+        pin.assert_states([
+            False,   # initial
+            True,    # blink on
+            False,   # blink off
+            True,    # blink on
+            False,   # blink off
+        ])        
         
 def test_output_blink_end_state(mock_factory):
     pin = mock_factory.pin(4)
     with DigitalOutputDevice(4) as device:
-        device.blink(0.1, 0.1, n=2, end_state=True, background=False)
-        # blink sequence should have ended, end_state should be set
-        assert len(pin.states) == 6
-        assert pin.states[0].state == False   # initial         
-        assert pin.states[1].state == True    # blink on
-        assert pin.states[2].state == False   # blink off  
-        assert pin.states[3].state == True    # blink on    
-        assert pin.states[4].state == False   # blink off
-        assert pin.states[5].state == True    # set end_state        
+        device.blink(0.1, 0.1, n=2, background=False, end_state=None)
+        assert not pin.state
 
-def test_output_blink_interrupt_on_end(mock_factory):
+    pin = mock_factory.pin(5)
+    with DigitalOutputDevice(5) as device:
+        device.blink(0.1, 0.1, n=2, background=False, end_state=False)
+        assert not pin.state
+
+    pin = mock_factory.pin(6)
+    with DigitalOutputDevice(6) as device:
+        device.blink(0.1, 0.1, n=2, background=False, end_state=True)
+        assert pin.state
+
+def test_output_blink_on_end(mock_factory):
     callback = {'was called': False, 'first_parameter': "Undefined", 'second_parameter': "Undefined"}
 
     def on_end(first_parameter, second_parameter):
         callback['was called'] = True
-        callback['first_parameter'] = first_parameter
+        callback['first_parameter'] = repr(first_parameter)
         callback['second_parameter'] = second_parameter
 
     pin = mock_factory.pin(4)
     with DigitalOutputDevice(4) as device:
-        device.blink(0.1, 1, on_end=on_end, end_state=True)
-        sleep(0.2)
-        device.off() # should interrupt
+        device.blink(0.1, 0.1, n=2, background=False, on_end=on_end, end_state=True)
+        assert pin.state is True
         assert callback['was called']
-        assert callback['first_parameter'] == id(device)
-        assert callback['second_parameter'] == False   
-        pin.assert_states([False, True, False, True])
+        assert callback['first_parameter'] == '<gpiozero.DigitalOutputDevice object on pin GPIO4, active_high=True, is_active=True>'
+        assert callback['second_parameter'] is True
 
     pin = mock_factory.pin(5)
     with DigitalOutputDevice(5) as device:
-        device.blink(0.1, 0.1, n=1, on_end=on_end, end_state=True)
-        sleep(0.4)
-        device.off()
-        # blink sequence should have ended uninterrupted        
+        device.blink(0.1, 0.1, n=5, background=True, on_end=on_end, end_state=True)
+        sleep(0.35)
+        device.off() # should interrupt
+        assert pin.state is False
         assert callback['was called']
-        assert callback['first_parameter'] == id(device)
-        assert callback['second_parameter'] == True   
-        pin.assert_states([False, True, False, True])
+        assert callback['first_parameter'] == '<gpiozero.DigitalOutputDevice object on pin GPIO5, active_high=True, is_active=False>'
+        assert callback['second_parameter'] is False
 
 def test_output_blink_sequence(mock_factory):
     pin = mock_factory.pin(4)
@@ -255,13 +245,19 @@ def test_output_blink_sequence(mock_factory):
         sequence = [(True, 0.1), (False, 0.2), (True, 0.3), (False, 0.4)]
         device.blink_sequence(sequence, n=2, end_state=True, background=False)
         # blink sequence should have ended, end_state should be set
-        assert len(pin.states) == 6
-        assert pin.states[0].state == False   # initial         
-        assert pin.states[1].state == True    # blink on
-        assert pin.states[2].state == False   # blink off  
-        assert pin.states[3].state == True    # blink on    
-        assert pin.states[4].state == False   # blink off
-        assert pin.states[5].state == True    # set end_state
+        assert len(pin.states) == 10
+        pin.assert_states_and_times([
+            (0.0, False),
+            (0.0, True),
+            (0.1, False),
+            (0.2, True),
+            (0.3, False),
+            (0.4, True),
+            (0.1, False),
+            (0.2, True),
+            (0.3, False),
+            (0.4, True), # end set
+            ])
         
 def test_output_pwm_bad_initial_value(mock_factory):
     with pytest.raises(ValueError):
