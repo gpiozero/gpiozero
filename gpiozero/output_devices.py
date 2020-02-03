@@ -38,6 +38,9 @@ from __future__ import (
     absolute_import,
     division,
 )
+
+from time import time
+
 str = type('')
 
 from typing import *
@@ -323,12 +326,16 @@ class DigitalOutputDevice(OutputDevice):
 
     def _blink_device(self, sequence, n, end_state, on_end):
         def iterate_sequence():
+            t = time()
             iterable = repeat(0) if n is None else repeat(0, n)           
             for _ in iterable:
                 for value, duration in sequence:
                     self._write(value)
-                    if self._blink_thread.stopping.wait(duration):
-                        return True
+                    t += duration
+                    delay = t - time()
+                    if delay > 0:
+                        if self._blink_thread.stopping.wait(delay):
+                            return True
             return False
             
         stopped = iterate_sequence()
@@ -732,12 +739,16 @@ class PWMOutputDevice(OutputDevice):
 
     def _blink_device(self, sequence, n, end_value, on_end):
         def iterate_sequence():
+            t = time()
             iterable = repeat(0) if n is None else repeat(0, n)
             for _ in iterable:
                 for value, duration in sequence:
                     self._write(value)
-                    if self._blink_thread.stopping.wait(duration):
-                        return True
+                    t += duration
+                    delay = t - time()
+                    if delay > 0:
+                        if self._blink_thread.stopping.wait(delay):
+                            return True
             return False
 
         stopped = iterate_sequence()
@@ -1400,14 +1411,18 @@ class RGBLED(SourceMixin, Device):
 
     def _blink_sequence(self, sequence, n, end_color, on_end):
         def iterate_sequence():
+            t = time()
             red_pin, green_pin, blue_pin = self._leds
             iterable = repeat(0) if n is None else repeat(0, n)
             for _ in iterable:
                 for color, duration in sequence:
                     for led, value in zip(self._leds, color):
                         led._write(value)
-                    if self._blink_thread.stopping.wait(duration):
-                        return True
+                    t += duration
+                    delay = t - time()
+                    if delay > 0:
+                        if self._blink_thread.stopping.wait(duration):
+                            return True
             return False
 
         stopped = iterate_sequence()
