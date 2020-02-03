@@ -281,7 +281,7 @@ class DigitalOutputDevice(OutputDevice):
         """
         Make the device turn on and off according to a sequence list.
 
-        :type sequence: List[Tuple(bool, float)]
+        :type sequence: List[Tuple[bool, float]]
         :param sequence:
             list of value sets. Each value set consists of a value and a duration for this value.
 
@@ -609,7 +609,7 @@ class PWMOutputDevice(OutputDevice):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[PWMOutputDevice, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
@@ -656,7 +656,7 @@ class PWMOutputDevice(OutputDevice):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[PWMOutputDevice, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
@@ -670,7 +670,7 @@ class PWMOutputDevice(OutputDevice):
         """
         Make the device turn on and off according to a sequence list.
 
-        :type sequence: List[Tuple(float, float)]
+        :type sequence: List[Tuple[float, float]]
         :param sequence:
             list of value sets. Each value set consists of a value and a duration for this value.
 
@@ -689,7 +689,7 @@ class PWMOutputDevice(OutputDevice):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[PWMOutputDevice, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
@@ -1268,7 +1268,7 @@ class RGBLED(SourceMixin, Device):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[RGBLED, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
@@ -1325,7 +1325,7 @@ class RGBLED(SourceMixin, Device):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[RGBLED, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
@@ -1374,7 +1374,7 @@ class RGBLED(SourceMixin, Device):
         """
         Make the device turn on and off according to a sequence list.
 
-        :type sequence: List[Tuple(bool, Union[~colorzero.Color,tuple])]
+        :type sequence: List[Tuple[bool, Union[~colorzero.Color, Tuple[float, float, float]]]]
         :param sequence:
             list of value sets. Each value set consists of a value and a duration for this value.
 
@@ -1393,7 +1393,7 @@ class RGBLED(SourceMixin, Device):
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
 
-        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :type on_end: Callable[[RGBLED, bool], None] or None
         :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
