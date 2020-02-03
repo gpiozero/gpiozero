@@ -297,7 +297,7 @@ class DigitalOutputDevice(OutputDevice):
             *n* will result in this method never returning).
 
         :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
-        : param on_end:
+        :param on_end:
             callback function to call after blink ended with parameters
                 self: the device
                 uninterrupted: True if the blinking sequence ended gracefully else False
@@ -319,7 +319,7 @@ class DigitalOutputDevice(OutputDevice):
             self._blink_thread.stop()
         self._blink_thread = None
 
-    def _blink_device(self, sequence, n, end_state, on_end):            
+    def _blink_device(self, sequence, n, end_state, on_end):
         def iterate_sequence():
             iterable = repeat(0) if n is None else repeat(0, n)           
             for _ in iterable:
@@ -551,9 +551,9 @@ class PWMOutputDevice(OutputDevice):
     def frequency(self, value):
         self.pin.frequency = value
 
-    def blink(
-            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
-            n=None, background=True, end_value = None, on_end = None):
+    def blink(self,
+              on_time=1, off_time=1, fade_in_time=0, fade_out_time=0, on_value=1, off_value=0, end_value=None,
+              fps=25, n=None, background=True, on_end=None):
         """
         Make the device turn on and off repeatedly.
 
@@ -569,6 +569,22 @@ class PWMOutputDevice(OutputDevice):
         :param float fade_out_time:
             Number of seconds to spend fading out. Defaults to 0.
 
+        :param float on_value:
+            value during on_time.
+            Defaults to 1 (full on).
+
+        :param float off_value:
+            value during off_time.
+            Defaults to 0 (full off).
+
+        :type end_value: float or None
+        :param end_value:
+            value to set after a full uninterrupted blink.
+            Defaults to None, on which no value will be set.
+
+        :param int fps:
+            frames per second. Defaults to 25 Hz.
+
         :type n: int or None
         :param n:
             Number of times to blink; :data:`None` (the default) means forever.
@@ -578,41 +594,125 @@ class PWMOutputDevice(OutputDevice):
             continue blinking and return immediately. If :data:`False`, only
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
+        """
+        sequence = self._calculate_sequence(on_value, fade_in_time, on_time, off_value, fade_out_time, off_time, fps)
+        self.blink_sequence(sequence, end_value=end_value, n=n, background=background, on_end=on_end)
+
+    def pulse(self,
+              fade_in_time=1, fade_out_time=1, on_value=1, off_value=0, end_value=None,
+              fps=25, n=None, background=True, on_end=None):
+        """
+        Make the device fade in and out repeatedly.
+
+        :param float fade_in_time:
+            Number of seconds to spend fading in. Defaults to 1 second.
+
+        :param float fade_out_time:
+            Number of seconds to spend fading out. Defaults to 1 second.
+
+        :param float on_value:
+            value during on_time.
+            Defaults to 1 (full on).
+
+        :param float off_value:
+            value during off_time.
+            Defaults to 0 (full off).
+
+        :type end_value: float or None
+        :param end_value:
+            value to set after a full uninterrupted blink.
+            Defaults to None, on which no value will be set.
+
+        :param int fps:
+            frames per second. Defaults to 25 Hz.
+
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
+        """
+        on_time = off_time = 0
+        sequence = self._calculate_sequence(on_value, fade_in_time, on_time, off_value, fade_out_time, off_time, fps)
+        self.blink_sequence(sequence, end_value=end_value, n=n, background=background, on_end=on_end)
+
+    def blink_sequence(self, sequence, end_value=None, n=None, background=True, on_end=None):
+        """
+        Make the device turn on and off according to a sequence list.
+
+        :type sequence: List[Tuple(float, float)]
+        :param sequence:
+            list of value sets. Each value set consists of a value and a duration for this value.
+
+        :type end_value: float or None
+        :param end_value:
+            State to set after a full uninterrupted blink.
+            Defaults to None, on which no state will be set.
+
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
             target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n)
+            args=(sequence, n, end_value, on_end)
         )
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
 
-    def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
-        """
-        Make the device fade in and out repeatedly.
+    @staticmethod
+    def interpolate_value(y0, y1, delta_x, x):
+        return (y0 * (delta_x - x) + y1 * x) / delta_x
 
-        :param float fade_in_time:
-            Number of seconds to spend fading in. Defaults to 1.
-
-        :param float fade_out_time:
-            Number of seconds to spend fading out. Defaults to 1.
-
-        :type n: int or None
-        :param n:
-            Number of times to pulse; :data:`None` (the default) means forever.
-
-        :param bool background:
-            If :data:`True` (the default), start a background thread to
-            continue pulsing and return immediately. If :data:`False`, only
-            return when the pulse is finished (warning: the default value of
-            *n* will result in this method never returning).
-        """
-        on_time = off_time = 0
-        self.blink(
-            on_time, off_time, fade_in_time, fade_out_time, n, background
-        )
+    def _calculate_sequence(self, on_value, fade_in_time, on_time, off_value, fade_out_time, off_time, fps):
+        sequence = []
+        delta_t = 1 / fps
+        'calculate fade in values'
+        t = 0
+        while t < fade_in_time:
+            value = self.interpolate_value(off_value, on_value, fade_in_time, t)
+            sequence.append((value, delta_t))
+            t += delta_t
+        sequence.append((on_value, on_time))
+        'calculate fade out values'
+        t = 0
+        while t < fade_out_time:
+            value = self.interpolate_value(on_value, off_value, fade_out_time, t)
+            sequence.append((value, delta_t))
+            t += delta_t
+        sequence.append((off_value, off_time))
+        return sequence
 
     def _stop_blink(self):
         if self._controller:
@@ -622,29 +722,21 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_device(
-            self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
-        sequence = []
-        if fade_in_time > 0:
-            sequence += [
-                (i * (1 / fps) / fade_in_time, 1 / fps)
-                for i in range(int(fps * fade_in_time))
-                ]
-        sequence.append((1, on_time))
-        if fade_out_time > 0:
-            sequence += [
-                (1 - (i * (1 / fps) / fade_out_time), 1 / fps)
-                for i in range(int(fps * fade_out_time))
-                ]
-        sequence.append((0, off_time))
-        sequence = (
-                cycle(sequence) if n is None else
-                chain.from_iterable(repeat(sequence, n))
-                )
-        for value, delay in sequence:
-            self._write(value)
-            if self._blink_thread.stopping.wait(delay):
-                break
+    def _blink_device(self, sequence, n, end_value, on_end):
+        def iterate_sequence():
+            iterable = repeat(0) if n is None else repeat(0, n)
+            for _ in iterable:
+                for value, duration in sequence:
+                    self._write(value)
+                    if self._blink_thread.stopping.wait(duration):
+                        return True
+            return False
+
+        stopped = iterate_sequence()
+        if not stopped and end_value is not None:
+            self._write(end_value)
+        if on_end:
+            on_end(self, not stopped)
 
 
 class TonalBuzzer(SourceMixin, CompositeDevice):
