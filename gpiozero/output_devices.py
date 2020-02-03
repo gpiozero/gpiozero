@@ -43,7 +43,6 @@ from time import time
 
 str = type('')
 
-from typing import *
 from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
