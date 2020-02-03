@@ -552,6 +552,7 @@ def test_output_pwm_blink_end_value(mock_factory, pwm):
         assert pin.states[-1].state == 0.0
         assert pin.state == 0.0
 
+
 def test_output_pwm_blink_on_end(mock_factory, pwm):
     callback = {'was called': False, 'first_parameter': "Undefined", 'second_parameter': "Undefined"}
 
@@ -565,18 +566,17 @@ def test_output_pwm_blink_on_end(mock_factory, pwm):
         device.blink(0.1, 0.1, n=2, background=False, end_value=0.75, on_end=on_end)
         assert callback['was called'] is True
         assert callback['first_parameter'] \
-               == '<gpiozero.PWMOutputDevice object on pin GPIO4, active_high=True, is_active=True>'
+            == '<gpiozero.PWMOutputDevice object on pin GPIO4, active_high=True, is_active=True>'
         assert callback['second_parameter'] is True
-
 
     pin = mock_factory.pin(5)
     with PWMOutputDevice(5) as device:
         device.blink(0.1, 0.1, n=5, background=True, on_end=on_end)
         sleep(0.35)
-        device.off() # should interrupt
+        device.off()  # should interrupt
         assert callback['was called'] is True
         assert callback['first_parameter'] \
-               == '<gpiozero.PWMOutputDevice object on pin GPIO5, active_high=True, is_active=False>'
+            == '<gpiozero.PWMOutputDevice object on pin GPIO5, active_high=True, is_active=False>'
         assert callback['second_parameter'] is False
 
 def test_rgbled_missing_pins(mock_factory):
@@ -1126,6 +1126,88 @@ def test_rgbled_blink_interrupt_nonpwm(mock_factory):
         r.assert_states([0, 1, 0])
         g.assert_states([0, 1, 0])
         b.assert_states([0, 1, 0])
+
+
+def test_rgbled_blink_on_end(mock_factory, pwm):
+    callback = {'was called': False, 'first_parameter': "Undefined", 'second_parameter': "Undefined"}
+
+    def on_end(first_parameter, second_parameter):
+        callback['was called'] = True
+        callback['first_parameter'] = repr(first_parameter)
+        callback['second_parameter'] = second_parameter
+
+    r, g, b = (mock_factory.pin(i) for i in (1, 2, 3))
+    with RGBLED(1, 2, 3, pwm=True) as led:
+        end_color = Color('skyblue')
+        led.blink(0.1, 0.1, n=2, background=False, end_color=end_color, on_end=on_end)
+        assert callback['was called'] is True
+        expected = '<gpiozero.RGBLED object on pins GPIO1,GPIO2,GPIO3 active_high=True, is_active=True>'
+        assert callback['first_parameter'] == expected
+        assert callback['second_parameter'] is True
+        assert led.value == end_color
+
+    r, g, b = (mock_factory.pin(i) for i in (4, 5, 6))
+    with RGBLED(4, 5, 6, pwm=True) as led:
+        end_color = Color('magenta')
+        led.blink(0.1, 0.1, n=5, background=True, end_color=end_color, on_end=on_end)
+        sleep(0.35)
+        led.off()  # should interrupt, no end_color is set
+        assert callback['was called'] is True
+        expected = '<gpiozero.RGBLED object on pins GPIO4,GPIO5,GPIO6 active_high=True, is_active=False>'
+        assert callback['first_parameter'] == expected
+        assert callback['second_parameter'] is False
+        assert led.value == Color('black')
+
+
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
+                    reason='timing is too random on pypy')
+def test_rgbled_pwn_blink_sequence(mock_factory, pwm):
+    r, g, b = (mock_factory.pin(i) for i in (1, 2, 3))
+    with RGBLED(1, 2, 3, pwm=True) as led:
+        sequence = [
+            ((1.0, 1.0, 1.0), 0.1),
+            ((0.75, 0.75, 0.75), 0.1),
+            ((0.5,0.5,0.5), 0.1),
+            ((0.25,0.25, 0.25), 0.1),
+            ((0.0,0.0, 0.0), 0.1)]
+        end_color = (0.66, 0.66, 0.66)
+        led.blink_sequence(sequence, n=1, background=False, end_color=end_color)
+        # blink sequence should have ended, end_state should be set
+
+        def match(pin, idx, expected_time, expected_state):
+            timestamp = pin.states[idx].timestamp
+            assert isclose(timestamp, expected_time, rel_tol=0.05, abs_tol=0.05)
+            state = pin.states[idx].state
+            assert isclose(state, expected_state)
+
+        pin = r
+        match(pin, 0, 0.0, 0)
+        match(pin, 1, 0.0, 1.0)
+        match(pin, 2, 0.1, 0.75)
+        match(pin, 3, 0.1, 0.50)
+        match(pin, 4, 0.1, 0.25)
+        match(pin, 5, 0.1, 0.0)
+        match(pin, 6, 0.1, 0.66)
+
+        pin = g
+        match(pin, 0, 0.0, True)  # strange pin init
+        match(pin, 1, 0.0, 0)
+        match(pin, 2, 0.0, 1.0)
+        match(pin, 3, 0.1, 0.75)
+        match(pin, 4, 0.1, 0.50)
+        match(pin, 5, 0.1, 0.25)
+        match(pin, 6, 0.1, 0.0)
+        match(pin, 7, 0.1, 0.66)
+
+        pin = b
+        match(pin, 0, 0.0, True)  # strange pin init
+        match(pin, 1, 0.0, 0)
+        match(pin, 2, 0.0, 1.0)
+        match(pin, 3, 0.1, 0.75)
+        match(pin, 4, 0.1, 0.50)
+        match(pin, 5, 0.1, 0.25)
+        match(pin, 6, 0.1, 0.0)
+        match(pin, 7, 0.1, 0.66)
 
 def test_rgbled_close(mock_factory, pwm):
     r, g, b = (mock_factory.pin(i) for i in (1, 2, 3))

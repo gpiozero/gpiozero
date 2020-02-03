@@ -40,17 +40,19 @@ from __future__ import (
 )
 str = type('')
 
+from typing import *
 from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
+
 try:
     from math import log2
 except ImportError:
     from .compat import log2
 import warnings
 
-from .exc import OutputDeviceBadValue, GPIOPinMissing, PWMSoftwareFallback
+from .exc import OutputDeviceBadValue, GPIOPinMissing, PWMSoftwareFallback, OutputDeviceError
 from .devices import GPIODevice, Device, CompositeDevice
 from .mixins import SourceMixin
 from .threads import GPIOThread
@@ -376,7 +378,11 @@ class LED(DigitalOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    pass
+    def __init__(self, pin=None, active_high=True, initial_value=False, pin_factory=None):
+        self._blink_thread = None
+        self._controller = None
+        super(LED, self).__init__(pin, active_high, initial_value, pin_factory=pin_factory)
+
 
 LED.is_lit = LED.is_active
 
@@ -424,7 +430,11 @@ class Buzzer(DigitalOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    pass
+    def __init__(self, pin=None, active_high=True, initial_value=False, pin_factory=None):
+        self._blink_thread = None
+        self._controller = None
+        super(Buzzer, self).__init__(pin, active_high, initial_value, pin_factory=pin_factory)
+
 
 Buzzer.beep = Buzzer.blink
 
@@ -459,9 +469,7 @@ class PWMOutputDevice(OutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, active_high=True, initial_value=0, frequency=100,
-            pin_factory=None):
+    def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100, pin_factory=None):
         self._blink_thread = None
         self._controller = None
         if not 0 <= initial_value <= 1:
@@ -692,8 +700,8 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread = None
 
     @staticmethod
-    def interpolate_value(y0, y1, delta_x, x):
-        return (y0 * (delta_x - x) + y1 * x) / delta_x
+    def interpolate_value(start_value, end_value, delta_t, t):
+        return (start_value * (delta_t - t) + end_value * t) / delta_t
 
     def _calculate_sequence(self, on_value, fade_in_time, on_time, off_value, fade_out_time, off_time, fps):
         sequence = []
@@ -972,7 +980,11 @@ class PWMLED(PWMOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    pass
+    def __init__(self, pin=None, active_high=True, initial_value=0, frequency=100, pin_factory=None):
+        super(PWMLED, self).__init__(
+            pin, active_high, initial_value=initial_value, frequency=frequency, pin_factory=pin_factory
+        )
+
 
 PWMLED.is_lit = PWMLED.is_active
 
@@ -1033,22 +1045,43 @@ class RGBLED(SourceMixin, Device):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _colorzero: https://colorzero.readthedocs.io/
+    .. _colorzero: https://colorzero.readtheocs.io/
     """
+    LEDTuple = namedtuple('LEDTuple', ('red', 'green', 'blue'))
+
     def __init__(
             self, red=None, green=None, blue=None, active_high=True,
-            initial_value=(0, 0, 0), pwm=True, pin_factory=None):
+            initial_value=(0, 0, 0), pwm=True, frequency=None, pin_factory=None):
         self._leds = ()
         self._blink_thread = None
+        self.pwm = pwm
         if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
-        LEDClass = PWMLED if pwm else LED
         super(RGBLED, self).__init__(pin_factory=pin_factory)
-        self._leds = tuple(
-            LEDClass(pin, active_high, pin_factory=pin_factory)
-            for pin in (red, green, blue)
-        )
+        if pwm:
+            if frequency is None:
+                frequency = 100
+            self._leds = RGBLED.LEDTuple._make(
+                PWMLED(pin, active_high, pin_factory=pin_factory, frequency=frequency)
+                for pin in (red, green, blue)
+            )
+        else:
+            if frequency is not None:
+                raise OutputDeviceBadValue('frequency cannot be set on non-PWM RGBLEDs')
+            self._leds = RGBLED.LEDTuple._make(
+                LED(pin, active_high, pin_factory=pin_factory)
+                for pin in (red, green, blue)
+            )
         self.value = initial_value
+
+    def __repr__(self):
+        try:
+            return '<gpiozero.%s object on pins %r,%r,%r active_high=%s, is_active=%s>' % (
+                self.__class__.__name__,
+                self._leds.red.pin, self._leds.green.pin, self._leds.blue.pin,
+                self._leds.red.active_high, self.is_active)
+        except:
+            return super(RGBLED, self).__repr__()
 
     def close(self):
         if getattr(self, '_leds', None):
@@ -1075,19 +1108,14 @@ class RGBLED(SourceMixin, Device):
         return tuple(led.value for led in self._leds)
 
     @value.setter
-    def value(self, value):
-        for component in value:
-            if not 0 <= component <= 1:
-                raise OutputDeviceBadValue(
-                    'each RGB color component must be between 0 and 1')
-            if isinstance(self._leds[0], LED):
-                if component not in (0, 1):
-                    raise OutputDeviceBadValue(
-                        'each RGB color component must be 0 or 1 with non-PWM '
-                        'RGBLEDs')
+    def value(self, color):
         self._stop_blink()
-        for led, v in zip(self._leds, value):
-            led.value = v
+        for led, component in zip(self._leds, color):
+            self._set_led(led, component, stop_blink=False)
+
+    def _write(self, color):
+        for led, component in zip(self._leds, color):
+            led._write(component)
 
     @property
     def is_active(self):
@@ -1120,9 +1148,7 @@ class RGBLED(SourceMixin, Device):
 
     @red.setter
     def red(self, value):
-        self._stop_blink()
-        r, g, b = self.value
-        self.value = value, g, b
+        self._set_led(self._leds.red, value, stop_blink=True)
 
     @property
     def green(self):
@@ -1134,9 +1160,7 @@ class RGBLED(SourceMixin, Device):
 
     @green.setter
     def green(self, value):
-        self._stop_blink()
-        r, g, b = self.value
-        self.value = r, value, b
+        self._set_led(self._leds.green, value, stop_blink=True)
 
     @property
     def blue(self):
@@ -1148,9 +1172,18 @@ class RGBLED(SourceMixin, Device):
 
     @blue.setter
     def blue(self, value):
-        self._stop_blink()
-        r, g, b = self.value
-        self.value = r, g, value
+        self._set_led(self._leds.blue, value, stop_blink=True)
+
+    def _set_led(self, led, value, stop_blink):
+        if not 0 <= value <= 1:
+            raise OutputDeviceBadValue(
+                'each RGB color component must be between 0 and 1')
+        if not self.pwm:
+            if value not in (0, 1):
+                raise OutputDeviceBadValue('each RGB color component must be 0 or 1 with non-PWM RGBLEDs')
+        if stop_blink:
+            self._stop_blink()
+        led._write(value)
 
     def on(self):
         """
@@ -1178,7 +1211,8 @@ class RGBLED(SourceMixin, Device):
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
-            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+            on_color=(1, 1, 1), off_color=(0, 0, 0), end_color=None,
+            fps=25, n=None, background=True, on_end = None):
         """
         Make the device turn on and off repeatedly.
 
@@ -1206,6 +1240,14 @@ class RGBLED(SourceMixin, Device):
         :param off_color:
             The color to use when the LED is "off". Defaults to black.
 
+        :type end_color: ~colorzero.Color or tuple or None
+        :param end_color:
+            Color to set after a full uninterrupted blink.
+            Defaults to None, on which no color will be set.
+
+        :param int fps:
+            frames per second. Defaults to 25 Hz.
+
         :type n: int or None
         :param n:
             Number of times to blink; :data:`None` (the default) means forever.
@@ -1215,28 +1257,29 @@ class RGBLED(SourceMixin, Device):
             continue blinking and return immediately. If :data:`False`, only
             return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
         """
-        if isinstance(self._leds[0], LED):
+        if self.pwm:
+            sequence = self._calculate_sequence(
+                on_color, fade_in_time, on_time, off_color, fade_out_time, off_time, fps)
+        else:
             if fade_in_time:
                 raise ValueError('fade_in_time must be 0 with non-PWM RGBLEDs')
             if fade_out_time:
                 raise ValueError('fade_out_time must be 0 with non-PWM RGBLEDs')
-        self._stop_blink()
-        self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(
-                on_time, off_time, fade_in_time, fade_out_time,
-                on_color, off_color, n
-            )
-        )
-        self._blink_thread.start()
-        if not background:
-            self._blink_thread.join()
-            self._blink_thread = None
+            sequence = [(on_color, on_time), (off_color, off_time)]
+
+        self.blink_sequence(sequence, end_color=end_color, n=n, background=background, on_end=on_end)
 
     def pulse(
             self, fade_in_time=1, fade_out_time=1,
-            on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
+            on_color=(1, 1, 1), off_color=(0, 0, 0), end_color=None,
+            fps=25, n=None, background=True, on_end=None):
         """
         Make the device fade in and out repeatedly.
 
@@ -1254,21 +1297,62 @@ class RGBLED(SourceMixin, Device):
         :param off_color:
             The color to use when the LED is "off". Defaults to black.
 
+        :type end_color: ~colorzero.Color or tuple or None
+        :param end_color:
+            Color to set after a full uninterrupted blink.
+            Defaults to None, on which no color will be set.
+
+        :param int fps:
+            frames per second. Defaults to 25 Hz.
+
         :type n: int or None
         :param n:
-            Number of times to pulse; :data:`None` (the default) means forever.
+            Number of times to blink; :data:`None` (the default) means forever.
 
         :param bool background:
             If :data:`True` (the default), start a background thread to
-            continue pulsing and return immediately. If :data:`False`, only
-            return when the pulse is finished (warning: the default value of
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
             *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
         """
-        on_time = off_time = 0
-        self.blink(
-            on_time, off_time, fade_in_time, fade_out_time,
-            on_color, off_color, n, background
-        )
+        if not self.pwm:
+            raise ValueError('pulse not possible with non-PWM RGBLEDs')
+
+        on_time = off_time = 0.0
+        sequence = self._calculate_sequence(on_color, fade_in_time, on_time, off_color, fade_out_time, off_time, fps)
+        self.blink_sequence(sequence, end_color=end_color, n=n, background=background, on_end=on_end)
+
+    @staticmethod
+    def interpolate_color(start_color, end_color, delta_t, t):
+        return (tuple(
+            PWMLED.interpolate_value(start_value, end_value, delta_t, t)
+            for start_value, end_value in zip(start_color, end_color)
+        ))
+
+    def _calculate_sequence(self, on_color, fade_in_time, on_time, off_color, fade_out_time, off_time, fps):
+        sequence = []
+        delta_t = 1 / fps
+        'calculate fade in colors'
+        t = 0
+        while t < fade_in_time:
+            value = self.interpolate_color(off_color, on_color, fade_in_time, t)
+            sequence.append((value, delta_t))
+            t += delta_t
+        sequence.append((on_color, on_time))
+        'calculate fade out values'
+        t = 0
+        while t < fade_out_time:
+            value = self.interpolate_color(on_color, off_color, fade_out_time, t)
+            sequence.append((value, delta_t))
+            t += delta_t
+        sequence.append((off_color, off_time))
+        return sequence
 
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway
@@ -1276,41 +1360,62 @@ class RGBLED(SourceMixin, Device):
             self._blink_thread.stop()
             self._blink_thread = None
 
-    def _blink_device(
-            self, on_time, off_time, fade_in_time, fade_out_time, on_color,
-            off_color, n, fps=25):
-        # Define a simple lambda to perform linear interpolation between
-        # off_color and on_color
-        lerp = lambda t, fade_in: tuple(
-            (1 - t) * off + t * on
-            if fade_in else
-            (1 - t) * on + t * off
-            for off, on in zip(off_color, on_color)
-            )
-        sequence = []
-        if fade_in_time > 0:
-            sequence += [
-                (lerp(i * (1 / fps) / fade_in_time, True), 1 / fps)
-                for i in range(int(fps * fade_in_time))
-                ]
-        sequence.append((on_color, on_time))
-        if fade_out_time > 0:
-            sequence += [
-                (lerp(i * (1 / fps) / fade_out_time, False), 1 / fps)
-                for i in range(int(fps * fade_out_time))
-                ]
-        sequence.append((off_color, off_time))
-        sequence = (
-                cycle(sequence) if n is None else
-                chain.from_iterable(repeat(sequence, n))
-                )
-        for l in self._leds:
-            l._controller = self
-        for value, delay in sequence:
-            for l, v in zip(self._leds, value):
-                l._write(v)
-            if self._blink_thread.stopping.wait(delay):
-                break
+    def blink_sequence(self, sequence, end_color=None, n=None, background=True, on_end=None):
+        """
+        Make the device turn on and off according to a sequence list.
+
+        :type sequence: List[Tuple(bool, Union[~colorzero.Color,tuple])]
+        :param sequence:
+            list of value sets. Each value set consists of a value and a duration for this value.
+
+        type end_color: ~colorzero.Color or tuple or None
+        :param end_color:
+            Color to set after a full uninterrupted blink.
+            Defaults to None, on which no color will be set.
+
+        :type n: int or None
+        :param n:
+            Number of times to blink; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
+
+        :type on_end: Callable[[DigitalOutputDevice, bool], None] or None
+        :param on_end:
+            callback function to call after blink ended with parameters
+                self: the device
+                uninterrupted: True if the blinking sequence ended gracefully else False
+        """
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            target=self._blink_sequence, args=(sequence, n, end_color, on_end)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def _blink_sequence(self, sequence, n, end_color, on_end):
+        def iterate_sequence():
+            red_pin, green_pin, blue_pin = self._leds
+            iterable = repeat(0) if n is None else repeat(0, n)
+            for _ in iterable:
+                for color, duration in sequence:
+                    for led, value in zip(self._leds, color):
+                        led._write(value)
+                    if self._blink_thread.stopping.wait(duration):
+                        return True
+            return False
+
+        stopped = iterate_sequence()
+        if not stopped and end_color is not None:
+            self._write(end_color)
+
+        if on_end:
+            on_end(self, not stopped)
 
 
 class Motor(SourceMixin, CompositeDevice):
