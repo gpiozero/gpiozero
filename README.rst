@@ -2,6 +2,10 @@
 gpiozero
 ========
 
+.. image:: https://badge.fury.io/gh/gpiozero%2Fgpiozero.svg
+    :target: https://badge.fury.io/gh/gpiozero%2Fgpiozero
+    :alt: Source code on GitHub
+
 .. image:: https://badge.fury.io/py/gpiozero.svg
     :target: https://badge.fury.io/py/gpiozero
     :alt: Latest Version
