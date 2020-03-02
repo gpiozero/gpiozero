@@ -16,11 +16,9 @@ gpiozero
 
 A simple interface to GPIO devices with Raspberry Pi.
 
-Created by `Ben Nuttall`_ of the `Raspberry Pi Foundation`_, `Dave Jones`_, and
-other contributors.
+Created by `Ben Nuttall`_ and `Dave Jones`_.
 
 .. _Ben Nuttall: https://github.com/bennuttall
-.. _Raspberry Pi Foundation: https://www.raspberrypi.org/
 .. _Dave Jones: https://github.com/waveform80
 
 About
@@ -125,6 +123,10 @@ documentation for information on contributing to the project.
 
 Contributors
 ============
+
+See the `contributors page`_ on GitHub for more info.
+
+.. _contributors page: https://github.com/gpiozero/gpiozero/graphs/contributors
 
 Core developers:
 

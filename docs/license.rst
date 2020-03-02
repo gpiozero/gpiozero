@@ -4,7 +4,7 @@
 License
 =======
 
-Copyright © 2015-2019 Ben Nuttall <ben@raspberrypi.org> and contributors; see
+Copyright © 2015-2020 Ben Nuttall <ben@bennuttall.com> and contributors; see
 :doc:`index` for current list
 
 .. include:: ../LICENSE.rst
