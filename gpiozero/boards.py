@@ -1520,7 +1520,7 @@ class TrafficHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi?_pos=1&_sid=47eeabcee&_ss=r
+    .. _Ryanteck Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
@@ -1739,7 +1739,7 @@ class RyanteckRobot(Robot):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi?_pos=1&_sid=ee4f52a15&_ss=r
+    .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi
     """
 
     def __init__(self, pwm=True, pin_factory=None):
