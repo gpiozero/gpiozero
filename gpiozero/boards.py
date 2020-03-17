@@ -358,8 +358,8 @@ class LEDCollection(CompositeOutputDevice):
     @property
     def active_high(self):
         return self[0].active_high
-    
-    
+
+
 LEDCollection.is_lit = LEDCollection.is_active
 
 
@@ -1497,7 +1497,7 @@ class FishDish(CompositeOutputDevice):
 
 class TrafficHat(CompositeOutputDevice):
     """
-    Extends :class:`CompositeOutputDevice` for the `Ryanteck Traffic HAT`_: traffic
+    Extends :class:`CompositeOutputDevice` for the `Pi Supply Traffic HAT`_: traffic
     light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
@@ -1520,7 +1520,7 @@ class TrafficHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
+    .. _Pi Supply Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
@@ -1530,6 +1530,36 @@ class TrafficHat(CompositeOutputDevice):
             _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
+
+
+class TrafficpHAT(TrafficLights):
+    """
+    Extends :class:`TrafficLights` for the `Pi Supply Traffic pHAT`_: Mini traffic
+    light LEDs.
+
+    The Traffic pHAT pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example then turns on all the LEDs::
+
+        from gpiozero import TrafficpHAT
+        hat = TrafficpHAT()
+        hat.lights.on()
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
+        instances.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _PiSupply Traffic pHAT: http://pisupp.ly/trafficphat
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(TrafficpHAT, self).__init__(25, 24, 23,
+                                        pwm=pwm, initial_value=initial_value,
+                                        pin_factory=pin_factory)
 
 
 class Robot(SourceMixin, CompositeDevice):
@@ -1739,7 +1769,7 @@ class RyanteckRobot(Robot):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
+    .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi
     """
 
     def __init__(self, pwm=True, pin_factory=None):
