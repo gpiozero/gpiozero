@@ -358,8 +358,8 @@ class LEDCollection(CompositeOutputDevice):
     @property
     def active_high(self):
         return self[0].active_high
-    
-    
+
+
 LEDCollection.is_lit = LEDCollection.is_active
 
 
@@ -1497,7 +1497,7 @@ class FishDish(CompositeOutputDevice):
 
 class TrafficHat(CompositeOutputDevice):
     """
-    Extends :class:`CompositeOutputDevice` for the `Ryanteck Traffic HAT`_: traffic
+    Extends :class:`CompositeOutputDevice` for the `Pi Supply Traffic HAT`_: traffic
     light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
@@ -1520,7 +1520,7 @@ class TrafficHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
+    .. _Ryanteck Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi?_pos=1&_sid=47eeabcee&_ss=r
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
