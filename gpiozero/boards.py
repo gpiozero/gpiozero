@@ -1739,7 +1739,7 @@ class RyanteckRobot(Robot):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
+    .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi?_pos=1&_sid=ee4f52a15&_ss=r
     """
 
     def __init__(self, pwm=True, pin_factory=None):
