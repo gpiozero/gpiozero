@@ -1532,6 +1532,38 @@ class TrafficHat(CompositeOutputDevice):
         )
 
 
+class TrafficpHAT(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for the `Pi Supply Traffic pHAT`_: Mini traffic
+    light LEDs.
+
+    The Traffic pHAT pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example then turns on all the LEDs::
+
+        from gpiozero import TrafficpHAT
+        hat = TrafficHat()
+        hat.lights.on()
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
+        instances.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _PiSupply Traffic pHAT:
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(TrafficHat, self).__init__(
+            lights=TrafficLights(23, 24, 25, pwm=pwm, pin_factory=pin_factory),
+            _order=('lights'),
+            pin_factory=pin_factory
+        )
+
+
 class Robot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
