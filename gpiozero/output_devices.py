@@ -4,7 +4,7 @@
 # Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <pi@raspberrypi>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
-# Copyright (c) 2019 Yisrael Dov Lebow 🐻 <lebow@lebowtech.com>
+# Copyright (c) 2019 Yisrael Dov Lebow <lebow@lebowtech.com>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
 #
