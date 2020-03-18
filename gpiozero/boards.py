@@ -1557,7 +1557,7 @@ class TrafficpHAT(TrafficLights):
     .. _PiSupply Traffic pHAT: http://pisupp.ly/trafficphat
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(TrafficpHAT, self.__init__(25, 24, 23,
+        super(TrafficpHAT, self).__init__(25, 24, 23,
                                         pwm=pwm, initial_value=initial_value,
                                         pin_factory=pin_factory)
 
