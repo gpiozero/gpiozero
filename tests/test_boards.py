@@ -1,5 +1,5 @@
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2017-2019 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2017-2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2018 SteveAmor <steveamor@users.noreply.github.com>
@@ -912,6 +912,12 @@ def test_traffic_hat(mock_factory):
         assert repr(board).startswith('<gpiozero.TrafficHat object')
         assert ([led.pin for led in board.lights] +
                 [board.buzzer.pin, board.button.pin]) == pins
+
+def test_traffic_phat(mock_factory):
+    pins = [mock_factory.pin(n) for n in (25, 24, 23)]
+    with TrafficpHat() as board:
+        assert repr(board).startswith('<gpiozero.TrafficpHat object')
+        assert ([led.pin for led in board]) == pins
 
 def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):

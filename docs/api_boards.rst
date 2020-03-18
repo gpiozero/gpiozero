@@ -1,5 +1,5 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-.. Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
+.. Copyright (c) 2016-2020 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
 .. Copyright (c) 2018 Claire Pollard <claire.r.pollard@gmail.com>
 .. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
@@ -149,12 +149,18 @@ TrafficHat
     :members:
 
 
+TrafficpHat
+-----------
+
+.. autoclass:: TrafficpHat(\*, pwm=False, pin_factory=None)
+    :members:
+
+
 JamHat
 ------
 
 .. autoclass:: JamHat(\*, pwm=False, pin_factory=None)
     :members:
-        :members:
 
 
 Pibrella
@@ -162,7 +168,6 @@ Pibrella
 
 .. autoclass:: Pibrella(\*, pwm=False, pin_factory=None)
     :members:
-        :members:
 
 
 Robot

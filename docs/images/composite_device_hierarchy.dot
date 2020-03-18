@@ -47,4 +47,5 @@ digraph classes {
     TrafficHat->CompositeOutputDevice;
     TrafficLights->LEDBoard;
     TrafficLightsBuzzer->CompositeOutputDevice;
+    TrafficpHat->TrafficLights;
 }

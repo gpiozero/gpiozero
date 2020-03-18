@@ -1,8 +1,10 @@
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2020 Ryan Walmsley <ryanteck@gmail.com>
 # Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
-# Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
+# Copyright (c) 2019 ForToffee <ForToffee@users.noreply.github.com>
 # Copyright (c) 2018 SteveAmor <steveamor@users.noreply.github.com>
 # Copyright (c) 2018 Rick Ansell <rick@nbinvincible.org.uk>
 # Copyright (c) 2018 Claire Pollard <claire.r.pollard@gmail.com>
@@ -358,8 +360,8 @@ class LEDCollection(CompositeOutputDevice):
     @property
     def active_high(self):
         return self[0].active_high
-    
-    
+
+
 LEDCollection.is_lit = LEDCollection.is_active
 
 
@@ -1497,8 +1499,8 @@ class FishDish(CompositeOutputDevice):
 
 class TrafficHat(CompositeOutputDevice):
     """
-    Extends :class:`CompositeOutputDevice` for the `Ryanteck Traffic HAT`_: traffic
-    light LEDs, a button and a buzzer.
+    Extends :class:`CompositeOutputDevice` for the `Pi Supply Traffic HAT`_: a
+    board with traffic light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example waits for the
@@ -1520,7 +1522,7 @@ class TrafficHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck Traffic HAT: https://ryanteck.uk/hats/1-traffichat-0635648607122.html
+    .. _Pi Supply Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
@@ -1530,6 +1532,45 @@ class TrafficHat(CompositeOutputDevice):
             _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
         )
+
+
+class TrafficpHat(TrafficLights):
+    """
+    Extends :class:`TrafficLights` for the `Pi Supply Traffic pHAT`_: a small
+    board with traffic light LEDs.
+
+    The Traffic pHAT pins are fixed and therefore there's no need to specify
+    them when constructing this class. The following example then turns on all
+    the LEDs::
+
+        from gpiozero import TrafficpHat
+        phat = TrafficpHat()
+        phat.red.on()
+        phat.blink()
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
+        instances.
+
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Pi Supply Traffic pHAT: http://pisupp.ly/trafficphat
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(TrafficpHat, self).__init__(red=25, amber=24, green=23,
+                                        pwm=pwm, initial_value=initial_value,
+                                        pin_factory=pin_factory)
 
 
 class Robot(SourceMixin, CompositeDevice):
@@ -1739,7 +1780,7 @@ class RyanteckRobot(Robot):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck motor controller board: https://ryanteck.uk/add-ons/6-ryanteck-rpi-motor-controller-board-0635648607160.html
+    .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi
     """
 
     def __init__(self, pwm=True, pin_factory=None):
@@ -2194,7 +2235,7 @@ class JamHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _ModMyPi JamHat: https://www.modmypi.com/jam-hat
+    .. _ModMyPi JamHat: https://thepihut.com/products/jam-hat
 
     .. attribute:: lights_1, lights_2
 

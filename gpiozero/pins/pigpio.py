@@ -1,5 +1,7 @@
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# Copyright (c) 2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2019 Maksim Levental <maksim.levental@gmail.com>
 # Copyright (c) 2016 BuildTools <david.glaude@gmail.com>
 # Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 #
@@ -103,7 +105,7 @@ class PiGPIOFactory(PiFactory):
         bug in our pin implementation). A workaround for now is simply to
         restart the :command:`pigpiod` daemon.
 
-    .. _pigpio: https://pypi.org/project/pigpio/
+    .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
     def __init__(self, host=None, port=None):
         super(PiGPIOFactory, self).__init__()
@@ -185,7 +187,7 @@ class PiGPIOPin(PiPin):
     Extends :class:`~gpiozero.pins.pi.PiPin`. Pin implementation for the
     `pigpio`_ library. See :class:`PiGPIOFactory` for more information.
 
-    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
     _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
     GPIO_FUNCTIONS = {
@@ -348,7 +350,7 @@ class PiGPIOHardwareSPI(SPI, Device):
     Hardware SPI implementation for the `pigpio`_ library. Uses the ``spi_*``
     functions from the pigpio API.
 
-    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
     def __init__(self, factory, port, device):
         self._port = port
@@ -450,7 +452,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
     Software SPI implementation for the `pigpio`_ library. Uses the ``bb_spi_*``
     functions from the pigpio API.
 
-    .. _pigpio: http://abyz.co.uk/rpi/pigpio/
+    .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
     def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
         self._closed = True
