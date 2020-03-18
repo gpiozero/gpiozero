@@ -1520,7 +1520,7 @@ class TrafficHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _Ryanteck Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
+    .. _Pi Supply Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
     def __init__(self, pwm=False, pin_factory=None):
         super(TrafficHat, self).__init__(
