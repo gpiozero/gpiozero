@@ -162,6 +162,7 @@ Other contributors:
 - `Philippe Muller`_
 - `Rick Ansell`_
 - `Russel Winder`_
+- `Ryan Walmsley`_
 - `Schelto van Doorn`_
 - `Sofiia Kosovan`_
 - `Steve Amor`_
@@ -194,6 +195,7 @@ Other contributors:
 .. _Philippe Muller: https://github.com/gpiozero/gpiozero/commits?author=pmuller
 .. _Rick Ansell: https://github.com/gpiozero/gpiozero/commits?author=ricksbt
 .. _Russel Winder: https://github.com/russel
+.. _Ryan Walmsley: https://github.com/gpiozero/gpiozero/commits?author=ryanteck
 .. _Schelto van Doorn: https://github.com/gpiozero/gpiozero/commits?author=goloplo
 .. _Sofiia Kosovan: https://github.com/gpiozero/gpiozero/commits?author=SofiiaKosovan
 .. _Steve Amor: https://github.com/gpiozero/gpiozero/commits?author=SteveAmor

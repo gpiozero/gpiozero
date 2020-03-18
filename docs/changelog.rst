@@ -39,7 +39,8 @@ Release 1.5.2 (unreleased)
 ==========================
 
 * Added :class:`Pibrella` class (thanks to Carl Monk) (`#773`_, `#798`_)
-* Allow :class:`Motor` passes :param:`pin_factory` to its child
+* Added :class:`TrafficpHat` class (thanks to Ryan Walmsley) (`#845`_, `#846`_)
+* Allow :class:`Motor` to pass :attr:`~Device.pin_factory` to its child
   :class:`OutputDevice` objects (thanks to Yisrael Dov Lebow) (`#792`_)
 * Small SPI exception fix (thanks to Maksim Levental) (`#762`_)
 * Warn users when using default pin factory for Servos and Distance Sensors
@@ -52,6 +53,8 @@ Release 1.5.2 (unreleased)
 .. _#773: https://github.com/gpiozero/gpiozero/issues/773
 .. _#798: https://github.com/gpiozero/gpiozero/issues/798
 .. _#792: https://github.com/gpiozero/gpiozero/issues/792
+.. _#845: https://github.com/gpiozero/gpiozero/issues/845
+.. _#846: https://github.com/gpiozero/gpiozero/issues/846
 .. _#762: https://github.com/gpiozero/gpiozero/issues/762
 .. _#780: https://github.com/gpiozero/gpiozero/issues/780
 .. _#781: https://github.com/gpiozero/gpiozero/issues/781

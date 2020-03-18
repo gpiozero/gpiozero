@@ -149,12 +149,18 @@ TrafficHat
     :members:
 
 
+TrafficpHat
+-----------
+
+.. autoclass:: TrafficpHat(\*, pwm=False, pin_factory=None)
+    :members:
+
+
 JamHat
 ------
 
 .. autoclass:: JamHat(\*, pwm=False, pin_factory=None)
     :members:
-        :members:
 
 
 Pibrella
@@ -162,7 +168,6 @@ Pibrella
 
 .. autoclass:: Pibrella(\*, pwm=False, pin_factory=None)
     :members:
-        :members:
 
 
 Robot

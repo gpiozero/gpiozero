@@ -913,6 +913,12 @@ def test_traffic_hat(mock_factory):
         assert ([led.pin for led in board.lights] +
                 [board.buzzer.pin, board.button.pin]) == pins
 
+def test_traffic_phat(mock_factory):
+    pins = [mock_factory.pin(n) for n in (25, 24, 23)]
+    with TrafficpHat() as board:
+        assert repr(board).startswith('<gpiozero.TrafficpHat object')
+        assert ([led.pin for led in board]) == pins
+
 def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         Robot()

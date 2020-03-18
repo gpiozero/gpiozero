@@ -1497,8 +1497,8 @@ class FishDish(CompositeOutputDevice):
 
 class TrafficHat(CompositeOutputDevice):
     """
-    Extends :class:`CompositeOutputDevice` for the `Pi Supply Traffic HAT`_: traffic
-    light LEDs, a button and a buzzer.
+    Extends :class:`CompositeOutputDevice` for the `Pi Supply Traffic HAT`_: a
+    board with traffic light LEDs, a button and a buzzer.
 
     The Traffic HAT pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example waits for the
@@ -1532,32 +1532,41 @@ class TrafficHat(CompositeOutputDevice):
         )
 
 
-class TrafficpHAT(TrafficLights):
+class TrafficpHat(TrafficLights):
     """
-    Extends :class:`TrafficLights` for the `Pi Supply Traffic pHAT`_: Mini traffic
-    light LEDs.
+    Extends :class:`TrafficLights` for the `Pi Supply Traffic pHAT`_: a small
+    board with traffic light LEDs.
 
     The Traffic pHAT pins are fixed and therefore there's no need to specify
-    them when constructing this class. The following example then turns on all the LEDs::
+    them when constructing this class. The following example then turns on all
+    the LEDs::
 
-        from gpiozero import TrafficpHAT
-        hat = TrafficpHAT()
-        hat.lights.on()
+        from gpiozero import TrafficpHat
+        phat = TrafficpHat()
+        phat.red.on()
+        phat.blink()
 
     :param bool pwm:
         If :data:`True`, construct :class:`PWMLED` instances to represent each
         LED. If :data:`False` (the default), construct regular :class:`LED`
         instances.
 
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _PiSupply Traffic pHAT: http://pisupp.ly/trafficphat
+    .. _Pi Supply Traffic pHAT: http://pisupp.ly/trafficphat
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(TrafficpHAT, self).__init__(25, 24, 23,
+        super(TrafficpHat, self).__init__(red=25, amber=24, green=23,
                                         pwm=pwm, initial_value=initial_value,
                                         pin_factory=pin_factory)
 
@@ -2224,7 +2233,7 @@ class JamHat(CompositeOutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _ModMyPi JamHat: https://www.modmypi.com/jam-hat
+    .. _ModMyPi JamHat: https://thepihut.com/products/jam-hat
 
     .. attribute:: lights_1, lights_2
 

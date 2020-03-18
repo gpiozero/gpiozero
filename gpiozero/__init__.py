@@ -127,6 +127,7 @@ from .boards import (
     TrafficLightsBuzzer,
     FishDish,
     TrafficHat,
+    TrafficpHat,
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
