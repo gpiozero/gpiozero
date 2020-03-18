@@ -1541,7 +1541,7 @@ class TrafficpHAT(TrafficLights):
     them when constructing this class. The following example then turns on all the LEDs::
 
         from gpiozero import TrafficpHAT
-        hat = TrafficHat()
+        hat = TrafficpHAT()
         hat.lights.on()
 
     :param bool pwm:
