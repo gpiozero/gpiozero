@@ -1,6 +1,6 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
-.. Copyright (c) 2016-2018 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2016 Barry Byford <barry_byford@yahoo.co.uk>
 .. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 ..
