@@ -1532,9 +1532,9 @@ class TrafficHat(CompositeOutputDevice):
         )
 
 
-class TrafficpHAT(LEDBoard):
+class TrafficpHAT(TrafficLights):
     """
-    Extends :class:`LEDBoard` for the `Pi Supply Traffic pHAT`_: Mini traffic
+    Extends :class:`TrafficLights` for the `Pi Supply Traffic pHAT`_: Mini traffic
     light LEDs.
 
     The Traffic pHAT pins are fixed and therefore there's no need to specify
@@ -1554,14 +1554,12 @@ class TrafficpHAT(LEDBoard):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
 
-    .. _PiSupply Traffic pHAT:
+    .. _PiSupply Traffic pHAT: http://pisupp.ly/trafficphat
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(TrafficHat, self).__init__(
-            lights=TrafficLights(23, 24, 25, pwm=pwm, pin_factory=pin_factory),
-            _order=('lights'),
-            pin_factory=pin_factory
-        )
+        super(TrafficpHAT, self.__init__(25, 24, 23,
+                                        pwm=pwm, initial_value=initial_value,
+                                        pin_factory=pin_factory)
 
 
 class Robot(SourceMixin, CompositeDevice):
