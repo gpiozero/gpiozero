@@ -589,7 +589,7 @@ class MotionSensor(SmoothedInputDevice):
 
     :param float sample_rate:
         The number of values to read from the device (and append to the
-        internal queue) per second. Defaults to 100.
+        internal queue) per second. Defaults to 10.
 
     :param float threshold:
         Defaults to 0.5. When the average of all values in the internal queue
