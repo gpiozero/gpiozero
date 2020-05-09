@@ -825,7 +825,7 @@ class DistanceSensor(SmoothedInputDevice):
 
     :param int queue_len:
         The length of the queue used to store values read from the sensor.
-        This defaults to 30.
+        This defaults to 9.
 
     :param float max_distance:
         The :attr:`value` attribute reports a normalized value between 0 (too
