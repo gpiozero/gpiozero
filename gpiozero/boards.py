@@ -1999,10 +1999,10 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
         super(_EnergenieMaster, self).__init__(
             *(
                 OutputDevice(pin, pin_factory=pin_factory)
-                for pin in (17, 22, 23, 27)
+                for pin in ('BOARD11', 'BOARD15', 'BOARD16', 'BOARD13')
             ),
-            mode=OutputDevice(24, pin_factory=pin_factory),
-            enable=OutputDevice(25, pin_factory=pin_factory),
+            mode=OutputDevice('BOARD18', pin_factory=pin_factory),
+            enable=OutputDevice('BOARD22', pin_factory=pin_factory),
             _order=('mode', 'enable'), pin_factory=pin_factory
         )
 
