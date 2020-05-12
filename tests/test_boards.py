@@ -1545,8 +1545,8 @@ def test_pibrella(mock_factory, pwm):
         assert isinstance(pb.lights.red, LED)
         assert isinstance(pb.button, Button)
         assert isinstance(pb.buzzer, TonalBuzzer)
-        assert pb.inputs == (9, 7, 8, 10)
-        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.inputs == ('BOARD21', 'BOARD26', 'BOARD24', 'BOARD19')
+        assert pb.outputs == ('BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
         assert pb.value == (
             (0, 0, 0),  # lights
             0,          # button
@@ -1578,8 +1578,8 @@ def test_pibrella_pwm(mock_factory, pwm):
         assert isinstance(pb.lights.red, PWMLED)
         assert isinstance(pb.button, Button)
         assert isinstance(pb.buzzer, TonalBuzzer)
-        assert pb.inputs == (9, 7, 8, 10)
-        assert pb.outputs == (22, 23, 24, 25)
+        assert pb.inputs == ('BOARD21', 'BOARD26', 'BOARD24', 'BOARD19')
+        assert pb.outputs == ('BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
         assert pb.value == (
             (0, 0, 0),  # lights
             0,          # button
