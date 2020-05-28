@@ -975,7 +975,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     2: 1024,
                     3: 2048,
                     4: 4096,
-                    8: 8192,
+                    5: 8192,
                     }.get(revcode_memory, None)
                 released = {
                     'A':      '2013Q1',
