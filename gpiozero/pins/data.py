@@ -975,6 +975,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     2: 1024,
                     3: 2048,
                     4: 4096,
+                    8: 8192,
                     }.get(revcode_memory, None)
                 released = {
                     'A':      '2013Q1',
@@ -990,7 +991,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3B+':    '2018Q1',
                     '3A+':    '2018Q4',
                     'CM3+':   '2019Q1',
-                    '4B':     '2019Q2',
+                    '4B':     '2020Q2' if memory == 8192 else '2019Q2',
                     }.get(model, 'Unknown')
                 storage = {
                     'A':    'SD',
