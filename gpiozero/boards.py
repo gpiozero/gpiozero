@@ -2048,11 +2048,13 @@ class Energenie(SourceMixin, Device):
         Which socket this instance should control. This is an integer number
         between 1 and 4.
 
-    :param bool initial_value:
+    :type initial_value: bool or None
+    :param initial_value:
         The initial state of the socket. As Energenie sockets provide no
-        means of reading their state, you must provide an initial state for
+        means of reading their state, you may provide an initial state for
         the socket, which will be set upon construction. This defaults to
         :data:`False` which will switch the socket off.
+        Specifying :data:`None` will not switch the socket on construction.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -2074,7 +2076,7 @@ class Energenie(SourceMixin, Device):
         self._master = _EnergenieMaster(pin_factory=pin_factory)
         if initial_value:
             self.on()
-        else:
+        elif initial_value == False:
             self.off()
 
     def close(self):
