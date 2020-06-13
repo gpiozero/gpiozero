@@ -1,4 +1,4 @@
-from gpiozero import LED
+from gpiozero import Button, LED
 from gpiozero.pins.pigpio import PiGPIOFactory
 from gpiozero.tools import all_values
 from signal import pause
