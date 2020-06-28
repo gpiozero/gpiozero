@@ -163,18 +163,21 @@ class ButtonBoard(HoldMixin, CompositeDevice):
 
         leds = LEDBoard(2, 3, 4, 5)
         btns = ButtonBoard(6, 7, 8, 9)
-        leds.source = btns.values
+        leds.source = btns
+        
         pause()
 
     Alternatively you could represent the number of pressed buttons with an
     :class:`LEDBarGraph`::
 
         from gpiozero import LEDBarGraph, ButtonBoard
+        from statistics import mean
         from signal import pause
 
         graph = LEDBarGraph(2, 3, 4, 5)
-        btns = ButtonBoard(6, 7, 8, 9)
-        graph.source = (sum(value) for value in btn.values)
+        bb = ButtonBoard(6, 7, 8, 9)
+        graph.source = (mean(values) for values in bb.values)
+        
         pause()
 
     :type pins: int or str
