@@ -264,7 +264,7 @@ class DigitalOutputDevice(OutputDevice):
         )
         self._blink_thread.start()
         if not background:
-            self._blink_thread.join()
+            self._blink_thread.wait()
             self._blink_thread = None
 
     def _stop_blink(self):
@@ -536,7 +536,7 @@ class PWMOutputDevice(OutputDevice):
         )
         self._blink_thread.start()
         if not background:
-            self._blink_thread.join()
+            self._blink_thread.wait()
             self._blink_thread = None
 
     def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
@@ -1089,7 +1089,7 @@ class RGBLED(SourceMixin, Device):
         )
         self._blink_thread.start()
         if not background:
-            self._blink_thread.join()
+            self._blink_thread.wait()
             self._blink_thread = None
 
     def pulse(

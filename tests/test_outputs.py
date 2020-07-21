@@ -128,7 +128,7 @@ def test_output_blink_background(mock_factory):
         start = time()
         device.blink(0.1, 0.1, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        device._blink_thread.join() # naughty, but ensures no arbitrary waits in the test
+        device._blink_thread.wait() # naughty, but ensures no arbitrary waits in the test
         assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, False),
@@ -254,7 +254,7 @@ def test_output_pwm_blink_background(mock_factory, pwm):
         start = time()
         device.blink(0.1, 0.1, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        device._blink_thread.join()
+        device._blink_thread.wait()
         assert isclose(time() - start, 0.4, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
@@ -288,7 +288,7 @@ def test_output_pwm_fade_background(mock_factory, pwm):
         start = time()
         device.blink(0, 0, 0.2, 0.2, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        device._blink_thread.join()
+        device._blink_thread.wait()
         assert isclose(time() - start, 0.8, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
@@ -354,7 +354,7 @@ def test_output_pwm_pulse_background(mock_factory, pwm):
         start = time()
         device.pulse(0.2, 0.2, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        device._blink_thread.join()
+        device._blink_thread.wait()
         assert isclose(time() - start, 0.8, abs_tol=0.05)
         pin.assert_states_and_times([
             (0.0, 0),
@@ -706,7 +706,7 @@ def test_rgbled_blink_background(mock_factory, pwm):
         start = time()
         led.blink(0.1, 0.1, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        led._blink_thread.join()
+        led._blink_thread.wait()
         assert isclose(time() - start, 0.4, abs_tol=0.05)
         expected = [
             (0.0, 0),
@@ -727,7 +727,7 @@ def test_rgbled_blink_background_nonpwm(mock_factory):
         start = time()
         led.blink(0.1, 0.1, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        led._blink_thread.join()
+        led._blink_thread.wait()
         assert isclose(time() - start, 0.4, abs_tol=0.05)
         expected = [
             (0.0, 0),
@@ -786,7 +786,7 @@ def test_rgbled_fade_background(mock_factory, pwm):
         start = time()
         led.blink(0, 0, 0.2, 0.2, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        led._blink_thread.join()
+        led._blink_thread.wait()
         assert isclose(time() - start, 0.8, abs_tol=0.05)
         expected = [
             (0.0, 0),
@@ -872,7 +872,7 @@ def test_rgbled_pulse_background(mock_factory, pwm):
         start = time()
         led.pulse(0.2, 0.2, n=2)
         assert isclose(time() - start, 0, abs_tol=0.05)
-        led._blink_thread.join()
+        led._blink_thread.wait()
         assert isclose(time() - start, 0.8, abs_tol=0.05)
         expected = [
             (0.0, 0),

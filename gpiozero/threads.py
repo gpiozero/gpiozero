@@ -71,7 +71,12 @@ class GPIOThread(Thread):
         self.stopping.set()
         self.join(timeout)
 
-    def join(self, timeout=None):
+    def wait(self):
+        self.join(stop=False)
+
+    def join(self, timeout=None, stop=True):
+        if stop and not self.stopping.is_set():
+            self.stopping.set()
         super(GPIOThread, self).join(timeout)
         if self.is_alive():
             assert timeout is not None
