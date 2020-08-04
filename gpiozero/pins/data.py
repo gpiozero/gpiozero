@@ -47,6 +47,9 @@ from collections import namedtuple
 from ..exc import PinUnknownPi, PinMultiplePins, PinNoPins, PinInvalidPin
 from ..devices import Device
 
+# rotate pinout
+
+rotate = False
 
 # Some useful constants for describing pins
 
@@ -660,11 +663,10 @@ class HeaderInfo(namedtuple('HeaderInfo', (
 
     def _format_full(self, style):
         Cell = namedtuple('Cell', ('content', 'align', 'style'))
-
         lines = []
-        for row in range(self.rows):
+        for row in sorted(range(self.rows), reverse=rotate):
             line = []
-            for col in range(self.columns):
+            for col in sorted(range(self.columns), reverse=rotate):
                 pin = (row * self.columns) + col + 1
                 try:
                     pin = self.pins[pin]
@@ -1325,7 +1327,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 for header in sorted(self.headers.values(), key=attrgetter('name'))
                 )
 
-    def pprint(self, color=None):
+    def pprint(self, color=None, rotate=False):
         """
         Pretty-print a representation of the board along with header diagrams.
 
@@ -1334,6 +1336,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         can be set to :data:`True` or :data:`False` to force color or monochrome
         output.
         """
+        globals()['rotate'] = rotate
         print('{0:{style} full}'.format(self, style=Style(color)))
 
 

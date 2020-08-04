@@ -78,6 +78,13 @@ class PinoutTool(object):
             action='store_true',
             help='Open pinout.xyz in the default web browser'
         )
+        self.parser.add_argument(
+            '-t', '--transform',
+            dest='transform',
+            default=False,
+            action='store_true',
+            help='Transform pinout 180 degrees'
+        )
 
     def __call__(self, args=None):
         if args is None:
@@ -101,7 +108,7 @@ class PinoutTool(object):
         else:
             if args.revision == '':
                 try:
-                    pi_info().pprint(color=args.color)
+                    pi_info().pprint(color=args.color, rotate=args.transform)
                 except ImportError:
                     formatter = self.parser._get_formatter()
                     formatter.add_text(
