@@ -294,7 +294,7 @@ class MCP3xx2(MCP3xxx):
         # the result with the final byte of output. A start "1" bit is then
         # transmitted, followed by the single/differential bit (M); 1 for
         # single-ended read, 0 for differential read. Next comes a single bit
-        # for channel (M) then the MSBF bit (L) which selects whether the data
+        # for channel (C) then the MSBF bit (L) which selects whether the data
         # will be read out in MSB form only (1) or whether LSB read-out will
         # occur after MSB read-out (0).
         #
