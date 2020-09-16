@@ -160,7 +160,7 @@ class DigitalInputDevice(EventsMixin, InputDevice):
 
     :type pull_up: bool or None
     :param pull_up:
-        See descrpition under :class:`InputDevice` for more information.
+        See description under :class:`InputDevice` for more information.
 
     :type active_state: bool or None
     :param active_state:
@@ -231,7 +231,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
 
     :type pull_up: bool or None
     :param pull_up:
-        See descrpition under :class:`InputDevice` for more information.
+        See description under :class:`InputDevice` for more information.
 
     :type active_state: bool or None
     :param active_state:
@@ -482,7 +482,7 @@ class LineSensor(SmoothedInputDevice):
 
     :type pull_up: bool or None
     :param pull_up:
-        See descrpition under :class:`InputDevice` for more information.
+        See description under :class:`InputDevice` for more information.
 
     :type active_state: bool or None
     :param active_state:
@@ -576,7 +576,7 @@ class MotionSensor(SmoothedInputDevice):
 
     :type pull_up: bool or None
     :param pull_up:
-        See descrpition under :class:`InputDevice` for more information.
+        See description under :class:`InputDevice` for more information.
 
     :type active_state: bool or None
     :param active_state:
