@@ -1305,11 +1305,15 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             return self.board.format(style=style, **kw)
         elif content == 'specs':
             specs = self._asdict()
-            specs['memory'] /= 1024
+            if specs['memory'] < 1024:
+                specs['memory_unit'] = "MB"
+            else:
+                specs['memory'] /= 1024
+                specs['memory_unit'] = "GB"
             return dedent("""\
                 {style:bold}Revision           {style:reset}: {revision}
                 {style:bold}SoC                {style:reset}: {soc}
-                {style:bold}RAM                {style:reset}: {memory}GB
+                {style:bold}RAM                {style:reset}: {memory}{memory_unit}
                 {style:bold}Storage            {style:reset}: {storage}
                 {style:bold}USB ports          {style:reset}: {usb} {style:yellow}(excluding power){style:reset}
                 {style:bold}Ethernet ports     {style:reset}: {ethernet}
