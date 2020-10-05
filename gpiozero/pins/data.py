@@ -664,10 +664,13 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     def _format_full(self, style):
         Cell = namedtuple('Cell', ('content', 'align', 'style'))
         lines = []
-        for row in sorted(range(self.rows), reverse=rotate):
+        for row in range(self.rows):
             line = []
-            for col in sorted(range(self.columns), reverse=rotate):
-                pin = (row * self.columns) + col + 1
+            for col in range(self.columns):
+                if rotate:
+                    pin = (((self.rows - 1) - row) * self.columns) + ((self.columns - 1) - col) + 1
+                else:
+                    pin = (row * self.columns) + col + 1
                 try:
                     pin = self.pins[pin]
                     cells = [
