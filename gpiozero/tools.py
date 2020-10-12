@@ -48,15 +48,8 @@ try:
 except ImportError:
     pass
 from itertools import cycle
-from math import sin, cos, pi
-try:
-    from statistics import mean
-except ImportError:
-    from .compat import mean
-try:
-    from math import isclose
-except ImportError:
-    from .compat import isclose
+from math import sin, cos, pi, isclose
+from statistics import mean
 
 
 def _normalize(values):

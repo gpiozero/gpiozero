@@ -39,11 +39,9 @@ str = type('')
 
 
 import io
-import sys
 import pytest
 from array import array
 from mock import patch
-from collections import namedtuple
 
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import (

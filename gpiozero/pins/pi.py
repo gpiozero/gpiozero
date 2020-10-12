@@ -35,15 +35,10 @@ from __future__ import (
     )
 str = type('')
 
-import io
-from threading import RLock, Lock
-from types import MethodType
-from collections import defaultdict
-try:
-    from weakref import ref, WeakMethod
-except ImportError:
 
-    from ..compat import WeakMethod
+from threading import RLock
+from types import MethodType
+from weakref import ref, WeakMethod
 import warnings
 
 try:
@@ -56,7 +51,6 @@ from .data import pi_info
 from ..exc import (
     PinNoPins,
     PinNonPhysical,
-    PinInvalidPin,
     SPIBadArgs,
     SPISoftwareFallback,
     )

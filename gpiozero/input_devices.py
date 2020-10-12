@@ -44,10 +44,7 @@ from __future__ import (
 import warnings
 from time import sleep, time
 from threading import Event, Lock
-try:
-    from statistics import median
-except ImportError:
-    from .compat import median
+from statistics import median
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback

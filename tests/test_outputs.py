@@ -40,10 +40,7 @@ str = type('')
 
 import sys
 from time import sleep, time
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 import pytest
 from colorzero import Color, Red, Green, Blue

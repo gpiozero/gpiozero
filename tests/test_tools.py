@@ -39,24 +39,13 @@ str = type('')
 
 
 import pytest
-from math import sin, cos, radians
+from math import sin, cos, radians, isclose
+from statistics import mean, median
 from time import time, sleep
 from itertools import islice
 
 from gpiozero import Device, LED, Button, Robot
 from gpiozero.tools import *
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
-try:
-    from statistics import mean
-except ImportError:
-    from gpiozero.compat import mean
-try:
-    from statistics import median
-except ImportError:
-    from gpiozero.compat import median
 
 
 epsilon = 0.01  # time to sleep after setting source before checking value

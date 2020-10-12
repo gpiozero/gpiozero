@@ -1,4 +1,4 @@
-"A simple interface to GPIO devices with Raspberry Pi."
+"""A simple interface to GPIO devices with Raspberry Pi."""
 
 import io
 import os
@@ -10,8 +10,8 @@ if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):
         raise ValueError('This package requires Python 2.7 or above')
 elif sys.version_info[0] == 3:
-    if not sys.version_info >= (3, 2):
-        raise ValueError('This package requires Python 3.2 or above')
+    if not sys.version_info >= (3, 5):
+        raise ValueError('This package requires Python 3.5 or above')
 else:
     raise ValueError('Unrecognized major version of Python')
 
@@ -40,9 +40,6 @@ __classifiers__ = [
     "Programming Language :: Python :: 2",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.2",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
@@ -62,19 +59,6 @@ __extra_requires__ = {
     'doc':   ['sphinx'],
     'test':  ['pytest', 'coverage', 'mock'],
 }
-
-if sys.version_info[:2] == (3, 2):
-    # Particular versions are required for Python 3.2 compatibility
-    __extra_requires__['doc'].extend([
-        'Jinja2<2.7',
-        'MarkupSafe<0.16',
-        ])
-    __extra_requires__['test'][0] = 'pytest<3.0dev'
-    __extra_requires__['test'][1] = 'coverage<4.0dev'
-elif sys.version_info[:2] == (3, 3):
-    __extra_requires__['test'][0] = 'pytest<3.3dev'
-elif sys.version_info[:2] == (3, 4):
-    __extra_requires__['test'][0] = 'pytest<5.0dev'
 
 try:
     # If we're executing on a Raspberry Pi, install all GPIO libraries for

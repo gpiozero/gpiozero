@@ -41,7 +41,6 @@ str = type('')
 import io
 import errno
 import struct
-import warnings
 from collections import defaultdict
 from threading import Lock
 try:

@@ -40,11 +40,7 @@ str = type('')
 
 import re
 import warnings
-from collections import namedtuple
-try:
-    from math import log2
-except ImportError:
-    from .compat import log2
+from math import log2
 
 from .exc import AmbiguousTone
 

@@ -43,10 +43,8 @@ import mmap
 import errno
 import struct
 import select
-import warnings
 from time import sleep
 from threading import Thread, Event, RLock
-from collections import Counter
 try:
     from queue import Queue, Empty
 except ImportError:

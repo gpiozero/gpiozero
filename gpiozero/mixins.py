@@ -43,10 +43,7 @@ import weakref
 from functools import wraps, partial
 from threading import Event
 from collections import deque
-try:
-    from statistics import median
-except ImportError:
-    from .compat import median
+from statistics import median
 import warnings
 
 from .threads import GPIOThread

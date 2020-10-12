@@ -45,9 +45,6 @@ import warnings
 from collections import namedtuple, OrderedDict
 from itertools import chain
 from types import FunctionType
-from threading import Lock
-
-from .pins import Pin
 from .threads import _threads_shutdown
 from .mixins import (
     ValuesMixin,

@@ -41,10 +41,7 @@ import os
 from collections import namedtuple
 from time import time, sleep
 from threading import Thread, Event
-try:
-    from math import isclose
-except ImportError:
-    from ..compat import isclose
+from math import isclose
 
 import pkg_resources
 

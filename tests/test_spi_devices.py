@@ -42,10 +42,7 @@ import sys
 import pytest
 from mock import patch
 from collections import namedtuple
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 from gpiozero.pins.mock import MockSPIDevice, MockPin
 from gpiozero import *
