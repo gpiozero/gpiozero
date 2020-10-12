@@ -34,15 +34,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-
 import warnings
-from time import sleep, time
+from time import sleep
 from threading import Event, Lock
 from statistics import median
 
@@ -54,6 +47,7 @@ try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
     PiGPIOFactory = None
+
 
 class InputDevice(GPIODevice):
     """

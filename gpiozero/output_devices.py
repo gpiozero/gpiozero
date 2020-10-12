@@ -34,13 +34,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-str = type('')
 
 from threading import Lock
 from itertools import repeat, cycle, chain
@@ -58,6 +51,7 @@ try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
     PiGPIOFactory = None
+
 
 class OutputDevice(SourceMixin, GPIODevice):
     """

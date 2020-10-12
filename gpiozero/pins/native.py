@@ -28,15 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
 import io
 import os
 import mmap
@@ -45,10 +36,7 @@ import struct
 import select
 from time import sleep
 from threading import Thread, Event, RLock
-try:
-    from queue import Queue, Empty
-except ImportError:
-    from Queue import Queue, Empty
+from queue import Queue, Empty
 
 from .local import LocalPiPin, LocalPiFactory
 from ..exc import (
@@ -109,7 +97,7 @@ class GPIOMemory(object):
             with io.open('/proc/device-tree/soc/ranges', 'rb') as f:
                 f.seek(4)
                 # This is deliberately a big-endian read
-                return struct.unpack(nstr('>L'), f.read(4))[0]
+                return struct.unpack(str('>L'), f.read(4))[0]
         except IOError:
             try:
                 return self.PERI_BASE_OFFSET[soc]
@@ -118,10 +106,10 @@ class GPIOMemory(object):
         raise IOError('unable to determine peripheral base')
 
     def __getitem__(self, index):
-        return struct.unpack_from(nstr('<L'), self.mem, index * 4)[0]
+        return struct.unpack_from(str('<L'), self.mem, index * 4)[0]
 
     def __setitem__(self, index, value):
-        struct.pack_into(nstr('<L'), self.mem, index * 4, value)
+        struct.pack_into(str('<L'), self.mem, index * 4, value)
 
 
 class GPIOFS(object):

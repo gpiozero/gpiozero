@@ -28,16 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
-
 import io
 import pytest
 from array import array
@@ -56,7 +46,7 @@ from gpiozero import *
 
 def test_spi_hardware_params(mock_factory):
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
-        mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
+        mmap_mmap.return_value = array(str('B'), (0,) * 4096)
         io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
         factory = NativeFactory()
         with patch('gpiozero.pins.local.SpiDev'):
@@ -87,7 +77,7 @@ def test_spi_hardware_params(mock_factory):
 
 def test_spi_software_params(mock_factory):
     with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
-        mmap_mmap.return_value = array(nstr('B'), (0,) * 4096)
+        mmap_mmap.return_value = array(str('B'), (0,) * 4096)
         io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
         factory = NativeFactory()
         with patch('gpiozero.pins.local.SpiDev'):

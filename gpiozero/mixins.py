@@ -29,15 +29,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-nstr = str
-str = type('')
-
 import inspect
 import weakref
 from functools import wraps, partial
@@ -59,6 +50,7 @@ callback_warning = (
     'The callback was set to None. This may have been unintentional '
     'e.g. btn.when_pressed = pressed() instead of btn.when_pressed = pressed'
 )
+
 
 class ValuesMixin(object):
     """

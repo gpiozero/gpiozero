@@ -31,25 +31,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-str = type('')
-
-
 from random import random
 from time import sleep
-from .mixins import ValuesMixin
-try:
-    from itertools import izip as zip
-except ImportError:
-    pass
 from itertools import cycle
 from math import sin, cos, pi, isclose
 from statistics import mean
+
+from .mixins import ValuesMixin
 
 
 def _normalize(values):

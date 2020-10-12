@@ -6,14 +6,8 @@ import sys
 import errno
 from setuptools import setup, find_packages
 
-if sys.version_info[0] == 2:
-    if not sys.version_info >= (2, 7):
-        raise ValueError('This package requires Python 2.7 or above')
-elif sys.version_info[0] == 3:
-    if not sys.version_info >= (3, 5):
-        raise ValueError('This package requires Python 3.5 or above')
-else:
-    raise ValueError('Unrecognized major version of Python')
+if not sys.version_info >= (3, 5):
+    raise ValueError('This package requires Python 3.5 or above')
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -37,8 +31,6 @@ __classifiers__ = [
     "Topic :: Education",
     "Topic :: System :: Hardware",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",

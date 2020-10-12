@@ -29,24 +29,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
 import io
 import errno
 import struct
 from collections import defaultdict
 from threading import Lock
-try:
-    from time import monotonic
-except ImportError:
-    from time import time as monotonic
+from time import monotonic
 
 try:
     from spidev import SpiDev
@@ -93,7 +81,7 @@ class LocalPiFactory(PiFactory):
         revision = None
         try:
             with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-                revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
+                revision = hex(struct.unpack(str('>L'), f.read(4))[0])[2:]
         except IOError as e:
             if e.errno != errno.ENOENT:
                 raise e

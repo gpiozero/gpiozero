@@ -1,9 +1,8 @@
 language: python
 python:
-    - "3.6"
     - "3.5"
-    - "2.7"
-    - "pypy"
+    - "3.6"
+    - "3.7"
     - "pypy3"
 
 install: "pip install -e .[test]"
