@@ -164,11 +164,13 @@ def test_output_with_state(pins):
 
 def test_pull(pins):
     test_pin, input_pin = pins
+    input_pin.pull = 'floating'
     test_pin.function = 'input'
     test_pin.pull = 'up'
+    assert test_pin.state == 1
     assert input_pin.state == 1
     test_pin.pull = 'down'
-    test_pin, input_pin = pins
+    assert test_pin.state == 0
     assert input_pin.state == 0
 
 def test_pull_bad(pins):
@@ -194,10 +196,23 @@ def test_pull_down_warning(pin_factory):
 
 def test_input_with_pull(pins):
     test_pin, input_pin = pins
+    input_pin.pull = 'floating'
     test_pin.input_with_pull('up')
+    assert test_pin.state == 1
     assert input_pin.state == 1
     test_pin.input_with_pull('down')
+    assert test_pin.state == 0
     assert input_pin.state == 0
+
+def test_pulls_are_weak(pins):
+    test_pin, input_pin = pins
+    test_pin.function = 'output'
+    for pull in ('floating', 'down', 'up'):
+        input_pin.pull = pull
+        test_pin.state = 0
+        assert input_pin.state == 0
+        test_pin.state = 1
+        assert input_pin.state == 1
 
 def test_bad_duty_cycle(pins):
     test_pin, input_pin = pins
