@@ -69,6 +69,7 @@ class GPIOMemory(object):
         'BCM2835': 0x20000000,
         'BCM2836': 0x3f000000,
         'BCM2837': 0x3f000000,
+        'BCM2711': 0xfe000000,
     }
 
     # From BCM2835 data-sheet, p.91
@@ -85,6 +86,8 @@ class GPIOMemory(object):
     GPAFEN_OFFSET   = 0x88 >> 2
     GPPUD_OFFSET    = 0x94 >> 2
     GPPUDCLK_OFFSET = 0x98 >> 2
+    # pull-control registers for BCM2711
+    GPPUPPDN_OFFSET  = 0xe4 >> 2
 
     def __init__(self, soc):
         try:
@@ -97,7 +100,7 @@ class GPIOMemory(object):
                     'unable to open /dev/gpiomem or /dev/mem; '
                     'upgrade your kernel or run as root')
             else:
-                offset = self.peripheral_base(soc) + self.GPIO_BASE_OFFSET
+                offset = self.gpio_base(soc)
         else:
             offset = 0
         self.mem = mmap.mmap(self.fd, 4096, offset=offset)
@@ -106,18 +109,51 @@ class GPIOMemory(object):
         self.mem.close()
         os.close(self.fd)
 
-    def peripheral_base(self, soc):
+    def gpio_base(self, soc):
         try:
-            with io.open('/proc/device-tree/soc/ranges', 'rb') as f:
-                f.seek(4)
-                # This is deliberately a big-endian read
-                return struct.unpack(nstr('>L'), f.read(4))[0]
+            DT_ROOT = '/proc/device-tree'
+            DT_ALIAS = 'gpio'
+            UNPACK_FORMATS = {1: 'L', 2: 'Q'} # a DT cell is 32 bits
+            # These are deliberately all big-endian reads
+            def _read_cell_count(node_dir, cell_type):
+                with io.open(os.path.join(node_dir, '#%s-cells' % cell_type), 'rb') as f:
+                    return struct.unpack(nstr('>L'), f.read(4))[0]
+            def _cell_unpack_details(cell_sizes):
+                unpack_format = '>'
+                for cells in cell_sizes:
+                    unpack_format += UNPACK_FORMATS[cells]
+                return unpack_format, struct.calcsize(unpack_format)
+            # get the child node corresponding to the alias
+            with io.open(os.path.join(DT_ROOT, 'aliases', DT_ALIAS), 'r') as f:
+                alias_dir = f.read()[1:-1] # ignore leading slash and trailing NUL
+            alias_parent_dir = os.path.join(DT_ROOT, os.path.dirname(alias_dir))
+            child_address_cells = _read_cell_count(alias_parent_dir, 'address')
+            child_size_cells = _read_cell_count(alias_parent_dir, 'size')
+            # get the alias' address
+            child_reg_format, child_reg_size = _cell_unpack_details([child_address_cells, child_size_cells])
+            with io.open(os.path.join(DT_ROOT, alias_dir, 'reg'), 'rb') as f:
+                alias_address, alias_size = struct.unpack(nstr(child_reg_format), f.read(child_reg_size))
+            # read the address-translation ranges
+            parent_address_cells = _read_cell_count(DT_ROOT, 'address')
+            ranges_format, ranges_size = _cell_unpack_details([child_address_cells, parent_address_cells, child_size_cells])
+            ranges = []
+            with io.open(os.path.join(alias_parent_dir, 'ranges'), 'rb') as f:
+                data = f.read(ranges_size)
+                while len(data) == ranges_size:
+                    ranges.append(struct.unpack(nstr(ranges_format), data))
+                    data = f.read(ranges_size)
+            # and then convert the alias address to a base address
+            for (child_start, parent_start, range_size) in ranges:
+                if child_start <= alias_address < (child_start + range_size):
+                    return (alias_address - child_start) + parent_start
+            # didn't match any translation ranges
+            return alias_address
         except IOError:
             try:
-                return self.PERI_BASE_OFFSET[soc]
+                return self.PERI_BASE_OFFSET[soc] + self.GPIO_BASE_OFFSET
             except KeyError:
                 pass
-        raise IOError('unable to determine peripheral base')
+        raise IOError('unable to determine gpio base')
 
     def __getitem__(self, index):
         return struct.unpack_from(nstr('<L'), self.mem, index * 4)[0]
@@ -359,7 +395,6 @@ class NativePin(LocalPiPin):
         'up':       0b10,
         'down':     0b01,
         'floating': 0b00,
-        'reserved': 0b11,
         }
 
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
@@ -375,8 +410,19 @@ class NativePin(LocalPiPin):
         self._clear_shift = number % 32
         self._level_offset = self.factory.mem.GPLEV_OFFSET + (number // 32)
         self._level_shift = number % 32
-        self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
-        self._pull_shift = number % 32
+        if self.factory.pi_info.soc == 'BCM2711':
+            self.__class__.GPIO_PULL_UPS = {
+                'up':       0b01,
+                'down':     0b10,
+                'floating': 0b00,
+            }
+            self.__class__.GPIO_PULL_UP_NAMES = {v: k for (k, v) in self.__class__.GPIO_PULL_UPS.items()}
+            self._pull_offset = self.factory.mem.GPPUPPDN_OFFSET + ((number * 2) // 32)
+            self._pull_shift = (number * 2) % 32
+        else:
+            self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
+            self._pull_shift = number % 32
+            self._pull = 'floating'
         self._edge_offset = self.factory.mem.GPEDS_OFFSET + (number // 32)
         self._edge_shift = number % 32
         self._rising_offset = self.factory.mem.GPREN_OFFSET + (number // 32)
@@ -388,7 +434,6 @@ class NativePin(LocalPiPin):
         self._change_thread = None
         self._change_event = Event()
         self.function = 'input'
-        self._pull = 'floating'
         self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self.bounce = None
         self.edges = 'none'
@@ -426,7 +471,11 @@ class NativePin(LocalPiPin):
             self.factory.mem[self._clear_offset] = 1 << self._clear_shift
 
     def _get_pull(self):
-        return self.GPIO_PULL_UP_NAMES[self._pull]
+        if self.factory.pi_info.soc == 'BCM2711':
+            pull = (self.factory.mem[self._pull_offset] >> self._pull_shift) & 3
+        else:
+            pull = self._pull
+        return self.GPIO_PULL_UP_NAMES[pull]
 
     def _set_pull(self, value):
         if self.function != 'input':
@@ -437,13 +486,19 @@ class NativePin(LocalPiPin):
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
-        self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
-        sleep(0.000000214)
-        self.factory.mem[self._pull_offset] = 1 << self._pull_shift
-        sleep(0.000000214)
-        self.factory.mem[self.factory.mem.GPPUD_OFFSET] = 0
-        self.factory.mem[self._pull_offset] = 0
-        self._pull = value
+        if self.factory.pi_info.soc == 'BCM2711':
+            regvalue = self.factory.mem[self._pull_offset]
+            regvalue &= ~(0x3 << self._pull_shift)
+            regvalue |= (value & 0x3) << self._pull_shift
+            self.factory.mem[self._pull_offset] = regvalue
+        else:
+            self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
+            sleep(0.000000214)
+            self.factory.mem[self._pull_offset] = 1 << self._pull_shift
+            sleep(0.000000214)
+            self.factory.mem[self.factory.mem.GPPUD_OFFSET] = 0
+            self.factory.mem[self._pull_offset] = 0
+            self._pull = value
 
     def _get_bounce(self):
         return self._bounce
