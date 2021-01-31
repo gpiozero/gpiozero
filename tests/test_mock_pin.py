@@ -41,7 +41,7 @@ from threading import Event
 
 import pytest
 
-from gpiozero.pins.mock import MockPWMPin, MockPin
+from gpiozero.pins.mock import MockFactory, MockPWMPin, MockPin
 from gpiozero import *
 
 
@@ -202,3 +202,14 @@ def test_mock_pin_edges(mock_factory):
     assert not fired.is_set()
     assert pin.edges == 'falling'
 
+def test_independent_mock_factories():
+    factory_a = MockFactory(independent=True)
+    factory_b = MockFactory(independent=True)
+
+    pin_number = 1
+    pin_1a = DigitalOutputDevice(pin_number, pin_factory=factory_a)
+    pin_1b = DigitalOutputDevice(pin_number, pin_factory=factory_b)
+
+    pin_1a.on()
+    assert pin_1a.value == 1
+    assert pin_1b.value == 0

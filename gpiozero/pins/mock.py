@@ -38,7 +38,7 @@ str = type('')
 
 
 import os
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from time import time, sleep
 from threading import Thread, Event
 try:
@@ -461,7 +461,7 @@ class MockFactory(LocalPiFactory):
         construction to the value of the *pin_class* parameter in the
         constructor, or :class:`MockPin` if that is unspecified.
     """
-    def __init__(self, revision=None, pin_class=None):
+    def __init__(self, revision=None, pin_class=None, independent=False):
         super(MockFactory, self).__init__()
         if revision is None:
             revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
@@ -477,6 +477,10 @@ class MockFactory(LocalPiFactory):
         if not issubclass(pin_class, MockPin):
             raise ValueError('invalid mock pin_class: %r' % pin_class)
         self.pin_class = pin_class
+
+        if independent:
+            self._reservations = defaultdict(list)
+            self.pins = {}
 
     def _get_revision(self):
         return self._revision
