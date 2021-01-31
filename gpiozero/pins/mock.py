@@ -40,7 +40,7 @@ str = type('')
 import os
 from collections import defaultdict, namedtuple
 from time import time, sleep
-from threading import Thread, Event
+from threading import Lock, Thread, Event
 try:
     from math import isclose
 except ImportError:
@@ -480,6 +480,7 @@ class MockFactory(LocalPiFactory):
 
         if independent:
             self._reservations = defaultdict(list)
+            self._res_lock = Lock()
             self.pins = {}
 
     def _get_revision(self):
