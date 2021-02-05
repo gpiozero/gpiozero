@@ -106,7 +106,7 @@ deb: $(DIST_DEB) $(DIST_DSC)
 
 dist: $(DIST_WHEEL) $(DIST_DEB) $(DIST_DSC) $(DIST_TAR) $(DIST_ZIP)
 
-develop: tags
+develop: 
 	@# These have to be done separately to avoid a cockup...
 	$(PIP) install -U setuptools
 	$(PIP) install -U pip
