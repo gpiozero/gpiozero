@@ -498,7 +498,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
         if not self.closed:
             self._closed = True
             self._factory.connection.bb_spi_close(self._select_pin)
-        self.factory.release_all(self)
+        self._factory.release_all(self)
         super(PiGPIOSoftwareSPI, self).close()
 
     @property
