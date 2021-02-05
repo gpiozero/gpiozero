@@ -495,7 +495,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
             # If the factory has died already or we're not present in its
             # internal list, ignore the error
             pass
-        if not self.closed:
+        if not self._closed and self._factory.connection:
             self._closed = True
             self._factory.connection.bb_spi_close(self._select_pin)
         self._factory.release_all(self)
