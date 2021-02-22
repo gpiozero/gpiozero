@@ -191,7 +191,7 @@ If you have multiple versions installed (e.g. from :command:`pip` and
 be the version that ``import gpiozero`` will import.
 
 If you receive the error "No module named pkg_resources", you need to install
-:command:`pip`. This can be done with the following command in Raspbian:
+:command:`pip`. This can be done with the following command in Raspberry Pi OS:
 
 .. code-block:: console
 

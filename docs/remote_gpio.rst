@@ -53,9 +53,9 @@ used.
 Preparing the Raspberry Pi
 ==========================
 
-If you're using Raspbian (desktop - not Raspbian Lite) then you have everything
-you need to use the remote GPIO feature. If you're using Raspbian Lite, or
-another distribution, you'll need to install pigpio:
+If you're using Raspberry Pi OS (desktop - not Lite) then you have everything
+you need to use the remote GPIO feature. If you're using Raspberry Pi OS Lite,
+or another distribution, you'll need to install pigpio:
 
 .. code-block:: console
 
@@ -70,8 +70,8 @@ Raspberry Pi.
 Enable remote connections
 -------------------------
 
-On the Raspbian desktop image, you can enable *Remote GPIO* in the Raspberry
-Pi configuration tool:
+On the Raspberry Pi OS desktop image, you can enable *Remote GPIO* in the
+Raspberry Pi configuration tool:
 
 .. image:: images/raspi-config.png
     :align: center
@@ -134,11 +134,11 @@ the ``-n`` flag. For example:
 Preparing the control computer
 ==============================
 
-If the control computer (the computer you're running your Python code from) is
-a Raspberry Pi running Raspbian (or a PC running `Raspberry Pi Desktop x86`_),
-then you have everything you need. If you're using another Linux distribution,
-Mac OS or Windows then you'll need to install the `pigpio`_ Python library on
-the PC.
+If the control computer (the computer you're running your Python code from) is a
+Raspberry Pi running Raspberry Pi OS (or a PC running `Raspberry Pi Desktop
+x86`_), then you have everything you need. If you're using another Linux
+distribution, Mac OS or Windows then you'll need to install the `pigpio`_ Python
+library on the PC.
 
 
 Raspberry Pi
