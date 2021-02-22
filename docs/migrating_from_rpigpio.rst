@@ -333,6 +333,22 @@ Pin state cleanup is explicit in RPi.GPIO, and is done manually with
 pin used, at the end of the script. Manual cleanup is possible by use of the
 :meth:`~Device.close` method on the device.
 
+Note that cleanup only occurs at the point of normal termination of the script.
+If the script exits due to a program error, cleanup will not be performed. To
+ensure that cleanup is performed after an exception is raised, the exception
+must be handled, for example::
+
+    from gpiozero import Button
+
+    btn = Button(4)
+
+    while True:
+        try:
+            if btn.is_pressed:
+                print("Pressed")
+        except KeyboardInterrupt:
+            print("Ending program")
+
 Read more in the relevant FAQ: :ref:`gpio-cleanup`
 
 
