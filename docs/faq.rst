@@ -268,6 +268,8 @@ This means that you can reuse the pin for another device, and that despite
 turning the LED on (and hence, the pin high), after calling
 :meth:`~Device.close` it is restored to its previous state (LED off, pin low).
 
+Read more about :ref:`migrating_from_rpigpio`.
+
 
 How do I use button.when_pressed and button.when_held together?
 ===============================================================
