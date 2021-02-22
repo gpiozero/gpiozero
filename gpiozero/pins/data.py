@@ -1308,7 +1308,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             if specs['memory'] < 1024:
                 specs['memory_unit'] = "MB"
             else:
-                specs['memory'] /= 1024
+                specs['memory'] = int(specs['memory'] / 1024)
                 specs['memory_unit'] = "GB"
             return dedent("""\
                 {style:bold}Revision           {style:reset}: {revision}
