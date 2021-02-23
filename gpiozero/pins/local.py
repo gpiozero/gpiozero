@@ -61,6 +61,10 @@ from ..devices import Device, SharedMixin
 from ..output_devices import OutputDevice
 from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
 
+REVISION_TABLE = {
+    "Raspberry Pi 3 Model B": hex(0xa22082),
+}
+
 
 class LocalPiFactory(PiFactory):
     """
@@ -97,6 +101,13 @@ class LocalPiFactory(PiFactory):
                 revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
         except IOError as e:
             if e.errno != errno.ENOENT:
+                raise e
+        try:
+            with io.open('/proc/device-tree/model', 'r') as f:
+                modelstr = f.readline()[:-1]
+                revision = REVISION_TABLE[modelstr]
+        except (IOError, KeyError) as e:
+            if not isinstance(e, IOError) or e.errno != errno.ENOENT:
                 raise e
             with io.open('/proc/cpuinfo', 'r') as f:
                 for line in f:
