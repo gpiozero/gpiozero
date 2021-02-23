@@ -55,11 +55,32 @@ except ImportError:
     SpiDev = None
 
 from . import SPI
-from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS
+from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS, spi_port_device
 from .spi import SPISoftwareBus
 from ..devices import Device, SharedMixin
 from ..output_devices import OutputDevice
 from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
+
+
+def get_pi_revision():
+    revision = None
+    try:
+        with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
+            revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
+    except IOError as e:
+        if e.errno != errno.ENOENT:
+            raise e
+        with io.open('/proc/cpuinfo', 'r') as f:
+            for line in f:
+                if line.startswith('Revision'):
+                    revision = line.split(':')[1].strip().lower()
+    if revision is not None:
+        overvolted = revision.startswith('100')
+        if overvolted:
+            revision = revision[-4:]
+        return int(revision, base=16)
+    raise PinUnknownPi(
+        'unable to locate Pi revision in /proc/device-tree or /proc/cpuinfo')
 
 
 class LocalPiFactory(PiFactory):
@@ -76,12 +97,6 @@ class LocalPiFactory(PiFactory):
 
     def __init__(self):
         super(LocalPiFactory, self).__init__()
-        self.spi_classes = {
-            ('hardware', 'exclusive'): LocalPiHardwareSPI,
-            ('hardware', 'shared'):    LocalPiHardwareSPIShared,
-            ('software', 'exclusive'): LocalPiSoftwareSPI,
-            ('software', 'shared'):    LocalPiSoftwareSPIShared,
-            }
         # Override the reservations and pins dict to be this class' attributes.
         # This is a bit of a dirty hack, but ensures that anyone evil enough to
         # mix pin implementations doesn't try and control the same pin with
@@ -91,23 +106,15 @@ class LocalPiFactory(PiFactory):
         self._res_lock = LocalPiFactory._res_lock
 
     def _get_revision(self):
-        revision = None
-        try:
-            with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-                revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                raise e
-            with io.open('/proc/cpuinfo', 'r') as f:
-                for line in f:
-                    if line.startswith('Revision'):
-                        revision = line.split(':')[1].strip().lower()
-        if revision is not None:
-            overvolted = revision.startswith('100')
-            if overvolted:
-                revision = revision[-4:]
-            return int(revision, base=16)
-        raise PinUnknownPi('unable to locate Pi revision in /proc/device-tree or /proc/cpuinfo')
+        return get_pi_revision()
+
+    def _get_spi_class(self, shared, hardware):
+        return {
+            (False, True):  LocalPiHardwareSPI,
+            (True,  True):  LocalPiHardwareSPIShared,
+            (False, False): LocalPiSoftwareSPI,
+            (True,  False): LocalPiSoftwareSPIShared,
+            }[shared, hardware]
 
     @staticmethod
     def ticks():
@@ -145,23 +152,21 @@ class LocalPiPin(PiPin):
 
 
 class LocalPiHardwareSPI(SPI):
-    def __init__(self, port, device, pin_factory):
-        self._port = port
-        self._device = device
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+        self._port, self._device = spi_port_device(
+            clock_pin, mosi_pin, miso_pin, select_pin)
         self._interface = None
         if SpiDev is None:
             raise ImportError('failed to import spidev')
         super(LocalPiHardwareSPI, self).__init__(pin_factory=pin_factory)
-        pins = SPI_HARDWARE_PINS[port]
-        self.pin_factory.reserve_pins(
-            self,
-            pins['clock'],
-            pins['mosi'],
-            pins['miso'],
-            pins['select'][device]
-            )
+        to_reserve = {clock_pin, select_pin}
+        if mosi_pin is not None:
+            to_reserve.add(mosi_pin)
+        if miso_pin is not None:
+            to_reserve.add(miso_pin)
+        self.pin_factory.reserve_pins(self, *to_reserve)
         self._interface = SpiDev()
-        self._interface.open(port, device)
+        self._interface.open(self._port, self._device)
         self._interface.max_speed_hz = 500000
 
     def close(self):
@@ -302,16 +307,18 @@ class LocalPiSoftwareSPI(SPI):
     def _set_select_high(self, value):
         with self._bus.lock:
             self._select.active_high = value
-            self.off()
+            self._select.off()
 
 
 class LocalPiHardwareSPIShared(SharedMixin, LocalPiHardwareSPI):
     @classmethod
-    def _shared_key(cls, factory, port, device):
-        return (port, device)
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory):
+        return (clock_pin, select_pin)
 
 
 class LocalPiSoftwareSPIShared(SharedMixin, LocalPiSoftwareSPI):
     @classmethod
-    def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
-        return (select_pin,)
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory):
+        return (clock_pin, select_pin)
