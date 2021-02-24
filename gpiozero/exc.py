@@ -105,6 +105,9 @@ class SPIFixedSelect(SPIError, AttributeError):
 class SPIFixedWordSize(SPIError, AttributeError):
     "Error raised when the number of bits per word cannot be changed"
 
+class SPIFixedRate(SPIError, AttributeError):
+    "Error raised when the baud-rate of the interface cannot be changed"
+
 class SPIInvalidWordSize(SPIError, ValueError):
     "Error raised when an invalid (out of range) number of bits per word is specified"
 

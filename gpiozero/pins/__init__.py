@@ -56,6 +56,7 @@ from ..exc import (
     SPIFixedBitOrder,
     SPIFixedSelect,
     SPIFixedWordSize,
+    SPIFixedRate,
     GPIOPinInUse,
     )
 
@@ -768,4 +769,24 @@ class SPI(Device):
         word. Defaults to 8 meaning that words are effectively bytes.
 
         Several implementations do not support non-byte-sized words.
+        """)
+
+    def _get_rate(self):
+        return 100000
+
+    def _set_rate(self, value):
+        raise SPIFixedRate("rate cannot be changed on %r" % self)
+
+    rate = property(
+        lambda self: self._get_rate(),
+        lambda self, value: self._set_rate(value),
+        doc="""\
+        Controls the speed of the SPI interface in Hz (or baud).
+
+        Note that most software SPI implementations ignore this property, and
+        will raise :exc:`SPIFixedRate` if an attempt is made to set it, as they
+        have no rate control (they simply bit-bang as fast as possible because
+        typically this isn't very fast anyway, and introducing measures to
+        limit the rate would simply slow them down to the point of being
+        useless).
         """)

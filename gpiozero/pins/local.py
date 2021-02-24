@@ -219,6 +219,12 @@ class LocalPiHardwareSPI(SPI):
     def _set_bits_per_word(self, value):
         self._interface.bits_per_word = value
 
+    def _get_rate(self):
+        return self._interface.max_speed_hz
+
+    def _set_rate(self, value):
+        self._interface.max_speed_hz = int(value)
+
 
 class LocalPiSoftwareSPI(SPI):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):

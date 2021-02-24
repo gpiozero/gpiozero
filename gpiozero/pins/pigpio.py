@@ -372,7 +372,8 @@ class PiGPIOHardwareSPI(SPI):
     def _conflicts_with(self, other):
         return not (
             isinstance(other, PiGPIOHardwareSPI) and
-            (self._port, self._device) != (other._port, other._device)
+            (self.pin_factory.host, self._port, self._device) !=
+            (other.pin_factory.host, other._port, other._device)
             )
 
     def close(self):
@@ -428,6 +429,17 @@ class PiGPIOHardwareSPI(SPI):
         self._check_open()
         self.pin_factory.connection.spi_close(self._handle)
         self._spi_flags = (self._spi_flags & ~0x3f0000) | ((value & 0x3f) << 16)
+        self._handle = self.pin_factory.connection.spi_open(
+            self._device, self._baud, self._spi_flags)
+
+    def _get_rate(self):
+        return self._baud
+
+    def _set_rate(self, value):
+        self._check_open()
+        value = int(value)
+        self.pin_factory.connection.spi_close(self._handle)
+        self._baud = value
         self._handle = self.pin_factory.connection.spi_open(
             self._device, self._baud, self._spi_flags)
 
@@ -573,6 +585,18 @@ class PiGPIOSoftwareSPI(SPI):
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
             self._baud, self._spi_flags)
 
+    def _get_rate(self):
+        return self._baud
+
+    def _set_rate(self, value):
+        self._check_open()
+        value = int(value)
+        self.pin_factory.connection.bb_spi_close(self._select_pin)
+        self._baud = value
+        self.pin_factory.connection.bb_spi_open(
+            self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
+            self._baud, self._spi_flags)
+
     def transfer(self, data):
         self._check_open()
         count, data = self.pin_factory.connection.bb_spi_xfer(
@@ -587,10 +611,10 @@ class PiGPIOSoftwareSPI(SPI):
 class PiGPIOHardwareSPIShared(SharedMixin, PiGPIOHardwareSPI):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
-        return (clock_pin, select_pin)
+        return (pin_factory.host, clock_pin, select_pin)
 
 
 class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
-        return (clock_pin, select_pin)
+        return (pin_factory.host, clock_pin, select_pin)
