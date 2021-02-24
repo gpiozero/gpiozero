@@ -90,6 +90,7 @@ except IOError as e:
 __entry_points__ = {
     'gpiozero_pin_factories': [
         'pigpio  = gpiozero.pins.pigpio:PiGPIOFactory',
+        'lgpio   = gpiozero.pins.lgpio:LGPIOFactory',
         'rpigpio = gpiozero.pins.rpigpio:RPiGPIOFactory',
         'rpio    = gpiozero.pins.rpio:RPIOFactory',
         'native  = gpiozero.pins.native:NativeFactory',
