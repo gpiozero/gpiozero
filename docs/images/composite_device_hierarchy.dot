@@ -6,7 +6,8 @@ digraph classes {
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
 
-    
+    EventsMixin;
+    HoldMixin;
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
@@ -20,11 +21,13 @@ digraph classes {
     node [color="#2980b9", fontcolor="#ffffff"];
 
     ButtonBoard->CompositeDevice;
+    ButtonBoard->HoldMixin;
     CamJamKitRobot->Robot;
     CompositeDevice->Device;
     CompositeOutputDevice->CompositeDevice;
     Energenie->Device;
     FishDish->CompositeOutputDevice;
+    HoldMixin->EventsMixin;
     JamHat->CompositeOutputDevice;
     LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
@@ -39,6 +42,8 @@ digraph classes {
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;
     Robot->CompositeDevice;
+    RotaryEncoder->CompositeDevice;
+    RotaryEncoder->EventsMixin;
     RyanteckRobot->Robot;
     SnowPi->LEDBoard;
     StatusBoard->CompositeOutputDevice;
