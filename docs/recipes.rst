@@ -377,6 +377,28 @@ Run a function when something gets near the sensor:
 
 .. literalinclude:: examples/distance_sensor_2.py
 
+Rotary encoder
+==============
+
+.. image:: images/color_picker_bb.*
+
+.. note::
+
+    In this recipe, I've used a common *anode* RGB LED. Often, Pi projects use
+    common *cathode* RGB LEDs because they're slightly easier to think about
+    electrically. However, in this case all three components can be found in an
+    illuminated rotary encoder which incorporates a common anode RGB LED, and a
+    momentary push button. This is also the reason for the button being wired
+    active-low, contrary to most other examples in this documentation.
+
+    For the sake of clarity, the diagram shows the three separate components,
+    but this same circuit will work equally well with this commonly available
+    `illuminated rotary encoder`_ instead.
+
+Have a rotary encoder, an RGB LED, and button act as a color picker.
+
+.. literalinclude:: examples/color_picker.py
+
 Servo
 =====
 
@@ -549,3 +571,4 @@ Continue to:
 .. _Quick Reaction Game: https://projects.raspberrypi.org/en/projects/python-quick-reaction-game
 .. _GPIO Music Box: https://projects.raspberrypi.org/en/projects/gpio-music-box
 .. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI
+.. _illuminated rotary encoder: https://shop.pimoroni.com/products/rotary-encoder-illuminated-rgb
