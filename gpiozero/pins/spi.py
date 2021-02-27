@@ -53,11 +53,11 @@ class SPISoftwareBus(SharedMixin, Device):
         super(SPISoftwareBus, self).__init__()
         self.lock = RLock()
         try:
-            self.clock = DigitalOutputDevice(clock_pin, active_high=True)
+            self.clock = OutputDevice(clock_pin, active_high=True)
             if mosi_pin is not None:
-                self.mosi = DigitalOutputDevice(mosi_pin)
+                self.mosi = OutputDevice(mosi_pin)
             if miso_pin is not None:
-                self.miso = DigitalInputDevice(miso_pin)
+                self.miso = InputDevice(miso_pin)
         except:
             self.close()
             raise

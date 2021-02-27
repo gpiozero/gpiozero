@@ -225,7 +225,7 @@ class LocalPiSoftwareSPI(SPI):
             self._lsb_first = False
             self._bits_per_word = 8
             self._bus = SPISoftwareBus(clock_pin, mosi_pin, miso_pin)
-            self._select = DigitalOutputDevice(
+            self._select = OutputDevice(
                 select_pin, active_high=False, pin_factory=pin_factory)
         except:
             self.close()
