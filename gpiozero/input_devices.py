@@ -1118,9 +1118,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         self._when_rotated = None
         self._when_rotated_cw = None
         self._when_rotated_ccw = None
-        self._rotated_event = Event()
-        self._rotated_cw_event = Event()
-        self._rotated_ccw_event = Event()
+        self._rotate_event = Event()
+        self._rotate_cw_event = Event()
+        self._rotate_ccw_event = Event()
         super(RotaryEncoder, self).__init__(
             a=InputDevice(a, pull_up=True, pin_factory=pin_factory),
             b=InputDevice(b, pull_up=True, pin_factory=pin_factory),
@@ -1147,31 +1147,31 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
                 if not self._max_steps or self._steps < self._max_steps else
                 -self._max_steps if self._wrap else self._max_steps
             )
-            self._rotated_cw_event.set()
+            self._rotate_cw_event.set()
             if self._when_rotated_cw:
                 self._when_rotated_cw()
-            self._rotated_cw_event.clear()
+            self._rotate_cw_event.clear()
         elif new_state == '-1':
             self._steps = (
                 self._steps - 1
                 if not self._max_steps or self._steps > -self._max_steps else
                 self._max_steps if self._wrap else -self._max_steps
             )
-            self._rotated_ccw_event.set()
+            self._rotate_ccw_event.set()
             if self._when_rotated_ccw:
                 self._when_rotated_ccw()
-            self._rotated_ccw_event.clear()
+            self._rotate_ccw_event.clear()
         else:
             self._state = new_state
             return
-        self._rotated_event.set()
+        self._rotate_event.set()
         if self._when_rotated:
             self._when_rotated()
-        self._rotated_event.clear()
+        self._rotate_event.clear()
         self._fire_events(ticks, self.is_active)
         self._state = 'idle'
 
-    def wait_for_rotated(self, timeout=None):
+    def wait_for_rotate(self, timeout=None):
         """
         Pause the script until the encoder is rotated at least one step in
         either direction, or the timeout is reached.
@@ -1182,9 +1182,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
             :data:`None` (the default), then wait indefinitely until the
             encoder is rotated.
         """
-        return self._rotated_event.wait(timeout)
+        return self._rotate_event.wait(timeout)
 
-    def wait_for_rotated_clockwise(self, timeout=None):
+    def wait_for_rotate_clockwise(self, timeout=None):
         """
         Pause the script until the encoder is rotated at least one step
         clockwise, or the timeout is reached.
@@ -1195,9 +1195,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
             :data:`None` (the default), then wait indefinitely until the
             encoder is rotated clockwise.
         """
-        return self._rotated_cw_event.wait(timeout)
+        return self._rotate_cw_event.wait(timeout)
 
-    def wait_for_rotated_counter_clockwise(self, timeout=None):
+    def wait_for_rotate_counter_clockwise(self, timeout=None):
         """
         Pause the script until the encoder is rotated at least one step
         counter-clockwise, or the timeout is reached.
@@ -1208,7 +1208,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
             :data:`None` (the default), then wait indefinitely until the
             encoder is rotated counter-clockwise.
         """
-        return self._rotated_ccw_event.wait(timeout)
+        return self._rotate_ccw_event.wait(timeout)
 
     @property
     def when_rotated(self):

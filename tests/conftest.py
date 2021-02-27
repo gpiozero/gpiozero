@@ -39,6 +39,7 @@ str = type('')
 import sys
 import pytest
 import warnings
+from threading import Event, Thread
 
 from gpiozero import Device
 from gpiozero.pins.mock import MockFactory, MockPWMPin
@@ -81,3 +82,25 @@ def mock_factory(request):
 @pytest.fixture()
 def pwm(request, mock_factory):
     mock_factory.pin_class = MockPWMPin
+
+class ThreadedTest(Thread):
+    def __init__(self, test_fn, *args, **kwargs):
+        self._fn = test_fn
+        self._args = args
+        self._kwargs = kwargs
+        self._result = None
+        super(ThreadedTest, self).__init__()
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        self._result = self._fn(*self._args, **self._kwargs)
+
+    @property
+    def result(self):
+        self.join(1)
+        if not self.is_alive():
+            return self._result
+        else:
+            raise RuntimeError('test thread did not finish')
+
