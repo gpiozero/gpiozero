@@ -347,6 +347,16 @@ RPi.GPIO
 .. autoclass:: gpiozero.pins.rpigpio.RPiGPIOPin
 
 
+lgpio
+=====
+
+.. module:: gpiozero.pins.lgpio
+
+.. autoclass:: gpiozero.pins.lgpio.LGPIOFactory
+
+.. autoclass:: gpiozero.pins.lgpio.LGPIOPin
+
+
 RPIO
 ====
 
