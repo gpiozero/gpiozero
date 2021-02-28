@@ -44,6 +44,7 @@ from __future__ import (
 import warnings
 from time import sleep, time
 from threading import Event, Lock
+from itertools import tee
 try:
     from statistics import median
 except ImportError:
@@ -51,12 +52,13 @@ except ImportError:
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback
-from .devices import GPIODevice
+from .devices import GPIODevice, CompositeDevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin
 try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
     PiGPIOFactory = None
+
 
 class InputDevice(GPIODevice):
     """
@@ -1015,3 +1017,329 @@ DistanceSensor.when_out_of_range = DistanceSensor.when_activated
 DistanceSensor.when_in_range = DistanceSensor.when_deactivated
 DistanceSensor.wait_for_out_of_range = DistanceSensor.wait_for_active
 DistanceSensor.wait_for_in_range = DistanceSensor.wait_for_inactive
+
+
+class RotaryEncoder(EventsMixin, CompositeDevice):
+    """
+    Represents a simple two-pin incremental `rotary encoder`_ device (see
+    :class:`AbsoluteEncoder` for the more complex multi-pin absolute rotary
+    encoders).
+
+    These devices typically have three pins labelled "A", "B", and "C". Connect
+    A and B directly to two GPIO pins, and C ("common") to one of the ground
+    pins on your Pi. Then simply specify the A and B pins as the arguments when
+    constructing this classs.
+
+    For example, if your encoder's A pin is connected to GPIO 21, and the B
+    pint to GPIO 20 (and presumably the C pin to a suitable GND pin), while an
+    LED (with a suitable 300Ω resistor) is connected to GPIO 5, the following
+    session will result in the brightness of the LED being controlled by
+    dialling the rotary encoder back and forth::
+
+        >>> from gpiozero import RotaryEncoder
+        >>> from gpiozero.tools import scaled_half
+        >>> rotor = RotaryEncoder(21, 20)
+        >>> led = PWMLED(5)
+        >>> led.source = scaled_half(rotor.values)
+
+    :type a: int or str
+    :param a:
+        The GPIO pin connected to the "A" output of the rotary encoder.
+
+    :type b: int or str
+    :param b:
+        The GPIO pin connected to the "B" output of the rotary encoder.
+
+    :type bounce_time: float or None
+    :param bounce_time:
+        If :data:`None` (the default), no software bounce compensation will be
+        performed. Otherwise, this is the length of time (in seconds) that the
+        component will ignore changes in state after an initial change.
+
+    :type max_steps: int
+    :param max_steps:
+        The number of steps clockwise the encoder takes to change the
+        :attr:`value` from 0 to 1, or counter-clockwise from 0 to -1.
+        If this is 0, then the encoder's :attr:`value` never changes, but you
+        can still read :attr:`steps` to determine the integer number of steps
+        the encoder has moved clockwise or counter clockwise.
+
+    :type threshold_steps: tuple of int
+    :param threshold_steps:
+        A (min, max) tuple of steps between which the device will be considered
+        "active", inclusive. In other words, when :attr:`steps` is greater than
+        or equal to the *min* value, and less than or equal the *max* value,
+        the :attr:`active` property will be :data:`True` and the appropriate
+        events (:attr:`when_activated`, :attr:`when_deactivated`) will be
+        fired. Defaults to (0, 0).
+
+    :type wrap: bool
+    :param wrap:
+        If :data:`True` and *max_steps* is non-zero, when the :attr:`steps`
+        reaches positive or negative *max_steps* it wraps around by negation.
+        Defaults to :data:`False`.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _rotary encoder: https://en.wikipedia.org/wiki/Rotary_encoder
+    """
+    TRANSITIONS = {
+        # The transition table here includes more than just the strictly
+        # necessary edges; it also permits "wiggle" between intermediary.
+        # However, once we start down the clockwise (cw) or counter-clockwise
+        # (ccw) path, we don't allow the state to pick the alternate direction
+        # without passing through the idle state again. This seems to work
+        # well in practice with several encoders, even quite jiggly ones with
+        # no debounce hardware or software
+        'idle': ['idle', 'ccw1', 'cw1',  'idle'],
+        'ccw1': ['idle', 'ccw1', 'ccw3', 'ccw2'],
+        'ccw2': ['idle', 'ccw1', 'ccw3', 'ccw2'],
+        'ccw3': ['-1',   'idle', 'ccw3', 'ccw2'],
+        'cw1':  ['idle', 'cw3',  'cw1',  'cw2'],
+        'cw2':  ['idle', 'cw3',  'cw1',  'cw2'],
+        'cw3':  ['+1',   'cw3',  'idle', 'cw2'],
+    }
+
+    def __init__(
+            self, a, b, bounce_time=None, max_steps=16, threshold_steps=(0, 0),
+            wrap=False, pin_factory=None):
+        min_thresh, max_thresh = threshold_steps
+        if max_thresh < min_thresh:
+            raise ValueError('maximum threshold cannot be less than minimum')
+        self._steps = 0
+        self._max_steps = int(max_steps)
+        self._threshold = (int(min_thresh), int(max_thresh))
+        self._wrap = bool(wrap)
+        self._state = 'idle'
+        self._edge = 0
+        self._when_rotated = None
+        self._when_rotated_cw = None
+        self._when_rotated_ccw = None
+        self._rotated_event = Event()
+        self._rotated_cw_event = Event()
+        self._rotated_ccw_event = Event()
+        super(RotaryEncoder, self).__init__(
+            a=InputDevice(a, pull_up=True, pin_factory=pin_factory),
+            b=InputDevice(b, pull_up=True, pin_factory=pin_factory),
+            _order=('a', 'b'), pin_factory=pin_factory)
+        self.a.pin.when_changed = self._a_changed
+        self.b.pin.when_changed = self._b_changed
+        # Call _fire_events once to set initial state of events
+        self._fire_events(self.pin_factory.ticks(), self.is_active)
+
+    def _a_changed(self, ticks, state):
+        edge = (self.a._state_to_value(state) << 1) | (self._edge & 0x1)
+        self._change_state(ticks, edge)
+
+    def _b_changed(self, ticks, state):
+        edge = (self._edge & 0x2) | self.b._state_to_value(state)
+        self._change_state(ticks, edge)
+
+    def _change_state(self, ticks, edge):
+        self._edge = edge
+        new_state = RotaryEncoder.TRANSITIONS[self._state][edge]
+        if new_state == '+1':
+            self._steps = (
+                self._steps + 1
+                if not self._max_steps or self._steps < self._max_steps else
+                -self._max_steps if self._wrap else self._max_steps
+            )
+            self._rotated_cw_event.set()
+            if self._when_rotated_cw:
+                self._when_rotated_cw()
+            self._rotated_cw_event.clear()
+        elif new_state == '-1':
+            self._steps = (
+                self._steps - 1
+                if not self._max_steps or self._steps > -self._max_steps else
+                self._max_steps if self._wrap else -self._max_steps
+            )
+            self._rotated_ccw_event.set()
+            if self._when_rotated_ccw:
+                self._when_rotated_ccw()
+            self._rotated_ccw_event.clear()
+        else:
+            self._state = new_state
+            return
+        self._rotated_event.set()
+        if self._when_rotated:
+            self._when_rotated()
+        self._rotated_event.clear()
+        self._fire_events(ticks, self.is_active)
+        self._state = 'idle'
+
+    def wait_for_rotated(self, timeout=None):
+        """
+        Pause the script until the encoder is rotated at least one step in
+        either direction, or the timeout is reached.
+
+        :type timeout: float or None
+        :param timeout:
+            Number of seconds to wait before proceeding. If this is
+            :data:`None` (the default), then wait indefinitely until the
+            encoder is rotated.
+        """
+        return self._rotated_event.wait(timeout)
+
+    def wait_for_rotated_clockwise(self, timeout=None):
+        """
+        Pause the script until the encoder is rotated at least one step
+        clockwise, or the timeout is reached.
+
+        :type timeout: float or None
+        :param timeout:
+            Number of seconds to wait before proceeding. If this is
+            :data:`None` (the default), then wait indefinitely until the
+            encoder is rotated clockwise.
+        """
+        return self._rotated_cw_event.wait(timeout)
+
+    def wait_for_rotated_counter_clockwise(self, timeout=None):
+        """
+        Pause the script until the encoder is rotated at least one step
+        counter-clockwise, or the timeout is reached.
+
+        :type timeout: float or None
+        :param timeout:
+            Number of seconds to wait before proceeding. If this is
+            :data:`None` (the default), then wait indefinitely until the
+            encoder is rotated counter-clockwise.
+        """
+        return self._rotated_ccw_event.wait(timeout)
+
+    @property
+    def when_rotated(self):
+        """
+        The function to be run when the encoder is rotated in either direction.
+
+        This can be set to a function which accepts no (mandatory) parameters,
+        or a Python function which accepts a single mandatory parameter (with
+        as many optional parameters as you like). If the function accepts a
+        single mandatory parameter, the device that activated will be passed
+        as that parameter.
+
+        Set this property to :data:`None` (the default) to disable the event.
+        """
+        return self._when_rotated
+
+    @when_rotated.setter
+    def when_rotated(self, value):
+        self._when_rotated = self._wrap_callback(value)
+
+    @property
+    def when_rotated_clockwise(self):
+        """
+        The function to be run when the encoder is rotated clockwise.
+
+        This can be set to a function which accepts no (mandatory) parameters,
+        or a Python function which accepts a single mandatory parameter (with
+        as many optional parameters as you like). If the function accepts a
+        single mandatory parameter, the device that activated will be passed
+        as that parameter.
+
+        Set this property to :data:`None` (the default) to disable the event.
+        """
+        return self._when_rotated_cw
+
+    @when_rotated_clockwise.setter
+    def when_rotated_clockwise(self, value):
+        self._when_rotated_cw = self._wrap_callback(value)
+
+    @property
+    def when_rotated_counter_clockwise(self):
+        """
+        The function to be run when the encoder is rotated counter-clockwise.
+
+        This can be set to a function which accepts no (mandatory) parameters,
+        or a Python function which accepts a single mandatory parameter (with
+        as many optional parameters as you like). If the function accepts a
+        single mandatory parameter, the device that activated will be passed
+        as that parameter.
+
+        Set this property to :data:`None` (the default) to disable the event.
+        """
+        return self._when_rotated_ccw
+
+    @when_rotated_counter_clockwise.setter
+    def when_rotated_counter_clockwise(self, value):
+        self._when_rotated_ccw = self._wrap_callback(value)
+
+    @property
+    def steps(self):
+        """
+        The "steps" value of the encoder starts at 0. It increments by one for
+        every step the encoder is rotated clockwise, and decrements by one for
+        every step it is rotated counter-clockwise. The steps value is
+        limited by :attr:`max_steps`. It will not advance beyond positive or
+        negative :attr:`max_steps`, unless :attr:`wrap` is :data:`True` in
+        which case it will roll around by negation. If :attr:`max_steps` is
+        zero then steps are not limited at all, and will increase infinitely
+        in either direction, but :attr:`value` will return a constant zero.
+
+        Note that, in contrast to most other input devices, because the rotary
+        encoder has no absolute position the :attr:`steps` attribute (and
+        :attr:`value` by corollary) is writable.
+        """
+        return self._steps
+
+    @steps.setter
+    def steps(self, value):
+        value = int(value)
+        if self._max_steps:
+            value = max(-self._max_steps, min(self._max_steps, value))
+        self._steps = value
+
+    @property
+    def value(self):
+        """
+        Represents the value of the rotary encoder as a value between -1 and 1.
+        The value is calculated by dividing the value of :attr:`steps` into the
+        range from negative :attr:`max_steps` to positive :attr:`max_steps`.
+
+        Note that, in contrast to most other input devices, because the rotary
+        encoder has no absolute position the :attr:`value` attribute is
+        writable.
+        """
+        try:
+            return self._steps / self._max_steps
+        except ZeroDivisionError:
+            return 0
+
+    @value.setter
+    def value(self, value):
+        self._steps = int(max(-1, min(1, float(value))) * self._max_steps)
+
+    @property
+    def is_active(self):
+        return self._threshold[0] <= self._steps <= self._threshold[1]
+
+    @property
+    def max_steps(self):
+        """
+        The number of discrete steps the rotary encoder takes to move
+        :attr:`value` from 0 to 1 clockwise, or 0 to -1 counter-clockwise. In
+        another sense, this is also the total number of discrete states this
+        input can represent.
+        """
+        return self._max_steps
+
+    @property
+    def threshold_steps(self):
+        """
+        The mininum and maximum number of steps between which :attr:`is_active`
+        will return :data:`True`. Defaults to (0, 0).
+        """
+        return self._threshold
+
+    @property
+    def wrap(self):
+        """
+        If :data:`True`, when :attr:`value` reaches its limit (-1 or 1), it
+        "wraps around" to the opposite limit. When :data:`False`, the value
+        (and the corresponding :attr:`steps` attribute) simply don't advance
+        beyond their limits.
+        """
+        return self._wrap
