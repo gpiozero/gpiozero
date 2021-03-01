@@ -1130,6 +1130,13 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         # Call _fire_events once to set initial state of events
         self._fire_events(self.pin_factory.ticks(), self.is_active)
 
+    def __repr__(self):
+        try:
+            return "<gpiozero.%s object on pins %r and %r>" % (
+                self.__class__.__name__, self.a.pin, self.b.pin)
+        except:
+            return super(RotaryEncoder, self).__repr__()
+
     def _a_changed(self, ticks, state):
         edge = (self.a._state_to_value(state) << 1) | (self._edge & 0x1)
         self._change_state(ticks, edge)
