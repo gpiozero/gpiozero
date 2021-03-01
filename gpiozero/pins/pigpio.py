@@ -316,8 +316,8 @@ class PiGPIOPin(PiPin):
     def _set_bounce(self, value):
         if value is None:
             value = 0
-        elif value < 0:
-            raise PinInvalidBounce('bounce must be 0 or greater')
+        elif not 0 <= value <= 0.3:
+            raise PinInvalidBounce('bounce must be between 0 and 0.3')
         self.factory.connection.set_glitch_filter(self.number, int(value * 1000000))
 
     def _get_edges(self):
