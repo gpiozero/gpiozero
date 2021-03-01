@@ -69,6 +69,7 @@ class Mock(object):
 
 sys.modules['RPi'] = Mock()
 sys.modules['RPi.GPIO'] = sys.modules['RPi'].GPIO
+sys.modules['lgpio'] = Mock()
 sys.modules['RPIO'] = Mock()
 sys.modules['RPIO.PWM'] = sys.modules['RPIO'].PWM
 sys.modules['RPIO.Exceptions'] = sys.modules['RPIO'].Exceptions
