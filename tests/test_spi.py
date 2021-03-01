@@ -45,62 +45,54 @@ from gpiozero import *
 
 
 def test_spi_hardware_params(mock_factory):
-    with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
-        mmap_mmap.return_value = array(str('B'), (0,) * 4096)
-        io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
-        factory = NativeFactory()
-        with patch('gpiozero.pins.local.SpiDev'):
-            with factory.spi() as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-                device.close()
-                assert device.closed
-            with factory.spi(port=0, device=0) as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-            with factory.spi(port=0, device=1) as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-            with factory.spi(clock_pin=11) as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-            with factory.spi(clock_pin=11, mosi_pin=10, select_pin=8) as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-            with factory.spi(clock_pin=11, mosi_pin=10, select_pin=7) as device:
-                assert isinstance(device, LocalPiHardwareSPI)
-            with factory.spi(shared=True) as device:
-                assert isinstance(device, LocalPiHardwareSPIShared)
-            with pytest.raises(ValueError):
-                factory.spi(port=1)
-            with pytest.raises(ValueError):
-                factory.spi(device=2)
-            with pytest.raises(ValueError):
-                factory.spi(port=0, clock_pin=12)
-            with pytest.raises(ValueError):
-                factory.spi(foo='bar')
+    with patch('gpiozero.pins.local.SpiDev'):
+        with mock_factory.spi() as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+            device.close()
+            assert device.closed
+        with mock_factory.spi(port=0, device=0) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(port=0, device=1) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(clock_pin=11) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(clock_pin=11, mosi_pin=10, select_pin=8) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(clock_pin=11, mosi_pin=10, select_pin=7) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(shared=True) as device:
+            assert isinstance(device, LocalPiHardwareSPIShared)
+        with pytest.raises(ValueError):
+            mock_factory.spi(port=1)
+        with pytest.raises(ValueError):
+            mock_factory.spi(device=2)
+        with pytest.raises(ValueError):
+            mock_factory.spi(port=0, clock_pin=12)
+        with pytest.raises(ValueError):
+            mock_factory.spi(foo='bar')
 
 def test_spi_software_params(mock_factory):
-    with patch('os.open'), patch('mmap.mmap') as mmap_mmap, patch('io.open') as io_open:
-        mmap_mmap.return_value = array(str('B'), (0,) * 4096)
-        io_open.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x10\x42')
-        factory = NativeFactory()
-        with patch('gpiozero.pins.local.SpiDev'):
-            with factory.spi(select_pin=6) as device:
-                assert isinstance(device, LocalPiSoftwareSPI)
-                device.close()
-                assert device.closed
-            with factory.spi(clock_pin=11, mosi_pin=9, miso_pin=10) as device:
-                assert isinstance(device, LocalPiSoftwareSPI)
-                device._bus.close()
-                assert device._bus.closed
-                device.close()
-                assert device.closed
-            with factory.spi(select_pin=6, shared=True) as device:
-                assert isinstance(device, LocalPiSoftwareSPIShared)
-        with patch('gpiozero.pins.local.SpiDev', None):
-            # Clear out the old factory's caches (this is only necessary
-            # because we're being naughty switching out patches)
-            factory.pins.clear()
-            factory._reservations.clear()
-            # Ensure software fallback works when SpiDev isn't present
-            with factory.spi() as device:
-                assert isinstance(device, LocalPiSoftwareSPI)
+    with patch('gpiozero.pins.local.SpiDev'):
+        with mock_factory.spi(select_pin=6) as device:
+            assert isinstance(device, LocalPiSoftwareSPI)
+            device.close()
+            assert device.closed
+        with mock_factory.spi(clock_pin=11, mosi_pin=9, miso_pin=10) as device:
+            assert isinstance(device, LocalPiSoftwareSPI)
+            device._bus.close()
+            assert device._bus.closed
+            device.close()
+            assert device.closed
+        with mock_factory.spi(select_pin=6, shared=True) as device:
+            assert isinstance(device, LocalPiSoftwareSPIShared)
+    with patch('gpiozero.pins.local.SpiDev', None):
+        # Clear out the old factory's caches (this is only necessary
+        # because we're being naughty switching out patches)
+        mock_factory.pins.clear()
+        mock_factory._reservations.clear()
+        # Ensure software fallback works when SpiDev isn't present
+        with mock_factory.spi() as device:
+            assert isinstance(device, LocalPiSoftwareSPI)
 
 def test_spi_hardware_conflict(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:

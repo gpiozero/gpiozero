@@ -191,7 +191,7 @@ If you have multiple versions installed (e.g. from :command:`pip` and
 be the version that ``import gpiozero`` will import.
 
 If you receive the error "No module named pkg_resources", you need to install
-:command:`pip`. This can be done with the following command in Raspbian:
+:command:`pip`. This can be done with the following command in Raspberry Pi OS:
 
 .. code-block:: console
 
@@ -267,6 +267,8 @@ To explicitly close a connection to a pin, you can manually call the
 This means that you can reuse the pin for another device, and that despite
 turning the LED on (and hence, the pin high), after calling
 :meth:`~Device.close` it is restored to its previous state (LED off, pin low).
+
+Read more about :ref:`migrating_from_rpigpio`.
 
 
 How do I use button.when_pressed and button.when_held together?

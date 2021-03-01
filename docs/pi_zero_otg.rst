@@ -43,8 +43,9 @@ GPIO expander method - no SD card required
 
 The GPIO expander method allows you to boot the Pi Zero over USB from the PC,
 without an SD card. Your PC sends the required boot firmware to the Pi over the
-USB cable, launching a mini version of Raspbian and booting it in RAM. The OS
-then starts the pigpio daemon, allowing "remote" access over the USB cable.
+USB cable, launching a mini version of Raspberry Pi OS and booting it in RAM.
+The OS then starts the pigpio daemon, allowing "remote" access over the USB
+cable.
 
 At the time of writing, this is only possible using either the Raspberry Pi
 Desktop x86 OS, or Ubuntu (or a derivative), or from another Raspberry Pi.
@@ -60,8 +61,8 @@ Raspberry Pi Desktop x86 setup
 3. Live boot your PC or Mac into the OS (select "Run with persistence" and your
    computer will be back to normal afterwards).
 
-Raspberry Pi (Raspbian) setup
------------------------------
+Raspberry Pi setup (using Raspberry Pi OS)
+------------------------------------------
 
 1. Update your package list and install the ``usbbootgui`` package:
 
@@ -105,10 +106,9 @@ will automatically launch a prompt to select a role for the device. Select
 
 It will take 30 seconds or so to flash it, then the dialogue will disappear.
 
-Raspberry Pi Desktop and Raspbian will name your Pi Zero connection ``usb0``.
-On Ubuntu, this will likely be something else. You can ping it using the
-address ``fe80::1%`` followed by the connection string. You can look this up
-using ``ifconfig``.
+Raspberry Pi OS will name your Pi Zero connection ``usb0``. On Ubuntu, this will
+likely be something else. You can ping it using the address ``fe80::1%``
+followed by the connection string. You can look this up using ``ifconfig``.
 
 Set the :envvar:`GPIOZERO_PIN_FACTORY` and :envvar:`PIGPIO_ADDR` environment
 variables on your PC so GPIO Zero connects to the "remote" Pi Zero:
@@ -134,10 +134,11 @@ Read more on the GPIO expander in blog posts on `raspberrypi.org`_ and
 Legacy method - SD card required
 ================================
 
-The legacy method requires the Pi Zero to have a Raspbian SD card inserted.
+The legacy method requires the Pi Zero to have an SD card with Raspberry Pi OS
+inserted.
 
-Start by creating a Raspbian (desktop or lite) SD card, and then configure the
-boot partition like so:
+Start by creating a Raspberry Pi OS (desktop or lite) SD card, and then
+configure the boot partition like so:
 
 1. Edit :file:`config.txt` and add ``dtoverlay=dwc2`` on a new line, then save
    the file.

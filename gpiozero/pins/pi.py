@@ -57,6 +57,25 @@ SPI_HARDWARE_PINS = {
 }
 
 
+def spi_port_device(clock_pin, mosi_pin, miso_pin, select_pin):
+    """
+    Convert a mapping of pin definitions, which must contain 'clock_pin', and
+    'select_pin' at a minimum, to a hardware SPI port, device tuple. Raises
+    :exc:`~gpiozero.SPIBadArgs` if the pins do not represent a valid hardware
+    SPI device.
+    """
+    for port, pins in SPI_HARDWARE_PINS.items():
+        if all((
+                clock_pin  == pins['clock'],
+                mosi_pin   in (None, pins['mosi']),
+                miso_pin   in (None, pins['miso']),
+                select_pin in pins['select'],
+                )):
+            device = pins['select'].index(select_pin)
+            return (port, device)
+    raise SPIBadArgs('invalid pin selection for hardware SPI')
+
+
 class PiFactory(Factory):
     """
     Extends :class:`~gpiozero.Factory`. Abstract base class representing
@@ -68,12 +87,6 @@ class PiFactory(Factory):
         self._info = None
         self.pins = {}
         self.pin_class = None
-        self.spi_classes = {
-            ('hardware', 'exclusive'): None,
-            ('hardware', 'shared'):    None,
-            ('software', 'exclusive'): None,
-            ('software', 'shared'):    None,
-            }
 
     def close(self):
         for pin in self.pins.values():
@@ -121,33 +134,30 @@ class PiFactory(Factory):
 
         Both interfaces have the same API, support clock polarity and phase
         attributes, and can handle half and full duplex communications, but the
-        hardware interface is significantly faster (though for many things this
-        doesn't matter).
+        hardware interface is significantly faster (though for many simpler
+        devices this doesn't matter).
         """
         spi_args, kwargs = self._extract_spi_args(**spi_args)
-        shared = 'shared' if kwargs.pop('shared', False) else 'exclusive'
+        shared = bool(kwargs.pop('shared', False))
         if kwargs:
             raise SPIBadArgs(
                 'unrecognized keyword argument %s' % kwargs.popitem()[0])
-        for port, pins in SPI_HARDWARE_PINS.items():
-            if all((
-                    spi_args['clock_pin']  == pins['clock'],
-                    spi_args['mosi_pin']   == pins['mosi'],
-                    spi_args['miso_pin']   == pins['miso'],
-                    spi_args['select_pin'] in pins['select'],
-                    )):
-                try:
-                    return self.spi_classes[('hardware', shared)](
-                        self, port=port,
-                        device=pins['select'].index(spi_args['select_pin'])
-                        )
-                except Exception as e:
-                    warnings.warn(
-                        SPISoftwareFallback(
-                            'failed to initialize hardware SPI, falling back to '
-                            'software (error was: %s)' % str(e)))
-                    break
-        return self.spi_classes[('software', shared)](self, **spi_args)
+        try:
+            port, device = spi_port_device(**spi_args)
+        except SPIBadArgs:
+            # Assume request is for a software SPI implementation
+            pass
+        else:
+            try:
+                return self._get_spi_class(shared, hardware=True)(
+                    pin_factory=self, **spi_args)
+            except Exception as e:
+                warnings.warn(
+                    SPISoftwareFallback(
+                        'failed to initialize hardware SPI, falling back to '
+                        'software (error was: %s)' % str(e)))
+        return self._get_spi_class(shared, hardware=False)(
+            pin_factory=self, **spi_args)
 
     def _extract_spi_args(self, **kwargs):
         """
@@ -181,7 +191,8 @@ class PiFactory(Factory):
             spi_args = pin_defaults
         elif set(spi_args) <= set(pin_defaults):
             spi_args = {
-                key: self.pi_info.to_gpio(spi_args.get(key, default))
+                key: None if spi_args.get(key, default) is None else
+                    self.pi_info.to_gpio(spi_args.get(key, default))
                 for key, default in pin_defaults.items()
                 }
         elif set(spi_args) <= set(dev_defaults):
@@ -210,6 +221,17 @@ class PiFactory(Factory):
                 'mosi_pin, miso_pin, and select_pin; combinations of the two '
                 'schemes (e.g. port and clock_pin) are not permitted')
         return spi_args, kwargs
+
+    def _get_spi_class(self, shared, hardware):
+        """
+        Returns a sub-class of the :class:`SPI` which can be constructed with
+        *clock_pin*, *mosi_pin*, *miso_pin*, and *select_pin* arguments. The
+        *shared* argument dictates whether the returned class uses the
+        :class:`SharedMixin` to permit sharing instances between components,
+        while *hardware* indicates whether the returned class uses the kernel's
+        SPI device(s) rather than a bit-banged software implementation.
+        """
+        raise NotImplementedError
 
 
 class PiPin(Pin):

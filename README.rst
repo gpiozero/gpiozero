@@ -108,9 +108,10 @@ this in the section on `mock pins`_.
 Installation
 ============
 
-GPIO Zero is installed by default in the Raspbian desktop image, available from
-`raspberrypi.org`_. To install on Raspbian Lite or other operating systems,
-including for PCs using remote GPIO, see the `Installing`_ chapter.
+GPIO Zero is installed by default in the Raspberry Pi OS desktop image,
+available from `raspberrypi.org`_. To install on Raspberry Pi OS Lite or other
+operating systems, including for PCs using remote GPIO, see the `Installing`_
+chapter.
 
 .. _raspberrypi.org: https://www.raspberrypi.org/downloads/
 .. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html

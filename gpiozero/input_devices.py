@@ -714,18 +714,18 @@ class LightSensor(SmoothedInputDevice):
         self.pin.function = 'output'
         self.pin.state = False
         sleep(0.1)
-        # Time the charging of the capacitor
-        start = self.pin_factory.ticks()
         self._charge_time = None
         self._charged.clear()
+        # Time the charging of the capacitor
+        start = self.pin_factory.ticks()
         self.pin.function = 'input'
         self._charged.wait(self.charge_time_limit)
         if self._charge_time is None:
             return 0.0
         else:
-            return 1.0 - (
-                self.pin_factory.ticks_diff(self._charge_time, start) /
-                self.charge_time_limit)
+            return 1.0 - min(1.0, 
+                (self.pin_factory.ticks_diff(self._charge_time, start) /
+                self.charge_time_limit))
 
     @property
     def value(self):

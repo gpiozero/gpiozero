@@ -36,9 +36,7 @@ import os
 import pigpio
 
 from . import SPI
-from .pi import PiPin, PiFactory, SPI_HARDWARE_PINS
-from .data import pi_info
-from ..devices import Device
+from .pi import PiPin, PiFactory, spi_port_device
 from ..mixins import SharedMixin
 from ..exc import (
     PinInvalidFunction,
@@ -107,12 +105,6 @@ class PiGPIOFactory(PiFactory):
             # XXX Use getservbyname
             port = int(os.environ.get('PIGPIO_PORT', 8888))
         self.pin_class = PiGPIOPin
-        self.spi_classes = {
-            ('hardware', 'exclusive'): PiGPIOHardwareSPI,
-            ('hardware', 'shared'):    PiGPIOHardwareSPIShared,
-            ('software', 'exclusive'): PiGPIOSoftwareSPI,
-            ('software', 'shared'):    PiGPIOSoftwareSPIShared,
-            }
         self._connection = pigpio.pi(host, port)
         # Annoyingly, pigpio doesn't raise an exception when it fails to make a
         # connection; it returns a valid (but disconnected) pi object
@@ -156,6 +148,14 @@ class PiGPIOFactory(PiFactory):
     def _get_revision(self):
         return self.connection.get_hardware_revision()
 
+    def _get_spi_class(self, shared, hardware):
+        return {
+            (False, True):  PiGPIOHardwareSPI,
+            (True,  True):  PiGPIOHardwareSPIShared,
+            (False, False): PiGPIOSoftwareSPI,
+            (True,  False): PiGPIOSoftwareSPIShared,
+            }[shared, hardware]
+
     def spi(self, **spi_args):
         intf = super(PiGPIOFactory, self).spi(**spi_args)
         self._spis.append(intf)
@@ -181,7 +181,6 @@ class PiGPIOPin(PiPin):
 
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
-    _CONNECTIONS = {} # maps (host, port) to (connection, pi_info)
     GPIO_FUNCTIONS = {
         'input':   pigpio.INPUT,
         'output':  pigpio.OUTPUT,
@@ -309,8 +308,8 @@ class PiGPIOPin(PiPin):
     def _set_bounce(self, value):
         if value is None:
             value = 0
-        elif value < 0:
-            raise PinInvalidBounce('bounce must be 0 or greater')
+        elif not 0 <= value <= 0.3:
+            raise PinInvalidBounce('bounce must be between 0 and 0.3')
         self.factory.connection.set_glitch_filter(self.number, int(value * 1000000))
 
     def _get_edges(self):
@@ -337,58 +336,54 @@ class PiGPIOPin(PiPin):
             self._callback = None
 
 
-class PiGPIOHardwareSPI(SPI, Device):
+class PiGPIOHardwareSPI(SPI):
     """
     Hardware SPI implementation for the `pigpio`_ library. Uses the ``spi_*``
     functions from the pigpio API.
 
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
-    def __init__(self, factory, port, device):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+        port, device = spi_port_device(
+            clock_pin, mosi_pin, miso_pin, select_pin)
         self._port = port
         self._device = device
-        self._factory = factory
         self._handle = None
-        super(PiGPIOHardwareSPI, self).__init__()
-        pins = SPI_HARDWARE_PINS[port]
-        self._factory.reserve_pins(
-            self,
-            pins['clock'],
-            pins['mosi'],
-            pins['miso'],
-            pins['select'][device]
-        )
-        self._spi_flags = 8 << 16
+        super(PiGPIOHardwareSPI, self).__init__(pin_factory=pin_factory)
+        to_reserve = {clock_pin, select_pin}
+        if mosi_pin is not None:
+            to_reserve.add(mosi_pin)
+        if miso_pin is not None:
+            to_reserve.add(miso_pin)
+        self.pin_factory.reserve_pins(self, *to_reserve)
+        self._spi_flags = (8 << 16) | (port << 8)
         self._baud = 500000
-        self._handle = self._factory.connection.spi_open(
+        self._handle = self.pin_factory.connection.spi_open(
             device, self._baud, self._spi_flags)
 
     def _conflicts_with(self, other):
         return not (
             isinstance(other, PiGPIOHardwareSPI) and
-            (self._port, self._device) != (other._port, other._device)
+            (self.pin_factory.host, self._port, self._device) !=
+            (other.pin_factory.host, other._port, other._device)
             )
 
     def close(self):
         try:
-            self._factory._spis.remove(self)
+            self.pin_factory._spis.remove(self)
         except (ReferenceError, ValueError):
             # If the factory has died already or we're not present in its
             # internal list, ignore the error
             pass
         if not self.closed:
-            self._factory.connection.spi_close(self._handle)
+            self.pin_factory.connection.spi_close(self._handle)
         self._handle = None
-        self._factory.release_all(self)
+        self.pin_factory.release_all(self)
         super(PiGPIOHardwareSPI, self).close()
 
     @property
     def closed(self):
-        return self._handle is None or self._factory.connection is None
-
-    @property
-    def factory(self):
-        return self._factory
+        return self._handle is None or self.pin_factory.connection is None
 
     def __repr__(self):
         try:
@@ -404,9 +399,9 @@ class PiGPIOHardwareSPI(SPI, Device):
         self._check_open()
         if not 0 <= value < 4:
             raise SPIInvalidClockMode("%d is not a valid SPI clock mode" % value)
-        self._factory.connection.spi_close(self._handle)
+        self.pin_factory.connection.spi_close(self._handle)
         self._spi_flags = (self._spi_flags & ~0x3) | value
-        self._handle = self._factory.connection.spi_open(
+        self._handle = self.pin_factory.connection.spi_open(
             self._device, self._baud, self._spi_flags)
 
     def _get_select_high(self):
@@ -414,9 +409,9 @@ class PiGPIOHardwareSPI(SPI, Device):
 
     def _set_select_high(self, value):
         self._check_open()
-        self._factory.connection.spi_close(self._handle)
+        self.pin_factory.connection.spi_close(self._handle)
         self._spi_flags = (self._spi_flags & ~0x1c) | (bool(value) << (2 + self._device))
-        self._handle = self._factory.connection.spi_open(
+        self._handle = self.pin_factory.connection.spi_open(
             self._device, self._baud, self._spi_flags)
 
     def _get_bits_per_word(self):
@@ -424,14 +419,42 @@ class PiGPIOHardwareSPI(SPI, Device):
 
     def _set_bits_per_word(self, value):
         self._check_open()
-        self._factory.connection.spi_close(self._handle)
+        self.pin_factory.connection.spi_close(self._handle)
         self._spi_flags = (self._spi_flags & ~0x3f0000) | ((value & 0x3f) << 16)
-        self._handle = self._factory.connection.spi_open(
+        self._handle = self.pin_factory.connection.spi_open(
             self._device, self._baud, self._spi_flags)
+
+    def _get_rate(self):
+        return self._baud
+
+    def _set_rate(self, value):
+        self._check_open()
+        value = int(value)
+        self.pin_factory.connection.spi_close(self._handle)
+        self._baud = value
+        self._handle = self.pin_factory.connection.spi_open(
+            self._device, self._baud, self._spi_flags)
+
+    def _get_lsb_first(self):
+        return bool((self._spi_flags >> 14) & 0x1) if self._port else False
+
+    def _set_lsb_first(self, value):
+        if self._port:
+            self._check_open()
+            self.pin_factory.connection.spi_close(self._handle)
+            self._spi_flags = (
+                (self._spi_flags & ~0xc000)
+                | (bool(value) << 14)
+                | (bool(value) << 15)
+                )
+            self._handle = self.pin_factory.connection.spi_open(
+                self._device, self._baud, self._spi_flags)
+        else:
+            super(PiGPIOHardwareSPI, self)._set_lsb_first(value)
 
     def transfer(self, data):
         self._check_open()
-        count, data = self._factory.connection.spi_xfer(self._handle, data)
+        count, data = self.pin_factory.connection.spi_xfer(self._handle, data)
         if count < 0:
             raise IOError('SPI transfer error %d' % count)
         # Convert returned bytearray to list of ints. XXX Not sure how non-byte
@@ -439,22 +462,22 @@ class PiGPIOHardwareSPI(SPI, Device):
         return [int(b) for b in data]
 
 
-class PiGPIOSoftwareSPI(SPI, Device):
+class PiGPIOSoftwareSPI(SPI):
     """
     Software SPI implementation for the `pigpio`_ library. Uses the ``bb_spi_*``
     functions from the pigpio API.
 
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
-    def __init__(self, factory, clock_pin, mosi_pin, miso_pin, select_pin):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         self._closed = True
         self._select_pin = select_pin
         self._clock_pin = clock_pin
         self._mosi_pin = mosi_pin
         self._miso_pin = miso_pin
-        self._factory = factory
-        super(PiGPIOSoftwareSPI, self).__init__()
-        self._factory.reserve_pins(
+        super(PiGPIOSoftwareSPI, self).__init__(pin_factory=pin_factory)
+        # Can't "unreserve" MOSI/MISO on this implementation
+        self.pin_factory.reserve_pins(
             self,
             clock_pin,
             mosi_pin,
@@ -464,7 +487,7 @@ class PiGPIOSoftwareSPI(SPI, Device):
         self._spi_flags = 0
         self._baud = 100000
         try:
-            self._factory.connection.bb_spi_open(
+            self.pin_factory.connection.bb_spi_open(
                 select_pin, miso_pin, mosi_pin, clock_pin,
                 self._baud, self._spi_flags)
             # Only set after opening bb_spi; if that fails then close() will
@@ -482,15 +505,15 @@ class PiGPIOSoftwareSPI(SPI, Device):
 
     def close(self):
         try:
-            self._factory._spis.remove(self)
+            self.pin_factory._spis.remove(self)
         except (ReferenceError, ValueError):
             # If the factory has died already or we're not present in its
             # internal list, ignore the error
             pass
         if not self.closed:
             self._closed = True
-            self._factory.connection.bb_spi_close(self._select_pin)
-        self.factory.release_all(self)
+            self.pin_factory.connection.bb_spi_close(self._select_pin)
+        self.pin_factory.release_all(self)
         super(PiGPIOSoftwareSPI, self).close()
 
     @property
@@ -522,9 +545,9 @@ class PiGPIOSoftwareSPI(SPI, Device):
         self._check_open()
         if not 0 <= value < 4:
             raise SPIInvalidClockMode("%d is not a valid SPI clock mode" % value)
-        self._factory.connection.bb_spi_close(self._select_pin)
+        self.pin_factory.connection.bb_spi_close(self._select_pin)
         self._spi_flags = (self._spi_flags & ~0x3) | value
-        self._factory.connection.bb_spi_open(
+        self.pin_factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
             self._baud, self._spi_flags)
 
@@ -533,9 +556,9 @@ class PiGPIOSoftwareSPI(SPI, Device):
 
     def _set_select_high(self, value):
         self._check_open()
-        self._factory.connection.bb_spi_close(self._select_pin)
+        self.pin_factory.connection.bb_spi_close(self._select_pin)
         self._spi_flags = (self._spi_flags & ~0x4) | (bool(value) << 2)
-        self._factory.connection.bb_spi_open(
+        self.pin_factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
             self._baud, self._spi_flags)
 
@@ -544,19 +567,32 @@ class PiGPIOSoftwareSPI(SPI, Device):
 
     def _set_lsb_first(self, value):
         self._check_open()
-        self._factory.connection.bb_spi_close(self._select_pin)
+        self.pin_factory.connection.bb_spi_close(self._select_pin)
         self._spi_flags = (
             (self._spi_flags & ~0xc000)
             | (bool(value) << 14)
             | (bool(value) << 15)
             )
-        self._factory.connection.bb_spi_open(
+        self.pin_factory.connection.bb_spi_open(
+            self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
+            self._baud, self._spi_flags)
+
+    def _get_rate(self):
+        return self._baud
+
+    def _set_rate(self, value):
+        self._check_open()
+        value = int(value)
+        self.pin_factory.connection.bb_spi_close(self._select_pin)
+        self._baud = value
+        self.pin_factory.connection.bb_spi_open(
             self._select_pin, self._miso_pin, self._mosi_pin, self._clock_pin,
             self._baud, self._spi_flags)
 
     def transfer(self, data):
         self._check_open()
-        count, data = self._factory.connection.bb_spi_xfer(self._select_pin, data)
+        count, data = self.pin_factory.connection.bb_spi_xfer(
+            self._select_pin, data)
         if count < 0:
             raise IOError('SPI transfer error %d' % count)
         # Convert returned bytearray to list of ints. bb_spi only supports
@@ -566,11 +602,11 @@ class PiGPIOSoftwareSPI(SPI, Device):
 
 class PiGPIOHardwareSPIShared(SharedMixin, PiGPIOHardwareSPI):
     @classmethod
-    def _shared_key(cls, factory, port, device):
-        return (factory, port, device)
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+        return (pin_factory.host, clock_pin, select_pin)
 
 
 class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
-    def _shared_key(cls, factory, clock_pin, mosi_pin, miso_pin, select_pin):
-        return (factory, select_pin)
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+        return (pin_factory.host, clock_pin, select_pin)
