@@ -140,7 +140,6 @@ from .boards import (
     JamHat,
     Pibrella,
     SevenSegmentDisplay,
-    MultiSevenSegmentDisplay,
 )
 from .internal_devices import (
     InternalDevice,
