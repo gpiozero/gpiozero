@@ -386,6 +386,10 @@ Native
 
 .. autoclass:: gpiozero.pins.native.NativePin
 
+.. autoclass:: gpiozero.pins.native.Native2835Pin
+
+.. autoclass:: gpiozero.pins.native.Native2711Pin
+
 
 Mock
 ====
