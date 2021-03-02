@@ -1123,6 +1123,10 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
             a=InputDevice(a, pull_up=True, pin_factory=pin_factory),
             b=InputDevice(b, pull_up=True, pin_factory=pin_factory),
             _order=('a', 'b'), pin_factory=pin_factory)
+        self.a.pin.bounce_time = bounce_time
+        self.b.pin.bounce_time = bounce_time
+        self.a.pin.edges = 'both'
+        self.b.pin.edges = 'both'
         self.a.pin.when_changed = self._a_changed
         self.b.pin.when_changed = self._b_changed
         # Call _fire_events once to set initial state of events
