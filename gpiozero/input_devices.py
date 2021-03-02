@@ -1021,9 +1021,7 @@ DistanceSensor.wait_for_in_range = DistanceSensor.wait_for_inactive
 
 class RotaryEncoder(EventsMixin, CompositeDevice):
     """
-    Represents a simple two-pin incremental `rotary encoder`_ device (see
-    :class:`AbsoluteEncoder` for the more complex multi-pin absolute rotary
-    encoders).
+    Represents a simple two-pin incremental `rotary encoder`_ device.
 
     These devices typically have three pins labelled "A", "B", and "C". Connect
     A and B directly to two GPIO pins, and C ("common") to one of the ground
@@ -1031,7 +1029,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
     constructing this classs.
 
     For example, if your encoder's A pin is connected to GPIO 21, and the B
-    pint to GPIO 20 (and presumably the C pin to a suitable GND pin), while an
+    pin to GPIO 20 (and presumably the C pin to a suitable GND pin), while an
     LED (with a suitable 300Ω resistor) is connected to GPIO 5, the following
     session will result in the brightness of the LED being controlled by
     dialling the rotary encoder back and forth::
