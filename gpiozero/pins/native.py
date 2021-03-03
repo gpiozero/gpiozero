@@ -521,6 +521,12 @@ class NativePin(LocalPiPin):
         else:
             self.factory.mem[self._clear_offset] = 1 << self._clear_shift
 
+    def _get_pull(self):
+        raise NotImplementedError
+
+    def _set_pull(self, value):
+        raise NotImplementedError
+
     def _get_bounce(self):
         return self._bounce
 
