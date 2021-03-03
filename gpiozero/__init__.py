@@ -116,6 +116,7 @@ from .boards import (
     LEDCollection,
     LEDBoard,
     LEDBarGraph,
+    LEDCharDisplay,
     LedBorg,
     PiHutXmasTree,
     PiLiter,
@@ -139,7 +140,6 @@ from .boards import (
     PumpkinPi,
     JamHat,
     Pibrella,
-    SevenSegmentDisplay,
 )
 from .internal_devices import (
     InternalDevice,

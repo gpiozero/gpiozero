@@ -52,15 +52,19 @@ from time import sleep
 from itertools import repeat, cycle, chain
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 
 from .exc import (
     DeviceClosed,
+    PinInvalidPin,
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
     OutputDeviceBadValue,
     CompositeDeviceBadDevice,
-    OutputDeviceError,
     )
 from .input_devices import Button
 from .output_devices import (
@@ -72,11 +76,11 @@ from .output_devices import (
     Motor,
     PhaseEnableMotor,
     TonalBuzzer,
-    DigitalOutputDevice,
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin, HoldMixin
+from .tools import load_font_7seg, load_font_14seg
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
@@ -165,7 +169,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         leds = LEDBoard(2, 3, 4, 5)
         btns = ButtonBoard(6, 7, 8, 9)
         leds.source = btns
-        
+
         pause()
 
     Alternatively you could represent the number of pressed buttons with an
@@ -178,7 +182,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         graph = LEDBarGraph(2, 3, 4, 5)
         bb = ButtonBoard(6, 7, 8, 9)
         graph.source = (mean(values) for values in bb.values)
-        
+
         pause()
 
     :type pins: int or str
@@ -771,6 +775,235 @@ class LEDBarGraph(LEDCollection):
     @lit_count.setter
     def lit_count(self, value):
         self.value = value / len(self)
+
+
+class LEDCharFont(MutableMapping):
+    def __init__(self, font):
+        super(LEDCharFont, self).__init__()
+        self._map = OrderedDict([
+            (char, tuple(pins))
+            for char, pins in font.items()
+        ])
+        self._refresh_rmap()
+
+    def __repr__(self):
+        return '{self.__class__.__name__}({{\n{content}\n}})'.format(
+            self=self, content='\n'.join(
+                '    {key!r}: {value!r},'.format(key=key, value=value)
+                for key, value in sorted(self.items())
+            ))
+
+    def _refresh_rmap(self):
+        # The reverse mapping is pre-calculated for speed of lookup. Given that
+        # the font mapping can be 1:n, we cannot guarantee the reverse is
+        # unique. In case the provided font is an ordered dictionary, we
+        # explicitly take only the first definition of each non-unique pin
+        # definition so that value lookups are predictable
+        rmap = {}
+        for char, pins in self._map.items():
+            rmap.setdefault(pins, char)
+        self._rmap = rmap
+
+    def __len__(self):
+        return len(self._map)
+
+    def __iter__(self):
+        return iter(self._map)
+
+    def __getitem__(self, char):
+        return self._map[char]
+
+    def __setitem__(self, char, pins):
+        pins = tuple(pins)
+        self._map[char] = pins
+        self._rmap.setdefault(pins, char)
+
+    def __delitem__(self, char):
+        pins = self._map[char]
+        del self._map[char]
+        # If the reverse mapping of the char's pins maps to the char we need
+        # to find if it now maps to another char (given the n:1 mapping)
+        if self._rmap[pins] == char:
+            del self._rmap[pins]
+            for char, char_pins in self._map.items():
+                if pins == char_pins:
+                    self._rmap[pins] = char
+                    break
+
+
+class LEDCharDisplay(LEDCollection):
+    """
+    Extends :class:`LEDCollection` for a multi-segment LED display.
+
+    `Multi-segment LED displays`_ typically have 7 pins (labelled "a" through
+    "g") representing 7 LEDs layed out in a figure-of-8 fashion. Frequently, an
+    eigth pin labelled "dp" is included for a trailing decimal-point:
+
+    .. code-block:: text
+
+             a
+           ━━━━━
+        f ┃     ┃ b
+          ┃  g  ┃
+           ━━━━━
+        e ┃     ┃ c
+          ┃     ┃
+           ━━━━━ • dp
+             d
+
+    Other common layouts are 9, 14, and 16 segment displays which include
+    additional segments permitting more accurate renditions of alphanumerics.
+    For example:
+
+    .. code-block:: text
+
+             a
+           ━━━━━
+        f ┃╲i┃j╱┃ b
+          ┃ ╲┃╱k┃
+          g━━ ━━h
+        e ┃ ╱┃╲n┃ c
+          ┃╱l┃m╲┃
+           ━━━━━ • dp
+             d
+
+    Such displays have either a common anode, or common cathode pin. This class
+    defaults to the latter; when using a common anode display *active_high*
+    should be set to :data:`False`.
+
+    Instances of this class can be used to display characters or control
+    individual LEDs on the display. For example::
+
+        from gpiozero import LEDCharDisplay
+
+        char = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+        char.value = 'C'
+
+    If the class is constructed with 7 or 14 segments, a default :attr:`font`
+    will be loaded, mapping some ASCII characters to typical layouts. In other
+    cases, the default mapping will simply assign " " (space) to all LEDs off.
+    You can assign your own mapping at construction time or after
+    instantiation.
+
+    While the example above shows the display with a :class:`str` value,
+    theoretically the *font* can map any value that can be the key in a
+    :class:`dict`, so the value of the display can be likewise be any valid
+    key value (e.g. you could map integer digits to LED patterns). That said,
+    there is one exception to this: when *dp* is specified to enable the
+    decimal-point, the :attr:`value` must be a :class:`str` as the presence
+    or absence of a "." suffix indicates whether the *dp* LED is lit.
+
+    :type pins: int or str
+    :param \\*pins:
+        Specify the GPIO pins that the multi-segment display is attached to.
+        Pins should be in the LED segment order A, B, C, D, E, F, G, and will
+        be named automatically by the class. If a decimal-point pin is
+        present, specify it separately as the *dp* parameter.
+
+    :type dp: int or str
+    :param dp:
+        If a decimal-point segment is present, specify it as this named
+        parameter.
+
+    :type font: dict or None
+    :param font:
+        A mapping of values (typically characters, but may also be numbers) to
+        tuples of LED states. A default mapping for ASCII characters is
+        provided for 7 and 14 segment displays.
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
+
+    :param bool active_high:
+        If :data:`True` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If :data:`False`, the :meth:`on` method will
+        set all pins to LOW (the :meth:`off` method always does the opposite).
+
+    :param initial_value:
+        The initial value to display. Defaults to space (" ") which typically
+        maps to all LEDs being inactive. If :data:`None`, each device will be
+        left in whatever state the pin is found in when configured for output
+        (warning: this can be on).
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Multi-segment LED displays: https://en.wikipedia.org/wiki/Seven-segment_display
+    """
+    def __init__(
+            self, *pins, dp=None, font=None, pwm=False, active_high=True,
+            initial_value=" ", pin_factory=None):
+        if len(pins) > 26:
+            raise PinInvalidPin(
+                'Cannot use more than 26 LEDs in LEDCharDisplay')
+        for pin in pins:
+            if isinstance(pin, LEDCollection):
+                raise PinInvalidPin(
+                    'Cannot use LEDCollection in LEDCharDisplay')
+
+        if font is None:
+            if len(pins) in (7, 14):
+                # Only import pkg_resources here as merely importing it is
+                # slooooow!
+                from pkg_resources import resource_stream
+                font = {
+                    7: lambda: load_font_7seg(
+                        resource_stream(__name__, 'fonts/7seg.txt')),
+                    14: lambda: load_font_14seg(
+                        resource_stream(__name__, 'fonts/14seg.txt')),
+                }[len(pins)]()
+            else:
+                # Construct a default dict containing a definition for " "
+                font = {" ": (0,) * len(pins)}
+        self._font = LEDCharFont(font)
+
+        pins = {chr(ord('a') + i): pin for i, pin in enumerate(pins)}
+        order = sorted(pins.keys())
+        if dp is not None:
+            pins['dp'] = dp
+            order.append('dp')
+        super(LEDCharDisplay, self).__init__(
+            pwm=pwm, active_high=active_high, initial_value=None,
+            _order=order, pin_factory=pin_factory, **pins)
+        if initial_value is not None:
+            self.value = initial_value
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = LEDCharFont(value)
+
+    @property
+    def value(self):
+        t = super(LEDCharDisplay, self).value
+        try:
+            result = self._font._rmap[t]
+        except KeyError:
+            # Raising exceptions on lookup is problematic; in case the LED
+            # state is not representable we simply return None (although
+            # technically that is a valid item we can map :)
+            return None
+        else:
+            if hasattr(self, 'dp'):
+                result += '.' if self.dp.value else ''
+            return result
+
+    @value.setter
+    def value(self, value):
+        if hasattr(self, 'dp'):
+            if len(value) > 1 and value.endswith('.'):
+                value = value[:-1]
+                self.dp.value = True
+            else:
+                self.dp.value = False
+        for led, v in zip(self, self._font[value]):
+            led.value = v
 
 
 class PiHutXmasTree(LEDBoard):
@@ -2422,177 +2655,3 @@ class Pibrella(CompositeOutputDevice):
         """
         self.buzzer.value = None
         super(Pibrella, self).off()
-
-
-class SevenSegmentDisplay(LEDBoard):
-    """
-    Extends :class:`LEDBoard` for a 7 segment LED display 
-
-    7 segment displays have either 7 or 8 pins, 7 pins for the digit display 
-    and an optional 8th pin for a decimal point. 7 segment displays 
-    typically have either a common anode or common cathode pin, when
-    using a common anode display 'active_high' should be set to False.
-    Instances of this class can be used to display characters or control 
-    individual leds on the display. For example::
-
-        from gpiozero import SevenSegmentDisplay
-
-        seven = SevenSegmentDisplay(1,2,3,4,5,6,7,8,active_high=False)
-        seven.display("7")
-    
-    :param int \*pins:
-        Specify the GPIO pins that the 7 segment display is attached to.
-        Pins should be in the LED segment order A,B,C,D,E,F,G,decimal_point 
-        (the decimal_point is optional).
-
-    :param bool pwm:
-        If ``True``, construct :class:`PWMLED` instances for each pin. If
-        ``False`` (the default), construct regular :class:`LED` instances. This
-        parameter can only be specified as a keyword parameter.
-
-    :param bool active_high:
-        If ``True`` (the default), the :meth:`on` method will set all the
-        associated pins to HIGH. If ``False``, the :meth:`on` method will set
-        all pins to LOW (the :meth:`off` method always does the opposite). This
-        parameter can only be specified as a keyword parameter.
-
-    :param bool initial_value:
-        If ``False`` (the default), all LEDs will be off initially. If
-        ``None``, each device will be left in whatever state the pin is found
-        in when configured for output (warning: this can be on). If ``True``,
-        the device will be switched on initially. This parameter can only be
-        specified as a keyword parameter.    
-    
-    """
-    def __init__(self, *pins, **kwargs):
-        # 7 segment displays must have 7 or 8 pins
-        if len(pins) == 7:
-            self._has_decimal_point = False
-        elif len(pins) == 8:
-            self._has_decimal_point = True
-        else:
-            raise ValueError('SevenSegmentDisplay must have 7 or 8 pins')
-        # Don't allow 7 segments to contain collections
-        for pin in pins:
-            assert not isinstance(pin, LEDCollection)
-
-        pwm = kwargs.pop('pwm', False)
-        active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', False)
-        if kwargs:
-            raise TypeError('unexpected keyword argument: %s' % kwargs.popitem()[0])
-            
-        self._layouts = {
-            '1': (False, True, True, False, False, False, False),
-            '2': (True, True, False, True, True, False, True),
-            '3': (True, True, True, True, False, False, True),
-            '4': (False, True, True, False, False, True, True),
-            '5': (True, False, True, True, False, True, True),
-            '6': (True, False, True, True, True, True, True),
-            '7': (True, True, True, False, False, False, False),
-            '8': (True, True, True, True, True, True, True),
-            '9': (True, True, True, True, False, True, True),
-            '0': (True, True, True, True, True, True, False),
-            'A': (True, True, True, False, True, True, True),
-            'B': (False, False, True, True, True, True, True),
-            'C': (True, False, False, True, True, True, False),
-            'D': (False, True, True, True, True, False, True),
-            'E': (True, False, False, True, True, True, True),
-            'F': (True, False, False, False, True, True, True),
-            'G': (True, False, True, True, True, True, False),
-            'H': (False, True, True, False, True, True, True),
-            'I': (False, False, False, False, True, True, False),
-            'J': (False, True, True, True, True, False, False),
-            'K': (True, False, True, False, True, True, True),
-            'L': (False, False, False, True, True, True, False),
-            'M': (True, False, True, False, True, False, False),
-            'N': (True, True, True, False, True, True, False),
-            'O': (True, True, True, True, True, True, False),
-            'P': (True, True, False, False, True, True, True),
-            'Q': (True, True, False, True, False, True, True),
-            'R': (True, True, False, False, True, True, False),
-            'S': (True, False, True, True, False, True, True),
-            'T': (False, False, False, True, True, True, True),
-            'U': (False, False, True, True, True, False, False),
-            'V': (False, True, True, True, True, True, False),
-            'W': (False, True, False, True, False, True, False),
-            'X': (False, True, True, False, True, True, True),
-            'Y': (False, True, True, True, False, True, True),
-            'Z': (True, True, False, True, True, False, True),
-            '-': (False, False, False, False, False, False, True),
-            ' ': (False, False, False, False, False, False, False),
-            '=': (False, False, False, True, False, False, True)
-        }
-        
-        super(SevenSegmentDisplay, self).__init__(*pins, pwm=pwm, active_high=active_high, initial_value=initial_value)
-    
-    def display(self, char):
-        """
-        Display a character on the 7 segment display
-
-        :param string char:
-            A single character to be displayed 
-        """
-        char = str(char).upper()
-        if len(char) > 1:
-            raise ValueError('only a single character can be displayed')
-        if char not in self._layouts:
-            raise ValueError('there is no layout for character - %s' % char)
-        layout = self._layouts[char]
-        for led in range(7):
-            self[led].value = layout[led]
-            
-    def display_hex(self, hexnumber):
-        """
-        Display a hex number (0-F) on the 7 segment display
-
-        :param int hexnumber:
-            The number to be displayed in hex 
-        """
-        self.display(hex(hexnumber)[2:])
-
-    @property
-    def decimal_point(self):
-        """
-        Represents the status of the decimal point led
-        """
-        # does the 7seg display have a decimal point (i.e pin 8)
-        if self.has_decimal_point:
-            return self[7].value 
-        else:
-            raise OutputDeviceError('there is no 8th pin for the decimal point')
-    
-    @decimal_point.setter
-    def decimal_point(self, value):
-        """
-        Sets the status of the decimal point led
-        """
-        if self.has_decimal_point:
-            self[7].value = value
-        else:
-            raise OutputDeviceError('there is no 8th pin for the decimal point')    
-
-    @property
-    def has_decimal_point(self):
-        """
-        Represents whether the seven segment display has a decimal point
-        """
-        return self._has_decimal_point
-    
-    def set_char_layout(self, char, layout):
-        """
-        Create or update a custom character layout, which can be used with the 
-        `display` method.
-
-        :param string char:
-            A single character to be displayed 
-            
-        :param tuple layout:
-            A 7 bool tuple of LED values in the segment order A, B, C, D, E, F, G
-        """
-        char = str(char).upper()
-        if len(char) != 1:
-            raise ValueError('only a single character can be used in a layout')
-        if len(layout) != 7:
-            raise ValueError('a character layout must have 7 segments')
-        self._layouts[char] = layout
