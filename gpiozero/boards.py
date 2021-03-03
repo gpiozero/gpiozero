@@ -47,7 +47,6 @@ from .exc import (
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
-    EnergenieBadInitialValue,
     OutputDeviceBadValue,
     CompositeDeviceBadDevice,
     )
@@ -2052,11 +2051,14 @@ class Energenie(SourceMixin, Device):
         Which socket this instance should control. This is an integer number
         between 1 and 4.
 
-    :param bool initial_value:
+    :type initial_value: bool or None
+    :param initial_value:
         The initial state of the socket. As Energenie sockets provide no
-        means of reading their state, you must provide an initial state for
+        means of reading their state, you may provide an initial state for
         the socket, which will be set upon construction. This defaults to
         :data:`False` which will switch the socket off.
+        Specifying :data:`None` will not set any initial state nor transmit any
+        control signal to the device.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -2070,15 +2072,13 @@ class Energenie(SourceMixin, Device):
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
-        if initial_value is None:
-            raise EnergenieBadInitialValue("initial value can't be None")
         self._value = None
         super(Energenie, self).__init__(pin_factory=pin_factory)
         self._socket = socket
         self._master = _EnergenieMaster(pin_factory=pin_factory)
         if initial_value:
             self.on()
-        else:
+        elif initial_value is not None:
             self.off()
 
     def close(self):
@@ -2109,11 +2109,16 @@ class Energenie(SourceMixin, Device):
         """
         Returns :data:`True` if the socket is on and :data:`False` if the
         socket is off.  Setting this property changes the state of the socket.
+        Returns :data:`None` only when constructed with :data:`initial_value`
+        set to :data:`None` and neither :data:`on()` nor :data:`off()` have
+        been called since construction.
         """
         return self._value
 
     @value.setter
     def value(self, value):
+        if value is None:
+            raise TypeError('value cannot be None')
         value = bool(value)
         self._master.transmit(self._socket, value)
         self._value = value

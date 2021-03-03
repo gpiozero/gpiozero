@@ -259,9 +259,10 @@ class Device(ValuesMixin, GPIOBase):
         # updated along with the entry-points in setup.py.
         default_factories = OrderedDict((
             ('rpigpio', 'gpiozero.pins.rpigpio:RPiGPIOFactory'),
-            ('rpio', 'gpiozero.pins.rpio:RPIOFactory'),
-            ('pigpio', 'gpiozero.pins.pigpio:PiGPIOFactory'),
-            ('native', 'gpiozero.pins.native:NativeFactory'),
+            ('lgpio',   'gpiozero.pins.lgpio:LGPIOFactory'),
+            ('rpio',    'gpiozero.pins.rpio:RPIOFactory'),
+            ('pigpio',  'gpiozero.pins.pigpio:PiGPIOFactory'),
+            ('native',  'gpiozero.pins.native:NativeFactory'),
         ))
         name = os.environ.get('GPIOZERO_PIN_FACTORY')
         if name is None:

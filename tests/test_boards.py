@@ -1255,19 +1255,21 @@ def test_energenie_bad_init(mock_factory):
         Energenie(0)
     with pytest.raises(ValueError):
         Energenie(5)
-    with pytest.raises(ValueError):
-        Energenie(1, initial_value=None)
 
 def test_energenie(mock_factory):
     pins = [mock_factory.pin(n) for n in (17, 22, 23, 27, 24, 25)]
     with Energenie(1, initial_value=True) as device1, \
-         Energenie(2, initial_value=False) as device2:
+         Energenie(2, initial_value=False) as device2, \
+         Energenie(3, initial_value=None) as device3:
         assert repr(device1) == '<gpiozero.Energenie object on socket 1>'
         assert repr(device2) == '<gpiozero.Energenie object on socket 2>'
+        assert repr(device3) == '<gpiozero.Energenie object on socket 3>'
         assert device1.value
         assert not device2.value
+        assert device3.value is None
         assert device1.socket == 1
         assert device2.socket == 2
+        assert device3.socket == 3
         [pin.clear_states() for pin in pins]
         device1.on()
         assert device1.value
@@ -1286,6 +1288,23 @@ def test_energenie(mock_factory):
         pins[3].assert_states_and_times([(0.0, True), (0.0, True)])
         pins[4].assert_states_and_times([(0.0, False)])
         pins[5].assert_states_and_times([(0.0, False), (0.1, True), (0.25, False)])
+        [pin.clear_states() for pin in pins]
+        device3.on()
+        assert device3.value
+        pins[0].assert_states_and_times([(0.0, False), (0.0, True)])
+        pins[1].assert_states_and_times([(0.0, True), (0.0, False)])
+        pins[2].assert_states_and_times([(0.0, True), (0.0, False)])
+        pins[3].assert_states_and_times([(0.0, True), (0.0, False)])
+        pins[4].assert_states_and_times([(0.0, False)])
+        pins[5].assert_states_and_times([(0.0, False), (0.1, True), (0.25, False)])
+
+        device3.value = False
+        assert not device3.value
+        device3.value = True
+        assert device3.value
+        with pytest.raises(TypeError):
+            device3.value = None
+
         device1.close()
         assert repr(device1) == '<gpiozero.Energenie object closed>'
 
