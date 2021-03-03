@@ -48,6 +48,7 @@ from functools import partial
 
 import mock
 
+from conftest import ThreadedTest
 from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
 from gpiozero.threads import GPIOThread
 from gpiozero import *
@@ -349,3 +350,179 @@ def test_input_distance_sensor_edge_cases(mock_factory):
                 break
         else:
             assert False
+
+def rotate_cw(a_pin, b_pin):
+    a_pin.drive_low()
+    b_pin.drive_low()
+    a_pin.drive_high()
+    b_pin.drive_high()
+
+def rotate_ccw(a_pin, b_pin):
+    b_pin.drive_low()
+    a_pin.drive_low()
+    b_pin.drive_high()
+    a_pin.drive_high()
+
+def test_input_rotary_encoder(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with pytest.raises(ValueError):
+        RotaryEncoder(20, 21, threshold_steps=(2, 0))
+    with RotaryEncoder(20, 21) as encoder:
+        assert repr(encoder).startswith('<gpiozero.RotaryEncoder object')
+        assert encoder.steps == 0
+        assert encoder.value == 0
+        assert not encoder.wrap
+        a_pin.drive_low()
+        b_pin.drive_low()
+        # Make sure we don't erroneously jump before the end of the sequence
+        assert encoder.steps == 0
+        a_pin.drive_high()
+        b_pin.drive_high()
+        assert encoder.steps == 1
+        # Make sure the sequence works in both directions
+        rotate_ccw(a_pin, b_pin)
+        assert encoder.steps == 0
+
+def test_input_rotary_encoder_jiggle(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21) as encoder:
+        # Check the FSM permits "jiggle" in the sequence
+        a_pin.drive_low()
+        a_pin.drive_high()
+        a_pin.drive_low()
+        b_pin.drive_low()
+        b_pin.drive_high()
+        b_pin.drive_low()
+        a_pin.drive_high()
+        a_pin.drive_low()
+        a_pin.drive_high()
+        b_pin.drive_high()
+        assert encoder.steps == 1
+
+def test_input_rotary_encoder_limits(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21, max_steps=4) as encoder:
+        assert not encoder.wrap
+        for expected in [1, 2, 3, 4, 4, 4]:
+            rotate_cw(a_pin, b_pin)
+            assert encoder.steps == expected
+
+def test_input_rotary_encoder_threshold(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21, max_steps=4, threshold_steps=(2, 4)) as encoder:
+        assert encoder.threshold_steps == (2, 4)
+        for expected in [1, 2, 3, 4]:
+            rotate_cw(a_pin, b_pin)
+            assert encoder.is_active == (2 <= encoder.steps <= 4)
+
+def test_input_rotary_encoder_settable(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21, max_steps=4) as encoder:
+        assert encoder.max_steps == 4
+        assert encoder.steps == 0
+        assert encoder.value == 0
+        rotate_cw(a_pin, b_pin)
+        assert encoder.steps == 1
+        assert encoder.value == 0.25
+        encoder.steps = 0
+        assert encoder.steps == 0
+        assert encoder.value == 0
+        rotate_ccw(a_pin, b_pin)
+        assert encoder.steps == -1
+        assert encoder.value == -0.25
+        encoder.value = 0
+        assert encoder.steps == 0
+        assert encoder.value == 0
+    with RotaryEncoder(20, 21, max_steps=0) as encoder:
+        assert encoder.max_steps == 0
+        assert encoder.steps == 0
+        assert encoder.value == 0
+        rotate_cw(a_pin, b_pin)
+        assert encoder.steps == 1
+        # value is perpetually 0 when max_steps is 0
+        assert encoder.value == 0
+        encoder.steps = 0
+        assert encoder.steps == 0
+        assert encoder.value == 0
+
+def test_input_rotary_encoder_wrap(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21, max_steps=4, wrap=True) as encoder:
+        assert encoder.wrap
+        for expected in [1, 2, 3, 4, -4, -3, -2, -1, 0]:
+            rotate_cw(a_pin, b_pin)
+            assert encoder.steps == expected
+
+def test_input_rotary_encoder_when(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21) as encoder:
+        rotated = Event()
+        rotated_cw = Event()
+        rotated_ccw = Event()
+        assert encoder.when_rotated is None
+        assert encoder.when_rotated_clockwise is None
+        assert encoder.when_rotated_counter_clockwise is None
+        encoder.when_rotated = rotated.set
+        encoder.when_rotated_clockwise = rotated_cw.set
+        encoder.when_rotated_counter_clockwise = rotated_ccw.set
+        assert encoder.when_rotated is not None
+        assert encoder.when_rotated_clockwise is not None
+        assert encoder.when_rotated_counter_clockwise is not None
+        assert callable(encoder.when_rotated)
+        assert callable(encoder.when_rotated_clockwise)
+        assert callable(encoder.when_rotated_counter_clockwise)
+        assert not rotated.wait(0)
+        assert not rotated_cw.wait(0)
+        assert not rotated_ccw.wait(0)
+        rotate_cw(a_pin, b_pin)
+        assert rotated.wait(0)
+        assert rotated_cw.wait(0)
+        assert not rotated_ccw.wait(0)
+        rotated.clear()
+        rotated_cw.clear()
+        rotate_ccw(a_pin, b_pin)
+        assert rotated.wait(0)
+        assert not rotated_cw.wait(0)
+        assert rotated_ccw.wait(0)
+
+def test_input_rotary_encoder_wait(mock_factory):
+    a_pin = mock_factory.pin(20)
+    b_pin = mock_factory.pin(21)
+    with RotaryEncoder(20, 21) as encoder:
+        # The rotary encoder waits are "pulsed", i.e. they act like edge waits
+        # rather than level waits hence the need for a background thread here
+        # that actively attempts to wait on rotation while it happens. It's
+        # not enough to rotate and *then* attempt to wait
+        test_rotate = ThreadedTest(lambda: encoder.wait_for_rotate(0))
+        test_rotate_cw = ThreadedTest(lambda: encoder.wait_for_rotate_clockwise(0))
+        test_rotate_ccw = ThreadedTest(lambda: encoder.wait_for_rotate_counter_clockwise(0))
+        assert not test_rotate.result
+        assert not test_rotate_cw.result
+        assert not test_rotate_ccw.result
+        test_thread = ThreadedTest(lambda: encoder.wait_for_rotate(1))
+        test_thread_cw = ThreadedTest(lambda: encoder.wait_for_rotate_clockwise(1))
+        test_thread_ccw = ThreadedTest(lambda: encoder.wait_for_rotate_counter_clockwise(1))
+        rotate_cw(a_pin, b_pin)
+        assert test_thread.result
+        assert test_thread_cw.result
+        assert not test_thread_ccw.result
+        test_rotate = ThreadedTest(lambda: encoder.wait_for_rotate(0))
+        test_rotate_cw = ThreadedTest(lambda: encoder.wait_for_rotate_clockwise(0))
+        test_rotate_ccw = ThreadedTest(lambda: encoder.wait_for_rotate_counter_clockwise(0))
+        assert not test_rotate.result
+        assert not test_rotate_cw.result
+        assert not test_rotate_ccw.result
+        test_thread = ThreadedTest(lambda: encoder.wait_for_rotate(1))
+        test_thread_cw = ThreadedTest(lambda: encoder.wait_for_rotate_clockwise(1))
+        test_thread_ccw = ThreadedTest(lambda: encoder.wait_for_rotate_counter_clockwise(1))
+        rotate_ccw(a_pin, b_pin)
+        assert test_thread.result
+        assert not test_thread_cw.result
+        assert test_thread_ccw.result

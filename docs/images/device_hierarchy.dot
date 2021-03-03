@@ -110,6 +110,8 @@ digraph classes {
     RGBLED->SourceMixin;
     Robot->CompositeDevice;
     Robot->SourceMixin;
+    RotaryEncoder->CompositeDevice;
+    RotaryEncoder->EventsMixin;
     RyanteckRobot->Robot;
     SPIDevice->Device;
     Servo->CompositeDevice;
