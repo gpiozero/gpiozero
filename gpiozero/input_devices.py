@@ -1084,14 +1084,30 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
 
     .. _rotary encoder: https://en.wikipedia.org/wiki/Rotary_encoder
     """
+    # The rotary encoder's two pins move through the following sequence when
+    # the encoder is rotated one step clockwise:
+    #
+    #   ────┐     ┌─────┐     ┌────────
+    #    _  │     │     │     │          counter        ┌───┐
+    #    A  │     │     │     │         clockwise  ┌─── │ 0 │ ───┐  clockwise
+    #       └─────┘     └─────┘           (CCW)    │    └───┘    │    (CW)
+    #       :     :     :     :             │    ┌───┐         ┌───┐    │
+    #   ───────┐  :  ┌─────┐  :  ┌─────     ▾    │ 1 │         │ 2 │    ▾
+    #    _  :  │  :  │  :  │  :  │               └───┘         └───┘
+    #    B  :  │  :  │  :  │  :  │                 │    ┌───┐    │
+    #       :  └─────┘  :  └─────┘                 └─── │ 3 │ ───┘
+    #       :  :  :  :  :  :  :  :                      └───┘
+    #    0  2  3  1  0  2  3  1  0
+    #
+    # Treating the A pin as a "high" bit, and the B pin as a "low" bit, this
+    # means that the pins return the sequence 0, 2, 3, 1 for each step that the
+    # encoder takes clockwise. Conversely, the pins return the sequence 0, 1,
+    # 3, 2 for each step counter-clockwise.
+    #
+    # We can treat these values as edges to take in a simple state machine,
+    # which is represented in the dictionary below:
+
     TRANSITIONS = {
-        # The transition table here includes more than just the strictly
-        # necessary edges; it also permits "wiggle" between intermediary.
-        # However, once we start down the clockwise (cw) or counter-clockwise
-        # (ccw) path, we don't allow the state to pick the alternate direction
-        # without passing through the idle state again. This seems to work
-        # well in practice with several encoders, even quite jiggly ones with
-        # no debounce hardware or software
         'idle': ['idle', 'ccw1', 'cw1',  'idle'],
         'ccw1': ['idle', 'ccw1', 'ccw3', 'ccw2'],
         'ccw2': ['idle', 'ccw1', 'ccw3', 'ccw2'],
@@ -1100,6 +1116,49 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         'cw2':  ['idle', 'cw3',  'cw1',  'cw2'],
         'cw3':  ['+1',   'cw3',  'idle', 'cw2'],
     }
+
+    # The state machine here includes more than just the strictly necessary
+    # edges; it also permits "wiggle" between intermediary states so that the
+    # overall graph looks like this:
+    #
+    #                            ┌──────┐
+    #                            │      │
+    #                      ┌─────┤ idle ├────┐
+    #                      │1    │      │   2│
+    #                      │     └──────┘    │
+    #                      ▾       ▴  ▴      ▾
+    #                  ┌────────┐  │  │  ┌───────┐
+    #                  │        │ 0│  │0 │       │
+    #              ┌───┤  ccw1  ├──┤  ├──┤  cw1  ├───┐
+    #              │2  │        │  │  │  │       │  1│
+    #              │   └─┬──────┘  │  │  └─────┬─┘   │
+    #              │    3│    ▴    │  │    ▴   │3    │
+    #              │     ▾    │1   │  │   2│   ▾     │
+    #              │   ┌──────┴─┐  │  │  ┌─┴─────┐   │
+    #              │   │        │ 0│  │0 │       │   │
+    #              │   │  ccw2  ├──┤  ├──┤  cw2  │   │
+    #              │   │        │  │  │  │       │   │
+    #              │   └─┬──────┘  │  │  └─────┬─┘   │
+    #              │    2│    ▴    │  │    ▴   │1    │
+    #              │     ▾    │3   │  │   3│   ▾     │
+    #              │   ┌──────┴─┐  │  │  ┌─┴─────┐   │
+    #              │   │        │  │  │  │       │   │
+    #              └──▸│  ccw3  │  │  │  │  cw3  │◂──┘
+    #                  │        │  │  │  │       │
+    #                  └───┬────┘  │  │  └───┬───┘
+    #                     0│       │  │      │0
+    #                      ▾       │  │      ▾
+    #                  ┌────────┐  │  │  ┌───────┐
+    #                  │        │  │  │  │       │
+    #                  │   -1   ├──┘  └──┤  +1   │
+    #                  │        │        │       │
+    #                  └────────┘        └───────┘
+    #
+    # Note that, once we start down the clockwise (cw) or counter-clockwise
+    # (ccw) path, we don't allow the state to pick the alternate direction
+    # without passing through the idle state again. This seems to work well in
+    # practice with several encoders, even quite jiggly ones with no debounce
+    # hardware or software
 
     def __init__(
             self, a, b, bounce_time=None, max_steps=16, threshold_steps=(0, 0),
