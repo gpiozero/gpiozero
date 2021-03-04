@@ -278,7 +278,7 @@ class GPIOFS(object):
                                          os.O_RDONLY | os.O_NONBLOCK)
                     except IOError as e:
                         if e.errno == errno.ENOENT:
-                            with io.open(self.path('export'), 'w+b') as f:
+                            with io.open(self.path('export'), 'wb') as f:
                                 f.write(str(pin).encode('ascii'))
                         elif e.errno == errno.EACCES:
                             sleep(i / 100)
