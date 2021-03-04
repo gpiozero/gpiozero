@@ -311,7 +311,7 @@ class GPIOFS(object):
                 pass
             else:
                 try:
-                    with io.open(self.path('unexport'), 'w+b') as f:
+                    with io.open(self.path('unexport'), 'wb') as f:
                         f.write(str(pin).encode('ascii'))
                 except IOError as e:
                     if e.errno == errno.EINVAL:
