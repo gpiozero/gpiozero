@@ -620,8 +620,8 @@ class Native2711Pin(NativePin):
 
     def _reg_init(self, factory, number):
         super(Native2711Pin, self)._reg_init(factory, number)
-        self._pull_offset = self.factory.mem.GPPUPPDN_OFFSET + ((number * 2) // 32)
-        self._pull_shift = (number * 2) % 32
+        self._pull_offset = self.factory.mem.GPPUPPDN_OFFSET + (number // 16)
+        self._pull_shift = (number % 16) * 2
 
     def _get_pull(self):
         pull = (self.factory.mem[self._pull_offset] >> self._pull_shift) & 3
@@ -636,7 +636,8 @@ class Native2711Pin(NativePin):
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
-        regvalue = self.factory.mem[self._pull_offset]
-        regvalue &= ~(0x3 << self._pull_shift)
-        regvalue |= (value & 0x3) << self._pull_shift
-        self.factory.mem[self._pull_offset] = regvalue
+        self.factory.mem[self._pull_offset] = (
+            self.factory.mem[self._pull_offset]
+            & ~(3 << self._pull_shift)
+            | (value << self._pull_shift)
+            )
