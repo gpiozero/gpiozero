@@ -205,6 +205,17 @@ class GPIOMemory(object):
         else:
             offset = 0
         self.mem = mmap.mmap(self.fd, 4096, offset=offset)
+        # Register reads and writes must be in native format (otherwise
+        # struct resorts to individual byte reads/writes and you can't hit
+        # half a register :). For arm64 compat we have to figure out what the
+        # native unsigned 32-bit type is...
+        try:
+            self.reg_fmt = {
+                struct.calcsize(fmt): fmt
+                for fmt in (nstr('@I'), nstr('@L'))
+            }[4]
+        except KeyError:
+            raise RuntimeError('unable to find native unsigned 32-bit type')
 
     def close(self):
         self.mem.close()
@@ -222,10 +233,10 @@ class GPIOMemory(object):
         raise IOError('unable to determine gpio base')
 
     def __getitem__(self, index):
-        return struct.unpack_from(nstr('<L'), self.mem, index * 4)[0]
+        return struct.unpack_from(self.reg_fmt, self.mem, index * 4)[0]
 
     def __setitem__(self, index, value):
-        struct.pack_into(nstr('<L'), self.mem, index * 4, value)
+        struct.pack_into(self.reg_fmt, self.mem, index * 4, value)
 
 
 class GPIOFS(object):
