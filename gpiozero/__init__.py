@@ -73,6 +73,7 @@ from .input_devices import (
     MotionSensor,
     LightSensor,
     DistanceSensor,
+    RotaryEncoder,
 )
 from .spi_devices import (
     SPIDevice,

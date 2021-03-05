@@ -141,6 +141,28 @@ def scaled(values, output_min, output_max, input_min=0, input_max=1):
         yield (((v - input_min) / input_size) * output_size) + output_min
 
 
+def scaled_full(values):
+    """
+    A convenience function that builds on :func:`scaled`. It converts a
+    "half-range" value (0..1) to a "full-range" value (-1..1). This is
+    equivalent to calling::
+
+        scaled(values, -1, 1, 0, 1)
+    """
+    return scaled(values, -1, 1, 0, 1)
+
+
+def scaled_half(values):
+    """
+    A convenience function that builds on :func:`scaled`. It converts a
+    "full-range" value (-1..1) to a "half-range" value (0..1). This is
+    equivalent to calling::
+
+        scaled(values, 0, 1, -1, 1)
+    """
+    return scaled(values, 0, 1, -1, 1)
+
+
 def clamped(values, output_min=0, output_max=1):
     """
     Returns *values* clamped from *output_min* to *output_max*, i.e. any items
@@ -609,7 +631,7 @@ def sin_values(period=360):
     effect with a couple of LEDs that repeats once a second::
 
         from gpiozero import PWMLED
-        from gpiozero.tools import sin_values, scaled, inverted
+        from gpiozero.tools import sin_values, scaled_half, inverted
         from signal import pause
 
         red = PWMLED(2)
@@ -617,7 +639,7 @@ def sin_values(period=360):
 
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
-        red.source = scaled(sin_values(100), 0, 1, -1, 1)
+        red.source = scaled_half(sin_values(100))
         blue.source = inverted(red)
 
         pause()
@@ -636,7 +658,7 @@ def cos_values(period=360):
     "siren" effect with a couple of LEDs that repeats once a second::
 
         from gpiozero import PWMLED
-        from gpiozero.tools import cos_values, scaled, inverted
+        from gpiozero.tools import cos_values, scaled_half, inverted
         from signal import pause
 
         red = PWMLED(2)
@@ -644,7 +666,7 @@ def cos_values(period=360):
 
         red.source_delay = 0.01
         blue.source_delay = red.source_delay
-        red.source = scaled(cos_values(100), 0, 1, -1, 1)
+        red.source = scaled_half(cos_values(100))
         blue.source = inverted(red)
 
         pause()

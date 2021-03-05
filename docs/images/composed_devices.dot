@@ -34,4 +34,6 @@ digraph classes {
     PhaseEnableMotor->PWMOutputDevice;
 
     Servo->PWMOutputDevice;
+
+    RotaryEncoder->InputDevice;
 }

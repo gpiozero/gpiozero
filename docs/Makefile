@@ -195,7 +195,7 @@ images/composite_device_hierarchy.dot: $(PY_SOURCES)
 		-x Motor \
 		-x PhaseEnableMotor \
 		-x Servo \
-		-o SourceMixin -o HoldMixin > $@
+		-o SourceMixin > $@
 
 images/spi_device_hierarchy.dot: $(PY_SOURCES)
 	./images/class_graph -i SPIDevice > $@
@@ -224,7 +224,7 @@ images/input_device_hierarchy.dot: $(PY_SOURCES)
 	gnuplot -e "set term pngcairo size 640,480" $< > $@
 
 %.png: %.svg
-	inkscape -e $@ $<
+	inkscape --export-dpi 150 -e $@ $<
 
 %.pdf: %.svg
 	inkscape -A $@ $<

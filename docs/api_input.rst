@@ -86,6 +86,13 @@ DistanceSensor (HC-SR04)
     :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance, value
 
 
+RotaryEncoder
+-------------
+
+.. autoclass:: RotaryEncoder(a, b, \*, bounce_time=None, max_steps=16, threshold_steps=(0, 0), wrap=False, pin_factory=None)
+    :members: wait_for_rotate, wait_for_rotate_clockwise, wait_for_rotate_counter_clockwise, when_rotated, when_rotated_clockwise, when_rotated_counter_clockwise, steps, value, max_steps, threshold_steps, wrap
+
+
 Base Classes
 ============
 
