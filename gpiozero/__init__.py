@@ -117,6 +117,7 @@ from .boards import (
     LEDBoard,
     LEDBarGraph,
     LEDCharDisplay,
+    LEDCharFont,
     LedBorg,
     PiHutXmasTree,
     PiLiter,

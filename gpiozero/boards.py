@@ -778,6 +778,42 @@ class LEDBarGraph(LEDCollection):
 
 
 class LEDCharFont(MutableMapping):
+    """
+    Contains a mapping of values to tuples of LED states.
+
+    This effectively acts as a "font" for :class:`LEDCharDisplay`, and two
+    default fonts (for 7-segment and 14-segment displays) are shipped with GPIO
+    Zero by default. You can construct your own font instance from a
+    :class:`dict` which maps values (usually single-character strings) to
+    a tuple of LED states::
+
+        from gpiozero import LEDCharFont
+
+        my_font = LEDCharFont({
+            ' ': (0, 0, 0, 0, 0, 0, 0),
+            'D': (1, 1, 1, 1, 1, 1, 0),
+            'A': (1, 1, 1, 0, 1, 1, 1),
+            'd': (0, 1, 1, 1, 1, 0, 1),
+            'a': (1, 1, 1, 1, 1, 0, 1),
+        })
+        display = LEDCharDisplay(26, 13, 12, 22, 17, 19, 6, dp=5, font=my_font)
+        display.value = 'D'
+
+    Font instances are mutable and can be changed while actively in use by
+    an instance of :class:`LEDCharDisplay`. However, changing the font will
+    *not* change the state of the LEDs in the display (though it may change
+    the :attr:`~LEDCharDisplay.value` of the display when next queried).
+
+    .. note::
+
+        Your custom mapping should always include a value (typically space)
+        which represents all the LEDs off. This will usually be the default
+        value for an instance of :class:`LEDCharDisplay`.
+
+    You may also wish to load fonts from a friendly text-based format. A simple
+    parser for such formats (supporting an arbitrary number of segments) is
+    provided by :func:`gpiozero.tools.load_segment_font`.
+    """
     def __init__(self, font):
         super(LEDCharFont, self).__init__()
         self._map = OrderedDict([
