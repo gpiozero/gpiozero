@@ -558,8 +558,8 @@ class LEDBoard(LEDCollection):
                     raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n))
+            self._blink_device,
+            (on_time, off_time, fade_in_time, fade_out_time, n))
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
