@@ -817,7 +817,7 @@ class LEDCharFont(MutableMapping):
     def __init__(self, font):
         super(LEDCharFont, self).__init__()
         self._map = OrderedDict([
-            (char, tuple(pins))
+            (char, tuple(int(bool(pin)) for pin in pins))
             for char, pins in font.items()
         ])
         self._refresh_rmap()
@@ -850,7 +850,7 @@ class LEDCharFont(MutableMapping):
         return self._map[char]
 
     def __setitem__(self, char, pins):
-        pins = tuple(pins)
+        pins = tuple(int(bool(pin)) for pin in pins)
         self._map[char] = pins
         self._rmap.setdefault(pins, char)
 
@@ -1017,29 +1017,36 @@ class LEDCharDisplay(LEDCollection):
 
     @property
     def value(self):
-        t = super(LEDCharDisplay, self).value
+        state = super(LEDCharDisplay, self).value
+        if hasattr(self, 'dp'):
+            state, dp = state[:-1], state[-1]
+        else:
+            dp = False
         try:
-            result = self._font._rmap[t]
+            result = self._font._rmap[state]
         except KeyError:
             # Raising exceptions on lookup is problematic; in case the LED
             # state is not representable we simply return None (although
             # technically that is a valid item we can map :)
             return None
         else:
-            if hasattr(self, 'dp'):
-                result += '.' if self.dp.value else ''
-            return result
+            return result + ('.' if dp else '')
 
     @value.setter
     def value(self, value):
+        for led, v in zip(self, self._parse_state(value)):
+            led.value = v
+
+    def _parse_state(self, value):
         if hasattr(self, 'dp'):
             if len(value) > 1 and value.endswith('.'):
                 value = value[:-1]
-                self.dp.value = True
+                dp = 1
             else:
-                self.dp.value = False
-        for led, v in zip(self, self._font[value]):
-            led.value = v
+                dp = 0
+            return self._font[value] + (dp,)
+        else:
+            return self._font[value]
 
 
 class PiHutXmasTree(LEDBoard):
