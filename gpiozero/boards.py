@@ -49,7 +49,7 @@ except ImportError:
     pass
 
 from time import sleep
-from itertools import repeat, cycle, chain
+from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
 try:
@@ -65,6 +65,7 @@ from .exc import (
     EnergenieBadSocket,
     OutputDeviceBadValue,
     CompositeDeviceBadDevice,
+    BadWaitTime,
     )
 from .input_devices import Button
 from .output_devices import (
@@ -81,6 +82,12 @@ from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin, HoldMixin
 from .tools import load_font_7seg, load_font_14seg
+
+
+def pairwise(it):
+    a, b = tee(it)
+    next(b, None)
+    return zip(a, b)
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
@@ -1047,6 +1054,176 @@ class LEDCharDisplay(LEDCollection):
             return self._font[value] + (dp,)
         else:
             return self._font[value]
+
+
+class LEDMultiCharDisplay(CompositeOutputDevice):
+    """
+    Wraps :class:`LEDCharDisplay` for multi-character multiplexed LED character
+    displays.
+
+    The class is constructed with a *char* which is an instance of the
+    :class:`LEDCharDisplay` class, capable of controlling the LEDs in one
+    character of the display, and an additional set of *pins* that represent
+    the common cathode (or anode) of each character.
+
+    The *active_high* parameter defaults to the opposite of the
+    :attr:`~OutputDevice.active_high` attribute of the specified *char*. The
+    *pin_factory* parameter defaults to the :attr:`~Device.pin_factory`
+    attribute of the specified *char*. Finally, *initial_value* defaults to a
+    tuple of :attr:`~LEDCharDisplay.value` attribute of the specified display
+    multiplied by the number of *pins* provided.
+
+    When the :attr:`value` is set such that one or more characters in the
+    display differ in value, a background thread is implicitly started to
+    rotate the active character, relying on `persistence of vision`_ to display
+    the complete value.
+
+    .. _persistence of vision: https://en.wikipedia.org/wiki/Persistence_of_vision
+    """
+    def __init__(
+            self, char, *pins, active_high=None, initial_value=None,
+            pin_factory=None):
+        if not isinstance(char, LEDCharDisplay):
+            raise ValueError('char must be an LEDCharDisplay')
+        if active_high is None:
+            active_high = not char.active_high
+        if initial_value is None:
+            initial_value = (char.value,) * len(pins)
+        if pin_factory is None:
+            pin_factory = char.pin_factory
+        self._plex_thread = None
+        self._plex_delay = 0.005
+        plex = CompositeOutputDevice(*(
+            OutputDevice(
+                pin, active_high=active_high, initial_value=None,
+                pin_factory=pin_factory)
+            for pin in pins
+        ))
+        super(LEDMultiCharDisplay, self).__init__(
+            plex=plex, char=char, pin_factory=pin_factory)
+        self.value = initial_value
+
+    @property
+    def plex_delay(self):
+        """
+        The delay (measured in seconds) in the loop used to switch each
+        character in the multiplexed display on. Defaults to 0.005 seconds
+        which is generally sufficient to provide a "stable" (non-flickery)
+        display.
+        """
+        return self._plex_delay
+
+    @plex_delay.setter
+    def plex_delay(self, value):
+        if value < 0:
+            raise BadWaitTime('plex_delay must be 0 or greater')
+        self._plex_delay = float(value)
+
+    @property
+    def value(self):
+        """
+        The sequence of values to display.
+
+        This can be any sequence containing keys from the
+        :attr:`~LEDCharDisplay.font` of the associated character display. For
+        example, if the value consists only of single-character strings, it's
+        valid to assign a string to this property:
+
+            from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
+
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+            d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
+            d.value = 'LEDS'
+
+        However, things get more complicated if a decimal point is in use as
+        then this class needs to know explicitly where to break the value for
+        use on each character of the display. This can be handled by simply
+        assigning a sequence of strings thus:
+
+            from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
+
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+            d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
+            d.value = ('L.', 'E', 'D', 'S')
+
+        This is how the value will always be represented when queried (as a
+        tuple of individual values) as it neatly handles dealing with
+        heterogeneous types and the decimal point issue.
+
+        .. note::
+
+            The value also controls whether a background thread is in use to
+            multiplex the display. When all positions in the value are equal
+            the background thread is disabled and all characters are
+            simultaneously enabled.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        if len(value) > len(self.plex):
+            raise ValueError(
+                'length of value must not exceed the number of characters in '
+                'the display')
+        elif len(value) < len(self.plex):
+            # Right-align the short value on the display
+            value = (' ',) * (len(self.plex) - len(value)) + tuple(value)
+
+        # Get the list of tuples of states that the character LEDs will pass
+        # through. Prune any entirely blank state (which we can skip by never
+        # activating the plex for them) but remember which plex index each
+        # (non-blank) state is associated with
+        states = {}
+        for index, char in enumerate(value):
+            state = self.char._parse_state(char)
+            if any(state):
+                states.setdefault(state, set()).add(index)
+        # Calculate the transitions between states for an ordering of chars
+        # based on activated LEDs. This a vague attempt at minimizing the
+        # number of LEDs that need flipping between chars; to do this
+        # "properly" is O(n!) which gets silly quickly so ... fudge it
+        order = sorted(states)
+        if len(order) > 1:
+            transitions = [
+                [(self.plex[index], 0) for index in states[old]] +
+                [
+                    (led, new_value)
+                    for led, old_value, new_value in zip(self.char, old, new)
+                    if old_value ^ new_value
+                ] +
+                [(self.plex[index], 1) for index in states[new]]
+                for old, new in pairwise(order + [order[0]])
+            ]
+        else:
+            transitions = []
+
+        # Stop any current display thread and disable the display
+        if self._plex_thread:
+            self._plex_thread.stop()
+        self._plex_thread = None
+        self.plex.off()
+
+        # If there's any characters to display, set the character LEDs to the
+        # state of the first character in the display order. If there's
+        # transitions to display, activate the plex thread; otherwise, just
+        # switch on each plex with a char to display
+        if order:
+            for led, state in zip(self.char, order[0]):
+                led.value = state
+            if transitions:
+                self._plex_thread = GPIOThread(self._show_chars, (transitions,))
+                self._plex_thread.start()
+            else:
+                for index in states[order[0]]:
+                    self.plex[index].on()
+        self._value = value
+
+    def _show_chars(self, transitions):
+        for transition in cycle(transitions):
+            for device, value in transition:
+                device.value = value
+            if self._plex_thread.stopping.wait(self._plex_delay):
+                break
 
 
 class PiHutXmasTree(LEDBoard):
