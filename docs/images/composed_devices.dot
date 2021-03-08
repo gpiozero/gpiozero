@@ -11,6 +11,11 @@ digraph classes {
     LEDBoard->PWMLED;
     LEDBarGraph->LED;
     LEDBarGraph->PWMLED;
+    LEDCharDisplay->LED;
+    LEDCharDisplay->PWMLED;
+
+    LEDMultiCharDisplay->LEDCharDisplay;
+    LEDMultiCharDisplay->DigitalOutputDevice;
 
     ButtonBoard->Button;
 

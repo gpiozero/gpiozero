@@ -31,7 +31,9 @@ digraph classes {
     JamHat->CompositeOutputDevice;
     LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
+    LEDCharDisplay->LEDCollection;
     LEDCollection->CompositeOutputDevice;
+    LEDMultiCharDisplay->CompositeOutputDevice;
     PhaseEnableRobot->CompositeDevice;
     PiHutXmasTree->LEDBoard;
     PiLiter->LEDBoard;
