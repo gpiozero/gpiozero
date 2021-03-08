@@ -79,6 +79,13 @@ LEDCharDisplay
     :members: value, font
 
 
+LEDMultiCharDisplay
+-------------------
+
+.. autoclass:: LEDMultiCharDisplay(char, \*pins, active_high=True, initial_value=None, pin_factory=None)
+    :members: value, plex_delay
+
+
 LEDCharFont
 -----------
 

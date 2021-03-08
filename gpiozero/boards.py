@@ -1087,35 +1087,43 @@ class LEDCharDisplay(LEDCollection):
 
 class LEDMultiCharDisplay(CompositeOutputDevice):
     """
-    Wraps :class:`LEDCharDisplay` for multi-character multiplexed LED character
-    displays.
+    Wraps :class:`LEDCharDisplay` for multi-character `multiplexed`_ LED
+    character displays.
 
     The class is constructed with a *char* which is an instance of the
     :class:`LEDCharDisplay` class, capable of controlling the LEDs in one
     character of the display, and an additional set of *pins* that represent
     the common cathode (or anode) of each character.
 
-    The *active_high* parameter defaults to the opposite of the
-    :attr:`~OutputDevice.active_high` attribute of the specified *char*. The
-    *pin_factory* parameter defaults to the :attr:`~Device.pin_factory`
-    attribute of the specified *char*. Finally, *initial_value* defaults to a
-    tuple of :attr:`~LEDCharDisplay.value` attribute of the specified display
-    multiplied by the number of *pins* provided.
+    .. warning::
+
+        You should not attempt to connect the common cathode (or anode) off
+        each character directly to a GPIO. Rather, use a set of transistors (or
+        some other suitable component capable of handling the current of all
+        the segment LEDs simultaneously) to connect the common cathode to
+        ground (or the common anode to the supply) and control those
+        transistors from the GPIOs specified under *pins*.
+
+    The *active_high* parameter defaults to :data:`True`. Note that it only
+    applies to the specified *pins*, which are assumed to be controlling a set
+    of transistors (hence the default). The specified *char* will use its own
+    *active_high* parameter. Finally, *initial_value* defaults to a tuple of
+    :attr:`~LEDCharDisplay.value` attribute of the specified display multiplied
+    by the number of *pins* provided.
 
     When the :attr:`value` is set such that one or more characters in the
     display differ in value, a background thread is implicitly started to
     rotate the active character, relying on `persistence of vision`_ to display
     the complete value.
 
+    .. _multiplexed: https://en.wikipedia.org/wiki/Multiplexed_display
     .. _persistence of vision: https://en.wikipedia.org/wiki/Persistence_of_vision
     """
     def __init__(
-            self, char, *pins, active_high=None, initial_value=None,
+            self, char, *pins, active_high=True, initial_value=None,
             pin_factory=None):
         if not isinstance(char, LEDCharDisplay):
             raise ValueError('char must be an LEDCharDisplay')
-        if active_high is None:
-            active_high = not char.active_high
         if initial_value is None:
             initial_value = (char.value,) * len(pins)
         if pin_factory is None:
@@ -1156,28 +1164,29 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
         This can be any sequence containing keys from the
         :attr:`~LEDCharDisplay.font` of the associated character display. For
         example, if the value consists only of single-character strings, it's
-        valid to assign a string to this property:
+        valid to assign a string to this property (as a string is simply a
+        sequence of individual character keys)::
 
             from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
 
-            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10)
             d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
             d.value = 'LEDS'
 
         However, things get more complicated if a decimal point is in use as
         then this class needs to know explicitly where to break the value for
         use on each character of the display. This can be handled by simply
-        assigning a sequence of strings thus:
+        assigning a sequence of strings thus::
 
             from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
 
-            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10)
             d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
             d.value = ('L.', 'E', 'D', 'S')
 
         This is how the value will always be represented when queried (as a
         tuple of individual values) as it neatly handles dealing with
-        heterogeneous types and the decimal point issue.
+        heterogeneous types and the aforementioned decimal point issue.
 
         .. note::
 
