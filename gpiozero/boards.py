@@ -794,7 +794,7 @@ class LEDCharFont(MutableMapping):
     :class:`dict` which maps values (usually single-character strings) to
     a tuple of LED states::
 
-        from gpiozero import LEDCharFont
+        from gpiozero import LEDCharDisplay, LEDCharFont
 
         my_font = LEDCharFont({
             ' ': (0, 0, 0, 0, 0, 0, 0),
@@ -1016,6 +1016,19 @@ class LEDCharDisplay(LEDCollection):
 
     @property
     def font(self):
+        """
+        An :class:`LEDCharFont` mapping characters to tuples of LED states.
+        The font is mutable after construction. You can assign a tuple of LED
+        states to a character to modify the font, delete an existing character
+        in the font, or assign a mapping of characters to tuples to replace the
+        entire font.
+
+        Note that modifying the :attr:`font` never alters the underlying LED
+        states. Only assignment to :attr:`value`, or calling the inherited
+        :class:`LEDCollection` methods (:meth:`on`, :meth:`off`, etc.) modifies
+        LED states. However, modifying the font may alter the character
+        returned by querying :attr:`value`.
+        """
         return self._font
 
     @font.setter
@@ -1024,6 +1037,22 @@ class LEDCharDisplay(LEDCollection):
 
     @property
     def value(self):
+        """
+        The character the display should show. This is mapped by the current
+        :attr:`font` to a tuple of LED states which is applied to the
+        underlying LED objects when this attribute is set.
+
+        When queried, the current LED states are looked up in the font to
+        determine the character shown. If the current LED states do not
+        correspond to any character in the :attr:`font`, the value is
+        :data:`None`.
+
+        It is possible for multiple characters in the font to map to the same
+        LED states (e.g. S and 5). In this case, if the font was constructed
+        from an ordered mapping (which is the default), then the first matching
+        mapping will always be returned. This also implies that the value
+        queried need not match the value set.
+        """
         state = super(LEDCharDisplay, self).value
         if hasattr(self, 'dp'):
             state, dp = state[:-1], state[-1]

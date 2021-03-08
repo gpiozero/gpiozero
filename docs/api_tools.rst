@@ -104,3 +104,12 @@ Artificial sources
 .. autofunction:: random_values
 
 .. autofunction:: sin_values
+
+Font Parsing
+============
+
+.. autofunction:: load_font_7seg
+
+.. autofunction:: load_font_14seg
+
+.. autofunction:: load_segment_font

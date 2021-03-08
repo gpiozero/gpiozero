@@ -75,8 +75,14 @@ LEDBarGraph
 LEDCharDisplay
 --------------
 
-.. autoclass:: LEDCharDisplay(\*pins, dp=None, alphabet=None, pwm=False, active_high=True, initial_value=' ', pin_factory=None)
-    :members: value, alphabet
+.. autoclass:: LEDCharDisplay(\*pins, dp=None, font=None, pwm=False, active_high=True, initial_value=' ', pin_factory=None)
+    :members: value, font
+
+
+LEDCharFont
+-----------
+
+.. autoclass:: LEDCharFont
 
 
 ButtonBoard
