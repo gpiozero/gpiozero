@@ -63,8 +63,8 @@ within a virtual Python environment:
 
 .. code-block:: console
 
-    $ sudo apt install lsb-release build-essential git git-core \
-        exuberant-ctags virtualenvwrapper python-virtualenv python3-virtualenv \
+    $ sudo apt install lsb-release build-essential git exuberant-ctags \
+        virtualenvwrapper python-virtualenv python3-virtualenv \
         python-dev python3-dev
 
 After installing ``virtualenvwrapper`` you'll need to restart your shell before
@@ -128,7 +128,8 @@ command should install all required dependencies:
 .. code-block:: console
 
     $ sudo apt install texlive-latex-recommended texlive-latex-extra \
-        texlive-fonts-recommended graphviz inkscape python-sphinx latexmk
+        texlive-fonts-recommended texlive-xetex graphviz inkscape \
+        python-sphinx latexmk xindy
 
 Once these are installed, you can use the "doc" target to build the
 documentation:

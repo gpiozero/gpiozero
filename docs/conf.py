@@ -150,6 +150,8 @@ htmlhelp_basename = '%sdoc' % _setup.__project__
 
 # -- Options for LaTeX output ---------------------------------------------
 
+latex_engine = 'xelatex'
+
 latex_elements = {
     'papersize': 'a4paper',
     'pointsize': '10pt',
