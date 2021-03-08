@@ -13,6 +13,7 @@ GPI_DIAGRAMS  := $(wildcard images/*.gpi images/*/*.gpi)
 SVG_IMAGES    := $(wildcard images/*.svg images/*/*.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
 PNG_IMAGES    := $(wildcard images/*.png images/*/*.png) $(GPI_DIAGRAMS:%.gpi=%.png) $(SVG_IMAGES:%.svg=%.png)
 PDF_IMAGES    := $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf) $(DOT_DIAGRAMS:%.dot=%.pdf) $(MSC_DIAGRAMS:%.mscgen=%.pdf)
+INKSCAPE_VER  := $(inkscape --version | sed -ne '/^Inkscape/ s/^Inkscape \([0-9]\+\)\..*$/\1/p')
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -223,11 +224,19 @@ images/input_device_hierarchy.dot: $(PY_SOURCES)
 %.png: %.gpi common.gp
 	gnuplot -e "set term pngcairo size 640,480" $< > $@
 
+ifeq ($(INKSCAPE_VER),0)
 %.png: %.svg
 	inkscape --export-dpi 150 -e $@ $<
 
 %.pdf: %.svg
 	inkscape -A $@ $<
+else
+%.png: %.svg
+	inkscape --export-dpi 150 --export-type png -o $@ $<
+
+%.pdf: %.svg
+	inkscape --export-type pdf -o $@ $<
+endif
 
 %.pdf: %.gpi common.gp
 	gnuplot -e "set term pdfcairo size 10cm,7.5cm" $< > $@
