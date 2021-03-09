@@ -47,7 +47,10 @@ import pytest
 from time import sleep
 from threading import Event
 
+import mock
+
 from gpiozero import *
+from gpiozero.tools import *
 
 
 def test_composite_output_on_off(mock_factory):
@@ -1625,161 +1628,135 @@ def test_pibrella_pins(mock_factory, pwm):
         with Button(pb.inputs.a) as btn:
             assert btn.pin.number == 9
 
-def test_seven_segment_display():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11)
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
-        assert isinstance(seven_seg[0], LED)
-        assert isinstance(seven_seg[1], LED)
-        assert isinstance(seven_seg[2], LED)
-        assert isinstance(seven_seg[3], LED)
-        assert isinstance(seven_seg[4], LED)
-        assert isinstance(seven_seg[5], LED)
-        assert isinstance(seven_seg[6], LED)
-        assert isinstance(seven_seg[7], LED)
-        assert seven_seg.active_high
-        assert seven_seg[0].active_high
-        assert seven_seg[1].active_high
-        assert seven_seg[2].active_high
-        assert seven_seg[3].active_high
-        assert seven_seg[4].active_high
-        assert seven_seg[5].active_high
-        assert seven_seg[6].active_high
-        assert seven_seg[7].active_high
+def test_led_char_display_init(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(28)]
+    with pytest.raises(PinInvalidPin):
+        LEDCharDisplay(*range(28))
+    with LEDCollection(*range(10)) as collection:
+        with pytest.raises(PinInvalidPin):
+            LEDCharDisplay(collection, *range(4))
+    with LEDCharDisplay(*range(4)) as char:
+        assert len(char.font) == 1
+        assert ' ' in char.font
+    default_font = load_font_7seg('gpiozero/fonts/7seg.txt')
+    with LEDCharDisplay(*range(10, 17), font=default_font) as char:
+        assert char.font == default_font
+        char.value = '2'
+    with LEDCharDisplay(*range(10, 17), initial_value=None) as char:
+        assert char.value == '2'
 
-        seven_seg.display("8")
-        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
+def test_led_char_display_value(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(4, 11)]
+    dp_pin = mock_factory.pin(11)
+    with LEDCharDisplay(*range(4, 11), dp=11) as char:
+        assert char.value == ' '
+        assert not any(dev.value for dev in char)
+        char.value = '8'
+        assert all(dev.value for dev in char if dev is not char.dp)
+        assert char.value == '8'
+        char.value = '8.'
+        assert all(dev.value for dev in char)
+        assert char.value == '8.'
 
-        seven_seg.display_hex(15)
-        assert (seven_seg[0].value and not seven_seg[1].value and not seven_seg[2].value and not seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
+def test_led_char_display_font(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(4, 11)]
+    dp_pin = mock_factory.pin(11)
+    with LEDCharDisplay(*range(4, 11), dp=11) as char:
+        char.value = '5'
+        del char.font['5']
+        assert char.value == 'S'
+        before_states = [int(p.state) for p in pins]
+        char.font['S'] = (0, 0, 1, 1, 0, 1, 1)
+        after_states = [int(p.state) for p in pins]
+        assert before_states == after_states
+        assert char.value is None
+        char.font['b'] = char.font['B']
+        char.value = 'B'
+        assert char.value == 'B'  # always uses first definition
+        del char.font['b']
+        assert char.value == 'B'  # doesn't damage reverse map
 
-        seven_seg.set_char_layout("_", (False, False, False, True, False, False, False))
-        seven_seg.display("_")
-        assert (not seven_seg[0].value and not seven_seg[1].value and not seven_seg[2].value and seven_seg[3].value and not seven_seg[4].value and not seven_seg[5].value and not seven_seg[6].value)
+    with LEDCharDisplay(*range(4, 11)) as char:
+        char.value = '0'
+        font = {
+            i: char.font[chr(ord('0') + i)]
+            for i in range(10)
+        }
+        char.font = font
+        assert char.value == 0
+        assert repr(char.font) == """LEDCharFont({
+    0: (1, 1, 1, 1, 1, 1, 0),
+    1: (0, 1, 1, 0, 0, 0, 0),
+    2: (1, 1, 0, 1, 1, 0, 1),
+    3: (1, 1, 1, 1, 0, 0, 1),
+    4: (0, 1, 1, 0, 0, 1, 1),
+    5: (1, 0, 1, 1, 0, 1, 1),
+    6: (1, 0, 1, 1, 1, 1, 1),
+    7: (1, 1, 1, 0, 0, 0, 0),
+    8: (1, 1, 1, 1, 1, 1, 1),
+    9: (1, 1, 1, 1, 0, 1, 1),
+})"""
 
-        seven_seg.decimal_point = True
-        assert seven_seg[7].value
-        assert seven_seg.decimal_point
-        
-def test_seven_segment_display_active_low():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11)
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, active_high=False) as seven_seg:
-        assert isinstance(seven_seg[0], LED)
-        assert isinstance(seven_seg[1], LED)
-        assert isinstance(seven_seg[2], LED)
-        assert isinstance(seven_seg[3], LED)
-        assert isinstance(seven_seg[4], LED)
-        assert isinstance(seven_seg[5], LED)
-        assert isinstance(seven_seg[6], LED)
-        assert isinstance(seven_seg[7], LED)
-        assert not seven_seg.active_high
-        assert not seven_seg[0].active_high
-        assert not seven_seg[1].active_high
-        assert not seven_seg[2].active_high
-        assert not seven_seg[3].active_high
-        assert not seven_seg[4].active_high
-        assert not seven_seg[5].active_high
-        assert not seven_seg[6].active_high
-        assert not seven_seg[7].active_high
-
-        seven_seg.display("8")
-        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
-
-        seven_seg.display_hex(15)
-        assert (seven_seg[0].value and not seven_seg[1].value and not seven_seg[2].value and not seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value)
-
-        seven_seg.set_char_layout("_", (False, False, False, True, False, False, False))
-        seven_seg.display("_")
-        assert (not seven_seg[0].value and not seven_seg[1].value and not seven_seg[2].value and seven_seg[3].value and not seven_seg[4].value and not seven_seg[5].value and not seven_seg[6].value)
-
-        seven_seg.decimal_point = True
-        assert seven_seg[7].value
-        assert seven_seg.decimal_point
-
-def test_seven_segment_initial_value():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11)
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, initial_value=True) as seven_seg:
-        assert (seven_seg[0].value and seven_seg[1].value and seven_seg[2].value and seven_seg[3].value and seven_seg[4].value and seven_seg[5].value and seven_seg[6].value and seven_seg[7].value)
-        
-def test_seven_segment_display_bad_init():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11)
-    pin9 = MockPin(12)
-    with pytest.raises(TypeError):
-        SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, foo=pin9)
+def test_led_multichar_display_init(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(10, 22)]
     with pytest.raises(ValueError):
-        SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6)
-    with pytest.raises(ValueError):
-        SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, pin9)
-        
-def test_seven_segment_display_bad_display():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11)
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
-        with pytest.raises(ValueError):
-            seven_seg.display("AA")
-        with pytest.raises(ValueError):
-            seven_seg.display("%")
+        LEDMultiCharDisplay(object())
+    with LEDCharDisplay(*range(10, 17), dp=17) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22)) as multichar:
+            assert multichar.value == (' ',) * 4
+    with LEDCharDisplay(*range(10, 17), dp=17) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22), initial_value='GPIO') as multichar:
+            assert multichar.value == ('G', 'P', 'I', 'O')
+    with LEDCharDisplay(*range(10, 17), dp=17) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22), pin_factory=mock_factory) as multichar:
+            assert multichar.pin_factory is char.pin_factory
 
-def test_seven_segment_display_bad_no_decimal():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7) as seven_seg:
-        with pytest.raises(OutputDeviceError):
-            seven_seg.decimal_point = True
-        with pytest.raises(OutputDeviceError):
-            seven_seg.decimal_point
-        
-def test_seven_segment_display_bad_set_char_layout():
-    pin1 = MockPin(4)
-    pin2 = MockPin(5)
-    pin3 = MockPin(6)
-    pin4 = MockPin(7)
-    pin5 = MockPin(8)
-    pin6 = MockPin(9)
-    pin7 = MockPin(10)
-    pin8 = MockPin(11) 
-    with SevenSegmentDisplay(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8) as seven_seg:
-        with pytest.raises(ValueError):
-            seven_seg.set_char_layout("__", (False, False, False, True, False, False, False))
-        with pytest.raises(ValueError):
-            seven_seg.set_char_layout("_", (False, False, False, True, False, False))
-        with pytest.raises(ValueError):
-            seven_seg.set_char_layout("_", (False, False, False, True, False, False, False, False))
+def test_led_multichar_display_plex_delay(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(10, 22)]
+    with LEDCharDisplay(*range(10, 17), dp=17) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22)) as multichar:
+            multichar.plex_delay = 0.1
+            assert multichar.plex_delay == 0.1
+            with pytest.raises(ValueError):
+                multichar.plex_delay = -1
+
+def test_led_multichar_display_value(mock_factory):
+    pins = [mock_factory.pin(i) for i in range(10, 22)]
+    with LEDCharDisplay(*range(10, 17), dp=17) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22)) as multichar:
+            with pytest.raises(ValueError):
+                multichar.value = 'FOOBARBAZ'
+            stop = Event()
+            char_set = Event()
+            char_checked = Event()
+            def my_set():
+                stop.set()
+            def my_wait(timeout):
+                char_set.set()
+                char_checked.wait(0.1)
+                char_checked.clear()
+                return stop.wait(0)
+            with mock.patch('gpiozero.threads.Event') as event_mock:
+                event_mock().wait.side_effect = my_wait
+                event_mock().set.side_effect = my_set
+                multichar.value = 'GPIO'
+                states = {
+                    ('G', (1, 0, 0, 0)),
+                    ('P', (0, 1, 0, 0)),
+                    ('I', (0, 0, 1, 0)),
+                    ('O', (0, 0, 0, 1)),
+                }
+                for i in range(4):
+                    assert char_set.wait(0.1)
+                    char_set.clear()
+                    try:
+                        states.remove((multichar.char.value, multichar.plex.value))
+                    except KeyError:
+                        assert False, 'invalid state'
+                    if not states:
+                        multichar.value = 'GG'
+                    char_checked.set()
+                assert not states
+                # Static value requires no transitions despite still having
+                # active characters
+                assert not multichar._plex_thread

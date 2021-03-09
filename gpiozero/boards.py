@@ -857,6 +857,12 @@ class LEDCharFont(MutableMapping):
         return self._map[char]
 
     def __setitem__(self, char, pins):
+        try:
+            # This is necessary to ensure that _rmap is correct in the case
+            # that we're overwriting an existing char->pins mapping
+            del self[char]
+        except KeyError:
+            pass
         pins = tuple(int(bool(pin)) for pin in pins)
         self._map[char] = pins
         self._rmap.setdefault(pins, char)
@@ -979,9 +985,9 @@ class LEDCharDisplay(LEDCollection):
     def __init__(
             self, *pins, dp=None, font=None, pwm=False, active_high=True,
             initial_value=" ", pin_factory=None):
-        if len(pins) > 26:
+        if not 1 < len(pins) <= 26:
             raise PinInvalidPin(
-                'Cannot use more than 26 LEDs in LEDCharDisplay')
+                'Must have between 2 and 26 LEDs in LEDCharDisplay')
         for pin in pins:
             if isinstance(pin, LEDCollection):
                 raise PinInvalidPin(
@@ -1066,7 +1072,10 @@ class LEDCharDisplay(LEDCollection):
             # technically that is a valid item we can map :)
             return None
         else:
-            return result + ('.' if dp else '')
+            if dp:
+                return result + '.'
+            else:
+                return result
 
     @value.setter
     def value(self, value):
@@ -1140,6 +1149,18 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
             plex=plex, char=char, pin_factory=pin_factory)
         self.value = initial_value
 
+    def close(self):
+        try:
+            self._stop_plex()
+        except AttributeError:
+            pass
+        super(LEDMultiCharDisplay, self).close()
+
+    def _stop_plex(self):
+        if self._plex_thread:
+            self._plex_thread.stop()
+        self._plex_thread = None
+
     @property
     def plex_delay(self):
         """
@@ -1206,6 +1227,8 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
         elif len(value) < len(self.plex):
             # Right-align the short value on the display
             value = (' ',) * (len(self.plex) - len(value)) + tuple(value)
+        else:
+            value = tuple(value)
 
         # Get the list of tuples of states that the character LEDs will pass
         # through. Prune any entirely blank state (which we can skip by never
@@ -1236,9 +1259,7 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
             transitions = []
 
         # Stop any current display thread and disable the display
-        if self._plex_thread:
-            self._plex_thread.stop()
-        self._plex_thread = None
+        self._stop_plex()
         self.plex.off()
 
         # If there's any characters to display, set the character LEDs to the
