@@ -192,7 +192,7 @@ B4_BOARD = """\
 {style:white on green}|                   {style:on black}|C|{style:on green}       {style:black on white}+===={style:reset}
 {style:white on green}|                   {style:on black}|S|{style:on green}       {style:black on white}|USB2{style:reset}
 {style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|hd|{style:white on green}   {style:black on white}|hd|{style:white on green} {style:on black}|I||A|{style:on green}    {style:black on white}+===={style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|mi|{style:white on green}---{style:black on white}|mi|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|m0|{style:white on green}---{style:black on white}|m1|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
 
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
@@ -249,8 +249,7 @@ CM_BOARD = """\
 {style:white on green}|                    {style:on black}|SoC|{style:on green}              |{style:reset}
  {style:white on green})                   {style:on black}+---+{style:on green}             ({style:reset}
 {style:white on green}| {style:on black}O{style:on green}   _                               {style:on black}O{style:on green} |{style:reset}
-{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}
-"""
+{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}"""
 
 CM3PLUS_BOARD = """\
 {style:white on green}+---------------------------------------+{style:reset}
@@ -259,8 +258,34 @@ CM3PLUS_BOARD = """\
 {style:white on green}|                    {style:black on white}|SoC|{style:white on green}              |{style:reset}
  {style:white on green})                   {style:black on white}`---'{style:white on green}             ({style:reset}
 {style:white on green}| {style:on black}O{style:on green}   _                               {style:on black}O{style:on green} |{style:reset}
-{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}
-"""
+{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}"""
+
+CM4_BOARD = ""
+
+P400_BOARD = """\
+    {style:white on red},------+----+----+----+----+---+--+--+--+--------------------+---.{style:reset}
+  {style:white on red},'       |{style:white on black}Eth {style:white on red}|{style:white on black}USB {style:white on red}|{style:cyan on black}USB {style:white on red}|{style:cyan on black}USB {style:white on red}|{style:white on black}pwr{style:white on red}|{style:white on black}hd{style:white on red}|{style:white on black}hd{style:white on red}|{style:white on black}sd{style:white on red}|{J8:{style} col2}{style:white on red}|    `.{style:reset}
+ {style:white on red}/     {style:black}=={style:white}  |{style:white on black}    {style:white on red}|{style:white on black} 2  {style:white on red}|{style:cyan on black} 3  {style:white on red}|{style:cyan on black} 3  {style:white on red}|{style:white on black}   {style:white on red}|{style:white on black}m1{style:white on red}|{style:white on black}m0{style:white on red}|{style:white on black}  {style:white on red}|{J8:{style} col1}{style:white on red}|      \\{style:reset}
+{style:black on white},------------------------------------------------------------------------.{style:reset}
+{style:black on white}|  ___ ____ ____ ____ ____ ____ ____ ____ ____ ____ ____ ____ {style:bold on white}o o {style:green}o{style:normal black}____  |{style:reset}
+{style:black on white}| |Esc|F1{style:red}11{style:black}|F2{style:red}12{style:black}|F3  |F4  |F5  |F6  |F7  |F8  |F9  |F10{style:red}o{style:black}|NumL|Pt{style:red}Sq{style:black}|Dl{style:red}In{style:black}| |{style:reset}
+{style:black on white}|  ___ ___ ____ ____ ____ ____ ____ ___ ____ ____ ____ ___ ____ _______  |{style:reset}
+{style:black on white}| |¬  |!  |"   |£   |$   |%   |^   |& {style:red}7{style:black}|*  {style:red}8{style:black}|(  {style:red}9{style:black}|)  {style:red}*{style:black}|_  |+   |BkSpc  | |{style:reset}
+{style:black on white}| |` ||1  |2   |3   |4   |5   |6   |7  |8   |9   |0   |-  |=   |<--    | |{style:reset}
+{style:black on white}|  _____ ___ ____ ____ ____ ____ ____ ___ ____ ____ ____ ___ __ _______  |{style:reset}
+{style:black on white}| |Tab  |Q  |W   |E   |R   |T   |Y   |U {style:red}4{style:black}|I  {style:red}5{style:black}|O  {style:red}6{style:black}|P  {style:red}-{style:black}|{{  |}} |Enter  | |{style:reset}
+{style:black on white}| |->|  |   |    |    |    |    |    |   |    |    |    |[  |] |<-'    | |{style:reset}
+{style:black on white}|  ______ ____ ____ ____ ____ ____ ____ ___ ____ ____ ____ ____ __     | |{style:reset}
+{style:black on white}| |Caps  |A   |S   |D   |F   |G   |H   |J {style:red}1{style:black}|K  {style:red}2{style:black}|L  {style:red}3{style:black}|:  {style:red}+{style:black}|@   |~ |    | |{style:reset}
+{style:black on white}| |Lock  |    |    |    |    |    |    |   |    |    |;   |'   |# |    | |{style:reset}
+{style:black on white}|  _____ ___ ___ ____ ____ ____ ____ ____ ___ ____ ____ ____ __________  |{style:reset}
+{style:black on white}| |Shift||  |Z  |X   |C   |V   |B   |N   |M {style:red}0{style:black}|<   |>  {style:red}.{style:black}|?  {style:red}/{style:black}|Shift     | |{style:reset}
+{style:black on white}| |^    |\\  |   |    |    |    |    |    |   |,   |.   |/   |^         | |{style:reset}
+{style:black on white}|  ____ ___ ____ ____ _______________________ ____ ____      _____       |{style:reset}
+{style:black on white}| |Ctrl|{style:red}Fn{style:black} | {style:red}**{style:black} |Alt |                       |Alt |Ctrl|____|^{style:red}PgUp{style:black}|____  |{style:reset}
+{style:black on white}| |    |   | {style:red}{{}}{style:black} |    |                       |    |    |<{style:red}Hom{style:black}|v{style:red}PgDn{style:black}|>{style:red}End{style:black}| |{style:reset}
+{style:black on white}`------------------------------------------------------------------------'{style:reset}
+                                                 Raspberry Pi {style:bold red}{model}{style:reset} Rev {pcb_revision}"""
 
 # Pin maps for various board revisions and headers
 
@@ -1122,6 +1147,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3A+':    A3PLUS_BOARD,
                     '3B+':    B3PLUS_BOARD,
                     '4B':     B4_BOARD,
+                    'CM4':    CM4_BOARD,
+                    '400':    P400_BOARD,
                     }.get(model, BPLUS_BOARD)
             except KeyError:
                 raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
