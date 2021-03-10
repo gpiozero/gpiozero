@@ -252,6 +252,16 @@ CM_BOARD = """\
 {style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}
 """
 
+CM3PLUS_BOARD = """\
+{style:white on green}+---------------------------------------+{style:reset}
+{style:white on green}| {style:yellow on black}O{style:bold white on green}  Raspberry Pi {model:4s}                {style:normal yellow on black}O{style:white on green} |{style:reset}
+ {style:white on green})   Version {pcb_revision:3s}     {style:black on white},---.{style:white on green}             ({style:reset}
+{style:white on green}|                    {style:black on white}|SoC|{style:white on green}              |{style:reset}
+ {style:white on green})                   {style:black on white}`---'{style:white on green}             ({style:reset}
+{style:white on green}| {style:on black}O{style:on green}   _                               {style:on black}O{style:on green} |{style:reset}
+{style:white on green}||||||{style:reset} {style:white on green}||||||||||||||||||||||||||||||||||{style:reset}
+"""
+
 # Pin maps for various board revisions and headers
 
 REV1_P1 = {
@@ -1062,7 +1072,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'A+':     APLUS_BOARD,
                     'CM':     CM_BOARD,
                     'CM3':    CM_BOARD,
-                    'CM3+':   CM_BOARD,
+                    'CM3+':   CM3PLUS_BOARD,
                     'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                     'Zero W': ZERO13_BOARD,
                     '3A+':    A3PLUS_BOARD,
