@@ -168,8 +168,8 @@ B3PLUS_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}  PoE   {style:black on white}| USB{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                   {style:white on black}oo{style:on green}   {style:black on white}+===={style:reset}
-{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {style:white on black}oo{style:on green}      |{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {POE:{style} row1}{style:on green}   {style:black on white}+===={style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {POE:{style} row2}{style:on green}      |{style:reset}
 {style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
@@ -183,8 +183,8 @@ B4_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8   {style:black on white}+======{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}  PoE {style:black on white}|   Net{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                   {style:white on black}oo{style:on green} {style:black on white}+======{style:reset}
-{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {style:white on black}oo{style:on green}      |{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {POE:{style} row1}{style:on green} {style:black on white}+======{style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {POE:{style} row2}{style:normal white on green}      |{style:reset}
 {style:white on green}|        {style:black on white},----.{style:on green} {style:white on black}+---+{style:on green}         {style:blue on white}+===={style:reset}
 {style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green} {style:white on black}|RAM|{style:on green}         {style:blue on white}|USB3{style:reset}
 {style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green} {style:white on black}|   |{style:on green}         {style:blue on white}+===={style:reset}
@@ -262,15 +262,15 @@ CM3PLUS_BOARD = """\
 
 CM4_BOARD = """\
 {style:white on green},--{style:black on white}csi1{style:white on green}---{style:black on white}dsi0{style:white on green}---{style:black on white}dsi1{style:white on green}-----------{style:bold},-------------.{style:normal}-----------.{style:reset}
-{style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}    ooooooo{style:bold}|{style:yellow}O           O{style:white}|{style:normal}           |{style:reset}
-{style:white on green}{style:black on white}c|{style:white on green} {style:bold yellow}O  {style:white}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    ooooooo{style:bold}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}       {style:bold yellow}O{style:normal white}   |{style:reset}
+{style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}  J2{J2:{style} col2}{style:bold white on green}|{style:yellow}O           O{style:white}|{style:normal}           |{style:reset}
+{style:white on green}{style:black on white}c|{style:white on green} {style:bold yellow}O  {style:white}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}       {style:bold yellow}O{style:normal white}   |{style:reset}
 {style:white on green}{style:black on white}s|{style:white on green}    {style:bold}IO Board{style:normal}                  {style:bold}|       {style:normal black on white} Fi {style:white on green}  {style:bold}|{style:normal}           |{style:reset}
-{style:white on green}{style:black on white}i|{style:white on green}             oo               {style:bold}|         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
-{style:white on green}| J8           oo               {style:bold}|  {style:normal black on white},----.{style:on green} {style:white on black}|eM|{style:bold on green}|  {style:normal white on black}}}-{{{style:on green}      |{style:reset}
+{style:white on green}{style:black on white}i|{style:white on green}           J6{J6:{style} col2}{style:bold white on green}               |         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
+{style:white on green}| J8           {J6:{style} col1}{style:bold white on green}               |  {style:normal black on white},----.{style:on green} {style:white on black}|eM|{style:bold on green}|  {style:normal white on black}}}-{{{style:on green}      |{style:reset}
 {style:white on green}|{style:bold yellow}O{J8:{style} col2}{style:white on green}   {style:bold yellow}O{style:white}      |  {style:normal black on white}|SoC |{style:on green} {style:white on black}|MC|{style:bold on green}|  {style:normal white on black}|C|{style:on green}      |{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}   PoE    {style:bold}|  {style:normal black on white}|    |{style:on green} {style:white on black}+--+{style:bold on green}|  {style:normal white on black}|I|{style:on green}      |{style:reset}
-{style:white on green}| {style:black on white},---.{style:white on green}                  oo     {style:bold}|  {style:normal black on white}`----'{style:white on green}     {style:bold}|  {style:normal white on black}|e|{style:on green}      |{style:reset}
-{style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                  oo     {style:bold}|  {style:normal white on black}+----+{style:on green}     {style:bold}|{style:normal}           |{style:reset}
+{style:white on green}| {style:black on white},---.{style:white on green}                  {POE:{style} row1}{style:bold white on green}     |  {style:normal black on white}`----'{style:white on green}     {style:bold}|  {style:normal white on black}|e|{style:on green}      |{style:reset}
+{style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                  {POE:{style} row2}{style:bold white on green}     |  {style:normal white on black}+----+{style:on green}     {style:bold}|{style:normal}           |{style:reset}
 {style:white on green}| {style:black on white}) + |{style:white on green}                         {style:bold}|{style:yellow}O {style:normal white on black}|RAM |{style:on green}    {style:bold yellow}O{style:white}|{style:normal}           |{style:reset}
 {style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                         {style:bold}`--{style:normal white on black}+----+{style:bold on green}-----'{style:normal}           |{style:reset}
 {style:white on green}| {style:black on white}`---'{style:white on green}                                                   |{style:reset}
@@ -368,6 +368,11 @@ PLUS_J8 = {
     35: (GPIO19, False), 36: (GPIO16, False),
     37: (GPIO26, False), 38: (GPIO20, False),
     39: (GND,    False), 40: (GPIO21, False),
+    }
+
+PLUS_POE = {
+    1: ('TR01', False), 2: ('TR00', False),
+    3: ('TR03', False), 4: ('TR02', False),
     }
 
 CM_SODIMM = {
@@ -490,6 +495,21 @@ CM3_SODIMM.update({
     88: ('HDMI HPD N 1V8', False),
     90: ('EMMC EN N 1V8',  False),
     })
+
+CM4_J6 = {
+    1: ('1-2 CAM0+DISP0', False), 2: ('1-2 CAM0+DISP0', False),
+    3: ('3-4 CAM0+DISP0', False), 4: ('3-4 CAM0+DISP0', False),
+    }
+
+CM4_J2 = {
+    1:  ('1-2 DISABLE eMMC BOOT', False), 2: ('1-2 DISABLE eMMC BOOT', False),
+    3:  ('3-4 WRITE-PROT EEPROM', False), 4: ('3-4 WRITE-PROT EEPROM', False),
+    5:  ('UNKNOWN', False), 6:  ('UNKNOWN', False),
+    7:  ('UNKNOWN', False), 8:  ('UNKNOWN', False),
+    9:  ('UNKNOWN', False), 10: ('UNKNOWN', False),
+    11: ('UNKNOWN', False), 12: ('UNKNOWN', False),
+    13: ('UNKNOWN', False), 14: ('UNKNOWN', False),
+    }
 
 # The following data is sourced from a combination of the following locations:
 #
@@ -1137,6 +1157,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM3':    2,
                     'CM3+':   2,
                     '400':    0,
+                    'CM4':    2,
                     }.get(model, 1)
                 dsi = {
                     'Zero':   0,
@@ -1144,7 +1165,6 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':     2,
                     'CM3':    2,
                     'CM3+':   2,
-                    'CM4':    2,
                     }.get(model, csi)
                 headers = {
                     'A':    {'P1': REV2_P1, 'P5': REV2_P5},
@@ -1152,6 +1172,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':   {'SODIMM': CM_SODIMM},
                     'CM3':  {'SODIMM': CM3_SODIMM},
                     'CM3+': {'SODIMM': CM3_SODIMM},
+                    '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
+                    '4B':   {'J8': PLUS_J8, 'POE': PLUS_POE},
+                    'CM4':  {'J8': PLUS_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
                     }.get(model, {'J8': PLUS_J8})
                 board = {
                     'A':      A_BOARD,
