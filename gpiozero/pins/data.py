@@ -185,14 +185,14 @@ B4_BOARD = """\
 {style:white on green}| {J8:{style} col1}{style:white on green}  PoE {style:black on white}|   Net{style:reset}
 {style:white on green}| {style:black on white} Wi {style:white on green}                   {style:white on black}oo{style:on green} {style:black on white}+======{style:reset}
 {style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {style:white on black}oo{style:on green}      |{style:reset}
-{style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}|USB3{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}                  |{style:reset}
+{style:white on green}|        {style:black on white},----.{style:on green} {style:white on black}+---+{style:on green}         {style:blue on white}+===={style:reset}
+{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green} {style:white on black}|RAM|{style:on green}         {style:blue on white}|USB3{style:reset}
+{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green} {style:white on black}|   |{style:on green}         {style:blue on white}+===={style:reset}
+{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green} {style:white on black}+---+{style:on green}            |{style:reset}
 {style:white on green}|                   {style:on black}|C|{style:on green}       {style:black on white}+===={style:reset}
 {style:white on green}|                   {style:on black}|S|{style:on green}       {style:black on white}|USB2{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|HD|{style:white on green}   {style:black on white}|HD|{style:white on green} {style:on black}|I||A|{style:on green}    {style:black on white}+===={style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|MI|{style:white on green}---{style:black on white}|MI|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+{style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|hd|{style:white on green}   {style:black on white}|hd|{style:white on green} {style:on black}|I||A|{style:on green}    {style:black on white}+===={style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|mi|{style:white on green}---{style:black on white}|mi|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
 
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
