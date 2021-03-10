@@ -67,6 +67,8 @@ objects:
 
 .. literalinclude:: examples/led_board_7.py
 
+.. _multichar-display:
+
 Multi-character 7-segment display
 =================================
 
