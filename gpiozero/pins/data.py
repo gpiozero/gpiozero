@@ -760,7 +760,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     'memory',
     'storage',
     'usb',
+    'usb3',
     'ethernet',
+    'eth_speed',
     'wifi',
     'bluetooth',
     'csi',
@@ -862,16 +864,27 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
     .. attribute:: usb
 
         An integer indicating how many USB ports are physically present on
-        this revision of the Pi.
+        this revision of the Pi, of any type.
 
         .. note::
 
-            This does *not* include the micro-USB port used to power the Pi.
+            This does *not* include the micro-USB or USB-C port used to power
+            the Pi.
+
+    .. attribute:: usb3
+
+        An integer indicating how many of the USB ports are USB3 ports on this
+        revision of the Pi.
 
     .. attribute:: ethernet
 
         An integer indicating how many Ethernet ports are physically present
         on this revision of the Pi.
+
+    .. attribute:: eth_speed
+
+        An integer indicating the maximum speed (in Mbps) of the Ethernet ports
+        (if any). If no Ethernet ports are present, this is 0.
 
     .. attribute:: wifi
 
@@ -925,9 +938,13 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # New-style revision, parse information from bit-pattern:
             #
             # MSB -----------------------> LSB
-            # uuuuuuuuFMMMCCCCPPPPTTTTTTTTRRRR
+            # NOQuuuWuFMMMCCCCPPPPTTTTTTTTRRRR
             #
-            # uuuuuuuu - Unused
+            # N        - Overvoltage (0=allowed, 1=disallowed)
+            # O        - OTP programming (0=allowed, 1=disallowed)
+            # Q        - OTP read (0=allowed, 1=disallowed)
+            # u        - Unused
+            # W        - Warranty bit (0=intact, 1=voided by overclocking)
             # F        - New flag (1=valid new-style revision, 0=old-style)
             # MMM      - Memory size (0=256, 1=512, 2=1024)
             # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan, 4=Embest, 5=Stadium)
@@ -942,20 +959,22 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             revcode_revision     = (revision & 0x0f)
             try:
                 model = {
-                    0:  'A',
-                    1:  'B',
-                    2:  'A+',
-                    3:  'B+',
-                    4:  '2B',
-                    6:  'CM',
-                    8:  '3B',
-                    9:  'Zero',
-                    10: 'CM3',
-                    12: 'Zero W',
-                    13: '3B+',
-                    14: '3A+',
-                    16: 'CM3+',
-                    17: '4B',
+                    0x0:  'A',
+                    0x1:  'B',
+                    0x2:  'A+',
+                    0x3:  'B+',
+                    0x4:  '2B',
+                    0x6:  'CM',
+                    0x8:  '3B',
+                    0x9:  'Zero',
+                    0xa:  'CM3',
+                    0xc:  'Zero W',
+                    0xd:  '3B+',
+                    0xe:  '3A+',
+                    0x10: 'CM3+',
+                    0x11: '4B',
+                    0x13: '400',
+                    0x14: 'CM4',
                     }.get(revcode_type, '???')
                 if model in ('A', 'B'):
                     pcb_revision = {
@@ -1002,6 +1021,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3A+':    '2018Q4',
                     'CM3+':   '2019Q1',
                     '4B':     '2020Q2' if memory == 8192 else '2019Q2',
+                    'CM4':    '2020Q4',
+                    '400':    '2020Q4',
                     }.get(model, 'Unknown')
                 storage = {
                     'A':    'SD',
@@ -1009,6 +1030,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':   'eMMC',
                     'CM3':  'eMMC / off-board',
                     'CM3+': 'eMMC / off-board',
+                    'CM4':  'eMMC / off-board',
                     }.get(model, 'MicroSD')
                 usb = {
                     'A':      1,
@@ -1020,7 +1042,13 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM3':    1,
                     '3A+':    1,
                     'CM3+':   1,
+                    'CM4':    2,
+                    '400':    3,
                     }.get(model, 4)
+                usb3 = {
+                    '4B':     2,
+                    '400':    2,
+                    }.get(model, 0)
                 ethernet = {
                     'A':      0,
                     'A+':     0,
@@ -1031,12 +1059,24 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3A+':    0,
                     'CM3+':   0,
                     }.get(model, 1)
+                eth_speed = {
+                    'B':      100,
+                    'B+':     100,
+                    '2B':     100,
+                    '3B':     100,
+                    '3B+':    300,
+                    '4B':     1000,
+                    '400':    1000,
+                    'CM4':    1000,
+                    }.get(model, 0)
                 wifi = {
                     '3B':     True,
                     'Zero W': True,
                     '3B+':    True,
                     '3A+':    True,
                     '4B':     True,
+                    '400':    True,
+                    'CM4':    True,
                     }.get(model, False)
                 bluetooth = {
                     '3B':     True,
@@ -1044,6 +1084,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     '3B+':    True,
                     '3A+':    True,
                     '4B':     True,
+                    '400':    True,
+                    'CM4':    True,
                     }.get(model, False)
                 csi = {
                     'Zero':   0 if pcb_revision == '1.0' else 1,
@@ -1051,6 +1093,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':     2,
                     'CM3':    2,
                     'CM3+':   2,
+                    '400':    0,
                     }.get(model, 1)
                 dsi = {
                     'Zero':   0,
@@ -1058,6 +1101,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     'CM':     2,
                     'CM3':    2,
                     'CM3+':   2,
+                    'CM4':    2,
                     }.get(model, csi)
                 headers = {
                     'A':    {'P1': REV2_P1, 'P5': REV2_P5},
@@ -1101,6 +1145,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     headers,
                     board,
                     ) = PI_REVISIONS[revision]
+                usb3 = 0
+                eth_speed = ethernet * 100
             except KeyError:
                 raise PinUnknownPi('unknown old-style revision "%x"' % revision)
         headers = {
@@ -1123,7 +1169,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             memory,
             storage,
             usb,
+            usb3,
             ethernet,
+            eth_speed,
             wifi,
             bluetooth,
             csi,
@@ -1325,8 +1373,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 {style:bold}SoC                {style:reset}: {soc}
                 {style:bold}RAM                {style:reset}: {memory}{memory_unit}
                 {style:bold}Storage            {style:reset}: {storage}
-                {style:bold}USB ports          {style:reset}: {usb} {style:yellow}(excluding power){style:reset}
-                {style:bold}Ethernet ports     {style:reset}: {ethernet}
+                {style:bold}USB ports          {style:reset}: {usb} (of which {usb3} USB3)
+                {style:bold}Ethernet ports     {style:reset}: {ethernet} ({eth_speed}Mbps max. speed)
                 {style:bold}Wi-fi              {style:reset}: {wifi}
                 {style:bold}Bluetooth          {style:reset}: {bluetooth}
                 {style:bold}Camera ports (CSI) {style:reset}: {csi}
