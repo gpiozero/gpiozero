@@ -115,14 +115,7 @@ intersphinx_mapping = {
 
 # -- Options for HTML output ----------------------------------------------
 
-if on_rtd:
-    html_theme = 'sphinx_rtd_theme'
-    #html_theme_options = {}
-    #html_sidebars = {}
-else:
-    html_theme = 'default'
-    #html_theme_options = {}
-    #html_sidebars = {}
+html_theme = 'sphinx_rtd_theme'
 html_title = '%s %s Documentation' % (project, version)
 #html_theme_path = []
 #html_short_title = None

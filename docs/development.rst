@@ -129,7 +129,7 @@ command should install all required dependencies:
 
     $ sudo apt install texlive-latex-recommended texlive-latex-extra \
         texlive-fonts-recommended texlive-xetex graphviz inkscape \
-        python-sphinx latexmk xindy
+        python3-sphinx python3-sphinx-rtd-theme latexmk xindy
 
 Once these are installed, you can use the "doc" target to build the
 documentation:

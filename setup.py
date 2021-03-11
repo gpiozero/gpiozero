@@ -58,7 +58,7 @@ __requires__ = [
 ]
 
 __extra_requires__ = {
-    'doc':   ['sphinx'],
+    'doc':   ['sphinx', 'sphinx_rtd_theme'],
     'test':  ['pytest', 'coverage', 'mock'],
 }
 
