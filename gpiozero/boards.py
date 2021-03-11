@@ -81,7 +81,7 @@ from .output_devices import (
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin, HoldMixin
-from .tools import load_font_7seg, load_font_14seg
+from .fonts import load_font_7seg, load_font_14seg
 
 
 def pairwise(it):

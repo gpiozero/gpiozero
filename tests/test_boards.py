@@ -50,7 +50,7 @@ from threading import Event
 import mock
 
 from gpiozero import *
-from gpiozero.tools import *
+from gpiozero.fonts import *
 
 
 def test_composite_output_on_off(mock_factory):
