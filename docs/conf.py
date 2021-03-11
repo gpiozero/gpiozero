@@ -115,14 +115,7 @@ intersphinx_mapping = {
 
 # -- Options for HTML output ----------------------------------------------
 
-if on_rtd:
-    html_theme = 'sphinx_rtd_theme'
-    #html_theme_options = {}
-    #html_sidebars = {}
-else:
-    html_theme = 'default'
-    #html_theme_options = {}
-    #html_sidebars = {}
+html_theme = 'sphinx_rtd_theme'
 html_title = '%s %s Documentation' % (project, version)
 #html_theme_path = []
 #html_short_title = None
@@ -149,6 +142,8 @@ htmlhelp_basename = '%sdoc' % _setup.__project__
 #    app.add_stylesheet('style_override.css')
 
 # -- Options for LaTeX output ---------------------------------------------
+
+latex_engine = 'xelatex'
 
 latex_elements = {
     'papersize': 'a4paper',

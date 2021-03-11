@@ -63,7 +63,9 @@ digraph classes {
     LED->DigitalOutputDevice;
     LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
+    LEDCharDisplay->LEDCollection;
     LEDCollection->CompositeOutputDevice;
+    LEDMultiCharDisplay->CompositeOutputDevice;
     LedBorg->RGBLED;
     LightSensor->SmoothedInputDevice;
     LineSensor->SmoothedInputDevice;
