@@ -2335,8 +2335,8 @@ class Pibrella(CompositeOutputDevice):
         pb.buzzer.play('A4')
         pb.off()
 
-    The four input and output channels are not provided by this class. Instead,
-    you can create GPIO Zero devices using these pins::
+    The four input and output channels are exposed so you can create GPIO Zero
+    devices using these pins without looking up their respective pin numbers::
 
         from gpiozero import Pibrella, LED, Button
 
