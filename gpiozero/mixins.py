@@ -146,7 +146,7 @@ class SourceMixin(object):
             value = value.values
         self._source = value
         if value is not None:
-            self._source_thread = GPIOThread(target=self._copy_values, args=(value,))
+            self._source_thread = GPIOThread(self._copy_values, (value,))
             self._source_thread.start()
 
 

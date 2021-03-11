@@ -254,6 +254,24 @@ values using LED brightness:
 
 .. literalinclude:: examples/led_bargraph_2.py
 
+LEDCharDisplay
+==============
+
+.. image:: images/led_char_display_bb.*
+
+A common `7-segment display`_ can be used to represent a variety of characters
+using :class:`LEDCharDisplay` (which actually supports an arbitrary number of
+segments):
+
+.. literalinclude:: examples/led_char_display.py
+
+Alternatively:
+
+.. literalinclude:: examples/led_char_source.py
+
+See a multi-character example in the :ref:`advanced recipes
+<multichar-display>` chapter.
+
 Traffic Lights
 ==============
 
@@ -572,3 +590,4 @@ Continue to:
 .. _GPIO Music Box: https://projects.raspberrypi.org/en/projects/gpio-music-box
 .. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI
 .. _illuminated rotary encoder: https://shop.pimoroni.com/products/rotary-encoder-illuminated-rgb
+.. _7-segment display: https://en.wikipedia.org/wiki/Seven-segment_display

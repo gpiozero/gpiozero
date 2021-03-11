@@ -67,6 +67,47 @@ objects:
 
 .. literalinclude:: examples/led_board_7.py
 
+.. _multichar-display:
+
+Multi-character 7-segment display
+=================================
+
+The 7-segment display demonstrated in the previous chapter is often available
+in multi-character variants (typically 4 characters long). Such displays are
+multiplexed meaning that the LED pins are typically the same as for the single
+character display but are shared across all characters. Each character in turn
+then has its own common line which can be tied to ground (in the case of a
+common cathode display) to enable that particular character. By activating each
+character in turn very quickly, the eye can be fooled into thinking four
+different characters are being displayed simultaneously.
+
+In such circuits you should not attempt to sink all the current from a single
+character (which may have up to 8 LEDs, in the case of a decimal-point, active)
+into a single GPIO. Rather, use some appropriate transistor (or similar
+component, e.g. an opto-coupler) to tie the digit's cathode to ground, and
+control that component from a GPIO.
+
+.. image:: images/7seg_multi_bb.*
+
+This circuit demonstrates a 4-character 7-segment (actually 8-segment, with
+decimal-point) display, controlled by the Pi's GPIOs with 4 2N-3904 NPN
+transistors to control the digits.
+
+.. warning::
+
+    You are strongly advised to check the data-sheet for your particular
+    multi-character 7-segment display. The pin-outs of these displays vary
+    significantly and are very likely to be different to that shown on the
+    breadboard above. For this reason, the schematic for this circuit is
+    provided below; adapt it to your particular display.
+
+.. image:: images/7seg_multi_schem.*
+
+The following code can be used to scroll a message across the display:
+
+.. literalinclude:: examples/multichar_scroll.py
+
+
 Who's home indicator
 ====================
 

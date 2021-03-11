@@ -1,0 +1,23 @@
+# This file defines the default alphabet for 7-segment displays. The format is
+# fairly simple: the file is loaded as a whole and all blank and #-prefixed
+# lines are stripped out. Then all blank columns are stripped out. Finally the
+# remaining rows and columns are divided into 3x3 cells with the following
+# format:
+#
+#     Xa.
+#     fgb
+#     edc
+#
+# Where X is the character being defined, and a..g are the segments that are
+# active. a, d, and g are considered active if they are "_" and inactive if
+# they are anything else. b, c, e, and f are considered active if they are "|"
+# and inactive if they are anything else. The top-right character (marked "."
+# in the diagram above) is ignored. The result is fairly visually obvious :)
+
+ .  0_  1.  2_  3_  4.  5_  6_  7_  8_  9_
+... |.| ..| ._| ._| |_| |_. |_. ..| |_| |_|
+... |_| ..| |_. ._| ..| ._| |_| ..| |_| ._|
+
+A_  B.  C_  D.  E_  F_  G_  H.  I.  J.  L.  N_  O.  P_  Q_  R.  S_  T.  U.  Y.
+|_| |_. |.. ._| |_. |_. |.. |_| |.. ..| |.. |.| ._. |_| |_| ._. |_. |_. |.| |_|
+|.| |_| |_. |_| |_. |.. |_| |.| |.. ._| |__ |.| |_| |.. ..| |.. ._| |_. |_| ._|

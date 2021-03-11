@@ -754,6 +754,7 @@ def ramping_values(period=360):
             step *= -1
             value += step
 
+
 def zip_values(*devices):
     """
     Provides a source constructed from the values of each item, for example::

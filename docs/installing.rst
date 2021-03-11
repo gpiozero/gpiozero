@@ -82,8 +82,45 @@ In order to use GPIO Zero's remote GPIO feature from a PC or Mac, you'll need
 to install GPIO Zero on that computer using pip. See the :doc:`remote_gpio`
 page for more information.
 
+Documentation
+=============
+
+This documentation is also available for offline installation like so:
+
+.. code-block:: console
+
+    pi@raspberrypi:~$ sudo apt install python-gpiozero-doc
+
+This will install the HTML version of the documentation under the
+:file:`/usr/share/doc/python-gpiozero-doc/html` path. To view the offline
+documentation you have several options:
+
+You can open the documentation directly by visiting
+file:///usr/share/doc/python-gpiozero-doc/html/index.html in your browser.
+However, be aware that using ``file://`` URLs sometimes breaks certain elements.
+To avoid this, you can view the docs from an ``http://`` style URL by starting
+a trivial HTTP server with Python, like so:
+
+.. code-block:: console
+
+    $ python3 -m http.server -d /usr/share/doc/python-gpiozero-doc/html
+
+Then visit http://localhost:8000/ in your browser.
+
+Alternatively, the package also integrates into Debian's `doc-base`_ system, so
+you can install one of the doc-base clients (dochelp, dwww, dhelp, doc-central,
+etc.) and use its interface to locate this document.
+
+If you want to view the documentation offline on a different device, such as an
+eReader, there are Epub and PDF versions of the documentation available for
+download from the `ReadTheDocs site`_. Simply click on the "Read the Docs" box
+at the bottom-left corner of the page (under the table of contents) and select
+"PDF" or "Epub" from the "Downloads" section.
+
 
 .. _Raspberry Pi OS: https://www.raspberrypi.org/software/operating-systems/
 .. _Raspberry Pi Desktop: https://www.raspberrypi.org/software/raspberry-pi-desktop/
 .. _raspberrypi.org: https://www.raspberrypi.org/software/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
+.. _doc-base: https://wiki.debian.org/doc-base
+.. _ReadTheDocs site: https://gpiozero.readthedocs.io/

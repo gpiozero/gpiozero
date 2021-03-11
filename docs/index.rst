@@ -56,6 +56,7 @@ Table of Contents
     api_internal
     api_generic
     api_tools
+    api_fonts
     api_tones
     api_info
     api_pins

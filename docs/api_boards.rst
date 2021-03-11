@@ -72,6 +72,26 @@ LEDBarGraph
     :members: value, source, values, lit_count
 
 
+LEDCharDisplay
+--------------
+
+.. autoclass:: LEDCharDisplay(\*pins, dp=None, font=None, pwm=False, active_high=True, initial_value=' ', pin_factory=None)
+    :members: value, font
+
+
+LEDMultiCharDisplay
+-------------------
+
+.. autoclass:: LEDMultiCharDisplay(char, \*pins, active_high=True, initial_value=None, pin_factory=None)
+    :members: value, plex_delay
+
+
+LEDCharFont
+-----------
+
+.. autoclass:: LEDCharFont
+
+
 ButtonBoard
 -----------
 
