@@ -819,7 +819,7 @@ class LEDCharFont(MutableMapping):
 
     You may also wish to load fonts from a friendly text-based format. A simple
     parser for such formats (supporting an arbitrary number of segments) is
-    provided by :func:`gpiozero.tools.load_segment_font`.
+    provided by :func:`gpiozero.fonts.load_segment_font`.
     """
     def __init__(self, font):
         super(LEDCharFont, self).__init__()
