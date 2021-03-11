@@ -13,7 +13,7 @@ GPI_DIAGRAMS  := $(wildcard images/*.gpi images/*/*.gpi)
 SVG_IMAGES    := $(wildcard images/*.svg images/*/*.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
 PNG_IMAGES    := $(wildcard images/*.png images/*/*.png) $(GPI_DIAGRAMS:%.gpi=%.png) $(SVG_IMAGES:%.svg=%.png)
 PDF_IMAGES    := $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf) $(DOT_DIAGRAMS:%.dot=%.pdf) $(MSC_DIAGRAMS:%.mscgen=%.pdf)
-INKSCAPE_VER  := $(inkscape --version | sed -ne '/^Inkscape/ s/^Inkscape \([0-9]\+\)\..*$/\1/p')
+INKSCAPE_VER  := $(shell inkscape --version | sed -ne '/^Inkscape/ s/^Inkscape \([0-9]\+\)\..*$$/\1/p')
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
