@@ -64,8 +64,8 @@ Release 1.5.2 (unreleased)
 Release 1.5.1 (2019-06-24)
 ==========================
 
-* Added Raspberry Pi 4 data for :func:`pi_info` and :program:`pinout`
-* Minor docs updates
+* Added Raspberry Pi 4 data for :func:`pi_info` and :program:`pinout`
+* Minor docs updates
 
 Release 1.5.0 (2019-02-12)
 ==========================
