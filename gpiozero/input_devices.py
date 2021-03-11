@@ -46,7 +46,7 @@ from time import sleep, time
 from threading import Event, Lock
 from itertools import tee
 try:
-    from statistics import median
+    from statistics import median, mean
 except ImportError:
     from .compat import median
 
@@ -616,7 +616,7 @@ class MotionSensor(SmoothedInputDevice):
         super(MotionSensor, self).__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len, sample_wait=1 /
-            sample_rate, partial=partial, pin_factory=pin_factory)
+            sample_rate, partial=partial, pin_factory=pin_factory, average=mean)
         try:
             self._queue.start()
         except:
