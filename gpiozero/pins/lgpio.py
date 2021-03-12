@@ -130,7 +130,9 @@ class LGPIOPin(LocalPiPin):
         return ['input', 'output'][bool(mode & self.GPIO_IS_OUT)]
 
     def _set_function(self, value):
-        # XXX What about existing callbacks?
+        if self._callback is not None:
+            self._callback.cancel()
+            self._callback = None
         try:
             {
                 'input': lgpio.gpio_claim_input,
