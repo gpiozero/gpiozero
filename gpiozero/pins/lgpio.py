@@ -151,7 +151,10 @@ class LGPIOPin(LocalPiPin):
         if self._pwm:
             freq, duty = self._pwm
             self._pwm = (freq, int(value * 100))
-            lgpio.tx_pwm(self.factory._handle, self.number, *self._pwm)
+            try:
+                lgpio.tx_pwm(self.factory._handle, self.number, *self._pwm)
+            except lgpio.error:
+                raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
         elif self.function == 'input':
             raise PinSetInput('cannot set state of pin %r' % self)
         else:
