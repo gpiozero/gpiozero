@@ -18,14 +18,14 @@ from datetime import datetime
 from subprocess import Popen, PIPE, DEVNULL
 from pathlib import Path
 from fnmatch import fnmatch
-from typing import NamedTuple, Tuple, Optional, FrozenSet
+from typing import NamedTuple, Iterator, List, Tuple, Set, Union, Optional
 
 
 SPDX_PREFIX = 'SPDX-License-Identifier:'
 COPYRIGHT_PREFIX = 'Copyright (c)'
 
 
-def main(args=None):
+def main(args: List[str] = None):
     if args is None:
         args = sys.argv[1:]
     config = get_config(args)
@@ -41,14 +41,14 @@ def main(args=None):
                     target.write(chunk)
 
 
-def get_config(args):
+def get_config(args: List[str]) -> Namespace:
     config = ConfigParser(
         defaults={
             'include': '**/*',
             'exclude': '',
             'license': 'LICENSE.txt',
             'preamble': '',
-            'strip_preamble': False,
+            'strip_preamble': 'false',
             'spdx_prefix': SPDX_PREFIX,
             'copy_prefix': COPYRIGHT_PREFIX,
         },
@@ -113,7 +113,21 @@ def get_config(args):
     return ns
 
 
-def get_copyrights(include, exclude):
+class Copyright(NamedTuple):
+    author: str
+    email:  str
+    years:  Set[int]
+
+    def __str__(self):
+        if len(self.years) > 1:
+            years = f'{min(self.years)}-{max(self.years)}'
+        else:
+            years = f'{min(self.years)}'
+        return f'{years} {self.author} <{self.email}>'
+
+
+def get_copyrights(include: Set[str], exclude: Set[str])\
+        -> Iterator[Tuple[Path, List[Copyright]]]:
     sorted_blame = sorted(
         get_contributions(include, exclude),
         key=lambda c: (c.path, c.author, c.email)
@@ -127,48 +141,10 @@ def get_copyrights(include, exclude):
     for path, file_contributors in blame_by_file.items():
         it = groupby(file_contributors, key=lambda c: (c.author, c.email))
         copyrights = [
-            Copyright(author, email, frozenset(y.year for y in years))
+            Copyright(author, email, {y.year for y in years})
             for (author, email), years in it
         ]
         yield path, copyrights
-
-
-class Copyright(NamedTuple):
-    author: str
-    email:  str
-    years:  FrozenSet[int]
-
-    def __str__(self):
-        if len(self.years) > 1:
-            years = f'{min(self.years)}-{max(self.years)}'
-        else:
-            years = f'{min(self.years)}'
-        return f'{years} {self.author} <{self.email}>'
-
-
-def get_contributions(include, exclude):
-    for path in get_source_paths(include, exclude):
-        blame = Popen(
-            ['git', 'blame', '--line-porcelain', 'HEAD', '--', str(path)],
-            stdout=PIPE,
-            stderr=PIPE,
-            universal_newlines=True
-        )
-        author = email = year = None
-        for line in blame.stdout:
-            if line.startswith('author '):
-                author = line.split(' ', 1)[1].rstrip()
-            elif line.startswith('author-mail '):
-                email = line.split(' ', 1)[1].rstrip().lstrip('<').rstrip('>')
-            elif line.startswith('author-time '):
-                # Forget the timezone; we only want the year anyway
-                year = datetime.fromtimestamp(int(line.split(' ', 1)[1].rstrip())).year
-            elif line.startswith('filename '):
-                yield Contribution(
-                    author=author, email=email, year=year, path=path)
-                author = email = year = None
-        blame.wait()
-        assert blame.returncode == 0
 
 
 class Contribution(NamedTuple):
@@ -178,36 +154,73 @@ class Contribution(NamedTuple):
     path:   Path
 
 
-def get_source_paths(include, exclude):
+def get_contributions(include: Set[str], exclude: Set[str])\
+        -> Iterator[Contribution]:
+    for path in get_source_paths(include, exclude):
+        blame = Popen(
+            ['git', 'blame', '--line-porcelain', 'HEAD', '--', str(path)],
+            stdout=PIPE,
+            stderr=PIPE,
+            universal_newlines=True
+        )
+        author = email = year = None
+        if blame.stdout is not None:
+            for line in blame.stdout:
+                if line.startswith('author '):
+                    author = line.split(' ', 1)[1].rstrip()
+                elif line.startswith('author-mail '):
+                    email = line.split(' ', 1)[1].rstrip()
+                    email = email.lstrip('<').rstrip('>')
+                elif line.startswith('author-time '):
+                    # Forget the timezone; we only want the year anyway
+                    timestamp = int(line.split(' ', 1)[1].strip())
+                    year = datetime.fromtimestamp(timestamp).year
+                elif line.startswith('filename '):
+                    assert author is not None
+                    assert email is not None
+                    assert year is not None
+                    yield Contribution(
+                        author=author, email=email, year=year, path=path)
+                    author = email = year = None
+        blame.wait()
+        assert blame.returncode == 0
+
+
+def get_source_paths(include: Set[str], exclude: Set[str]) -> Iterator[Path]:
     ls_tree = Popen(
         ['git', 'ls-tree', '-r', '--name-only', 'HEAD'],
         stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
     if not include:
         include = {'*'}
-    for filename in ls_tree.stdout:
-        filename = filename.strip()
-        if any(fnmatch(filename, pattern) for pattern in exclude):
-            continue
-        if any(fnmatch(filename, pattern) for pattern in include):
-            yield Path(filename)
+    if ls_tree.stdout is not None:
+        for filename in ls_tree.stdout:
+            filename = filename.strip()
+            if any(fnmatch(filename, pattern) for pattern in exclude):
+                continue
+            if any(fnmatch(filename, pattern) for pattern in include):
+                yield Path(filename)
     ls_tree.wait()
     assert ls_tree.returncode == 0
 
 
-def get_license(path, *, spdx_prefix=SPDX_PREFIX):
+class License(NamedTuple):
+    ident: Optional[str]
+    text:  List[str]
+
+
+def get_license(path: Path, *, spdx_prefix: str = SPDX_PREFIX) -> License:
     with open(path, 'r') as f:
         lines = f.read().splitlines()
 
-        ident = [
+        idents = [
             line.rstrip() for line in lines
             if line.startswith(spdx_prefix)
         ]
-        if len(ident) > 1:
+        ident = None
+        if len(idents) > 1:
             raise RuntimeError(f'More than one {spdx_prefix} line in {path}!')
-        try:
-            ident = ident[0]
-        except IndexError:
-            ident = None
+        elif len(idents) == 1:
+            ident = idents[0]
 
         body = [
             line.rstrip() for line in lines
@@ -217,12 +230,7 @@ def get_license(path, *, spdx_prefix=SPDX_PREFIX):
             del body[0]
         while not body[-1]:
             del body[-1]
-        return License(ident, tuple(body))
-
-
-class License(NamedTuple):
-    ident: Optional[str]
-    text:  Tuple[str]
+        return License(ident, body)
 
 
 class CopyWriter:
@@ -348,7 +356,7 @@ class AtomicReplaceFile:
         If ``None`` (the default), the temporary file will be opened in binary
         mode. Otherwise, this specifies the encoding to use with text mode.
     """
-    def __init__(self, path, encoding=None):
+    def __init__(self, path: Union[str, Path], encoding: str = None):
         if isinstance(path, str):
             path = Path(path)
         self._path = path
