@@ -298,13 +298,13 @@ class PiGPIOPin(PiPin):
             # high, starting PWM and setting a 0 duty-cycle *doesn't* bring
             # the pin low; it stays high!
             self.factory.connection.write(self.number, 0)
-            self.factory.connection.set_PWM_frequency(self.number, value)
+            self.factory.connection.set_PWM_frequency(self.number, int(value))  # value must be passed as int, not float
             self.factory.connection.set_PWM_range(self.number, 10000)
             self.factory.connection.set_PWM_dutycycle(self.number, 0)
             self._pwm = True
         elif self._pwm and value is not None:
             if value != self.factory.connection.get_PWM_frequency(self.number):
-                self.factory.connection.set_PWM_frequency(self.number, value)
+                self.factory.connection.set_PWM_frequency(self.number, int(value))  # value must be passed as int, not float
                 self.factory.connection.set_PWM_range(self.number, 10000)
         elif self._pwm and value is None:
             self.factory.connection.write(self.number, 0)
