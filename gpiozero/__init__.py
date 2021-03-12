@@ -151,3 +151,6 @@ from .internal_devices import (
     TimeOfDay,
     DiskUsage,
 )
+
+version_tuple = (1, 5, 1)
+version = version_string = __version__ = '%d.%d.%d' % version_tuple

@@ -15,6 +15,8 @@ elif sys.version_info[0] == 3:
 else:
     raise ValueError('Unrecognized major version of Python')
 
+import gpiozero
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 # Workaround <http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html>
@@ -24,7 +26,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.5.1'
+__version__      = gpiozero.__version__
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@bennuttall.com'
 __url__          = 'https://github.com/gpiozero/gpiozero'
