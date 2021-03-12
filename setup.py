@@ -124,11 +124,7 @@ def main():
             author               = __author__,
             author_email         = __author_email__,
             url                  = __url__,
-            license              = [
-                c.rsplit('::', 1)[1].strip()
-                for c in __classifiers__
-                if c.startswith('License ::')
-            ][0],
+            license              = 'BSD-3-Clause',
             keywords             = __keywords__,
             packages             = find_packages(),
             include_package_data = True,
