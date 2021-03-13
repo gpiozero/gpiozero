@@ -238,7 +238,7 @@ class EventsMixin(object):
 
     def _all_events(self):
         """
-        Generator functionw which yields all :class:`event` instances defined
+        Generator function which yields all :class:`event` instances defined
         against this class.
         """
         for name in dir(type(self)):
