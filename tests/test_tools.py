@@ -164,6 +164,12 @@ def test_scaled():
     # scale -1->+1 to 0->1
     assert list(scaled((-1, 1, 0.0, -0.5), 0, 1, -1, 1)) == [0, 1, 0.5, 0.25]
 
+def test_scaled_full():
+    assert list(scaled_full((0, 0.5, 1, 0.5))) == [-1, 0, 1, 0]
+
+def test_scaled_half():
+    assert list(scaled_half((-1, 0, 1, 0))) == [0, 0.5, 1, 0.5]
+
 def test_clamped():
     with pytest.raises(ValueError):
         list(clamped((), 0, 0))

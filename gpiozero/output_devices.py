@@ -52,7 +52,12 @@ except ImportError:
     from .compat import log2
 import warnings
 
-from .exc import OutputDeviceBadValue, GPIOPinMissing, PWMSoftwareFallback
+from .exc import (
+    OutputDeviceBadValue,
+    GPIOPinMissing,
+    PWMSoftwareFallback,
+    DeviceClosed,
+)
 from .devices import GPIODevice, Device, CompositeDevice
 from .mixins import SourceMixin
 from .threads import GPIOThread
@@ -663,13 +668,14 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             if self.value is None:
                 return '<gpiozero.TonalBuzzer object on pin %r, silent>' % (
                     self.pwm_device.pin,)
             else:
                 return '<gpiozero.TonalBuzzer object on pin %r, playing %s>' % (
                     self.pwm_device.pin, self.tone.note)
-        except:
+        except DeviceClosed:
             return super(TonalBuzzer, self).__repr__()
 
     def play(self, tone):
@@ -736,12 +742,11 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         if self.pwm_device.pin.frequency is None:
             return None
         else:
-            try:
-                return log2(
-                    self.pwm_device.pin.frequency / self.mid_tone.frequency
-                ) / self.octaves
-            except ZeroDivisionError:
-                return 0.0
+            # Can't have zero-division here; zero-frequency Tone cannot be
+            # generated and self.octaves cannot be zero either
+            return log2(
+                self.pwm_device.pin.frequency / self.mid_tone.frequency
+            ) / self.octaves
 
     @value.setter
     def value(self, value):

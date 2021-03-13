@@ -172,10 +172,16 @@ class SharedMixin(object):
     @classmethod
     def _shared_key(cls, *args, **kwargs):
         """
-        Given the constructor arguments, returns an immutable key representing
-        the instance. The default simply assumes all positional arguments are
-        immutable.
+        This is called with the constructor arguments to generate a unique
+        key (which must be storable in a :class:`dict` and, thus, immutable
+        and hashable) representing the instance that can be shared. This must
+        be overridden by descendents.
+
+        The default simply assumes all positional arguments are immutable and
+        returns this as the key but this is almost never the "right" thing to
+        do and almost all descendents should override this method.
         """
+        # XXX Future 2.x version should change this to raise NotImplementedError
         return args
 
 
@@ -334,9 +340,7 @@ class EventsMixin(object):
 
     def _wrap_callback(self, fn):
         # XXX In 2.x, move this to the event class above
-        if fn is None:
-            return None
-        elif not callable(fn):
+        if not callable(fn):
             raise BadEventHandler('value must be None or a callable')
         # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
         # has been used to produce it) we need to dig out the "real" function
@@ -581,13 +585,13 @@ class GPIOQueue(GPIOThread):
             self, parent, queue_len=5, sample_wait=0.0, partial=False,
             average=median, ignore=None):
         assert callable(average)
-        super(GPIOQueue, self).__init__(target=self.fill)
         if queue_len < 1:
             raise BadQueueLen('queue_len must be at least one')
         if sample_wait < 0:
             raise BadWaitTime('sample_wait must be 0 or greater')
         if ignore is None:
             ignore = set()
+        super(GPIOQueue, self).__init__(target=self.fill)
         self.queue = deque(maxlen=queue_len)
         self.partial = bool(partial)
         self.sample_wait = float(sample_wait)

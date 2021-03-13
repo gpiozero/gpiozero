@@ -235,12 +235,14 @@ class MockChargingPin(MockPin):
             if self._charge_thread:
                 self._charge_stop.set()
                 self._charge_thread.join()
+        else:
+            assert False
 
     def _charge(self):
         if not self._charge_stop.wait(self.charge_time):
             try:
                 self.drive_high()
-            except AssertionError:
+            except AssertionError:  # pragma: no cover
                 # Charging pins are typically flipped between input and output
                 # repeatedly; if another thread has already flipped us to
                 # output ignore the assertion-error resulting from attempting
@@ -315,8 +317,7 @@ class MockSPIClockPin(MockPin):
     """
     def __init__(self, factory, number):
         super(MockSPIClockPin, self).__init__(factory, number)
-        if not hasattr(self, 'spi_devices'):
-            self.spi_devices = []
+        self.spi_devices = getattr(self, 'spi_devices', [])
 
     def _set_state(self, value):
         super(MockSPIClockPin, self)._set_state(value)
@@ -333,8 +334,7 @@ class MockSPISelectPin(MockPin):
     """
     def __init__(self, factory, number):
         super(MockSPISelectPin, self).__init__(factory, number)
-        if not hasattr(self, 'spi_device'):
-            self.spi_device = None
+        self.spi_device = getattr(self, 'spi_device', None)
 
     def _set_state(self, value):
         super(MockSPISelectPin, self)._set_state(value)
@@ -467,7 +467,7 @@ class MockFactory(LocalPiFactory):
             revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
         if pin_class is None:
             pin_class = os.environ.get('GPIOZERO_MOCK_PIN_CLASS', MockPin)
-        self._revision = revision
+        self._revision = int(revision, base=16)
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):

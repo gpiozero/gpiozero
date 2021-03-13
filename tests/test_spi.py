@@ -60,8 +60,10 @@ def test_spi_hardware_params(mock_factory):
     with patch('gpiozero.pins.local.SpiDev'):
         with mock_factory.spi() as device:
             assert isinstance(device, LocalPiHardwareSPI)
+            assert repr(device) == 'SPI(port=0, device=0)'
             device.close()
             assert device.closed
+            assert repr(device) == 'SPI(closed)'
         with mock_factory.spi(port=0, device=0) as device:
             assert isinstance(device, LocalPiHardwareSPI)
         with mock_factory.spi(port=0, device=1) as device:
@@ -71,6 +73,13 @@ def test_spi_hardware_params(mock_factory):
         with mock_factory.spi(clock_pin=11, mosi_pin=10, select_pin=8) as device:
             assert isinstance(device, LocalPiHardwareSPI)
         with mock_factory.spi(clock_pin=11, mosi_pin=10, select_pin=7) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        # Ensure we support "partial" SPI where we don't reserve a pin because
+        # the device wants it for general IO (see SPI screens which use a pin
+        # for data/commands)
+        with mock_factory.spi(clock_pin=11, mosi_pin=10, miso_pin=None, select_pin=7) as device:
+            assert isinstance(device, LocalPiHardwareSPI)
+        with mock_factory.spi(clock_pin=11, mosi_pin=None, miso_pin=9, select_pin=7) as device:
             assert isinstance(device, LocalPiHardwareSPI)
         with mock_factory.spi(shared=True) as device:
             assert isinstance(device, LocalPiHardwareSPIShared)
@@ -87,8 +96,10 @@ def test_spi_software_params(mock_factory):
     with patch('gpiozero.pins.local.SpiDev'):
         with mock_factory.spi(select_pin=6) as device:
             assert isinstance(device, LocalPiSoftwareSPI)
+            assert repr(device) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=6)'
             device.close()
             assert device.closed
+            assert repr(device) == 'SPI(closed)'
         with mock_factory.spi(clock_pin=11, mosi_pin=9, miso_pin=10) as device:
             assert isinstance(device, LocalPiSoftwareSPI)
             device._bus.close()
@@ -115,6 +126,20 @@ def test_spi_hardware_conflict(mock_factory):
         with mock_factory.spi(port=0, device=0) as spi:
             with pytest.raises(GPIOPinInUse):
                 LED(11)
+
+def test_spi_software_same_bus(mock_factory):
+    with patch('gpiozero.pins.local.SpiDev'):
+        with mock_factory.spi(select_pin=6) as device:
+            with pytest.raises(GPIOPinInUse):
+                mock_factory.spi(select_pin=6)
+            with mock_factory.spi(select_pin=5) as another_device:
+                assert device._bus is another_device._bus
+
+def test_spi_software_shared_bus(mock_factory):
+    with patch('gpiozero.pins.local.SpiDev'):
+        with mock_factory.spi(select_pin=6, shared=True) as device:
+            with mock_factory.spi(select_pin=6, shared=True) as another_device:
+                assert device is another_device
 
 def test_spi_hardware_read(mock_factory):
     with patch('gpiozero.pins.local.SpiDev') as spidev:
@@ -157,6 +182,10 @@ def test_spi_hardware_modes(mock_factory):
             assert not spidev.return_value.cshigh
             assert spidev.return_value.lsbfirst
             assert spidev.return_value.bits_per_word == 12
+            device.rate = 1000000
+            assert device.rate == 1000000
+            device.rate = 500000
+            assert device.rate == 500000
 
 def test_spi_software_read(mock_factory):
     class SPISlave(MockSPIDevice):

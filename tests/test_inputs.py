@@ -62,6 +62,7 @@ def test_input_initial_values(mock_factory):
         assert pin.function == 'input'
         assert pin.pull == 'up'
         assert device.pull_up
+    assert repr(device) == '<gpiozero.InputDevice object closed>'
     with InputDevice(4, pull_up=False) as device:
         assert pin.pull == 'down'
         assert not device.pull_up
@@ -201,8 +202,10 @@ def test_input_smoothed_attrib(mock_factory):
         assert not device.partial
         device._queue.start()
         assert not device.is_active
+        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin GPIO4, pull_up=False, is_active=False>'
         with pytest.raises(InputDeviceError):
             device.threshold = 1
+    assert repr(device) == '<gpiozero.SmoothedInputDevice object closed>'
     with pytest.raises(BadQueueLen):
         SmoothedInputDevice(4, queue_len=-1)
     with pytest.raises(BadWaitTime):
@@ -383,6 +386,7 @@ def test_input_rotary_encoder(mock_factory):
         # Make sure the sequence works in both directions
         rotate_ccw(a_pin, b_pin)
         assert encoder.steps == 0
+    assert repr(encoder) == '<gpiozero.RotaryEncoder object closed>'
 
 def test_input_rotary_encoder_jiggle(mock_factory):
     a_pin = mock_factory.pin(20)

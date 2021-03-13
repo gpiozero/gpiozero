@@ -295,8 +295,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         except AttributeError:
             # If the queue isn't initialized (it's None), or _queue hasn't been
             # set ignore the error because we're trying to close anyway
-            if self._queue is not None:
-                raise
+            pass
         except RuntimeError:
             # Cannot join thread before it starts; we don't care about this
             # because we're trying to close the thread anyway
@@ -525,11 +524,7 @@ class LineSensor(SmoothedInputDevice):
             threshold=threshold, queue_len=queue_len,
             sample_wait=1 / sample_rate, partial=partial,
             pin_factory=pin_factory)
-        try:
-            self._queue.start()
-        except:
-            self.close()
-            raise
+        self._queue.start()
 
     @property
     def value(self):
@@ -617,11 +612,7 @@ class MotionSensor(SmoothedInputDevice):
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len, sample_wait=1 /
             sample_rate, partial=partial, pin_factory=pin_factory, average=mean)
-        try:
-            self._queue.start()
-        except:
-            self.close()
-            raise
+        self._queue.start()
 
     @property
     def value(self):
@@ -734,7 +725,7 @@ class LightSensor(SmoothedInputDevice):
         if self._charge_time is None:
             return 0.0
         else:
-            return 1.0 - min(1.0, 
+            return 1.0 - min(1.0,
                 (self.pin_factory.ticks_diff(self._charge_time, start) /
                 self.charge_time_limit))
 
@@ -891,8 +882,7 @@ class DistanceSensor(SmoothedInputDevice):
         try:
             self._trigger.close()
         except AttributeError:
-            if self._trigger is not None:
-                raise
+            pass
         self._trigger = None
         super(DistanceSensor, self).close()
 
@@ -1193,9 +1183,10 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             return "<gpiozero.%s object on pins %r and %r>" % (
                 self.__class__.__name__, self.a.pin, self.b.pin)
-        except:
+        except DeviceClosed:
             return super(RotaryEncoder, self).__repr__()
 
     def _a_changed(self, ticks, state):

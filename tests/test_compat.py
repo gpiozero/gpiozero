@@ -64,6 +64,7 @@ def test_frozendict():
     h = hash(f)
     assert h is not None
     assert hash(f) == h
+    assert repr(f) == "<frozendict %s>" % repr(d)
 
 # ported from the official test cases; see
 # https://github.com/python/cpython/blob/master/Lib/test/test_math.py for original

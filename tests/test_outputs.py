@@ -49,6 +49,7 @@ import pytest
 from colorzero import Color, Red, Green, Blue
 
 from gpiozero import *
+from gpiozero.tones import Tone
 
 
 def test_output_initial_values(mock_factory, pwm):
@@ -57,6 +58,7 @@ def test_output_initial_values(mock_factory, pwm):
         assert repr(device).startswith('<gpiozero.OutputDevice object')
         assert pin.function == 'output'
         assert not pin.state
+    assert repr(device) == '<gpiozero.OutputDevice object closed>'
     with OutputDevice(2, initial_value=True) as device:
         assert pin.state
         state = pin.state
@@ -1193,6 +1195,18 @@ def test_motor_enable_pin(mock_factory, pwm):
         motor.stop()
         assert motor.value == 0
 
+def test_phaseenable_motor_bad_init(mock_factory):
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableMotor()
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableMotor(2)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableMotor(phase=2)
+    with pytest.raises(GPIOPinMissing):
+        PhaseEnableMotor(enable=2)
+    with pytest.raises(TypeError):
+        PhaseEnableMotor(a=2, b=3)
+
 def test_phaseenable_motor_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
     e = mock_factory.pin(2)
@@ -1369,6 +1383,8 @@ def test_servo_pulse_width(mock_factory, pwm):
         assert isclose(servo.pulse_width, 5/10000)
         servo.value = 1
         assert isclose(servo.pulse_width, 25/10000)
+        servo.pulse_width = 20/10000
+        assert isclose(servo.pulse_width, 20/10000)
         servo.value = None
         assert servo.pulse_width is None
 
@@ -1418,6 +1434,13 @@ def test_servo_values(mock_factory, pwm):
         assert servo.value == 0
         servo.value = None
         assert servo.value is None
+
+def test_angular_servo_bad_value(mock_factory, pwm):
+    p = mock_factory.pin(1)
+    with pytest.raises(ValueError):
+        AngularServo(1, initial_angle=-100)
+    with pytest.raises(ValueError):
+        AngularServo(1, min_angle=95)
 
 def test_angular_servo_range(mock_factory, pwm):
     with AngularServo(1, initial_angle=15, min_angle=0, max_angle=90) as servo:
@@ -1475,6 +1498,8 @@ def test_angular_servo_angles(mock_factory, pwm):
         servo.angle = -15
         assert servo.angle == -15
         assert isclose(servo.value, 1/3)
+        with pytest.raises(ValueError):
+            servo.angle = 90
 
 def test_tonalbuzzer_bad_init(mock_factory, pwm):
     with pytest.raises(ValueError):
@@ -1493,6 +1518,8 @@ def test_tonalbuzzer_bad_init(mock_factory, pwm):
         TonalBuzzer(2, mid_tone='B1', octaves=3)
     with pytest.raises(ValueError):
         TonalBuzzer(2, mid_tone='B2', octaves=4)
+    with pytest.raises(ValueError):
+        TonalBuzzer(2, mid_tone='C6', octaves=4)
 
 def test_tonalbuzzer_init(mock_factory, pwm):
     pin = mock_factory.pin(2)
@@ -1501,6 +1528,12 @@ def test_tonalbuzzer_init(mock_factory, pwm):
         assert tb.pwm_device.pin is pin
         assert tb.value is None
         assert tb.pwm_device.frequency is None
+        tb.play('C5')
+        assert 'playing' in repr(tb)
+        assert tb.is_active
+        tb.stop()
+        assert not tb.is_active
+    assert repr(tb) == '<gpiozero.TonalBuzzer object closed>'
     with TonalBuzzer(2, mid_tone='C4') as tb:
         assert tb.pwm_device.frequency is None
     with TonalBuzzer(2, mid_tone='C4', initial_value=0) as tb:
@@ -1527,15 +1560,15 @@ def test_tonalbuzzer_play(mock_factory, pwm):
         assert tb.pwm_device.frequency is None
         tb.play('C5')
         assert isclose(tb.pwm_device.frequency, 523.25, abs_tol=1/100)
-        tb.play('A#4')
+        tb.play(Tone('A#4'))
         assert isclose(tb.pwm_device.frequency, 466.16, abs_tol=1/100)
         tb.stop()
         assert tb.value is None
         assert tb.pwm_device.frequency is None
         with pytest.raises(ValueError):
-            tb.play('GS3')
+            tb.play('G#3')
         with pytest.raises(ValueError):
-            tb.play('AS5')
+            tb.play('A#5')
 
 def test_tonalbuzzer_set_value(mock_factory, pwm):
     with TonalBuzzer(2) as tb:
@@ -1572,3 +1605,15 @@ def test_tonalbuzzer_read_value(mock_factory, pwm):
         assert isclose(tb.value, 0.5)
         tb.play('A6')
         assert isclose(tb.value, 1)
+
+def test_tonalbuzzer_tone(mock_factory, pwm):
+    with TonalBuzzer(2) as tb:
+        assert tb.tone is None
+        tb.play('A3')
+        assert tb.tone == Tone('A3')
+        tb.play('A4')
+        assert tb.tone == Tone('A4')
+        tb.play('A5')
+        assert tb.tone == Tone('A5')
+        tb.tone = None
+        assert tb.tone is None

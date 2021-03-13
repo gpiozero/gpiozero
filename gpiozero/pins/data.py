@@ -800,6 +800,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
             return self._format_row(int(content[3:]), style)
         elif content.startswith('col') and content[3:].isdigit():
             return self._format_col(int(content[3:]), style)
+        else:
+            raise ValueError('Invalid format specifier')
 
     def pprint(self, color=None):
         """
@@ -1020,179 +1022,176 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             revcode_processor    = (revision & 0xf000)   >> 12
             revcode_type         = (revision & 0xff0)    >> 4
             revcode_revision     = (revision & 0x0f)
-            try:
-                model = {
-                    0x0:  'A',
-                    0x1:  'B',
-                    0x2:  'A+',
-                    0x3:  'B+',
-                    0x4:  '2B',
-                    0x6:  'CM',
-                    0x8:  '3B',
-                    0x9:  'Zero',
-                    0xa:  'CM3',
-                    0xc:  'Zero W',
-                    0xd:  '3B+',
-                    0xe:  '3A+',
-                    0x10: 'CM3+',
-                    0x11: '4B',
-                    0x13: '400',
-                    0x14: 'CM4',
-                    }.get(revcode_type, '???')
-                if model in ('A', 'B'):
-                    pcb_revision = {
-                        0: '1.0', # is this right?
-                        1: '1.0',
-                        2: '2.0',
-                        }.get(revcode_revision, 'Unknown')
-                else:
-                    pcb_revision = '1.%d' % revcode_revision
-                soc = {
-                    0: 'BCM2835',
-                    1: 'BCM2836',
-                    2: 'BCM2837',
-                    3: 'BCM2711',
-                    }.get(revcode_processor, 'Unknown')
-                manufacturer = {
-                    0: 'Sony',
-                    1: 'Egoman',
-                    2: 'Embest',
-                    3: 'Sony Japan',
-                    4: 'Embest',
-                    5: 'Stadium',
-                    }.get(revcode_manufacturer, 'Unknown')
-                memory = {
-                    0: 256,
-                    1: 512,
-                    2: 1024,
-                    3: 2048,
-                    4: 4096,
-                    5: 8192,
-                    }.get(revcode_memory, None)
-                released = {
-                    'A':      '2013Q1',
-                    'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
-                    'A+':     '2014Q4' if memory == 512 else '2016Q3',
-                    'B+':     '2014Q3',
-                    '2B':     '2015Q1' if pcb_revision in ('1.0', '1.1') else '2016Q3',
-                    'CM':     '2014Q2',
-                    '3B':     '2016Q1' if manufacturer in ('Sony', 'Embest') else '2016Q4',
-                    'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
-                    'CM3':    '2017Q1',
-                    'Zero W': '2017Q1',
-                    '3B+':    '2018Q1',
-                    '3A+':    '2018Q4',
-                    'CM3+':   '2019Q1',
-                    '4B':     '2020Q2' if memory == 8192 else '2019Q2',
-                    'CM4':    '2020Q4',
-                    '400':    '2020Q4',
-                    }.get(model, 'Unknown')
-                storage = {
-                    'A':    'SD',
-                    'B':    'SD',
-                    'CM':   'eMMC',
-                    'CM3':  'eMMC / off-board',
-                    'CM3+': 'eMMC / off-board',
-                    'CM4':  'eMMC / off-board',
-                    }.get(model, 'MicroSD')
-                usb = {
-                    'A':      1,
-                    'A+':     1,
-                    'Zero':   1,
-                    'Zero W': 1,
-                    'B':      2,
-                    'CM':     1,
-                    'CM3':    1,
-                    '3A+':    1,
-                    'CM3+':   1,
-                    'CM4':    2,
-                    '400':    3,
-                    }.get(model, 4)
-                usb3 = {
-                    '4B':     2,
-                    '400':    2,
-                    }.get(model, 0)
-                ethernet = {
-                    'A':      0,
-                    'A+':     0,
-                    'Zero':   0,
-                    'Zero W': 0,
-                    'CM':     0,
-                    'CM3':    0,
-                    '3A+':    0,
-                    'CM3+':   0,
-                    }.get(model, 1)
-                eth_speed = {
-                    'B':      100,
-                    'B+':     100,
-                    '2B':     100,
-                    '3B':     100,
-                    '3B+':    300,
-                    '4B':     1000,
-                    '400':    1000,
-                    'CM4':    1000,
-                    }.get(model, 0)
-                wifi = {
-                    '3B':     True,
-                    'Zero W': True,
-                    '3B+':    True,
-                    '3A+':    True,
-                    '4B':     True,
-                    '400':    True,
-                    'CM4':    True,
-                    }.get(model, False)
-                bluetooth = {
-                    '3B':     True,
-                    'Zero W': True,
-                    '3B+':    True,
-                    '3A+':    True,
-                    '4B':     True,
-                    '400':    True,
-                    'CM4':    True,
-                    }.get(model, False)
-                csi = {
-                    'Zero':   0 if pcb_revision == '1.0' else 1,
-                    'Zero W': 1,
-                    'CM':     2,
-                    'CM3':    2,
-                    'CM3+':   2,
-                    '400':    0,
-                    'CM4':    2,
-                    }.get(model, 1)
-                dsi = {
-                    'Zero':   0,
-                    'Zero W': 0,
-                    'CM':     2,
-                    'CM3':    2,
-                    'CM3+':   2,
-                    }.get(model, csi)
-                headers = {
-                    'A':    {'P1': REV2_P1, 'P5': REV2_P5},
-                    'B':    {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
-                    'CM':   {'SODIMM': CM_SODIMM},
-                    'CM3':  {'SODIMM': CM3_SODIMM},
-                    'CM3+': {'SODIMM': CM3_SODIMM},
-                    '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
-                    '4B':   {'J8': PLUS_J8, 'POE': PLUS_POE},
-                    'CM4':  {'J8': PLUS_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
-                    }.get(model, {'J8': PLUS_J8})
-                board = {
-                    'A':      A_BOARD,
-                    'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
-                    'A+':     APLUS_BOARD,
-                    'CM':     CM_BOARD,
-                    'CM3':    CM_BOARD,
-                    'CM3+':   CM3PLUS_BOARD,
-                    'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
-                    'Zero W': ZERO13_BOARD,
-                    '3A+':    A3PLUS_BOARD,
-                    '3B+':    B3PLUS_BOARD,
-                    '4B':     B4_BOARD,
-                    'CM4':    CM4_BOARD,
-                    '400':    P400_BOARD,
-                    }.get(model, BPLUS_BOARD)
-            except KeyError:
-                raise PinUnknownPi('unable to parse new-style revision "%x"' % revision)
+            model = {
+                0x0:  'A',
+                0x1:  'B',
+                0x2:  'A+',
+                0x3:  'B+',
+                0x4:  '2B',
+                0x6:  'CM',
+                0x8:  '3B',
+                0x9:  'Zero',
+                0xa:  'CM3',
+                0xc:  'Zero W',
+                0xd:  '3B+',
+                0xe:  '3A+',
+                0x10: 'CM3+',
+                0x11: '4B',
+                0x13: '400',
+                0x14: 'CM4',
+                }.get(revcode_type, '???')
+            if model in ('A', 'B'):
+                pcb_revision = {
+                    0: '1.0', # is this right?
+                    1: '1.0',
+                    2: '2.0',
+                    }.get(revcode_revision, 'Unknown')
+            else:
+                pcb_revision = '1.%d' % revcode_revision
+            soc = {
+                0: 'BCM2835',
+                1: 'BCM2836',
+                2: 'BCM2837',
+                3: 'BCM2711',
+                }.get(revcode_processor, 'Unknown')
+            manufacturer = {
+                0: 'Sony',
+                1: 'Egoman',
+                2: 'Embest',
+                3: 'Sony Japan',
+                4: 'Embest',
+                5: 'Stadium',
+                }.get(revcode_manufacturer, 'Unknown')
+            memory = {
+                0: 256,
+                1: 512,
+                2: 1024,
+                3: 2048,
+                4: 4096,
+                5: 8192,
+                }.get(revcode_memory, None)
+            released = {
+                'A':      '2013Q1',
+                'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                'A+':     '2014Q4' if memory == 512 else '2016Q3',
+                'B+':     '2014Q3',
+                '2B':     '2015Q1' if pcb_revision in ('1.0', '1.1') else '2016Q3',
+                'CM':     '2014Q2',
+                '3B':     '2016Q1' if manufacturer in ('Sony', 'Embest') else '2016Q4',
+                'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                'CM3':    '2017Q1',
+                'Zero W': '2017Q1',
+                '3B+':    '2018Q1',
+                '3A+':    '2018Q4',
+                'CM3+':   '2019Q1',
+                '4B':     '2020Q2' if memory == 8192 else '2019Q2',
+                'CM4':    '2020Q4',
+                '400':    '2020Q4',
+                }.get(model, 'Unknown')
+            storage = {
+                'A':    'SD',
+                'B':    'SD',
+                'CM':   'eMMC',
+                'CM3':  'eMMC / off-board',
+                'CM3+': 'eMMC / off-board',
+                'CM4':  'eMMC / off-board',
+                }.get(model, 'MicroSD')
+            usb = {
+                'A':      1,
+                'A+':     1,
+                'Zero':   1,
+                'Zero W': 1,
+                'B':      2,
+                'CM':     1,
+                'CM3':    1,
+                '3A+':    1,
+                'CM3+':   1,
+                'CM4':    2,
+                '400':    3,
+                }.get(model, 4)
+            usb3 = {
+                '4B':     2,
+                '400':    2,
+                }.get(model, 0)
+            ethernet = {
+                'A':      0,
+                'A+':     0,
+                'Zero':   0,
+                'Zero W': 0,
+                'CM':     0,
+                'CM3':    0,
+                '3A+':    0,
+                'CM3+':   0,
+                }.get(model, 1)
+            eth_speed = {
+                'B':      100,
+                'B+':     100,
+                '2B':     100,
+                '3B':     100,
+                '3B+':    300,
+                '4B':     1000,
+                '400':    1000,
+                'CM4':    1000,
+                }.get(model, 0)
+            wifi = {
+                '3B':     True,
+                'Zero W': True,
+                '3B+':    True,
+                '3A+':    True,
+                '4B':     True,
+                '400':    True,
+                'CM4':    True,
+                }.get(model, False)
+            bluetooth = {
+                '3B':     True,
+                'Zero W': True,
+                '3B+':    True,
+                '3A+':    True,
+                '4B':     True,
+                '400':    True,
+                'CM4':    True,
+                }.get(model, False)
+            csi = {
+                'Zero':   0 if pcb_revision == '1.0' else 1,
+                'Zero W': 1,
+                'CM':     2,
+                'CM3':    2,
+                'CM3+':   2,
+                '400':    0,
+                'CM4':    2,
+                }.get(model, 1)
+            dsi = {
+                'Zero':   0,
+                'Zero W': 0,
+                'CM':     2,
+                'CM3':    2,
+                'CM3+':   2,
+                }.get(model, csi)
+            headers = {
+                'A':    {'P1': REV2_P1, 'P5': REV2_P5},
+                'B':    {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                'CM':   {'SODIMM': CM_SODIMM},
+                'CM3':  {'SODIMM': CM3_SODIMM},
+                'CM3+': {'SODIMM': CM3_SODIMM},
+                '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
+                '4B':   {'J8': PLUS_J8, 'POE': PLUS_POE},
+                'CM4':  {'J8': PLUS_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
+                }.get(model, {'J8': PLUS_J8})
+            board = {
+                'A':      A_BOARD,
+                'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
+                'A+':     APLUS_BOARD,
+                'CM':     CM_BOARD,
+                'CM3':    CM_BOARD,
+                'CM3+':   CM3PLUS_BOARD,
+                'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                'Zero W': ZERO13_BOARD,
+                '3A+':    A3PLUS_BOARD,
+                '3B+':    B3PLUS_BOARD,
+                '4B':     B4_BOARD,
+                'CM4':    CM4_BOARD,
+                '400':    P400_BOARD,
+                }.get(model, BPLUS_BOARD)
         else:
             # Old-style revision, use the lookup table
             try:
@@ -1456,6 +1455,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 ).format(header=header, style=style)
                 for header in sorted(self.headers.values(), key=attrgetter('name'))
                 )
+        else:
+            raise ValueError('Invalid format specifier')
 
     def pprint(self, color=None):
         """
