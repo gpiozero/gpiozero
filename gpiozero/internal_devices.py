@@ -49,6 +49,7 @@ import warnings
 
 from .devices import Device
 from .mixins import EventsMixin
+from .threads import GPIOThread
 from .exc import ThresholdOutOfRange
 
 
@@ -59,13 +60,55 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
-    # XXX Add some mechanism to monitor state and fire events on change.
 
 
-class PingServer(InternalDevice):
+class PolledInternalDevice(InternalDevice):
     """
-    Extends :class:`InternalDevice` to provide a device which is active when a
-    *host* on the network can be pinged.
+    Extends :class:`InternalDevice` to provide a background thread to poll
+    internal devices that lack any other mechanism to inform the instance of
+    changes
+    """
+    def __init__(self, event_delay=1.0, pin_factory=None):
+        self._event_thread = None
+        self._event_delay = event_delay
+        super(PolledInternalDevice, self).__init__(pin_factory=pin_factory)
+
+    @property
+    def event_delay(self):
+        """
+        The delay between sampling the device's value for the purposes of
+        firing events.
+
+        Note that this only applies to events assigned to attributes like
+        :attr:`~EventsMixin.when_activated` and
+        :attr:`~EventsMixin.when_deactivated`. When using the
+        :attr:`~SourceMixin.source` and :attr:`~ValuesMixin.values` properties,
+        the sampling rate is controlled by the
+        :attr:`~SourceMixin.source_delay` property.
+        """
+        return self._event_delay
+
+    @event_delay.setter
+    def event_delay(self, value):
+        self._event_delay = float(value)
+
+    def _watch_value(self):
+        while not self._event_thread.stopping.wait(self._event_delay):
+            self._fire_events(self.pin_factory.ticks(), self.is_active)
+
+    def _start_stop_events(self, enabled):
+        if self._event_thread and not enabled:
+            self._event_thread.stop()
+            self._event_thread = None
+        elif not self._event_thread and enabled:
+            self._event_thread = GPIOThread(self._watch_value)
+            self._event_thread.start()
+
+
+class PingServer(PolledInternalDevice):
+    """
+    Extends :class:`PolledInternalDevice` to provide a device which is active
+    when a *host* on the network can be pinged.
 
     The following example lights an LED while a server is reachable (note the
     use of :attr:`~SourceMixin.source_delay` to ensure the server is not
@@ -92,8 +135,9 @@ class PingServer(InternalDevice):
     """
     def __init__(self, host, pin_factory=None):
         self._host = host
-        super(PingServer, self).__init__(pin_factory=pin_factory)
-        self._fire_events(self.pin_factory.ticks(), None)
+        super(PingServer, self).__init__(
+            event_delay=10.0, pin_factory=pin_factory)
+        self._fire_events(self.pin_factory.ticks(), self.is_active)
 
     def __repr__(self):
         try:
@@ -129,10 +173,10 @@ class PingServer(InternalDevice):
                 return 1
 
 
-class CPUTemperature(InternalDevice):
+class CPUTemperature(PolledInternalDevice):
     """
-    Extends :class:`InternalDevice` to provide a device which is active when
-    the CPU temperature exceeds the *threshold* value.
+    Extends :class:`PolledInternalDevice` to provide a device which is active
+    when the CPU temperature exceeds the *threshold* value.
 
     The following example plots the CPU's temperature on an LED bar graph::
 
@@ -176,7 +220,8 @@ class CPUTemperature(InternalDevice):
     def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
             min_temp=0.0, max_temp=100.0, threshold=80.0, pin_factory=None):
         self.sensor_file = sensor_file
-        super(CPUTemperature, self).__init__(pin_factory=pin_factory)
+        super(CPUTemperature, self).__init__(
+            event_delay=5.0, pin_factory=pin_factory)
         if min_temp >= max_temp:
             raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
@@ -221,10 +266,10 @@ class CPUTemperature(InternalDevice):
         return self.temperature > self.threshold
 
 
-class LoadAverage(InternalDevice):
+class LoadAverage(PolledInternalDevice):
     """
-    Extends :class:`InternalDevice` to provide a device which is active when
-    the CPU load average exceeds the *threshold* value.
+    Extends :class:`PolledInternalDevice` to provide a device which is active
+    when the CPU load average exceeds the *threshold* value.
 
     The following example plots the load average on an LED bar graph::
 
@@ -286,7 +331,8 @@ class LoadAverage(InternalDevice):
             5: 1,
             15: 2,
         }[minutes]
-        super(LoadAverage, self).__init__(pin_factory=pin_factory)
+        super(LoadAverage, self).__init__(
+            event_delay=10.0, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -323,10 +369,10 @@ class LoadAverage(InternalDevice):
         return self.load_average > self.threshold
 
 
-class TimeOfDay(InternalDevice):
+class TimeOfDay(PolledInternalDevice):
     """
-    Extends :class:`InternalDevice` to provide a device which is active when
-    the computer's clock indicates that the current time is between
+    Extends :class:`PolledInternalDevice` to provide a device which is active
+    when the computer's clock indicates that the current time is between
     *start_time* and *end_time* (inclusive) which are :class:`~datetime.time`
     instances.
 
@@ -366,7 +412,8 @@ class TimeOfDay(InternalDevice):
         self._start_time = None
         self._end_time = None
         self._utc = True
-        super(TimeOfDay, self).__init__(pin_factory=pin_factory)
+        super(TimeOfDay, self).__init__(
+            event_delay=5.0, pin_factory=pin_factory)
         self._start_time = self._validate_time(start_time)
         self._end_time = self._validate_time(end_time)
         if self.start_time == self.end_time:
@@ -427,10 +474,10 @@ class TimeOfDay(InternalDevice):
             return int(not self.end_time < now < self.start_time)
 
 
-class DiskUsage(InternalDevice):
+class DiskUsage(PolledInternalDevice):
     """
-    Extends :class:`InternalDevice` to provide a device which is active when
-    the disk space used exceeds the *threshold* value.
+    Extends :class:`PolledInternalDevice` to provide a device which is active
+    when the disk space used exceeds the *threshold* value.
 
     The following example plots the disk usage on an LED bar graph::
 
@@ -460,7 +507,8 @@ class DiskUsage(InternalDevice):
         which most users can ignore).
     """
     def __init__(self, filesystem='/', threshold=90.0, pin_factory=None):
-        super(DiskUsage, self).__init__(pin_factory=pin_factory)
+        super(DiskUsage, self).__init__(
+            event_delay=30.0, pin_factory=pin_factory)
         os.statvfs(filesystem)
         if not 0 <= threshold <= 100:
             warnings.warn(ThresholdOutOfRange(

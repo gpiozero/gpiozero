@@ -68,6 +68,7 @@ from .mixins import (
     SourceMixin,
     ValuesMixin,
     EventsMixin,
+    event,
     HoldMixin,
 )
 from .input_devices import (

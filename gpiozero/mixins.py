@@ -179,6 +179,42 @@ class SharedMixin(object):
         return args
 
 
+class event(object):
+    """
+    A descriptor representing a callable event on a class descending from
+    :class:`EventsMixin`.
+
+    Instances of this class are very similar to a :class:`property` but also
+    deal with notifying the owning class when events are assigned (or
+    unassigned) and wrapping callbacks implicitly as appropriate.
+    """
+    def __init__(self, doc=None):
+        self.handlers = {}
+        self.__doc__ = doc
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        else:
+            return self.handlers.get(id(instance))
+
+    def __set__(self, instance, value):
+        if value is None:
+            try:
+                del self.handlers[id(instance)]
+            except KeyError:
+                warnings.warn(CallbackSetToNone(callback_warning))
+        else:
+            self.handlers[id(instance)] = instance._wrap_callback(value)
+        enabled = any(
+            obj.handlers.get(id(instance))
+            for name in dir(type(instance))
+            for obj in (getattr(type(instance), name),)
+            if isinstance(obj, event)
+        )
+        instance._start_stop_events(enabled)
+
+
 class EventsMixin(object):
     """
     Adds edge-detected :meth:`when_activated` and :meth:`when_deactivated`
@@ -197,10 +233,26 @@ class EventsMixin(object):
         super(EventsMixin, self).__init__(*args, **kwargs)
         self._active_event = Event()
         self._inactive_event = Event()
-        self._when_activated = None
-        self._when_deactivated = None
         self._last_active = None
         self._last_changed = self.pin_factory.ticks()
+
+    def _all_events(self):
+        """
+        Generator functionw which yields all :class:`event` instances defined
+        against this class.
+        """
+        for name in dir(type(self)):
+            obj = getattr(type(self), name)
+            if isinstance(obj, event):
+                yield obj
+
+    def close(self):
+        for ev in self._all_events():
+            try:
+                del ev.handlers[id(self)]
+            except KeyError:
+                pass
+        super(EventsMixin, self).close()
 
     def wait_for_active(self, timeout=None):
         """
@@ -228,8 +280,7 @@ class EventsMixin(object):
         """
         return self._inactive_event.wait(timeout)
 
-    @property
-    def when_activated(self):
+    when_activated = event(
         """
         The function to run when the device changes state from inactive to
         active.
@@ -241,17 +292,9 @@ class EventsMixin(object):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_activated
+        """)
 
-    @when_activated.setter
-    def when_activated(self, value):
-        if self.when_activated is None and value is None:
-            warnings.warn(CallbackSetToNone(callback_warning))
-        self._when_activated = self._wrap_callback(value)
-
-    @property
-    def when_deactivated(self):
+    when_deactivated = event(
         """
         The function to run when the device changes state from active to
         inactive.
@@ -263,14 +306,7 @@ class EventsMixin(object):
         passed as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_deactivated
-
-    @when_deactivated.setter
-    def when_deactivated(self, value):
-        if self.when_deactivated is None and value is None:
-            warnings.warn(CallbackSetToNone(callback_warning))
-        self._when_deactivated = self._wrap_callback(value)
+        """)
 
     @property
     def active_time(self):
@@ -297,6 +333,7 @@ class EventsMixin(object):
             return None
 
     def _wrap_callback(self, fn):
+        # XXX In 2.x, move this to the event class above
         if fn is None:
             return None
         elif not callable(fn):
@@ -349,9 +386,22 @@ class EventsMixin(object):
             self.when_deactivated()
 
     def _fire_events(self, ticks, new_active):
-        # NOTE: in contrast to the pin when_changed event, this method takes
-        # ticks and *is_active* (i.e. the device's .is_active) as opposed to a
-        # pin's *state*.
+        """
+        This method should be called by descendents whenever the
+        :attr:`~Device.is_active` property is likely to have changed (for
+        example, in response to a pin's :attr:`~gpiozero.Pin.state` changing).
+
+        The *ticks* parameter must be set to the time when the change occurred;
+        this can usually be obtained from the pin factory's
+        :meth:`gpiozero.Factory.ticks` method but some pin implementations will
+        implicitly provide the ticks when an event occurs as part of their
+        reporting mechanism.
+
+        The *new_active* parameter must be set to the device's
+        :attr:`~Device.is_active` value at the time indicated by *ticks* (which
+        is not necessarily the value of :attr:`~Device.is_active` right now, if
+        the pin factory provides means of reporting a pin's historical state).
+        """
         old_active, self._last_active = self._last_active, new_active
         if old_active is None:
             # Initial "indeterminate" state; set events but don't fire
@@ -370,6 +420,23 @@ class EventsMixin(object):
                 self._active_event.clear()
                 self._inactive_event.set()
                 self._fire_deactivated()
+
+    def _start_stop_events(self, enabled):
+        """
+        This is a stub method that only exists to be overridden by descendents.
+        It is called when :class:`event` properties are assigned (including
+        when set to :data:`None) to permit the owning instance to activate or
+        deactivate monitoring facilities.
+
+        For example, if a descendent requires a background thread to monitor a
+        device, it would be preferable to only run the thread if event handlers
+        are present to respond to it.
+
+        The *enabled* parameter is :data:`False` when all :class:`event`
+        properties on the owning class are :data:`None`, and :data:`True`
+        otherwise.
+        """
+        pass
 
 
 class HoldMixin(EventsMixin):
@@ -405,8 +472,7 @@ class HoldMixin(EventsMixin):
         if self.when_held:
             self.when_held()
 
-    @property
-    def when_held(self):
+    when_held = event(
         """
         The function to run when the device has remained active for
         :attr:`hold_time` seconds.
@@ -418,12 +484,7 @@ class HoldMixin(EventsMixin):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_held
-
-    @when_held.setter
-    def when_held(self, value):
-        self._when_held = self._wrap_callback(value)
+        """)
 
     @property
     def hold_time(self):
