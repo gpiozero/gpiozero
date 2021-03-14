@@ -1,3 +1,5 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 # Copyright (c) 2017-2019 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2017 Ben Nuttall <ben@bennuttall.com>
