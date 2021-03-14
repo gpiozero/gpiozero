@@ -267,7 +267,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         def get_new_handler(device):
             def fire_both_events(ticks, state):
                 device._fire_events(ticks, device._state_to_value(state))
-                self._fire_events(ticks, self.value)
+                self._fire_events(ticks, self.is_active)
             return fire_both_events
         # _handlers only exists to ensure that we keep a reference to the
         # generated fire_both_events handler for each Button (remember that
