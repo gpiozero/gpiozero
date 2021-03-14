@@ -66,7 +66,7 @@ class PolledInternalDevice(InternalDevice):
     """
     Extends :class:`InternalDevice` to provide a background thread to poll
     internal devices that lack any other mechanism to inform the instance of
-    changes
+    changes.
     """
     def __init__(self, event_delay=1.0, pin_factory=None):
         self._event_thread = None
@@ -142,15 +142,19 @@ class PingServer(PolledInternalDevice):
     :param str host:
         The hostname or IP address to attempt to ping.
 
+    :type event_delay: float
+    :param event_delay:
+        The number of seconds between pings (defaults to 10 seconds).
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, host, pin_factory=None):
+    def __init__(self, host, event_delay=10.0, pin_factory=None):
         self._host = host
         super(PingServer, self).__init__(
-            event_delay=10.0, pin_factory=pin_factory)
+            event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), self.is_active)
 
     def __repr__(self):
@@ -254,16 +258,21 @@ class CPUTemperature(PolledInternalDevice):
         The temperature above which the device will be considered "active".
         (see :attr:`is_active`). This defaults to 80.0.
 
+    :type event_delay: float
+    :param event_delay:
+        The number of seconds between file reads (defaults to 5 seconds).
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
-            min_temp=0.0, max_temp=100.0, threshold=80.0, pin_factory=None):
+            min_temp=0.0, max_temp=100.0, threshold=80.0, event_delay=5.0,
+            pin_factory=None):
         self.sensor_file = sensor_file
         super(CPUTemperature, self).__init__(
-            event_delay=5.0, pin_factory=pin_factory)
+            event_delay=event_delay, pin_factory=pin_factory)
         if min_temp >= max_temp:
             raise ValueError('max_temp must be greater than min_temp')
         self.min_temp = min_temp
@@ -376,13 +385,18 @@ class LoadAverage(PolledInternalDevice):
         The number of minutes over which to average the load. Must be 1, 5 or
         15. This defaults to 5.
 
+    :type event_delay: float
+    :param event_delay:
+        The number of seconds between file reads (defaults to 10 seconds).
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
-        max_load_average=1.0, threshold=0.8, minutes=5, pin_factory=None):
+        max_load_average=1.0, threshold=0.8, minutes=5, event_delay=10.0,
+        pin_factory=None):
         if min_load_average >= max_load_average:
             raise ValueError(
                 'max_load_average must be greater than min_load_average')
@@ -402,7 +416,7 @@ class LoadAverage(PolledInternalDevice):
             15: 2,
         }[minutes]
         super(LoadAverage, self).__init__(
-            event_delay=10.0, pin_factory=pin_factory)
+            event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -502,17 +516,22 @@ class TimeOfDay(PolledInternalDevice):
         If :data:`True` (the default), a naive UTC time will be used for the
         comparison rather than a local time-zone reading.
 
+    :type event_delay: float
+    :param event_delay:
+        The number of seconds between file reads (defaults to 10 seconds).
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, start_time, end_time, utc=True, pin_factory=None):
+    def __init__(self, start_time, end_time, utc=True, event_delay=5.0,
+                 pin_factory=None):
         self._start_time = None
         self._end_time = None
         self._utc = True
         super(TimeOfDay, self).__init__(
-            event_delay=5.0, pin_factory=pin_factory)
+            event_delay=event_delay, pin_factory=pin_factory)
         self._start_time = self._validate_time(start_time)
         self._end_time = self._validate_time(end_time)
         if self.start_time == self.end_time:
@@ -628,14 +647,19 @@ class DiskUsage(PolledInternalDevice):
         The disk usage percentage above which the device will be considered
         "active" (see :attr:`is_active`). This defaults to 90.0.
 
+    :type event_delay: float
+    :param event_delay:
+        The number of seconds between file reads (defaults to 30 seconds).
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, filesystem='/', threshold=90.0, pin_factory=None):
+    def __init__(self, filesystem='/', threshold=90.0, event_delay=30.0,
+                 pin_factory=None):
         super(DiskUsage, self).__init__(
-            event_delay=30.0, pin_factory=pin_factory)
+            event_delay=event_delay, pin_factory=pin_factory)
         os.statvfs(filesystem)
         if not 0 <= threshold <= 100:
             warnings.warn(ThresholdOutOfRange(
