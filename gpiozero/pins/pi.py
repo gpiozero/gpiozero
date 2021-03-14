@@ -52,7 +52,7 @@ except ImportError:
     SpiDev = None
 
 from . import Factory, Pin
-from .data import pi_info
+from .data import PiBoardInfo
 from ..exc import (
     PinNoPins,
     PinNonPhysical,
@@ -126,11 +126,15 @@ class PiFactory(Factory):
         return pin
 
     def _get_revision(self):
+        """
+        This method must be overridden by descendents to return the Pi's
+        revision code as an :class:`int`. The default is unimplemented.
+        """
         raise NotImplementedError
 
     def _get_pi_info(self):
         if self._info is None:
-            self._info = pi_info(self._get_revision())
+            self._info = PiBoardInfo.from_revision(self._get_revision())
         return self._info
 
     def spi(self, **spi_args):

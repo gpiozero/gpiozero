@@ -78,6 +78,8 @@ def test_device_bad_pin(mock_factory):
     with pytest.raises(PinInvalidPin):
         device = GPIODevice(60)
     with pytest.raises(PinInvalidPin):
+        device = GPIODevice('60')
+    with pytest.raises(PinInvalidPin):
         device = GPIODevice('BCM60')
     with pytest.raises(PinInvalidPin):
         device = GPIODevice('WPI32')
@@ -87,6 +89,8 @@ def test_device_bad_pin(mock_factory):
         device = GPIODevice('J8:42')
     with pytest.raises(PinInvalidPin):
         device = GPIODevice('J8:1')
+    with pytest.raises(PinInvalidPin):
+        device = GPIODevice('J8:A')
     with pytest.raises(PinInvalidPin):
         device = GPIODevice('foo')
 
@@ -103,6 +107,7 @@ def test_device_init(mock_factory):
         assert repr(device).startswith('<gpiozero.GPIODevice object')
         assert not device.closed
         assert device.pin is pin
+    assert repr(device) == '<gpiozero.GPIODevice object closed>'
     with pytest.raises(TypeError):
         GPIODevice(2, foo='bar')
 
@@ -141,6 +146,8 @@ def test_device_reopen_same_pin(mock_factory):
 def test_device_pin_parsing(mock_factory):
     # MockFactory defaults to a Pi 3B layout
     pin = mock_factory.pin(2)
+    with GPIODevice('2') as device:
+        assert device.pin is pin
     with GPIODevice('GPIO2') as device:
         assert device.pin is pin
     with GPIODevice('BCM2') as device:

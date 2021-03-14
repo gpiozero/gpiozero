@@ -133,3 +133,18 @@ def test_bad_callback(mock_factory):
             dev.when_activated = 100
         with pytest.raises(BadEventHandler):
             dev.when_activated = lambda x, y: x + y
+
+
+def test_shared_key(mock_factory):
+    class SharedDevice(SharedMixin, GPIODevice):
+        def __init__(self, pin, pin_factory=None):
+            super(SharedDevice, self).__init__(pin, pin_factory=pin_factory)
+
+        def _conflicts_with(self, other):
+            return not isinstance(other, SharedDevice)
+
+    with SharedDevice(4) as dev:
+        with SharedDevice(4) as another_dev:
+            pass
+        with pytest.raises(GPIOPinInUse):
+            GPIODevice(4)

@@ -89,13 +89,24 @@ def test_pi_revision():
                 ['Revision: 100003']
             ]
             assert pi_info().revision == '0003'
+            # Check we complain loudly if we can't access linux,revision
+            Device.pin_factory._info = None
+            m.return_value.__enter__.side_effect = [
+                # Pretend /proc/device-tree/system/linux,revision doesn't
+                # exist, and that /proc/cpuinfo contains the Revision: 0002
+                # after some filler
+                IOError(errno.EACCES, 'Permission denied'),
+                ['Revision: 100003']
+            ]
+            with pytest.raises(IOError):
+                pi_info()
             # Check that parsing /proc/device-tree/system/linux,revision also
             # works properly
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = None
             m.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x20\xd3')
             assert pi_info().revision == 'a220d3'
-            # Finally, check that if everything's a bust we raise PinUnknownPi
+            # Check that if everything's a bust we raise PinUnknownPi
             with pytest.raises(PinUnknownPi):
                 Device.pin_factory._info = None
                 m.return_value.__enter__.return_value = None
@@ -132,6 +143,16 @@ def test_pi_info():
     assert not r.bluetooth
     assert r.csi == 1
     assert r.dsi == 1
+    assert repr(r).startswith('PiBoardInfo(revision=')
+    assert 'headers=...' in repr(r)
+
+def test_pi_info_not_a_pi():
+    class NotAPiFactory(LocalPiFactory):
+        def _get_pi_info(self):
+            return None
+    with patch('gpiozero.devices.Device.pin_factory', NotAPiFactory()):
+        with pytest.raises(PinUnknownPi):
+            pi_info()
 
 def test_pi_info_other_types():
     assert pi_info(b'9000f1') == pi_info(0x9000f1)
@@ -190,6 +211,8 @@ def test_format_content():
         pi_info('900092').pprint(color=True)
         s = ''.join(stdout.output)
         assert '{0:color full}\n'.format(pi_info('900092')) == s
+        with pytest.raises(ValueError):
+            '{0:color foo}'.format(pi_info('900092'))
 
 def test_pprint_headers():
     assert len(pi_info('0002').headers) == 1
@@ -213,6 +236,21 @@ def test_pprint_headers():
         assert 'J8:\n' in s
         assert 'P1:\n' not in s
         assert 'P5:\n' not in s
+
+def test_format_headers():
+    with patch('sys.stdout') as stdout:
+        stdout.output = []
+        stdout.write = lambda buf: stdout.output.append(buf)
+        info = pi_info('c03131')
+        info.headers['J8'].pprint(color=False)
+        s = ''.join(stdout.output)
+        assert '{0.headers[J8]:mono}\n'.format(info) == s
+        stdout.output = []
+        info.headers['J8'].pprint(color=True)
+        s = ''.join(stdout.output)
+        assert '{0.headers[J8]:color}\n'.format(info) == s
+        with pytest.raises(ValueError):
+            '{0.headers[J8]:mono foo}'.format(info)
 
 def test_pprint_color():
     with patch('sys.stdout') as stdout:

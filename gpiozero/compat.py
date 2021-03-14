@@ -93,6 +93,16 @@ def median(data):
         return (data[i - 1] + data[i]) / 2
 
 
+# Backported from py3.4
+def mean(data):
+    if iter(data) is data:
+        data = list(data)
+    n = len(data)
+    if n < 1:
+        raise ValueError('mean requires at least one data point')
+    return sum(data) / n
+
+
 # Backported from py3.3
 def log2(x):
     return math.log(x, 2)

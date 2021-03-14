@@ -38,11 +38,12 @@ str = type('')
 
 
 from threading import Event
+from time import sleep
 
 import pytest
 
-from gpiozero.pins.mock import MockPWMPin, MockPin
 from gpiozero import *
+from gpiozero.pins.mock import *
 
 
 def test_mock_pin_init(mock_factory):
@@ -164,6 +165,32 @@ def test_mock_pin_state(mock_factory):
     pin.state = 0.5
     assert pin.state == 1
 
+def test_mock_pin_connected_state(mock_factory):
+    input_pin = Device.pin_factory.pin(4)
+    pin2 = Device.pin_factory.pin(5, pin_class=MockConnectedPin, input_pin=input_pin)
+    pin3 = Device.pin_factory.pin(6, pin_class=MockConnectedPin)
+    input_pin.function = 'input'
+    pin2.function = 'output'
+    pin3.function = 'output'
+    pin2.state = 0
+    assert input_pin.state == 0
+    pin2.state = 1
+    assert input_pin.state == 1
+    pin3.state = 0
+    assert input_pin.state == 1
+    pin3.state = 1
+    assert input_pin.state == 1
+
+def test_mock_pin_functions(mock_factory):
+    pin = Device.pin_factory.pin(2)
+    assert pin.function == 'input'
+    pin.function = 'output'
+    assert pin.function == 'output'
+    pin.function = 'input'
+    assert pin.function == 'input'
+    with pytest.raises(ValueError):
+        pin.function = 'foo'
+
 def test_mock_pwm_pin_state(mock_factory):
     pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     with pytest.raises(PinSetInput):
@@ -202,3 +229,22 @@ def test_mock_pin_edges(mock_factory):
     assert not fired.is_set()
     assert pin.edges == 'falling'
 
+def test_mock_charging_pin(mock_factory):
+    pin = Device.pin_factory.pin(4, pin_class=MockChargingPin, charge_time=1)
+    pin.function = 'input'
+    assert pin.state == 0
+    pin.function = 'output'
+    assert pin.state == 0
+    pin.close()
+    mock_factory.reset()
+    pin = Device.pin_factory.pin(4, pin_class=MockChargingPin, charge_time=0.01)
+    pin.function = 'input'
+    sleep(0.1)
+    assert pin.state == 1
+    pin.function = 'output'
+    pin.state = 0
+    pin.function = 'output'
+    assert pin.state == 0
+    pin.function = 'input'
+    sleep(0.1)
+    assert pin.state == 1

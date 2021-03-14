@@ -45,7 +45,6 @@ import warnings
 from collections import namedtuple, OrderedDict
 from itertools import chain
 from types import FunctionType
-from threading import Lock
 
 from .threads import _threads_shutdown
 from .mixins import (
@@ -101,9 +100,9 @@ class GPIOMeta(type):
             # already exists. Only construct the instance if the key's new.
             key = cls._shared_key(*args, **kwargs)
             try:
-                self = cls._instances[key]
+                self = cls._instances[key]()
                 self._refs += 1
-            except (KeyError, ReferenceError) as e:
+            except (KeyError, AttributeError) as e:
                 self = super(GPIOMeta, cls).__call__(*args, **kwargs)
                 self._refs = 1
                 # Replace the close method with one that merely decrements
@@ -124,7 +123,7 @@ class GPIOMeta(type):
                                 # it's already gone
                                 pass
                 self.close = close
-                cls._instances[key] = weakref.proxy(self)
+                cls._instances[key] = weakref.ref(self)
         else:
             # Construct the instance as normal
             self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -154,6 +153,26 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         return super(GPIOBase, self).__setattr__(name, value)
 
     def __del__(self):
+        # NOTE: Yes, we implicitly call close() on __del__(), and yes for you
+        # dear hacker-on-this-library, this means pain!
+        #
+        # It's entirely for the convenience of command line experimenters and
+        # newbies who want to re-gain those pins when stuff falls out of scope
+        # without managing their object lifetimes "properly" with "with" (but,
+        # hey, this is an educational library at heart so that's the way we
+        # roll).
+        #
+        # What does this mean for you? It means that in close() you cannot
+        # assume *anything*. If someone calls a constructor with a fundamental
+        # mistake like the wrong number of params, then your close() method is
+        # going to be called before __init__ ever ran so all those attributes
+        # you *think* exist, erm, don't. Basically if you refer to anything in
+        # "self" within your close method, be preprared to catch AttributeError
+        # on its access to avoid spurious warnings for the end user.
+        #
+        # "But we're exiting anyway; surely exceptions in __del__ get
+        # squashed?" Yes, but they still cause verbose warnings and remember
+        # that this is an educational library; keep it friendly!
         self.close()
 
     def close(self):
@@ -199,6 +218,8 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         # safely called from subclasses without worrying whether super-classes
         # have it (which in turn is useful in conjunction with the mixin
         # classes).
+        #
+        # P.S. See note in __del__ above.
         pass
 
     @property
@@ -310,7 +331,11 @@ class Device(ValuesMixin, GPIOBase):
             raise BadPinFactory('Unable to find pin factory "%s"' % name)
 
     def __repr__(self):
-        return "<gpiozero.%s object>" % (self.__class__.__name__)
+        try:
+            self._check_open()
+            return "<gpiozero.%s object>" % (self.__class__.__name__)
+        except DeviceClosed:
+            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
 
     def _conflicts_with(self, other):
         """
@@ -465,7 +490,7 @@ class CompositeDevice(Device):
                         len(self)
                         )
         except DeviceClosed:
-            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
+            return super(CompositeDevice, self).__repr__()
 
     def __len__(self):
         return len(self._all)
@@ -484,8 +509,7 @@ class CompositeDevice(Device):
     def close(self):
         if getattr(self, '_all', None):
             for device in self._all:
-                if isinstance(device, Device):
-                    device.close()
+                device.close()
             self._all = ()
 
     @property
@@ -567,7 +591,10 @@ class GPIODevice(Device):
 
     @property
     def closed(self):
-        return self._pin is None
+        try:
+            return self._pin is None
+        except AttributeError:
+            return True
 
     def _check_open(self):
         try:

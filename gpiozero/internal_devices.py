@@ -50,7 +50,7 @@ import warnings
 from .devices import Device
 from .mixins import EventsMixin, event
 from .threads import GPIOThread
-from .exc import ThresholdOutOfRange
+from .exc import ThresholdOutOfRange, DeviceClosed
 
 
 class InternalDevice(EventsMixin, Device):
@@ -60,6 +60,24 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
+    def __init__(self, pin_factory=None):
+        self._closed = False
+        super(InternalDevice, self).__init__(pin_factory=pin_factory)
+
+    def close(self):
+        self._closed = True
+        super(InternalDevice, self).close()
+
+    @property
+    def closed(self):
+        return self._closed
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return "<gpiozero.%s object>" % self.__class__.__name__
+        except DeviceClosed:
+            return "<gpiozero.%s object closed>" % self.__class__.__name__
 
 
 class PolledInternalDevice(InternalDevice):
@@ -72,6 +90,13 @@ class PolledInternalDevice(InternalDevice):
         self._event_thread = None
         self._event_delay = event_delay
         super(PolledInternalDevice, self).__init__(pin_factory=pin_factory)
+
+    def close(self):
+        try:
+            self._start_stop_events(False)
+        except AttributeError:
+            pass  # pragma: no cover
+        super(PolledInternalDevice, self).close()
 
     @property
     def event_delay(self):
@@ -159,8 +184,9 @@ class PingServer(PolledInternalDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             return '<gpiozero.PingServer object host="%s">' % self.host
-        except:
+        except DeviceClosed:
             return super(PingServer, self).__repr__()
 
     @property
@@ -273,20 +299,25 @@ class CPUTemperature(PolledInternalDevice):
         self.sensor_file = sensor_file
         super(CPUTemperature, self).__init__(
             event_delay=event_delay, pin_factory=pin_factory)
-        if min_temp >= max_temp:
-            raise ValueError('max_temp must be greater than min_temp')
-        self.min_temp = min_temp
-        self.max_temp = max_temp
-        if not min_temp <= threshold <= max_temp:
-            warnings.warn(ThresholdOutOfRange(
-                'threshold is outside of the range (min_temp, max_temp)'))
-        self.threshold = threshold
-        self._fire_events(self.pin_factory.ticks(), None)
+        try:
+            if min_temp >= max_temp:
+                raise ValueError('max_temp must be greater than min_temp')
+            self.min_temp = min_temp
+            self.max_temp = max_temp
+            if not min_temp <= threshold <= max_temp:
+                warnings.warn(ThresholdOutOfRange(
+                    'threshold is outside of the range (min_temp, max_temp)'))
+            self.threshold = threshold
+            self._fire_events(self.pin_factory.ticks(), self.is_active)
+        except:
+            self.close()
+            raise
 
     def __repr__(self):
         try:
+            self._check_open()
             return '<gpiozero.CPUTemperature object temperature=%.2f>' % self.temperature
-        except:
+        except DeviceClosed:
             return super(CPUTemperature, self).__repr__()
 
     @property
@@ -295,7 +326,7 @@ class CPUTemperature(PolledInternalDevice):
         Returns the current CPU temperature in degrees celsius.
         """
         with io.open(self.sensor_file, 'r') as f:
-            return float(f.readline().strip()) / 1000
+            return float(f.read().strip()) / 1000
 
     @property
     def value(self):
@@ -421,8 +452,9 @@ class LoadAverage(PolledInternalDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             return '<gpiozero.LoadAverage object load average=%.2f>' % self.load_average
-        except:
+        except DeviceClosed:
             return super(LoadAverage, self).__repr__()
 
     @property
@@ -431,7 +463,8 @@ class LoadAverage(PolledInternalDevice):
         Returns the current load average.
         """
         with io.open(self.load_average_file, 'r') as f:
-            file_columns = f.readline().strip().split()
+            print(repr(f))
+            file_columns = f.read().strip().split()
             return float(file_columns[self._load_average_file_column])
 
     @property
@@ -532,18 +565,23 @@ class TimeOfDay(PolledInternalDevice):
         self._utc = True
         super(TimeOfDay, self).__init__(
             event_delay=event_delay, pin_factory=pin_factory)
-        self._start_time = self._validate_time(start_time)
-        self._end_time = self._validate_time(end_time)
-        if self.start_time == self.end_time:
-            raise ValueError('end_time cannot equal start_time')
-        self._utc = utc
-        self._fire_events(self.pin_factory.ticks(), None)
+        try:
+            self._start_time = self._validate_time(start_time)
+            self._end_time = self._validate_time(end_time)
+            if self.start_time == self.end_time:
+                raise ValueError('end_time cannot equal start_time')
+            self._utc = utc
+            self._fire_events(self.pin_factory.ticks(), self.is_active)
+        except:
+            self.close()
+            raise
 
     def __repr__(self):
         try:
+            self._check_open()
             return '<gpiozero.TimeOfDay object active between %s and %s %s>' % (
                 self.start_time, self.end_time, ('local', 'UTC')[self.utc])
-        except:
+        except DeviceClosed:
             return super(TimeOfDay, self).__repr__()
 
     def _validate_time(self, value):
@@ -670,8 +708,9 @@ class DiskUsage(PolledInternalDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             return '<gpiozero.DiskUsage object usage=%.2f>' % self.usage
-        except:
+        except DeviceClosed:
             return super(DiskUsage, self).__repr__()
 
     @property

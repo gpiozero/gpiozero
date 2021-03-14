@@ -286,7 +286,6 @@ def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False)
         assert isclose(pot.value, 0.0, abs_tol=tolerance)
         assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
 
-
 def test_analog_input_device_bad_init(mock_factory):
     with pytest.raises(InputDeviceError):
         AnalogInputDevice(None)
@@ -306,6 +305,7 @@ def test_MCP3001(mock_factory):
             assert not pot.closed
             pot.close()
             assert pot.closed
+        assert repr(pot) == '<gpiozero.MCP3001 object closed>'
         with MCP3001(max_voltage=5.0) as pot:
             differential_mcp_test(mock, pot, 0, 1, 10)
 
@@ -317,6 +317,7 @@ def test_MCP3002(mock_factory):
         with MCP3002(channel=1) as pot:
             assert repr(pot).startswith('<gpiozero.MCP3002 object')
             single_mcp_test(mock, pot, 1, 10)
+        assert repr(pot) == '<gpiozero.MCP3002 object closed>'
         with MCP3002(channel=1, max_voltage=5.0) as pot:
             single_mcp_test(mock, pot, 1, 10)
         with MCP3002(channel=1, differential=True) as pot:

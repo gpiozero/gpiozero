@@ -27,7 +27,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import (
+    unicode_literals,
+    absolute_import,
+    print_function,
+    division,
+)
+str = type('')
+
 import warnings
+from fractions import Fraction
 
 import pytest
 
@@ -44,8 +53,11 @@ def test_tone_init(A4):
         warnings.resetwarnings()
         assert Tone(440) == A4
         assert Tone("A4") == A4
+        assert Tone(Fraction(880, 2)) == A4
         assert len(w) == 0
         assert Tone(69) == A4
+        assert len(w) == 1
+        assert Tone(0) != A4
         assert len(w) == 1
         assert isinstance(w[0].message, AmbiguousTone)
     assert Tone(frequency=440) == A4
@@ -57,11 +69,15 @@ def test_tone_init(A4):
         Tone(foo=1)
     with pytest.raises(TypeError):
         Tone(frequency=440, midi=69)
+    with pytest.raises(TypeError):
+        Tone(440, midi=69)
 
 def test_tone_str(A4):
     assert str(A4) == "A4"
     assert str(A4.up()) == "A#4"
     assert str(A4.down(12)) == "A3"
+    assert repr(A4) == "<Tone %s midi=69 frequency=440.00Hz>" % ('note=%r' % 'A4')
+    assert repr(Tone(13000)) == '<Tone frequency=13000.00Hz>'
 
 def test_tone_from_frequency(A4):
     assert Tone.from_frequency(440) == A4

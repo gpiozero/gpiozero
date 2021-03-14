@@ -105,6 +105,10 @@ def test_button_board_init(mock_factory):
         assert isinstance(board[0], Button)
         assert isinstance(board[1], Button)
         assert isinstance(board[2], Button)
+        assert board.pull_up
+        assert board[0].pull_up
+        assert board[1].pull_up
+        assert board[2].pull_up
         assert [b.pin for b in board] == pins
 
 def test_button_board_pressed_released(mock_factory):
@@ -112,13 +116,6 @@ def test_button_board_pressed_released(mock_factory):
     pin2 = mock_factory.pin(5)
     pin3 = mock_factory.pin(6)
     with ButtonBoard(4, 5, foo=6) as board:
-        assert isinstance(board[0], Button)
-        assert isinstance(board[1], Button)
-        assert isinstance(board[2], Button)
-        assert board.pull_up
-        assert board[0].pull_up
-        assert board[1].pull_up
-        assert board[2].pull_up
         assert board.value == (False, False, False)
         assert board.wait_for_release(1)
         assert not board.is_active
@@ -158,6 +155,14 @@ def test_button_board_when_pressed(mock_factory):
         assert evt.wait(1)
         assert evt2.wait(1)
         assert not evt1.wait(0)
+        assert not evt3.wait(0)
+        # Fake a pin event with no changes and make sure nothing gets set
+        evt.clear()
+        evt2.clear()
+        pin2._call_when_changed()
+        assert not evt.wait(0)
+        assert not evt1.wait(0)
+        assert not evt2.wait(0)
         assert not evt3.wait(0)
 
 def test_led_collection_bad_init(mock_factory):

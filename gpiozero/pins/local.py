@@ -243,7 +243,6 @@ class LocalPiSoftwareSPI(SPI):
             raise
 
     def _conflicts_with(self, other):
-        # XXX Need to refine this
         return not (
             isinstance(other, LocalPiSoftwareSPI) and
             (self._select.pin.number != other._select.pin.number)
