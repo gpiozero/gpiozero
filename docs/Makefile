@@ -215,6 +215,9 @@ images/output_device_hierarchy.dot: $(PY_SOURCES)
 images/input_device_hierarchy.dot: $(PY_SOURCES)
 	./images/class_graph -i InputDevice -o EventsMixin -o HoldMixin > $@
 
+images/internal_device_hierarchy.dot: $(PY_SOURCES)
+	./images/class_graph -i InternalDevice -o EventsMixin > $@
+
 %.svg: %.mscgen
 	mscgen -T svg -o $@ $<
 

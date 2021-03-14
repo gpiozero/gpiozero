@@ -53,7 +53,7 @@ except ImportError:
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback
 from .devices import GPIODevice, CompositeDevice
-from .mixins import GPIOQueue, EventsMixin, HoldMixin
+from .mixins import GPIOQueue, EventsMixin, HoldMixin, event
 try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
@@ -1216,8 +1216,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
                 -self._max_steps if self._wrap else self._max_steps
             )
             self._rotate_cw_event.set()
-            if self._when_rotated_cw:
-                self._when_rotated_cw()
+            self._fire_rotated_cw()
             self._rotate_cw_event.clear()
         elif new_state == '-1':
             self._steps = (
@@ -1226,15 +1225,13 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
                 self._max_steps if self._wrap else -self._max_steps
             )
             self._rotate_ccw_event.set()
-            if self._when_rotated_ccw:
-                self._when_rotated_ccw()
+            self._fire_rotated_ccw()
             self._rotate_ccw_event.clear()
         else:
             self._state = new_state
             return
         self._rotate_event.set()
-        if self._when_rotated:
-            self._when_rotated()
+        self._fire_rotated()
         self._rotate_event.clear()
         self._fire_events(ticks, self.is_active)
         self._state = 'idle'
@@ -1278,8 +1275,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         """
         return self._rotate_ccw_event.wait(timeout)
 
-    @property
-    def when_rotated(self):
+    when_rotated = event(
         """
         The function to be run when the encoder is rotated in either direction.
 
@@ -1290,15 +1286,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated
+        """)
 
-    @when_rotated.setter
-    def when_rotated(self, value):
-        self._when_rotated = self._wrap_callback(value)
-
-    @property
-    def when_rotated_clockwise(self):
+    when_rotated_clockwise = event(
         """
         The function to be run when the encoder is rotated clockwise.
 
@@ -1309,15 +1299,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated_cw
+        """)
 
-    @when_rotated_clockwise.setter
-    def when_rotated_clockwise(self, value):
-        self._when_rotated_cw = self._wrap_callback(value)
-
-    @property
-    def when_rotated_counter_clockwise(self):
+    when_rotated_counter_clockwise = event(
         """
         The function to be run when the encoder is rotated counter-clockwise.
 
@@ -1328,12 +1312,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated_ccw
-
-    @when_rotated_counter_clockwise.setter
-    def when_rotated_counter_clockwise(self, value):
-        self._when_rotated_ccw = self._wrap_callback(value)
+        """)
 
     @property
     def steps(self):
@@ -1352,6 +1331,18 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         :attr:`value` by corollary) is writable.
         """
         return self._steps
+
+    def _fire_rotated(self):
+        if self.when_rotated:
+            self.when_rotated()
+
+    def _fire_rotated_cw(self):
+        if self.when_rotated_clockwise:
+            self.when_rotated_clockwise()
+
+    def _fire_rotated_ccw(self):
+        if self.when_rotated_counter_clockwise:
+            self.when_rotated_counter_clockwise()
 
     @steps.setter
     def steps(self, value):

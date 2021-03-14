@@ -68,6 +68,7 @@ from .mixins import (
     SourceMixin,
     ValuesMixin,
     EventsMixin,
+    event,
     HoldMixin,
 )
 from .input_devices import (
@@ -145,6 +146,7 @@ from .boards import (
 )
 from .internal_devices import (
     InternalDevice,
+    PolledInternalDevice,
     PingServer,
     CPUTemperature,
     LoadAverage,

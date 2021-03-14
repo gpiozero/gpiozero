@@ -158,12 +158,13 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
 
     def close(self):
         """
-        Shut down the device and release all associated resources. This method
-        can be called on an already closed device without raising an exception.
+        Shut down the device and release all associated resources (such as GPIO
+        pins).
 
-        This method is primarily intended for interactive use at the command
-        line. It disables the device and releases its pin(s) for use by another
-        device.
+        This method is idempotent (can be called on an already closed device
+        without any side-effects). It is primarily intended for interactive use
+        at the command line. It disables the device and releases its pin(s) for
+        use by another device.
 
         You can attempt to do this simply by deleting an object, but unless
         you've cleaned up all references to the object this may not work (even
@@ -196,8 +197,8 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         """
         # This is a placeholder which is simply here to ensure close() can be
         # safely called from subclasses without worrying whether super-classes
-        # have it (which in turn is useful in conjunction with the SourceMixin
-        # class).
+        # have it (which in turn is useful in conjunction with the mixin
+        # classes).
         pass
 
     @property
