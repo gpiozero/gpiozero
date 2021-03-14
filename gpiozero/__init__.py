@@ -146,6 +146,7 @@ from .boards import (
 )
 from .internal_devices import (
     InternalDevice,
+    PolledInternalDevice,
     PingServer,
     CPUTemperature,
     LoadAverage,

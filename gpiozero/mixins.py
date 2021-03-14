@@ -288,7 +288,7 @@ class EventsMixin(object):
         This can be set to a function which accepts no (mandatory) parameters,
         or a Python function which accepts a single mandatory parameter (with
         as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device that activated will be passed
+        single mandatory parameter, the device that activated it will be passed
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
@@ -302,7 +302,7 @@ class EventsMixin(object):
         This can be set to a function which accepts no (mandatory) parameters,
         or a Python function which accepts a single mandatory parameter (with
         as many optional parameters as you like). If the function accepts a
-        single mandatory parameter, the device that deactivated will be
+        single mandatory parameter, the device that deactivated it will be
         passed as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.

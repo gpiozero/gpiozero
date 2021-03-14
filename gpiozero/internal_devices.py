@@ -48,7 +48,7 @@ from datetime import datetime, time
 import warnings
 
 from .devices import Device
-from .mixins import EventsMixin
+from .mixins import EventsMixin, event
 from .threads import GPIOThread
 from .exc import ThresholdOutOfRange
 
@@ -108,11 +108,9 @@ class PolledInternalDevice(InternalDevice):
 class PingServer(PolledInternalDevice):
     """
     Extends :class:`PolledInternalDevice` to provide a device which is active
-    when a *host* on the network can be pinged.
+    when a *host* (domain name or IP address) can be pinged.
 
-    The following example lights an LED while a server is reachable (note the
-    use of :attr:`~SourceMixin.source_delay` to ensure the server is not
-    flooded with pings)::
+    The following example lights an LED while ``google.com`` is reachable::
 
         from gpiozero import PingServer, LED
         from signal import pause
@@ -120,8 +118,8 @@ class PingServer(PolledInternalDevice):
         google = PingServer('google.com')
         led = LED(4)
 
-        led.source_delay = 60  # check once per minute
-        led.source = google
+        google.when_activated = led.on
+        google.when_deactivated = led.off
 
         pause()
 
@@ -171,6 +169,34 @@ class PingServer(PolledInternalDevice):
                 return 0
             else:
                 return 1
+
+    when_activated = event(
+        """
+        The function to run when the device changes state from inactive
+        (host unresponsive) to active (host responsive).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
+    when_deactivated = event(
+        """
+        The function to run when the device changes state from inactive
+        (host responsive) to active (host unresponsive).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
 
 
 class CPUTemperature(PolledInternalDevice):
@@ -264,6 +290,34 @@ class CPUTemperature(PolledInternalDevice):
         *threshold*.
         """
         return self.temperature > self.threshold
+
+    when_activated = event(
+        """
+        The function to run when the device changes state from inactive to
+        active (temperature reaches *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
+    when_deactivated = event(
+        """
+        The function to run when the device changes state from active to
+        inactive (temperature drops below *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
 
 
 class LoadAverage(PolledInternalDevice):
@@ -368,6 +422,34 @@ class LoadAverage(PolledInternalDevice):
         """
         return self.load_average > self.threshold
 
+    when_activated = event(
+        """
+        The function to run when the device changes state from inactive to
+        active (load average reaches *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
+    when_deactivated = event(
+        """
+        The function to run when the device changes state from active to
+        inactive (load average drops below *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
 
 class TimeOfDay(PolledInternalDevice):
     """
@@ -377,7 +459,7 @@ class TimeOfDay(PolledInternalDevice):
     instances.
 
     The following example turns on a lamp attached to an :class:`Energenie`
-    plug between 7 and 8 AM::
+    plug between 07:00AM and 08:00AM::
 
         from gpiozero import TimeOfDay, Energenie
         from datetime import time
@@ -386,7 +468,8 @@ class TimeOfDay(PolledInternalDevice):
         lamp = Energenie(1)
         morning = TimeOfDay(time(7), time(8))
 
-        lamp.source = morning
+        morning.when_activated = lamp.on
+        morning.when_deactivated = lamp.off
 
         pause()
 
@@ -473,6 +556,34 @@ class TimeOfDay(PolledInternalDevice):
         else:
             return int(not self.end_time < now < self.start_time)
 
+    when_activated = event(
+        """
+        The function to run when the device changes state from inactive to
+        active (time reaches *start_time*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
+    when_deactivated = event(
+        """
+        The function to run when the device changes state from active to
+        inactive (time reaches *end_time*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
 
 class DiskUsage(PolledInternalDevice):
     """
@@ -553,3 +664,31 @@ class DiskUsage(PolledInternalDevice):
         *threshold*.
         """
         return self.usage > self.threshold
+
+    when_activated = event(
+        """
+        The function to run when the device changes state from inactive to
+        active (disk usage reaches *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
+
+    when_deactivated = event(
+        """
+        The function to run when the device changes state from active to
+        inactive (disk usage drops below *threshold*).
+
+        This can be set to a function which accepts no (mandatory)
+        parameters, or a Python function which accepts a single mandatory
+        parameter (with as many optional parameters as you like). If the
+        function accepts a single mandatory parameter, the device that
+        activated it will be passed as that parameter.
+
+        Set this property to ``None`` (the default) to disable the event.
+        """)
