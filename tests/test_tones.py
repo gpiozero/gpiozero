@@ -27,6 +27,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import (
+    unicode_literals,
+    absolute_import,
+    print_function,
+    division,
+)
+str = type('')
+
 import warnings
 from fractions import Fraction
 
@@ -68,7 +76,7 @@ def test_tone_str(A4):
     assert str(A4) == "A4"
     assert str(A4.up()) == "A#4"
     assert str(A4.down(12)) == "A3"
-    assert repr(A4) == "<Tone note='A4' midi=69 frequency=440.00Hz>"
+    assert repr(A4) == "<Tone %s midi=69 frequency=440.00Hz>" % ('note=%r' % 'A4')
     assert repr(Tone(13000)) == '<Tone frequency=13000.00Hz>'
 
 def test_tone_from_frequency(A4):

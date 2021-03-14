@@ -48,7 +48,7 @@ from itertools import tee
 try:
     from statistics import median, mean
 except ImportError:
-    from .compat import median
+    from .compat import median, mean
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback

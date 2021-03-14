@@ -143,6 +143,8 @@ def test_input_event_deactivated(mock_factory):
         pin.drive_low()
         assert event.is_set()
 
+@pytest.mark.xfail(sys.version_info[:2] <= (3, 0),
+                   reason='warnings fail to reset properly on py2.7')
 def test_input_activated_callback_warning(mock_factory):
     def foo(): pass
 

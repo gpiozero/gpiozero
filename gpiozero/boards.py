@@ -982,9 +982,16 @@ class LEDCharDisplay(LEDCollection):
 
     .. _Multi-segment LED displays: https://en.wikipedia.org/wiki/Seven-segment_display
     """
-    def __init__(
-            self, *pins, dp=None, font=None, pwm=False, active_high=True,
-            initial_value=" ", pin_factory=None):
+    def __init__(self, *pins, **kwargs):
+        dp = kwargs.pop('dp', None)
+        font = kwargs.pop('font', None)
+        pwm = kwargs.pop('pwm', False)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', " ")
+        pin_factory = kwargs.pop('pin_factory', None)
+        if kwargs:
+            raise TypeError(
+                'unexpected keyword argument: %s' % kwargs.popiem()[0])
         if not 1 < len(pins) <= 26:
             raise PinInvalidPin(
                 'Must have between 2 and 26 LEDs in LEDCharDisplay')
@@ -1128,9 +1135,13 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
     .. _multiplexed: https://en.wikipedia.org/wiki/Multiplexed_display
     .. _persistence of vision: https://en.wikipedia.org/wiki/Persistence_of_vision
     """
-    def __init__(
-            self, char, *pins, active_high=True, initial_value=None,
-            pin_factory=None):
+    def __init__(self, char, *pins, **kwargs):
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', None)
+        pin_factory = kwargs.pop('pin_factory', None)
+        if kwargs:
+            raise TypeError(
+                'unexpected keyword argument: %s' % kwargs.popiem()[0])
         if not isinstance(char, LEDCharDisplay):
             raise ValueError('char must be an LEDCharDisplay')
         if initial_value is None:
