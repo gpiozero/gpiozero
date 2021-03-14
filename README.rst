@@ -123,6 +123,14 @@ Forums`_.
 .. _Raspberry Pi Stack Exchange: https://raspberrypi.stackexchange.com/
 .. _Raspberry Pi Forums: https://www.raspberrypi.org/forums/
 
+Python 2 support
+================
+
+.. warning::
+
+    Version 1.6.0 of GPIO Zero is the last to support Python 2. The next release
+    will be Version 2.0.0 and will support Python 3 only.
+
 Contributors
 ============
 
@@ -152,6 +160,7 @@ Contributors
 - `Martchus`_
 - `Martin O'Hanlon`_
 - `Mike Kazantsev`_
+- `Paulo Mateus`_
 - `Phil Howard`_
 - `Philippe Muller`_
 - `Rick Ansell`_
@@ -196,6 +205,7 @@ See the `contributors page`_ on GitHub for more info.
 .. _Martchus: https://github.com/gpiozero/gpiozero/commits?author=Martchus
 .. _Martin O'Hanlon: https://github.com/martinohanlon/commits?author=martinohanlon
 .. _Mike Kazantsev: https://github.com/gpiozero/gpiozero/commits?author=mk-fg
+.. _Paulo Mateus: https://github.com/gpiozero/gpiozero/commits?author=SrMouraSilva
 .. _Phil Howard: https://github.com/gpiozero/gpiozero/commits?author=Gadgetoid
 .. _Philippe Muller: https://github.com/gpiozero/gpiozero/commits?author=pmuller
 .. _Rick Ansell: https://github.com/gpiozero/gpiozero/commits?author=ricksbt
