@@ -92,6 +92,22 @@ class PolledInternalDevice(InternalDevice):
     def event_delay(self, value):
         self._event_delay = float(value)
 
+    def wait_for_active(self, timeout=None):
+        self._start_stop_events(True)
+        try:
+            return super(PolledInternalDevice, self).wait_for_active(timeout)
+        finally:
+            self._start_stop_events(
+                self.when_activated or self.when_deactivated)
+
+    def wait_for_inactive(self, timeout=None):
+        self._start_stop_events(True)
+        try:
+            return super(PolledInternalDevice, self).wait_for_inactive(timeout)
+        finally:
+            self._start_stop_events(
+                self.when_activated or self.when_deactivated)
+
     def _watch_value(self):
         while not self._event_thread.stopping.wait(self._event_delay):
             self._fire_events(self.pin_factory.ticks(), self.is_active)
