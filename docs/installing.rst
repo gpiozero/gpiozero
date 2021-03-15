@@ -15,8 +15,22 @@ the `Raspberry Pi Desktop`_ image for PC/Mac, both available from
 and other operating systems, including for PCs using the :doc:`remote GPIO
 <remote_gpio>` feature.
 
+.. _Raspberry Pi OS: https://www.raspberrypi.org/software/operating-systems/
+.. _Raspberry Pi Desktop: https://www.raspberrypi.org/software/raspberry-pi-desktop/
+.. _raspberrypi.org: https://www.raspberrypi.org/software/
+
 Raspberry Pi
 ============
+
+GPIO Zero is packaged in the apt repositories of Raspberry Pi OS, `Debian`_ and
+`Ubuntu`_. It is also available on `PyPI`_.
+
+.. _Debian: https://packages.debian.org/buster/python3-gpiozero
+.. _Ubuntu: https://packages.ubuntu.com/hirsute/python3-gpiozero
+.. _PyPI: https://pypi.org/project/gpiozero/
+
+apt
+---
 
 First, update your repositories list:
 
@@ -36,6 +50,9 @@ or Python 2:
 
     pi@raspberrypi:~$ sudo apt install python-gpiozero
 
+pip
+---
+
 If you're using another operating system on your Raspberry Pi, you may need to
 use pip to install GPIO Zero instead. Install pip using `get-pip`_ and then
 type:
@@ -51,6 +68,8 @@ or for Python 2:
     pi@raspberrypi:~$ sudo pip install gpiozero
 
 To install GPIO Zero in a virtual environment, see the :doc:`development` page.
+
+.. _get-pip: https://pip.pypa.io/en/stable/installing/
 
 PC/Mac
 ======
@@ -94,10 +113,5 @@ download from the `ReadTheDocs site`_. Simply click on the "Read the Docs" box
 at the bottom-left corner of the page (under the table of contents) and select
 "PDF" or "Epub" from the "Downloads" section.
 
-
-.. _Raspberry Pi OS: https://www.raspberrypi.org/software/operating-systems/
-.. _Raspberry Pi Desktop: https://www.raspberrypi.org/software/raspberry-pi-desktop/
-.. _raspberrypi.org: https://www.raspberrypi.org/software/
-.. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _doc-base: https://wiki.debian.org/doc-base
 .. _ReadTheDocs site: https://gpiozero.readthedocs.io/
