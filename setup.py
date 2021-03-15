@@ -24,7 +24,7 @@ except ImportError:
     pass
 
 __project__      = 'gpiozero'
-__version__      = '1.5.1'
+__version__      = '1.6.0'
 __author__       = 'Ben Nuttall'
 __author_email__ = 'ben@bennuttall.com'
 __url__          = 'https://github.com/gpiozero/gpiozero'
