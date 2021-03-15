@@ -22,7 +22,7 @@ Release 1.6.0 (2021-03-14)
   `#485`_, `#488`_, `#493`_, `#930`_)
 * Added :class:`Pibrella` class (thanks to Carl Monk) (`#773`_, `#798`_)
 * Added :class:`TrafficpHat` class (thanks to Ryan Walmsley) (`#845`_, `#846`_)
-* Added support for the `lgpio`_ library as a pin factory (`#927`_)
+* Added support for the `lgpio`_ library as a pin factory
   (:class:`~gpiozero.pins.lgpio.LGPIOFactory`) (thanks to Joan for lg) (`#927`_)
 * Allow :class:`Motor` to pass :attr:`~Device.pin_factory` to its child
   :class:`OutputDevice` objects (thanks to Yisrael Dov Lebow) (`#792`_)
