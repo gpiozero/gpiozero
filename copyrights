@@ -6,10 +6,13 @@ derives the authorship and copyright years information from the git history
 of the project; hence, this script must be run within a git repository.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 assert sys.version_info >= (3, 6), 'Script requires Python 3.6+'
 import tempfile
+import typing as t
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 from operator import attrgetter
@@ -18,14 +21,13 @@ from datetime import datetime
 from subprocess import Popen, PIPE, DEVNULL
 from pathlib import Path
 from fnmatch import fnmatch
-from typing import NamedTuple, Iterator, List, Tuple, Set, Union, Optional
 
 
 SPDX_PREFIX = 'SPDX-License-Identifier:'
 COPYRIGHT_PREFIX = 'Copyright (c)'
 
 
-def main(args: List[str] = None):
+def main(args: t.List[str] = None):
     if args is None:
         args = sys.argv[1:]
     config = get_config(args)
@@ -41,7 +43,7 @@ def main(args: List[str] = None):
                     target.write(chunk)
 
 
-def get_config(args: List[str]) -> Namespace:
+def get_config(args: t.List[str]) -> Namespace:
     config = ConfigParser(
         defaults={
             'include': '**/*',
@@ -52,10 +54,10 @@ def get_config(args: List[str]) -> Namespace:
             'spdx_prefix': SPDX_PREFIX,
             'copy_prefix': COPYRIGHT_PREFIX,
         },
-        delimiters=('=',), default_section='settings',
+        delimiters=('=',), default_section='copyrights:settings',
         empty_lines_in_values=False, interpolation=None,
         converters={'list': lambda s: s.strip().splitlines() })
-    config.read('copyrights.cfg')
+    config.read('setup.cfg')
     sect = config[config.default_section]
 
     parser = ArgumentParser(description=__doc__)
@@ -113,10 +115,10 @@ def get_config(args: List[str]) -> Namespace:
     return ns
 
 
-class Copyright(NamedTuple):
+class Copyright(t.NamedTuple):
     author: str
     email:  str
-    years:  Set[int]
+    years:  t.Set[int]
 
     def __str__(self):
         if len(self.years) > 1:
@@ -126,8 +128,8 @@ class Copyright(NamedTuple):
         return f'{years} {self.author} <{self.email}>'
 
 
-def get_copyrights(include: Set[str], exclude: Set[str])\
-        -> Iterator[Tuple[Path, List[Copyright]]]:
+def get_copyrights(include: t.Set[str], exclude: t.Set[str])\
+        -> t.Iterator[t.Tuple[Path, t.Container[Copyright]]]:
     sorted_blame = sorted(
         get_contributions(include, exclude),
         key=lambda c: (c.path, c.author, c.email)
@@ -147,15 +149,15 @@ def get_copyrights(include: Set[str], exclude: Set[str])\
         yield path, copyrights
 
 
-class Contribution(NamedTuple):
+class Contribution(t.NamedTuple):
     author: str
     email:  str
     year:   int
     path:   Path
 
 
-def get_contributions(include: Set[str], exclude: Set[str])\
-        -> Iterator[Contribution]:
+def get_contributions(include: t.Set[str], exclude: t.Set[str])\
+        -> t.Iterator[Contribution]:
     for path in get_source_paths(include, exclude):
         blame = Popen(
             ['git', 'blame', '--line-porcelain', 'HEAD', '--', str(path)],
@@ -186,7 +188,8 @@ def get_contributions(include: Set[str], exclude: Set[str])\
         assert blame.returncode == 0
 
 
-def get_source_paths(include: Set[str], exclude: Set[str]) -> Iterator[Path]:
+def get_source_paths(include: t.Set[str], exclude: t.Set[str])\
+        -> t.Iterator[Path]:
     ls_tree = Popen(
         ['git', 'ls-tree', '-r', '--name-only', 'HEAD'],
         stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
@@ -203,9 +206,9 @@ def get_source_paths(include: Set[str], exclude: Set[str]) -> Iterator[Path]:
     assert ls_tree.returncode == 0
 
 
-class License(NamedTuple):
-    ident: Optional[str]
-    text:  List[str]
+class License(t.NamedTuple):
+    ident: t.Optional[str]
+    text:  t.List[str]
 
 
 def get_license(path: Path, *, spdx_prefix: str = SPDX_PREFIX) -> License:
@@ -253,20 +256,26 @@ class CopyWriter:
         '.sql': '--',
     }
 
-    def __init__(self, license='LICENSE.txt', preamble=(),
-                 spdx_prefix=SPDX_PREFIX, copy_prefix=COPYRIGHT_PREFIX):
+    def __init__(self, license: Path=Path('LICENSE.txt'),
+                 preamble: t.List[str]=None,
+                 spdx_prefix: str=SPDX_PREFIX,
+                 copy_prefix: str=COPYRIGHT_PREFIX):
+        if preamble is None:
+            preamble = []
         self.license = get_license(license, spdx_prefix=spdx_prefix)
         self.preamble = preamble
         self.spdx_prefix = spdx_prefix
         self.copy_prefix = copy_prefix
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls, config: Namespace) -> CopyWriter:
         return cls(
             config.license, config.preamble,
             config.spdx_prefix, config.copy_prefix)
 
-    def transform(self, source, copyrights, *, comment_prefix=None):
+    def transform(self, source: t.TextIO,
+                  copyrights: t.List[Copyright], *,
+                  comment_prefix: str=None) -> t.Iterator[str]:
         if comment_prefix is None:
             comment_prefix = self.COMMENTS[Path(source.name).suffix]
         license_start = self.license.text[0]
@@ -279,7 +288,7 @@ class CopyWriter:
                     yield line
                     empty = False
                 elif linenum < 3 and (
-                        'set fileencoding=' in line or '-*- coding:' in line):
+                        'fileencoding=' in line or '-*- coding:' in line):
                     yield line
                     empty = False
                 elif line.rstrip() == comment_prefix:
@@ -313,7 +322,8 @@ class CopyWriter:
             elif state == 'body':
                 yield line
 
-    def _generate_header(self, copyrights, comment_prefix, empty):
+    def _generate_header(self, copyrights: t.Iterable[Copyright],
+                         comment_prefix: str, empty: bool) -> t.Iterator[str]:
         if not empty:
             yield comment_prefix + '\n'
         for line in self.preamble:
@@ -356,7 +366,7 @@ class AtomicReplaceFile:
         If ``None`` (the default), the temporary file will be opened in binary
         mode. Otherwise, this specifies the encoding to use with text mode.
     """
-    def __init__(self, path: Union[str, Path], encoding: str = None):
+    def __init__(self, path: t.Union[str, Path], encoding: str = None):
         if isinstance(path, str):
             path = Path(path)
         self._path = path

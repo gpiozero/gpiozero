@@ -11,62 +11,34 @@
 
 import sys
 import os
+from pathlib import Path
 from datetime import datetime
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from setuptools.config import read_configuration
+
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-import setup as _setup
-
-# Mock out certain modules while building documentation
-class Mock(object):
-    __all__ = []
-
-    def __init__(self, *args, **kw):
-        pass
-
-    def __call__(self, *args, **kw):
-        return Mock()
-
-    def __mul__(self, other):
-        return Mock()
-
-    def __and__(self, other):
-        return Mock()
-
-    def __bool__(self):
-        return False
-
-    def __nonzero__(self):
-        return False
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ('__file__', '__path__'):
-            return '/dev/null'
-        else:
-            return Mock()
-
-sys.modules['RPi'] = Mock()
-sys.modules['RPi.GPIO'] = sys.modules['RPi'].GPIO
-sys.modules['lgpio'] = Mock()
-sys.modules['RPIO'] = Mock()
-sys.modules['RPIO.PWM'] = sys.modules['RPIO'].PWM
-sys.modules['RPIO.Exceptions'] = sys.modules['RPIO'].Exceptions
-sys.modules['pigpio'] = Mock()
-sys.modules['w1thermsensor'] = Mock()
-sys.modules['spidev'] = Mock()
-sys.modules['colorzero'] = Mock()
+config = read_configuration(str(Path(__file__).parent / '..' / 'setup.cfg'))
+info = config['metadata']
 
 # -- General configuration ------------------------------------------------
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx.ext.intersphinx']
+if on_rtd:
+    needs_sphinx = '1.4.0'
+    extensions.append('sphinx.ext.imgmath')
+    imgmath_image_format = 'svg'
+    tags.add('rtd')
+else:
+    extensions.append('sphinx.ext.mathjax')
+    mathjax_path = '/usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_HTML'
+
 templates_path = ['_templates']
 source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 master_doc = 'index'
-project = 'GPIO Zero'
-copyright = '2015-%s %s' % (datetime.now().year, _setup.__author__)
-version = _setup.__version__
-release = _setup.__version__
+project = info['name']
+copyright = '2015-{now:%Y} {info[author]}'.format(now=datetime.now(), info=info)
+version = info['version']
+#release = None
 #language = None
 #today_fmt = '%B %d, %Y'
 exclude_patterns = ['_build']
@@ -82,6 +54,15 @@ pygments_style = 'sphinx'
 # -- Autodoc configuration ------------------------------------------------
 
 autodoc_member_order = 'groupwise'
+autodoc_mock_imports = [
+    'RPi',
+    'lgpio',
+    'RPIO',
+    'pigpio',
+    'w1thermsensor',
+    'spidev',
+    'colorzero',
+]
 
 # -- Intersphinx configuration --------------------------------------------
 
@@ -94,7 +75,7 @@ intersphinx_mapping = {
 # -- Options for HTML output ----------------------------------------------
 
 html_theme = 'sphinx_rtd_theme'
-html_title = '%s %s Documentation' % (project, version)
+html_title = '{info[name]} {info[version]} Documentation'.format(info=info)
 #html_theme_path = []
 #html_short_title = None
 #html_logo = None
@@ -112,7 +93,7 @@ html_static_path = ['_static']
 #html_show_copyright = True
 #html_use_opensearch = ''
 #html_file_suffix = None
-htmlhelp_basename = '%sdoc' % _setup.__project__
+htmlhelp_basename = '{info[name]}doc'.format(info=info)
 
 # Hack to make wide tables work properly in RTD
 # See https://github.com/snide/sphinx_rtd_theme/issues/117 for details
@@ -131,12 +112,12 @@ latex_elements = {
 
 latex_documents = [
     (
-        'index',                       # source start file
-        '%s.tex' % _setup.__project__, # target filename
-        '%s Documentation' % project,  # title
-        _setup.__author__,             # author
-        'manual',                      # documentclass
-        True,                          # documents ref'd from toctree only
+        'index',            # source start file
+        project + '.tex',   # target filename
+        html_title,         # title
+        info['author'],     # author
+        'manual',           # documentclass
+        True,               # documents ref'd from toctree only
         ),
 ]
 
@@ -149,11 +130,11 @@ latex_show_urls = 'footnote'
 
 # -- Options for epub output ----------------------------------------------
 
-epub_basename = _setup.__project__
+epub_basename = project
 #epub_theme = 'epub'
 #epub_title = html_title
-epub_author = _setup.__author__
-epub_identifier = 'https://gpiozero.readthedocs.io/'
+epub_author = info['author']
+epub_identifier = 'https://{info[name]}.readthedocs.io/'.format(info=info)
 #epub_tocdepth = 3
 epub_show_urls = 'no'
 #epub_use_index = True
@@ -161,8 +142,8 @@ epub_show_urls = 'no'
 # -- Options for manual page output ---------------------------------------
 
 man_pages = [
-    ('cli_pinout',  'pinout',      'GPIO Zero pinout tool',       [_setup.__author__], 1),
-    ('remote_gpio', 'remote-gpio', 'GPIO Zero remote GPIO guide', [_setup.__author__], 7),
+    ('cli_pinout',  'pinout',      'GPIO Zero pinout tool',       [info['author']], 1),
+    ('remote_gpio', 'remote-gpio', 'GPIO Zero remote GPIO guide', [info['author']], 7),
 ]
 
 man_show_urls = True
