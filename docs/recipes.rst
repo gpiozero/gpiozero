@@ -1,34 +1,11 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-.. Copyright (c) 2016-2019 Ben Nuttall <ben@bennuttall.com>
-.. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+..
+.. Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2016-2020 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2016 Barry Byford <barry_byford@yahoo.co.uk>
 .. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 ..
-.. Redistribution and use in source and binary forms, with or without
-.. modification, are permitted provided that the following conditions are met:
-..
-.. * Redistributions of source code must retain the above copyright notice,
-..   this list of conditions and the following disclaimer.
-..
-.. * Redistributions in binary form must reproduce the above copyright notice,
-..   this list of conditions and the following disclaimer in the documentation
-..   and/or other materials provided with the distribution.
-..
-.. * Neither the name of the copyright holder nor the names of its contributors
-..   may be used to endorse or promote products derived from this software
-..   without specific prior written permission.
-..
-.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-.. POSSIBILITY OF SUCH DAMAGE.
+.. SPDX-License-Identifier: BSD-3-Clause
 
 =============
 Basic Recipes
@@ -253,6 +230,24 @@ However, using :class:`LEDBarGraph` with ``pwm=True`` allows more precise
 values using LED brightness:
 
 .. literalinclude:: examples/led_bargraph_2.py
+
+LEDCharDisplay
+==============
+
+.. image:: images/led_char_display_bb.*
+
+A common `7-segment display`_ can be used to represent a variety of characters
+using :class:`LEDCharDisplay` (which actually supports an arbitrary number of
+segments):
+
+.. literalinclude:: examples/led_char_display.py
+
+Alternatively:
+
+.. literalinclude:: examples/led_char_source.py
+
+See a multi-character example in the :ref:`advanced recipes
+<multichar-display>` chapter.
 
 Traffic Lights
 ==============
@@ -572,3 +567,4 @@ Continue to:
 .. _GPIO Music Box: https://projects.raspberrypi.org/en/projects/gpio-music-box
 .. _Energenie Pi-mote: https://energenie4u.co.uk/catalogue/product/ENER002-2PI
 .. _illuminated rotary encoder: https://shop.pimoroni.com/products/rotary-encoder-illuminated-rgb
+.. _7-segment display: https://en.wikipedia.org/wiki/Seven-segment_display

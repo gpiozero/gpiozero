@@ -1,42 +1,22 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+#
+# Copyright (c) 2019-2021 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2019 Jeevan M R <14.jeevan@gmail.com>
-# Copyright (c) 2019 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2018 SteveAmor <steveamor@noreply.users.github.com>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 import errno
 import warnings
 from posix import statvfs_result
 from subprocess import CalledProcessError
+from threading import Event
 
 import pytest
-from mock import patch
+import mock
 
 from gpiozero import *
 from datetime import datetime, time
@@ -44,9 +24,15 @@ from datetime import datetime, time
 file_not_found = IOError(errno.ENOENT, 'File not found')
 bad_ping = CalledProcessError(1, 'returned non-zero exit status 1')
 
+
+def test_polled_event_delay(mock_factory):
+    with TimeOfDay(time(7), time(8)) as tod:
+        tod.event_delay = 1.0
+        assert tod.event_delay == 1.0
+
 def test_timeofday_bad_init(mock_factory):
     with pytest.raises(TypeError):
-         TimeOfDay()
+        TimeOfDay()
     with pytest.raises(ValueError):
         TimeOfDay(7, 12)
     with pytest.raises(TypeError):
@@ -79,7 +65,7 @@ def test_timeofday_value(mock_factory):
         assert tod.start_time == time(7)
         assert tod.end_time == time(8)
         assert not tod.utc
-        with patch('gpiozero.internal_devices.datetime') as dt:
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.now.return_value = datetime(2018, 1, 1, 6, 59, 0)
             assert not tod.is_active
             dt.now.return_value = datetime(2018, 1, 1, 7, 0, 0)
@@ -88,12 +74,13 @@ def test_timeofday_value(mock_factory):
             assert tod.is_active
             dt.now.return_value = datetime(2018, 1, 2, 8, 1, 0)
             assert not tod.is_active
+    assert repr(tod) == '<gpiozero.TimeOfDay object closed>'
 
     with TimeOfDay(time(1, 30), time(23, 30)) as tod:
         assert tod.start_time == time(1, 30)
         assert tod.end_time == time(23, 30)
         assert tod.utc
-        with patch('gpiozero.internal_devices.datetime') as dt:
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.utcnow.return_value = datetime(2018, 1, 1, 1, 29, 0)
             assert not tod.is_active
             dt.utcnow.return_value = datetime(2018, 1, 1, 1, 30, 0)
@@ -106,7 +93,7 @@ def test_timeofday_value(mock_factory):
             assert not tod.is_active
 
     with TimeOfDay(time(23), time(1)) as tod:
-        with patch('gpiozero.internal_devices.datetime') as dt:
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.utcnow.return_value = datetime(2018, 1, 1, 22, 59, 0)
             assert not tod.is_active
             dt.utcnow.return_value = datetime(2018, 1, 1, 23, 0, 0)
@@ -119,7 +106,7 @@ def test_timeofday_value(mock_factory):
             assert not tod.is_active
 
     with TimeOfDay(time(6), time(5)) as tod:
-        with patch('gpiozero.internal_devices.datetime') as dt:
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.utcnow.return_value = datetime(2018, 1, 1, 5, 30, 0)
             assert not tod.is_active
             dt.utcnow.return_value = datetime(2018, 1, 1, 5, 59, 0)
@@ -139,16 +126,51 @@ def test_timeofday_value(mock_factory):
             dt.utcnow.return_value = datetime(2018, 1, 2, 6, 0, 0)
             assert tod.is_active
 
+def test_polled_events(mock_factory):
+    with TimeOfDay(time(7), time(8)) as tod:
+        tod.event_delay = 0.1
+        activated = Event()
+        deactivated = Event()
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
+            dt.utcnow.return_value = datetime(2018, 1, 1, 0, 0, 0)
+            tod._fire_events(tod.pin_factory.ticks(), tod.is_active)
+            tod.when_activated = activated.set
+            tod.when_deactivated = deactivated.set
+            assert not activated.wait(0)
+            assert not deactivated.wait(0)
+            dt.utcnow.return_value = datetime(2018, 1, 1, 7, 1, 0)
+            assert activated.wait(1)
+            activated.clear()
+            assert not deactivated.wait(0)
+            dt.utcnow.return_value = datetime(2018, 1, 1, 8, 1, 0)
+            assert deactivated.wait(1)
+            assert not activated.wait(0)
+            tod.when_activated = None
+            tod.when_deactivated = None
+
+def test_polled_event_start_stop(mock_factory):
+    with TimeOfDay(time(7), time(8)) as tod:
+        assert not tod._event_thread
+        tod.when_activated = lambda: True
+        assert tod._event_thread
+        tod.when_deactivated = lambda: True
+        assert tod._event_thread
+        tod.when_activated = None
+        assert tod._event_thread
+        tod.when_deactivated = None
+        assert not tod._event_thread
+
 def test_pingserver_bad_init(mock_factory):
     with pytest.raises(TypeError):
          PingServer()
 
 def test_pingserver_init(mock_factory):
-    with patch('gpiozero.internal_devices.subprocess') as sp:
+    with mock.patch('gpiozero.internal_devices.subprocess') as sp:
         sp.check_call.return_value = True
         with PingServer('example.com') as server:
             assert repr(server).startswith('<gpiozero.PingServer object')
             assert server.host == 'example.com'
+        assert repr(server) == '<gpiozero.PingServer object closed>'
         with PingServer('192.168.1.10') as server:
             assert server.host == '192.168.1.10'
         with PingServer('8.8.8.8') as server:
@@ -157,7 +179,7 @@ def test_pingserver_init(mock_factory):
             assert server.host == '2001:4860:4860::8888'
 
 def test_pingserver_value(mock_factory):
-    with patch('gpiozero.internal_devices.subprocess.check_call') as check_call:
+    with mock.patch('gpiozero.internal_devices.subprocess.check_call') as check_call:
         with PingServer('example.com') as server:
             assert server.is_active
             check_call.side_effect = bad_ping
@@ -166,8 +188,8 @@ def test_pingserver_value(mock_factory):
             assert server.is_active
 
 def test_cputemperature_bad_init(mock_factory):
-    with patch('io.open') as m:
-        m.return_value.__enter__.side_effect = file_not_found
+    with mock.patch('io.open', mock.mock_open()) as m:
+        m.side_effect = file_not_found
         with pytest.raises(IOError):
             with CPUTemperature('') as temp:
                 temp.value
@@ -183,12 +205,12 @@ def test_cputemperature_bad_init(mock_factory):
             CPUTemperature(min_temp=20, max_temp=10)
 
 def test_cputemperature(mock_factory):
-    with patch('io.open') as m:
-        m.return_value.__enter__.return_value.readline.return_value = '37000'
+    with mock.patch('io.open', mock.mock_open(read_data='37000')) as m:
         with CPUTemperature() as cpu:
             assert repr(cpu).startswith('<gpiozero.CPUTemperature object')
             assert cpu.temperature == 37.0
             assert cpu.value == 0.37
+        assert repr(cpu) == '<gpiozero.CPUTemperature object closed>'
         with warnings.catch_warnings(record=True) as w:
             warnings.resetwarnings()
             with CPUTemperature(min_temp=30, max_temp=40) as cpu:
@@ -201,16 +223,15 @@ def test_cputemperature(mock_factory):
             assert cpu.is_active
 
 def test_loadaverage_bad_init(mock_factory):
-    with patch('io.open') as m:
-        foo = m.return_value.__enter__
-        foo.side_effect = file_not_found
+    with mock.patch('io.open', mock.mock_open()) as m:
+        m.side_effect = file_not_found
         with pytest.raises(IOError):
             with LoadAverage('') as load:
                 load.value
         with pytest.raises(IOError):
             with LoadAverage('badfile') as load:
                 load.value
-        foo.return_value.readline.return_value = '0.09 0.10 0.09 1/292 20758'
+    with mock.patch('io.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
         with pytest.raises(ValueError):
             LoadAverage(min_load_average=1)
         with pytest.raises(ValueError):
@@ -223,9 +244,7 @@ def test_loadaverage_bad_init(mock_factory):
             LoadAverage(minutes=10)
 
 def test_loadaverage(mock_factory):
-    with patch('io.open') as m:
-        foo = m.return_value.__enter__
-        foo.return_value.readline.return_value = '0.09 0.10 0.09 1/292 20758'
+    with mock.patch('io.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
         with LoadAverage() as la:
             assert repr(la).startswith('<gpiozero.LoadAverage object')
             assert la.min_load_average == 0
@@ -234,7 +253,8 @@ def test_loadaverage(mock_factory):
             assert la.load_average == 0.1
             assert la.value == 0.1
             assert not la.is_active
-        foo.return_value.readline.return_value = '1.72 1.40 1.31 3/457 23102'
+        assert repr(la) == '<gpiozero.LoadAverage object closed>'
+    with mock.patch('io.open', mock.mock_open(read_data='1.72 1.40 1.31 3/457 23102')):
         with LoadAverage(min_load_average=0.5, max_load_average=2,
                          threshold=1, minutes=5) as la:
             assert la.min_load_average == 0.5
@@ -256,7 +276,7 @@ def test_diskusage_bad_init(mock_factory):
         DiskUsage(filesystem='badfilesystem')
 
 def test_diskusage(mock_factory):
-    with patch('os.statvfs') as statvfs:
+    with mock.patch('os.statvfs') as statvfs:
         statvfs.return_value = statvfs_result((
             4096, 4096, 100000, 48000, 48000, 0, 0, 0, 0, 255))
         with DiskUsage() as disk:
@@ -265,6 +285,7 @@ def test_diskusage(mock_factory):
             assert disk.usage == 52.0
             assert disk.is_active == False
             assert disk.value == 0.52
+        assert repr(disk) == '<gpiozero.DiskUsage object closed>'
         with DiskUsage(threshold=50.0) as disk:
             assert disk.is_active == True
         with warnings.catch_warnings(record=True) as w:

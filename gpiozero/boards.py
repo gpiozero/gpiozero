@@ -1,54 +1,40 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
+#
+# Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2015-2021 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2020 Ryan Walmsley <ryanteck@gmail.com>
-# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
-# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2020 Jack Wearden <jack@jackwearden.co.uk>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
 # Copyright (c) 2019 ForToffee <ForToffee@users.noreply.github.com>
+# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2018 SteveAmor <steveamor@users.noreply.github.com>
 # Copyright (c) 2018 Rick Ansell <rick@nbinvincible.org.uk>
 # Copyright (c) 2018 Claire Pollard <claire.r.pollard@gmail.com>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
 # Copyright (c) 2016 Andrew Scheller <lurch@durge.org>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 from time import sleep
-from itertools import repeat, cycle, chain
+from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 
 from .exc import (
     DeviceClosed,
+    PinInvalidPin,
     GPIOPinMissing,
     EnergenieSocketMissing,
     EnergenieBadSocket,
     OutputDeviceBadValue,
     CompositeDeviceBadDevice,
+    BadWaitTime,
     )
 from .input_devices import Button
 from .output_devices import (
@@ -64,6 +50,13 @@ from .output_devices import (
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin, HoldMixin
+from .fonts import load_font_7seg, load_font_14seg
+
+
+def pairwise(it):
+    a, b = tee(it)
+    next(b, None)
+    return zip(a, b)
 
 
 class CompositeOutputDevice(SourceMixin, CompositeDevice):
@@ -152,7 +145,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         leds = LEDBoard(2, 3, 4, 5)
         btns = ButtonBoard(6, 7, 8, 9)
         leds.source = btns
-        
+
         pause()
 
     Alternatively you could represent the number of pressed buttons with an
@@ -165,7 +158,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         graph = LEDBarGraph(2, 3, 4, 5)
         bb = ButtonBoard(6, 7, 8, 9)
         graph.source = (mean(values) for values in bb.values)
-        
+
         pause()
 
     :type pins: int or str
@@ -243,7 +236,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         def get_new_handler(device):
             def fire_both_events(ticks, state):
                 device._fire_events(ticks, device._state_to_value(state))
-                self._fire_events(ticks, self.value)
+                self._fire_events(ticks, self.is_active)
             return fire_both_events
         # _handlers only exists to ensure that we keep a reference to the
         # generated fire_both_events handler for each Button (remember that
@@ -541,8 +534,8 @@ class LEDBoard(LEDCollection):
                     raise ValueError('fade_out_time must be 0 with non-PWM LEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n))
+            self._blink_device,
+            (on_time, off_time, fade_in_time, fade_out_time, n))
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
@@ -758,6 +751,518 @@ class LEDBarGraph(LEDCollection):
     @lit_count.setter
     def lit_count(self, value):
         self.value = value / len(self)
+
+
+class LEDCharFont(MutableMapping):
+    """
+    Contains a mapping of values to tuples of LED states.
+
+    This effectively acts as a "font" for :class:`LEDCharDisplay`, and two
+    default fonts (for 7-segment and 14-segment displays) are shipped with GPIO
+    Zero by default. You can construct your own font instance from a
+    :class:`dict` which maps values (usually single-character strings) to
+    a tuple of LED states::
+
+        from gpiozero import LEDCharDisplay, LEDCharFont
+
+        my_font = LEDCharFont({
+            ' ': (0, 0, 0, 0, 0, 0, 0),
+            'D': (1, 1, 1, 1, 1, 1, 0),
+            'A': (1, 1, 1, 0, 1, 1, 1),
+            'd': (0, 1, 1, 1, 1, 0, 1),
+            'a': (1, 1, 1, 1, 1, 0, 1),
+        })
+        display = LEDCharDisplay(26, 13, 12, 22, 17, 19, 6, dp=5, font=my_font)
+        display.value = 'D'
+
+    Font instances are mutable and can be changed while actively in use by
+    an instance of :class:`LEDCharDisplay`. However, changing the font will
+    *not* change the state of the LEDs in the display (though it may change
+    the :attr:`~LEDCharDisplay.value` of the display when next queried).
+
+    .. note::
+
+        Your custom mapping should always include a value (typically space)
+        which represents all the LEDs off. This will usually be the default
+        value for an instance of :class:`LEDCharDisplay`.
+
+    You may also wish to load fonts from a friendly text-based format. A simple
+    parser for such formats (supporting an arbitrary number of segments) is
+    provided by :func:`gpiozero.fonts.load_segment_font`.
+    """
+    def __init__(self, font):
+        super(LEDCharFont, self).__init__()
+        self._map = OrderedDict([
+            (char, tuple(int(bool(pin)) for pin in pins))
+            for char, pins in font.items()
+        ])
+        self._refresh_rmap()
+
+    def __repr__(self):
+        return '{self.__class__.__name__}({{\n{content}\n}})'.format(
+            self=self, content='\n'.join(
+                '    {key!r}: {value!r},'.format(key=key, value=value)
+                for key, value in sorted(self.items())
+            ))
+
+    def _refresh_rmap(self):
+        # The reverse mapping is pre-calculated for speed of lookup. Given that
+        # the font mapping can be 1:n, we cannot guarantee the reverse is
+        # unique. In case the provided font is an ordered dictionary, we
+        # explicitly take only the first definition of each non-unique pin
+        # definition so that value lookups are predictable
+        rmap = {}
+        for char, pins in self._map.items():
+            rmap.setdefault(pins, char)
+        self._rmap = rmap
+
+    def __len__(self):
+        return len(self._map)
+
+    def __iter__(self):
+        return iter(self._map)
+
+    def __getitem__(self, char):
+        return self._map[char]
+
+    def __setitem__(self, char, pins):
+        try:
+            # This is necessary to ensure that _rmap is correct in the case
+            # that we're overwriting an existing char->pins mapping
+            del self[char]
+        except KeyError:
+            pass
+        pins = tuple(int(bool(pin)) for pin in pins)
+        self._map[char] = pins
+        self._rmap.setdefault(pins, char)
+
+    def __delitem__(self, char):
+        pins = self._map[char]
+        del self._map[char]
+        # If the reverse mapping of the char's pins maps to the char we need
+        # to find if it now maps to another char (given the n:1 mapping)
+        if self._rmap[pins] == char:
+            del self._rmap[pins]
+            for char, char_pins in self._map.items():
+                if pins == char_pins:
+                    self._rmap[pins] = char
+                    break
+
+
+class LEDCharDisplay(LEDCollection):
+    """
+    Extends :class:`LEDCollection` for a multi-segment LED display.
+
+    `Multi-segment LED displays`_ typically have 7 pins (labelled "a" through
+    "g") representing 7 LEDs layed out in a figure-of-8 fashion. Frequently, an
+    eigth pin labelled "dp" is included for a trailing decimal-point:
+
+    .. code-block:: text
+
+             a
+           ━━━━━
+        f ┃     ┃ b
+          ┃  g  ┃
+           ━━━━━
+        e ┃     ┃ c
+          ┃     ┃
+           ━━━━━ • dp
+             d
+
+    Other common layouts are 9, 14, and 16 segment displays which include
+    additional segments permitting more accurate renditions of alphanumerics.
+    For example:
+
+    .. code-block:: text
+
+             a
+           ━━━━━
+        f ┃╲i┃j╱┃ b
+          ┃ ╲┃╱k┃
+          g━━ ━━h
+        e ┃ ╱┃╲n┃ c
+          ┃╱l┃m╲┃
+           ━━━━━ • dp
+             d
+
+    Such displays have either a common anode, or common cathode pin. This class
+    defaults to the latter; when using a common anode display *active_high*
+    should be set to :data:`False`.
+
+    Instances of this class can be used to display characters or control
+    individual LEDs on the display. For example::
+
+        from gpiozero import LEDCharDisplay
+
+        char = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10, active_high=False)
+        char.value = 'C'
+
+    If the class is constructed with 7 or 14 segments, a default :attr:`font`
+    will be loaded, mapping some ASCII characters to typical layouts. In other
+    cases, the default mapping will simply assign " " (space) to all LEDs off.
+    You can assign your own mapping at construction time or after
+    instantiation.
+
+    While the example above shows the display with a :class:`str` value,
+    theoretically the *font* can map any value that can be the key in a
+    :class:`dict`, so the value of the display can be likewise be any valid
+    key value (e.g. you could map integer digits to LED patterns). That said,
+    there is one exception to this: when *dp* is specified to enable the
+    decimal-point, the :attr:`value` must be a :class:`str` as the presence
+    or absence of a "." suffix indicates whether the *dp* LED is lit.
+
+    :type pins: int or str
+    :param \\*pins:
+        Specify the GPIO pins that the multi-segment display is attached to.
+        Pins should be in the LED segment order A, B, C, D, E, F, G, and will
+        be named automatically by the class. If a decimal-point pin is
+        present, specify it separately as the *dp* parameter.
+
+    :type dp: int or str
+    :param dp:
+        If a decimal-point segment is present, specify it as this named
+        parameter.
+
+    :type font: dict or None
+    :param font:
+        A mapping of values (typically characters, but may also be numbers) to
+        tuples of LED states. A default mapping for ASCII characters is
+        provided for 7 and 14 segment displays.
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
+
+    :param bool active_high:
+        If :data:`True` (the default), the :meth:`on` method will set all the
+        associated pins to HIGH. If :data:`False`, the :meth:`on` method will
+        set all pins to LOW (the :meth:`off` method always does the opposite).
+
+    :param initial_value:
+        The initial value to display. Defaults to space (" ") which typically
+        maps to all LEDs being inactive. If :data:`None`, each device will be
+        left in whatever state the pin is found in when configured for output
+        (warning: this can be on).
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _Multi-segment LED displays: https://en.wikipedia.org/wiki/Seven-segment_display
+    """
+    def __init__(self, *pins, **kwargs):
+        dp = kwargs.pop('dp', None)
+        font = kwargs.pop('font', None)
+        pwm = kwargs.pop('pwm', False)
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', " ")
+        pin_factory = kwargs.pop('pin_factory', None)
+        if kwargs:
+            raise TypeError(
+                'unexpected keyword argument: %s' % kwargs.popiem()[0])
+        if not 1 < len(pins) <= 26:
+            raise PinInvalidPin(
+                'Must have between 2 and 26 LEDs in LEDCharDisplay')
+        for pin in pins:
+            if isinstance(pin, LEDCollection):
+                raise PinInvalidPin(
+                    'Cannot use LEDCollection in LEDCharDisplay')
+
+        if font is None:
+            if len(pins) in (7, 14):
+                # Only import pkg_resources here as merely importing it is
+                # slooooow!
+                from pkg_resources import resource_stream
+                font = {
+                    7: lambda: load_font_7seg(
+                        resource_stream(__name__, 'fonts/7seg.txt')),
+                    14: lambda: load_font_14seg(
+                        resource_stream(__name__, 'fonts/14seg.txt')),
+                }[len(pins)]()
+            else:
+                # Construct a default dict containing a definition for " "
+                font = {" ": (0,) * len(pins)}
+        self._font = LEDCharFont(font)
+
+        pins = {chr(ord('a') + i): pin for i, pin in enumerate(pins)}
+        order = sorted(pins.keys())
+        if dp is not None:
+            pins['dp'] = dp
+            order.append('dp')
+        super(LEDCharDisplay, self).__init__(
+            pwm=pwm, active_high=active_high, initial_value=None,
+            _order=order, pin_factory=pin_factory, **pins)
+        if initial_value is not None:
+            self.value = initial_value
+
+    @property
+    def font(self):
+        """
+        An :class:`LEDCharFont` mapping characters to tuples of LED states.
+        The font is mutable after construction. You can assign a tuple of LED
+        states to a character to modify the font, delete an existing character
+        in the font, or assign a mapping of characters to tuples to replace the
+        entire font.
+
+        Note that modifying the :attr:`font` never alters the underlying LED
+        states. Only assignment to :attr:`value`, or calling the inherited
+        :class:`LEDCollection` methods (:meth:`on`, :meth:`off`, etc.) modifies
+        LED states. However, modifying the font may alter the character
+        returned by querying :attr:`value`.
+        """
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = LEDCharFont(value)
+
+    @property
+    def value(self):
+        """
+        The character the display should show. This is mapped by the current
+        :attr:`font` to a tuple of LED states which is applied to the
+        underlying LED objects when this attribute is set.
+
+        When queried, the current LED states are looked up in the font to
+        determine the character shown. If the current LED states do not
+        correspond to any character in the :attr:`font`, the value is
+        :data:`None`.
+
+        It is possible for multiple characters in the font to map to the same
+        LED states (e.g. S and 5). In this case, if the font was constructed
+        from an ordered mapping (which is the default), then the first matching
+        mapping will always be returned. This also implies that the value
+        queried need not match the value set.
+        """
+        state = super(LEDCharDisplay, self).value
+        if hasattr(self, 'dp'):
+            state, dp = state[:-1], state[-1]
+        else:
+            dp = False
+        try:
+            result = self._font._rmap[state]
+        except KeyError:
+            # Raising exceptions on lookup is problematic; in case the LED
+            # state is not representable we simply return None (although
+            # technically that is a valid item we can map :)
+            return None
+        else:
+            if dp:
+                return result + '.'
+            else:
+                return result
+
+    @value.setter
+    def value(self, value):
+        for led, v in zip(self, self._parse_state(value)):
+            led.value = v
+
+    def _parse_state(self, value):
+        if hasattr(self, 'dp'):
+            if len(value) > 1 and value.endswith('.'):
+                value = value[:-1]
+                dp = 1
+            else:
+                dp = 0
+            return self._font[value] + (dp,)
+        else:
+            return self._font[value]
+
+
+class LEDMultiCharDisplay(CompositeOutputDevice):
+    """
+    Wraps :class:`LEDCharDisplay` for multi-character `multiplexed`_ LED
+    character displays.
+
+    The class is constructed with a *char* which is an instance of the
+    :class:`LEDCharDisplay` class, capable of controlling the LEDs in one
+    character of the display, and an additional set of *pins* that represent
+    the common cathode (or anode) of each character.
+
+    .. warning::
+
+        You should not attempt to connect the common cathode (or anode) off
+        each character directly to a GPIO. Rather, use a set of transistors (or
+        some other suitable component capable of handling the current of all
+        the segment LEDs simultaneously) to connect the common cathode to
+        ground (or the common anode to the supply) and control those
+        transistors from the GPIOs specified under *pins*.
+
+    The *active_high* parameter defaults to :data:`True`. Note that it only
+    applies to the specified *pins*, which are assumed to be controlling a set
+    of transistors (hence the default). The specified *char* will use its own
+    *active_high* parameter. Finally, *initial_value* defaults to a tuple of
+    :attr:`~LEDCharDisplay.value` attribute of the specified display multiplied
+    by the number of *pins* provided.
+
+    When the :attr:`value` is set such that one or more characters in the
+    display differ in value, a background thread is implicitly started to
+    rotate the active character, relying on `persistence of vision`_ to display
+    the complete value.
+
+    .. _multiplexed: https://en.wikipedia.org/wiki/Multiplexed_display
+    .. _persistence of vision: https://en.wikipedia.org/wiki/Persistence_of_vision
+    """
+    def __init__(self, char, *pins, **kwargs):
+        active_high = kwargs.pop('active_high', True)
+        initial_value = kwargs.pop('initial_value', None)
+        pin_factory = kwargs.pop('pin_factory', None)
+        if kwargs:
+            raise TypeError(
+                'unexpected keyword argument: %s' % kwargs.popiem()[0])
+        if not isinstance(char, LEDCharDisplay):
+            raise ValueError('char must be an LEDCharDisplay')
+        if initial_value is None:
+            initial_value = (char.value,) * len(pins)
+        if pin_factory is None:
+            pin_factory = char.pin_factory
+        self._plex_thread = None
+        self._plex_delay = 0.005
+        plex = CompositeOutputDevice(*(
+            OutputDevice(
+                pin, active_high=active_high, initial_value=None,
+                pin_factory=pin_factory)
+            for pin in pins
+        ))
+        super(LEDMultiCharDisplay, self).__init__(
+            plex=plex, char=char, pin_factory=pin_factory)
+        self.value = initial_value
+
+    def close(self):
+        try:
+            self._stop_plex()
+        except AttributeError:
+            pass
+        super(LEDMultiCharDisplay, self).close()
+
+    def _stop_plex(self):
+        if self._plex_thread:
+            self._plex_thread.stop()
+        self._plex_thread = None
+
+    @property
+    def plex_delay(self):
+        """
+        The delay (measured in seconds) in the loop used to switch each
+        character in the multiplexed display on. Defaults to 0.005 seconds
+        which is generally sufficient to provide a "stable" (non-flickery)
+        display.
+        """
+        return self._plex_delay
+
+    @plex_delay.setter
+    def plex_delay(self, value):
+        if value < 0:
+            raise BadWaitTime('plex_delay must be 0 or greater')
+        self._plex_delay = float(value)
+
+    @property
+    def value(self):
+        """
+        The sequence of values to display.
+
+        This can be any sequence containing keys from the
+        :attr:`~LEDCharDisplay.font` of the associated character display. For
+        example, if the value consists only of single-character strings, it's
+        valid to assign a string to this property (as a string is simply a
+        sequence of individual character keys)::
+
+            from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
+
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10)
+            d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
+            d.value = 'LEDS'
+
+        However, things get more complicated if a decimal point is in use as
+        then this class needs to know explicitly where to break the value for
+        use on each character of the display. This can be handled by simply
+        assigning a sequence of strings thus::
+
+            from gpiozero import LEDCharDisplay, LEDMultiCharDisplay
+
+            c = LEDCharDisplay(4, 5, 6, 7, 8, 9, 10)
+            d = LEDMultiCharDisplay(c, 19, 20, 21, 22)
+            d.value = ('L.', 'E', 'D', 'S')
+
+        This is how the value will always be represented when queried (as a
+        tuple of individual values) as it neatly handles dealing with
+        heterogeneous types and the aforementioned decimal point issue.
+
+        .. note::
+
+            The value also controls whether a background thread is in use to
+            multiplex the display. When all positions in the value are equal
+            the background thread is disabled and all characters are
+            simultaneously enabled.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        if len(value) > len(self.plex):
+            raise ValueError(
+                'length of value must not exceed the number of characters in '
+                'the display')
+        elif len(value) < len(self.plex):
+            # Right-align the short value on the display
+            value = (' ',) * (len(self.plex) - len(value)) + tuple(value)
+        else:
+            value = tuple(value)
+
+        # Get the list of tuples of states that the character LEDs will pass
+        # through. Prune any entirely blank state (which we can skip by never
+        # activating the plex for them) but remember which plex index each
+        # (non-blank) state is associated with
+        states = {}
+        for index, char in enumerate(value):
+            state = self.char._parse_state(char)
+            if any(state):
+                states.setdefault(state, set()).add(index)
+        # Calculate the transitions between states for an ordering of chars
+        # based on activated LEDs. This a vague attempt at minimizing the
+        # number of LEDs that need flipping between chars; to do this
+        # "properly" is O(n!) which gets silly quickly so ... fudge it
+        order = sorted(states)
+        if len(order) > 1:
+            transitions = [
+                [(self.plex[index], 0) for index in states[old]] +
+                [
+                    (led, new_value)
+                    for led, old_value, new_value in zip(self.char, old, new)
+                    if old_value ^ new_value
+                ] +
+                [(self.plex[index], 1) for index in states[new]]
+                for old, new in pairwise(order + [order[0]])
+            ]
+        else:
+            transitions = []
+
+        # Stop any current display thread and disable the display
+        self._stop_plex()
+        self.plex.off()
+
+        # If there's any characters to display, set the character LEDs to the
+        # state of the first character in the display order. If there's
+        # transitions to display, activate the plex thread; otherwise, just
+        # switch on each plex with a char to display
+        if order:
+            for led, state in zip(self.char, order[0]):
+                led.value = state
+            if transitions:
+                self._plex_thread = GPIOThread(self._show_chars, (transitions,))
+                self._plex_thread.start()
+            else:
+                for index in states[order[0]]:
+                    self.plex[index].on()
+        self._value = value
+
+    def _show_chars(self, transitions):
+        for transition in cycle(transitions):
+            for device, value in transition:
+                device.value = value
+            if self._plex_thread.stopping.wait(self._plex_delay):
+                break
 
 
 class PiHutXmasTree(LEDBoard):
@@ -2324,8 +2829,8 @@ class Pibrella(CompositeOutputDevice):
         pb.buzzer.play('A4')
         pb.off()
 
-    The four input and output channels are not provided by this class. Instead,
-    you can create GPIO Zero devices using these pins::
+    The four input and output channels are exposed so you can create GPIO Zero
+    devices using these pins without looking up their respective pin numbers::
 
         from gpiozero import Pibrella, LED, Button
 

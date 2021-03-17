@@ -1,33 +1,12 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+#
+# Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 import os
@@ -37,7 +16,6 @@ import warnings
 from collections import namedtuple, OrderedDict
 from itertools import chain
 from types import FunctionType
-from threading import Lock
 
 from .threads import _threads_shutdown
 from .mixins import (
@@ -93,9 +71,9 @@ class GPIOMeta(type):
             # already exists. Only construct the instance if the key's new.
             key = cls._shared_key(*args, **kwargs)
             try:
-                self = cls._instances[key]
+                self = cls._instances[key]()
                 self._refs += 1
-            except (KeyError, ReferenceError) as e:
+            except (KeyError, AttributeError) as e:
                 self = super(GPIOMeta, cls).__call__(*args, **kwargs)
                 self._refs = 1
                 # Replace the close method with one that merely decrements
@@ -118,7 +96,7 @@ class GPIOMeta(type):
                                 pass
 
                 self.close = close
-                cls._instances[key] = weakref.proxy(self)
+                cls._instances[key] = weakref.ref(self)
         else:
             # Construct the instance as normal
             self = super(GPIOMeta, cls).__call__(*args, **kwargs)
@@ -148,16 +126,37 @@ class GPIOBase(GPIOMeta(str('GPIOBase'), (), {})):
         return super(GPIOBase, self).__setattr__(name, value)
 
     def __del__(self):
+        # NOTE: Yes, we implicitly call close() on __del__(), and yes for you
+        # dear hacker-on-this-library, this means pain!
+        #
+        # It's entirely for the convenience of command line experimenters and
+        # newbies who want to re-gain those pins when stuff falls out of scope
+        # without managing their object lifetimes "properly" with "with" (but,
+        # hey, this is an educational library at heart so that's the way we
+        # roll).
+        #
+        # What does this mean for you? It means that in close() you cannot
+        # assume *anything*. If someone calls a constructor with a fundamental
+        # mistake like the wrong number of params, then your close() method is
+        # going to be called before __init__ ever ran so all those attributes
+        # you *think* exist, erm, don't. Basically if you refer to anything in
+        # "self" within your close method, be preprared to catch AttributeError
+        # on its access to avoid spurious warnings for the end user.
+        #
+        # "But we're exiting anyway; surely exceptions in __del__ get
+        # squashed?" Yes, but they still cause verbose warnings and remember
+        # that this is an educational library; keep it friendly!
         self.close()
 
     def close(self):
         """
-        Shut down the device and release all associated resources. This method
-        can be called on an already closed device without raising an exception.
+        Shut down the device and release all associated resources (such as GPIO
+        pins).
 
-        This method is primarily intended for interactive use at the command
-        line. It disables the device and releases its pin(s) for use by another
-        device.
+        This method is idempotent (can be called on an already closed device
+        without any side-effects). It is primarily intended for interactive use
+        at the command line. It disables the device and releases its pin(s) for
+        use by another device.
 
         You can attempt to do this simply by deleting an object, but unless
         you've cleaned up all references to the object this may not work (even
@@ -190,8 +189,10 @@ class GPIOBase(GPIOMeta(str('GPIOBase'), (), {})):
         """
         # This is a placeholder which is simply here to ensure close() can be
         # safely called from subclasses without worrying whether super-classes
-        # have it (which in turn is useful in conjunction with the SourceMixin
-        # class).
+        # have it (which in turn is useful in conjunction with the mixin
+        # classes).
+        #
+        # P.S. See note in __del__ above.
         pass
 
     @property
@@ -303,7 +304,11 @@ class Device(ValuesMixin, GPIOBase):
             raise BadPinFactory('Unable to find pin factory "%s"' % name)
 
     def __repr__(self):
-        return "<gpiozero.%s object>" % (self.__class__.__name__)
+        try:
+            self._check_open()
+            return "<gpiozero.%s object>" % (self.__class__.__name__)
+        except DeviceClosed:
+            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
 
     def _conflicts_with(self, other):
         """
@@ -459,7 +464,7 @@ class CompositeDevice(Device):
                     len(self)
                 )
         except DeviceClosed:
-            return "<gpiozero.%s object closed>" % (self.__class__.__name__)
+            return super(CompositeDevice, self).__repr__()
 
     def __len__(self):
         return len(self._all)
@@ -478,8 +483,7 @@ class CompositeDevice(Device):
     def close(self):
         if getattr(self, '_all', None):
             for device in self._all:
-                if isinstance(device, Device):
-                    device.close()
+                device.close()
             self._all = ()
 
     @property
@@ -562,7 +566,10 @@ class GPIODevice(Device):
 
     @property
     def closed(self):
-        return self._pin is None
+        try:
+            return self._pin is None
+        except AttributeError:
+            return True
 
     def _check_open(self):
         try:

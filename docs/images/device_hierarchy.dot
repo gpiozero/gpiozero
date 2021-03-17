@@ -40,7 +40,7 @@ digraph classes {
     ButtonBoard->CompositeDevice;
     ButtonBoard->HoldMixin;
     Buzzer->DigitalOutputDevice;
-    CPUTemperature->InternalDevice;
+    CPUTemperature->PolledInternalDevice;
     CamJamKitRobot->Robot;
     CompositeDevice->Device;
     CompositeOutputDevice->CompositeDevice;
@@ -49,7 +49,7 @@ digraph classes {
     DigitalInputDevice->EventsMixin;
     DigitalInputDevice->InputDevice;
     DigitalOutputDevice->OutputDevice;
-    DiskUsage->InternalDevice;
+    DiskUsage->PolledInternalDevice;
     DistanceSensor->SmoothedInputDevice;
     Energenie->Device;
     Energenie->SourceMixin;
@@ -63,11 +63,13 @@ digraph classes {
     LED->DigitalOutputDevice;
     LEDBarGraph->LEDCollection;
     LEDBoard->LEDCollection;
+    LEDCharDisplay->LEDCollection;
     LEDCollection->CompositeOutputDevice;
+    LEDMultiCharDisplay->CompositeOutputDevice;
     LedBorg->RGBLED;
     LightSensor->SmoothedInputDevice;
     LineSensor->SmoothedInputDevice;
-    LoadAverage->InternalDevice;
+    LoadAverage->PolledInternalDevice;
     MCP3001->MCP30xx;
     MCP3002->MCP30xx;
     MCP3002->MCP3xx2;
@@ -103,7 +105,8 @@ digraph classes {
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
     Pibrella->CompositeOutputDevice;
-    PingServer->InternalDevice;
+    PingServer->PolledInternalDevice;
+    PolledInternalDevice->InternalDevice;
     PololuDRV8835Robot->PhaseEnableRobot;
     PumpkinPi->LEDBoard;
     RGBLED->Device;
@@ -121,7 +124,7 @@ digraph classes {
     SnowPi->LEDBoard;
     StatusBoard->CompositeOutputDevice;
     StatusZero->LEDBoard;
-    TimeOfDay->InternalDevice;
+    TimeOfDay->PolledInternalDevice;
     TonalBuzzer->CompositeDevice;
     TonalBuzzer->SourceMixin;
     TrafficHat->CompositeOutputDevice;

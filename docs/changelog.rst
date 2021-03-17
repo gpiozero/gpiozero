@@ -1,33 +1,10 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+..
+.. Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
 .. Copyright (c) 2016-2020 Ben Nuttall <ben@bennuttall.com>
-.. Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
 .. Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 ..
-.. Redistribution and use in source and binary forms, with or without
-.. modification, are permitted provided that the following conditions are met:
-..
-.. * Redistributions of source code must retain the above copyright notice,
-..   this list of conditions and the following disclaimer.
-..
-.. * Redistributions in binary form must reproduce the above copyright notice,
-..   this list of conditions and the following disclaimer in the documentation
-..   and/or other materials provided with the distribution.
-..
-.. * Neither the name of the copyright holder nor the names of its contributors
-..   may be used to endorse or promote products derived from this software
-..   without specific prior written permission.
-..
-.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-.. POSSIBILITY OF SUCH DAMAGE.
+.. SPDX-License-Identifier: BSD-3-Clause
 
 =========
 Changelog
@@ -35,37 +12,90 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 1.5.2 (unreleased)
+Release 1.6.1 (2021-03-17)
 ==========================
 
+* Fix missing font files for 7-segment displays
+
+
+Release 1.6.0 (2021-03-14)
+==========================
+
+* Added :class:`RotaryEncoder` class (thanks to Paulo Mateus) (`#482`_, `#928`_)
+* Added support for multi-segment character displays with
+  :class:`LEDCharDisplay` and :class:`LEDMultiCharDisplay` along with "font"
+  support using :class:`LEDCharFont` (thanks to Martin O'Hanlon) (`#357`_,
+  `#485`_, `#488`_, `#493`_, `#930`_)
 * Added :class:`Pibrella` class (thanks to Carl Monk) (`#773`_, `#798`_)
 * Added :class:`TrafficpHat` class (thanks to Ryan Walmsley) (`#845`_, `#846`_)
+* Added support for the `lgpio`_ library as a pin factory
+  (:class:`~gpiozero.pins.lgpio.LGPIOFactory`) (thanks to Joan for lg) (`#927`_)
 * Allow :class:`Motor` to pass :attr:`~Device.pin_factory` to its child
   :class:`OutputDevice` objects (thanks to Yisrael Dov Lebow) (`#792`_)
 * Small SPI exception fix (thanks to Maksim Levental) (`#762`_)
 * Warn users when using default pin factory for Servos and Distance Sensors
   (thanks to Sofiia Kosovan and Daniele Procida at the EuroPython sprints)
   (`#780`_, `#781`_)
-* Add :attr:`~Servo.pulse_width` property to :class:`Servo` (suggested by
+* Added :attr:`~Servo.pulse_width` property to :class:`Servo` (suggested by
   Daniele Procida at the PyCon UK sprints) (`#795`_, `#797`_)
+* Added event-driven functionality to :doc:`internal devices <api_internal>`
+  (`#941`_)
+* Allowed :class:`Energenie` sockets preserve their state on construction
+  (thanks to Jack Wearden) (`#865`_)
+* Added source tools :func:`~gpiozero.tools.scaled_half` and
+  :func:`~gpiozero.tools.scaled_full`
+* Added complete Pi 4 support to :class:`~gpiozero.pins.native.NativeFactory`
+  (thanks to Andrew Scheller) (`#920`_, `#929`_, `#940`_)
+* Updated add-on boards to use BOARD numbering (`#349`_, `#860`_)
+* Fixed :class:`ButtonBoard` release events (`#761`_)
+* Add ASCII art diagrams to :program:`pinout` for Pi 400 and CM4 (`#932`_)
+* Cleaned up software SPI (thanks to Andrew Scheller and Kyle Morgan) (`#777`_,
+  `#895`_, `#900`_)
+* Added USB3 and Ethernet speed attributes to :func:`pi_info`
 * Various docs updates
 
+.. warning::
+
+    This is the last release to support Python 2
+
+.. _lgpio: http://abyz.me.uk/lg/py_lgpio.html
+.. _#482: https://github.com/gpiozero/gpiozero/issues/482
+.. _#928: https://github.com/gpiozero/gpiozero/issues/928
+.. _#357: https://github.com/gpiozero/gpiozero/issues/357
+.. _#485: https://github.com/gpiozero/gpiozero/issues/485
+.. _#488: https://github.com/gpiozero/gpiozero/issues/488
+.. _#493: https://github.com/gpiozero/gpiozero/issues/493
+.. _#930: https://github.com/gpiozero/gpiozero/issues/930
 .. _#773: https://github.com/gpiozero/gpiozero/issues/773
 .. _#798: https://github.com/gpiozero/gpiozero/issues/798
-.. _#792: https://github.com/gpiozero/gpiozero/issues/792
 .. _#845: https://github.com/gpiozero/gpiozero/issues/845
 .. _#846: https://github.com/gpiozero/gpiozero/issues/846
+.. _#927: https://github.com/gpiozero/gpiozero/issues/927
+.. _#792: https://github.com/gpiozero/gpiozero/issues/792
 .. _#762: https://github.com/gpiozero/gpiozero/issues/762
 .. _#780: https://github.com/gpiozero/gpiozero/issues/780
 .. _#781: https://github.com/gpiozero/gpiozero/issues/781
 .. _#795: https://github.com/gpiozero/gpiozero/issues/795
 .. _#797: https://github.com/gpiozero/gpiozero/issues/797
+.. _#941: https://github.com/gpiozero/gpiozero/issues/941
+.. _#865: https://github.com/gpiozero/gpiozero/issues/865
+.. _#920: https://github.com/gpiozero/gpiozero/issues/920
+.. _#929: https://github.com/gpiozero/gpiozero/issues/929
+.. _#940: https://github.com/gpiozero/gpiozero/issues/940
+.. _#939: https://github.com/gpiozero/gpiozero/issues/939
+.. _#349: https://github.com/gpiozero/gpiozero/issues/349
+.. _#860: https://github.com/gpiozero/gpiozero/issues/860
+.. _#761: https://github.com/gpiozero/gpiozero/issues/761
+.. _#932: https://github.com/gpiozero/gpiozero/issues/932
+.. _#777: https://github.com/gpiozero/gpiozero/issues/777
+.. _#895: https://github.com/gpiozero/gpiozero/issues/895
+.. _#900: https://github.com/gpiozero/gpiozero/issues/900
 
 Release 1.5.1 (2019-06-24)
 ==========================
 
-* Added Raspberry Pi 4 data for :func:`pi_info` and :program:`pinout`
-* Minor docs updates
+* Added Raspberry Pi 4 data for :func:`pi_info` and :program:`pinout`
+* Minor docs updates
 
 Release 1.5.0 (2019-02-12)
 ==========================

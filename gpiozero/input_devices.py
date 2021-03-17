@@ -1,38 +1,17 @@
 # vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
-# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
-# Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
+#
+# Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2015-2021 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2020 Robert Erdin <roberte@depop.com>
+# Copyright (c) 2020 Dan Jackson <dan@djackson.org>
+# Copyright (c) 2016-2020 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
 # Copyright (c) 2018 Philippe Muller <philippe.muller@gmail.com>
 # Copyright (c) 2016 Steveis <SteveAmor@users.noreply.github.com>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 import warnings
 from time import sleep
@@ -43,7 +22,7 @@ from statistics import median
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback
 from .devices import GPIODevice, CompositeDevice
-from .mixins import GPIOQueue, EventsMixin, HoldMixin
+from .mixins import GPIOQueue, EventsMixin, HoldMixin, event
 try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
@@ -285,8 +264,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         except AttributeError:
             # If the queue isn't initialized (it's None), or _queue hasn't been
             # set ignore the error because we're trying to close anyway
-            if self._queue is not None:
-                raise
+            pass
         except RuntimeError:
             # Cannot join thread before it starts; we don't care about this
             # because we're trying to close the thread anyway
@@ -515,11 +493,7 @@ class LineSensor(SmoothedInputDevice):
             threshold=threshold, queue_len=queue_len,
             sample_wait=1 / sample_rate, partial=partial,
             pin_factory=pin_factory)
-        try:
-            self._queue.start()
-        except:
-            self.close()
-            raise
+        self._queue.start()
 
     @property
     def value(self):
@@ -606,12 +580,8 @@ class MotionSensor(SmoothedInputDevice):
         super(MotionSensor, self).__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len, sample_wait=1 /
-            sample_rate, partial=partial, pin_factory=pin_factory)
-        try:
-            self._queue.start()
-        except:
-            self.close()
-            raise
+            sample_rate, partial=partial, pin_factory=pin_factory, average=mean)
+        self._queue.start()
 
     @property
     def value(self):
@@ -724,7 +694,7 @@ class LightSensor(SmoothedInputDevice):
         if self._charge_time is None:
             return 0.0
         else:
-            return 1.0 - min(1.0, 
+            return 1.0 - min(1.0,
                 (self.pin_factory.ticks_diff(self._charge_time, start) /
                 self.charge_time_limit))
 
@@ -881,8 +851,7 @@ class DistanceSensor(SmoothedInputDevice):
         try:
             self._trigger.close()
         except AttributeError:
-            if self._trigger is not None:
-                raise
+            pass
         self._trigger = None
         super(DistanceSensor, self).close()
 
@@ -1183,9 +1152,10 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             return "<gpiozero.%s object on pins %r and %r>" % (
                 self.__class__.__name__, self.a.pin, self.b.pin)
-        except:
+        except DeviceClosed:
             return super(RotaryEncoder, self).__repr__()
 
     def _a_changed(self, ticks, state):
@@ -1206,8 +1176,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
                 -self._max_steps if self._wrap else self._max_steps
             )
             self._rotate_cw_event.set()
-            if self._when_rotated_cw:
-                self._when_rotated_cw()
+            self._fire_rotated_cw()
             self._rotate_cw_event.clear()
         elif new_state == '-1':
             self._steps = (
@@ -1216,15 +1185,13 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
                 self._max_steps if self._wrap else -self._max_steps
             )
             self._rotate_ccw_event.set()
-            if self._when_rotated_ccw:
-                self._when_rotated_ccw()
+            self._fire_rotated_ccw()
             self._rotate_ccw_event.clear()
         else:
             self._state = new_state
             return
         self._rotate_event.set()
-        if self._when_rotated:
-            self._when_rotated()
+        self._fire_rotated()
         self._rotate_event.clear()
         self._fire_events(ticks, self.is_active)
         self._state = 'idle'
@@ -1268,8 +1235,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         """
         return self._rotate_ccw_event.wait(timeout)
 
-    @property
-    def when_rotated(self):
+    when_rotated = event(
         """
         The function to be run when the encoder is rotated in either direction.
 
@@ -1280,15 +1246,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated
+        """)
 
-    @when_rotated.setter
-    def when_rotated(self, value):
-        self._when_rotated = self._wrap_callback(value)
-
-    @property
-    def when_rotated_clockwise(self):
+    when_rotated_clockwise = event(
         """
         The function to be run when the encoder is rotated clockwise.
 
@@ -1299,15 +1259,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated_cw
+        """)
 
-    @when_rotated_clockwise.setter
-    def when_rotated_clockwise(self, value):
-        self._when_rotated_cw = self._wrap_callback(value)
-
-    @property
-    def when_rotated_counter_clockwise(self):
+    when_rotated_counter_clockwise = event(
         """
         The function to be run when the encoder is rotated counter-clockwise.
 
@@ -1318,12 +1272,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         as that parameter.
 
         Set this property to :data:`None` (the default) to disable the event.
-        """
-        return self._when_rotated_ccw
-
-    @when_rotated_counter_clockwise.setter
-    def when_rotated_counter_clockwise(self, value):
-        self._when_rotated_ccw = self._wrap_callback(value)
+        """)
 
     @property
     def steps(self):
@@ -1342,6 +1291,18 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         :attr:`value` by corollary) is writable.
         """
         return self._steps
+
+    def _fire_rotated(self):
+        if self.when_rotated:
+            self.when_rotated()
+
+    def _fire_rotated_cw(self):
+        if self.when_rotated_clockwise:
+            self.when_rotated_clockwise()
+
+    def _fire_rotated_ccw(self):
+        if self.when_rotated_counter_clockwise:
+            self.when_rotated_counter_clockwise()
 
     @steps.setter
     def steps(self, value):

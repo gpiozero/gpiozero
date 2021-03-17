@@ -1,33 +1,21 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2019 Dave Jones <dave@waveform.org.uk>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
+# Copyright (c) 2019-2021 Dave Jones <dave@waveform.org.uk>
 #
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
+
+from __future__ import (
+    unicode_literals,
+    absolute_import,
+    print_function,
+    division,
+)
+str = type('')
 
 import warnings
+from fractions import Fraction
 
 import pytest
 
@@ -44,8 +32,11 @@ def test_tone_init(A4):
         warnings.resetwarnings()
         assert Tone(440) == A4
         assert Tone("A4") == A4
+        assert Tone(Fraction(880, 2)) == A4
         assert len(w) == 0
         assert Tone(69) == A4
+        assert len(w) == 1
+        assert Tone(0) != A4
         assert len(w) == 1
         assert isinstance(w[0].message, AmbiguousTone)
     assert Tone(frequency=440) == A4
@@ -57,11 +48,15 @@ def test_tone_init(A4):
         Tone(foo=1)
     with pytest.raises(TypeError):
         Tone(frequency=440, midi=69)
+    with pytest.raises(TypeError):
+        Tone(440, midi=69)
 
 def test_tone_str(A4):
     assert str(A4) == "A4"
     assert str(A4.up()) == "A#4"
     assert str(A4.down(12)) == "A3"
+    assert repr(A4) == "<Tone %s midi=69 frequency=440.00Hz>" % ('note=%r' % 'A4')
+    assert repr(Tone(13000)) == '<Tone frequency=13000.00Hz>'
 
 def test_tone_from_frequency(A4):
     assert Tone.from_frequency(440) == A4

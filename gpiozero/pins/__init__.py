@@ -1,35 +1,13 @@
 # vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
+#
+# Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2018 Rick Ansell <rick@nbinvincible.org.uk>
 # Copyright (c) 2018 Mike Kazantsev <mk.fraggod@gmail.com>
+# Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 from weakref import ref
 from collections import defaultdict
@@ -140,7 +118,7 @@ class Factory(object):
             :meth:`pin` for the same pin specification must return the same
             object.
         """
-        raise PinUnsupported(
+        raise PinUnsupported(  # pragma: no cover
             "Individual pins are not supported by this pin factory")
 
     def spi(self, **spi_args):
@@ -151,7 +129,8 @@ class Factory(object):
         be used; attempting to mix *port* and *device* with pin numbers will
         raise :exc:`SPIBadArgs`.
         """
-        raise PinSPIUnsupported('SPI not supported by this pin factory')
+        raise PinSPIUnsupported(  # pragma: no cover
+            'SPI not supported by this pin factory')
 
     def ticks(self):
         """
@@ -176,7 +155,7 @@ class Factory(object):
         raise NotImplementedError
 
     def _get_pi_info(self):
-        return None
+        return None  # pragma: no cover
 
     pi_info = property(
         lambda self: self._get_pi_info(),
@@ -223,7 +202,7 @@ class Pin(object):
     """
 
     def __repr__(self):
-        return "<Pin>"
+        return "<Pin>"  # pragma: no cover
 
     def close(self):
         """
@@ -266,12 +245,10 @@ class Pin(object):
         self.pull = pull
 
     def _get_function(self):
-        return "input"
+        raise NotImplementedError
 
     def _set_function(self, value):
-        if value != "input":
-            raise PinInvalidFunction(
-                "Cannot set the function of pin %r to %s" % (self, value))
+        raise NotImplementedError
 
     function = property(
         lambda self: self._get_function(),
@@ -289,10 +266,11 @@ class Pin(object):
         """)
 
     def _get_state(self):
-        return 0
+        raise NotImplementedError
 
     def _set_state(self, value):
-        raise PinSetInput("Cannot set the state of input pin %r" % self)
+        raise PinSetInput(  # pragma: no cover
+            "Cannot set the state of pin %r" % self)
 
     state = property(
         lambda self: self._get_state(),
@@ -321,10 +299,11 @@ class Pin(object):
         """)
 
     def _get_pull(self):
-        return 'floating'
+        return 'floating'  # pragma: no cover
 
     def _set_pull(self, value):
-        raise PinFixedPull("Cannot change pull-up on pin %r" % self)
+        raise PinFixedPull(  # pragma: no cover
+            "Cannot change pull-up on pin %r" % self)
 
     pull = property(
         lambda self: self._get_pull(),
@@ -341,11 +320,12 @@ class Pin(object):
         """)
 
     def _get_frequency(self):
-        return None
+        return None  # pragma: no cover
 
     def _set_frequency(self, value):
         if value is not None:
-            raise PinPWMUnsupported("PWM is not supported on pin %r" % self)
+            raise PinPWMUnsupported(  # pragma: no cover
+                "PWM is not supported on pin %r" % self)
 
     frequency = property(
         lambda self: self._get_frequency(),
@@ -361,10 +341,10 @@ class Pin(object):
         """)
 
     def _get_bounce(self):
-        return None
+        return None  # pragma: no cover
 
     def _set_bounce(self, value):
-        if value is not None:
+        if value is not None:  # pragma: no cover
             raise PinEdgeDetectUnsupported(
                 "Edge detection is not supported on pin %r" % self)
 
@@ -403,10 +383,10 @@ class Pin(object):
         """)
 
     def _get_edges(self):
-        return 'none'
+        return 'none'  # pragma: no cover
 
     def _set_edges(self, value):
-        raise PinEdgeDetectUnsupported(
+        raise PinEdgeDetectUnsupported(  # pragma: no cover
             "Edge detection is not supported on pin %r" % self)
 
     edges = property(
@@ -433,10 +413,10 @@ class Pin(object):
         """)
 
     def _get_when_changed(self):
-        return None
+        return None  # pragma: no cover
 
     def _set_when_changed(self, value):
-        raise PinEdgeDetectUnsupported(
+        raise PinEdgeDetectUnsupported(  # pragma: no cover
             "Edge detection is not supported on pin %r" % self)
 
     when_changed = property(
@@ -620,10 +600,11 @@ class SPI(Device):
         self.clock_mode = self.clock_mode & (~1) | bool(value)
 
     def _get_clock_mode(self):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _set_clock_mode(self, value):
-        raise SPIFixedClockMode("clock_mode cannot be changed on %r" % self)
+        raise SPIFixedClockMode(  # pragma: no cover
+            "clock_mode cannot be changed on %r" % self)
 
     clock_mode = property(
         lambda self: self._get_clock_mode(),
@@ -650,10 +631,11 @@ class SPI(Device):
         """)
 
     def _get_lsb_first(self):
-        return False
+        return False  # pragma: no cover
 
     def _set_lsb_first(self, value):
-        raise SPIFixedBitOrder("lsb_first cannot be changed on %r" % self)
+        raise SPIFixedBitOrder(  # pragma: no cover
+            "lsb_first cannot be changed on %r" % self)
 
     lsb_first = property(
         lambda self: self._get_lsb_first(),
@@ -702,10 +684,11 @@ class SPI(Device):
         """)
 
     def _get_select_high(self):
-        return False
+        return False  # pragma: no cover
 
     def _set_select_high(self, value):
-        raise SPIFixedSelect("select_high cannot be changed on %r" % self)
+        raise SPIFixedSelect(  # pragma: no cover
+            "select_high cannot be changed on %r" % self)
 
     select_high = property(
         lambda self: self._get_select_high(),
@@ -747,10 +730,11 @@ class SPI(Device):
         """)
 
     def _get_bits_per_word(self):
-        return 8
+        return 8  # pragma: no cover
 
     def _set_bits_per_word(self, value):
-        raise SPIFixedWordSize("bits_per_word cannot be changed on %r" % self)
+        raise SPIFixedWordSize(  # pragma: no cover
+            "bits_per_word cannot be changed on %r" % self)
 
     bits_per_word = property(
         lambda self: self._get_bits_per_word(),
@@ -764,10 +748,11 @@ class SPI(Device):
         """)
 
     def _get_rate(self):
-        return 100000
+        return 100000  # pragma: no cover
 
     def _set_rate(self, value):
-        raise SPIFixedRate("rate cannot be changed on %r" % self)
+        raise SPIFixedRate(  # pragma: no cover
+            "rate cannot be changed on %r" % self)
 
     rate = property(
         lambda self: self._get_rate(),

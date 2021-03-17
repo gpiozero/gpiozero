@@ -1,32 +1,11 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
+#
+# Copyright (c) 2016-2021 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 import os
 from collections import namedtuple
@@ -224,12 +203,14 @@ class MockChargingPin(MockPin):
             if self._charge_thread:
                 self._charge_stop.set()
                 self._charge_thread.join()
+        else:
+            assert False
 
     def _charge(self):
         if not self._charge_stop.wait(self.charge_time):
             try:
                 self.drive_high()
-            except AssertionError:
+            except AssertionError:  # pragma: no cover
                 # Charging pins are typically flipped between input and output
                 # repeatedly; if another thread has already flipped us to
                 # output ignore the assertion-error resulting from attempting
@@ -304,8 +285,7 @@ class MockSPIClockPin(MockPin):
     """
     def __init__(self, factory, number):
         super(MockSPIClockPin, self).__init__(factory, number)
-        if not hasattr(self, 'spi_devices'):
-            self.spi_devices = []
+        self.spi_devices = getattr(self, 'spi_devices', [])
 
     def _set_state(self, value):
         super(MockSPIClockPin, self)._set_state(value)
@@ -322,8 +302,7 @@ class MockSPISelectPin(MockPin):
     """
     def __init__(self, factory, number):
         super(MockSPISelectPin, self).__init__(factory, number)
-        if not hasattr(self, 'spi_device'):
-            self.spi_device = None
+        self.spi_device = getattr(self, 'spi_device', None)
 
     def _set_state(self, value):
         super(MockSPISelectPin, self)._set_state(value)
@@ -456,7 +435,7 @@ class MockFactory(LocalPiFactory):
             revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
         if pin_class is None:
             pin_class = os.environ.get('GPIOZERO_MOCK_PIN_CLASS', MockPin)
-        self._revision = revision
+        self._revision = int(revision, base=16)
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):

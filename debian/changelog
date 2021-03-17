@@ -1,3 +1,37 @@
+gpiozero (1.6.0) stable; urgency=medium
+
+  * Added "RotaryEncoder" class (thanks to Paulo Mateus) (#482, #928)
+  * Added support for multi-segment character displays with "LEDCharDisplay"
+    and "LEDMultiCharDisplay" along with "font" support using "LEDCharFont"
+    (thanks to Martin O'Hanlon) (#357, #485, #488, #493, #930)
+  * Added "Pibrella" class (thanks to Carl Monk) (#773, #798)
+  * Added "TrafficpHat" class (thanks to Ryan Walmsley) (#845, #846)
+  * Added support for the "lgpio" library as a pin factory (#927)
+    ("LGPIOFactory") (thanks to Joan for lg) (#927)
+  * Allow "Motor" to pass "pin_factory" to its child "OutputDevice" objects
+    (thanks to Yisrael Dov Lebow) (#792)
+  * Small SPI exception fix (thanks to Maksim Levental) (#762)
+  * Warn users when using default pin factory for Servos and Distance Sensors
+    (thanks to Sofiia Kosovan and Daniele Procida at the EuroPython sprints)
+    (#780, #781)
+  * Added "pulse_width" property to "Servo" (suggested by Daniele Procida at
+    the PyCon UK sprints) (#795, #797)
+  * Added event-driven functionality to "internal devices" (#941)
+  * Allowed "Energenie" sockets preserve their state on construction (thanks
+    to Jack Wearden) (#865)
+  * Added source tools "scaled_half" and "scaled_full"
+  * Added complete Pi 4 support to "NativeFactory" (thanks to Andrew Scheller)
+    (#920, #929, #940)
+  * Updated add-on boards to use BOARD numbering (#349, #860)
+  * Fixed "ButtonBoard" release events (#761)
+  * Add ASCII art diagrams to "pinout" for Pi 400 and CM4 (#932)
+  * Cleaned up software SPI (thanks to Andrew Scheller and Kyle Morgan) (#777,
+    #895, #900)
+  * Added USB3 and Ethernet speed attributes to "pi_info"
+  * Various docs updates
+
+ -- Dave Jones <dave@waveform.org.uk>  Mon, 15 Mar 2021 00:16:04 +0000
+
 gpiozero (1.5.1) stable; urgency=medium
 
   * Added Raspberry Pi 4 data for "pi_info" and "pinout"

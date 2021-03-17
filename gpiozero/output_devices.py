@@ -1,38 +1,17 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
-# Copyright (c) 2015-2019 Dave Jones <dave@waveform.org.uk>
-# Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
-# Copyright (c) 2019 tuftii <pi@raspberrypi>
+#
+# Copyright (c) 2015-2021 Dave Jones <dave@waveform.org.uk>
+# Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
-# Copyright (c) 2019 Yisrael Dov Lebow <lebow@lebowtech.com>
+# Copyright (c) 2019 tuftii <pi@raspberrypi>
+# Copyright (c) 2019 Yisrael Dov Lebow 🐻 <lebow@lebowtech.com>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
+# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 from threading import Lock
@@ -42,7 +21,12 @@ from collections import OrderedDict
 from math import log2
 import warnings
 
-from .exc import OutputDeviceBadValue, GPIOPinMissing, PWMSoftwareFallback
+from .exc import (
+    OutputDeviceBadValue,
+    GPIOPinMissing,
+    PWMSoftwareFallback,
+    DeviceClosed,
+)
 from .devices import GPIODevice, Device, CompositeDevice
 from .mixins import SourceMixin
 from .threads import GPIOThread
@@ -251,7 +235,7 @@ class DigitalOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device, args=(on_time, off_time, n)
+            self._blink_device, (on_time, off_time, n)
         )
         self._blink_thread.start()
         if not background:
@@ -522,8 +506,8 @@ class PWMOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(on_time, off_time, fade_in_time, fade_out_time, n)
+            self._blink_device,
+            (on_time, off_time, fade_in_time, fade_out_time, n)
         )
         self._blink_thread.start()
         if not background:
@@ -654,13 +638,14 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
 
     def __repr__(self):
         try:
+            self._check_open()
             if self.value is None:
                 return '<gpiozero.TonalBuzzer object on pin %r, silent>' % (
                     self.pwm_device.pin,)
             else:
                 return '<gpiozero.TonalBuzzer object on pin %r, playing %s>' % (
                     self.pwm_device.pin, self.tone.note)
-        except:
+        except DeviceClosed:
             return super(TonalBuzzer, self).__repr__()
 
     def play(self, tone):
@@ -727,12 +712,11 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         if self.pwm_device.pin.frequency is None:
             return None
         else:
-            try:
-                return log2(
-                    self.pwm_device.pin.frequency / self.mid_tone.frequency
-                ) / self.octaves
-            except ZeroDivisionError:
-                return 0.0
+            # Can't have zero-division here; zero-frequency Tone cannot be
+            # generated and self.octaves cannot be zero either
+            return log2(
+                self.pwm_device.pin.frequency / self.mid_tone.frequency
+            ) / self.octaves
 
     @value.setter
     def value(self, value):
@@ -1072,8 +1056,8 @@ class RGBLED(SourceMixin, Device):
                 raise ValueError('fade_out_time must be 0 with non-PWM RGBLEDs')
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            target=self._blink_device,
-            args=(
+            self._blink_device,
+            (
                 on_time, off_time, fade_in_time, fade_out_time,
                 on_color, off_color, n
             )

@@ -1,34 +1,13 @@
+# vim: set fileencoding=utf-8:
+#
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
-# Copyright (c) 2016-2019 Dave Jones <dave@waveform.org.uk>
-# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
+#
+# Copyright (c) 2016-2021 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2019 Ben Nuttall <ben@bennuttall.com>
+# Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2018 Philippe Muller <philippe.muller@gmail.com>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the copyright holder nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# SPDX-License-Identifier: BSD-3-Clause
 
 import sys
 import pytest
@@ -53,6 +32,7 @@ def test_input_initial_values(mock_factory):
         assert pin.function == 'input'
         assert pin.pull == 'up'
         assert device.pull_up
+    assert repr(device) == '<gpiozero.InputDevice object closed>'
     with InputDevice(4, pull_up=False) as device:
         assert pin.pull == 'down'
         assert not device.pull_up
@@ -133,6 +113,8 @@ def test_input_event_deactivated(mock_factory):
         pin.drive_low()
         assert event.is_set()
 
+@pytest.mark.xfail(sys.version_info < (3, 0),
+                   reason='warnings fail to reset properly on py2.7')
 def test_input_activated_callback_warning(mock_factory):
     def foo(): pass
 
@@ -192,8 +174,10 @@ def test_input_smoothed_attrib(mock_factory):
         assert not device.partial
         device._queue.start()
         assert not device.is_active
+        assert repr(device) == '<gpiozero.SmoothedInputDevice object on pin GPIO4, pull_up=False, is_active=False>'
         with pytest.raises(InputDeviceError):
             device.threshold = 1
+    assert repr(device) == '<gpiozero.SmoothedInputDevice object closed>'
     with pytest.raises(BadQueueLen):
         SmoothedInputDevice(4, queue_len=-1)
     with pytest.raises(BadWaitTime):
@@ -374,6 +358,7 @@ def test_input_rotary_encoder(mock_factory):
         # Make sure the sequence works in both directions
         rotate_ccw(a_pin, b_pin)
         assert encoder.steps == 0
+    assert repr(encoder) == '<gpiozero.RotaryEncoder object closed>'
 
 def test_input_rotary_encoder_jiggle(mock_factory):
     a_pin = mock_factory.pin(20)
@@ -483,6 +468,8 @@ def test_input_rotary_encoder_when(mock_factory):
         assert not rotated_cw.wait(0)
         assert rotated_ccw.wait(0)
 
+@pytest.mark.xfail(sys.version_info < (3, 0),
+                   reason="Threaded tests fail on 2.7; no idea why...")
 def test_input_rotary_encoder_wait(mock_factory):
     a_pin = mock_factory.pin(20)
     b_pin = mock_factory.pin(21)

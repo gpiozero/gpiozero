@@ -4,44 +4,18 @@
 PYTHON=python
 PIP=pip
 PYTEST=py.test
-COVERAGE=coverage
 TWINE=twine
 PYFLAGS=
 DEST_DIR=/
-
-# Horrid hack to ensure setuptools is installed in our python environment. This
-# is necessary with Python 3.3's venvs which don't install it by default.
-ifeq ($(shell python -c "import setuptools" 2>&1),)
-SETUPTOOLS:=
-else
-SETUPTOOLS:=$(shell wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | $(PYTHON))
-endif
 
 # Calculate the base names of the distribution, the location of all source,
 # documentation, packaging, icon, and executable script files
 NAME:=$(shell $(PYTHON) $(PYFLAGS) setup.py --name)
 VER:=$(shell $(PYTHON) $(PYFLAGS) setup.py --version)
-ifeq ($(shell lsb_release -si),Ubuntu)
-DEB_SUFFIX:=ubuntu1
-else
-DEB_SUFFIX:=
-endif
-DEB_ARCH:=$(shell dpkg --print-architecture)
 PYVER:=$(shell $(PYTHON) $(PYFLAGS) -c "import sys; print('py%d.%d' % sys.version_info[:2])")
 PY_SOURCES:=$(shell \
 	$(PYTHON) $(PYFLAGS) setup.py egg_info >/dev/null 2>&1 && \
 	grep -v "\.egg-info" $(NAME).egg-info/SOURCES.txt)
-DEB_SOURCES:=debian/changelog \
-	debian/control \
-	debian/copyright \
-	debian/rules \
-	debian/docs \
-	$(wildcard debian/*.init) \
-	$(wildcard debian/*.default) \
-	$(wildcard debian/*.manpages) \
-	$(wildcard debian/*.docs) \
-	$(wildcard debian/*.doc-base) \
-	$(wildcard debian/*.desktop)
 DOC_SOURCES:=docs/conf.py \
 	$(wildcard docs/*.png) \
 	$(wildcard docs/*.svg) \
@@ -56,17 +30,6 @@ SUBDIRS:=
 DIST_WHEEL=dist/$(NAME)-$(VER)-py2.py3-none-any.whl
 DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
-DIST_DEB=dist/python-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
-	dist/python3-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
-	dist/python-$(NAME)-doc_$(VER)$(DEB_SUFFIX)_all.deb \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).build \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).buildinfo \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
-DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.xz \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.build \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.buildinfo \
-	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
 
 
 # Default target
@@ -76,10 +39,9 @@ all:
 	@echo "make test - Run tests"
 	@echo "make doc - Generate HTML and PDF documentation"
 	@echo "make source - Create source package"
-	@echo "make egg - Generate a PyPI egg package"
+	@echo "make wheel - Generate a PyPI wheel package"
 	@echo "make zip - Generate a source zip package"
 	@echo "make tar - Generate a source tar package"
-	@echo "make deb - Generate Debian packages"
 	@echo "make dist - Generate all packages"
 	@echo "make clean - Get rid of all generated files"
 	@echo "make release - Create and tag a new release"
@@ -102,9 +64,7 @@ zip: $(DIST_ZIP)
 
 tar: $(DIST_TAR)
 
-deb: $(DIST_DEB) $(DIST_DSC)
-
-dist: $(DIST_WHEEL) $(DIST_DEB) $(DIST_DSC) $(DIST_TAR) $(DIST_ZIP)
+dist: $(DIST_WHEEL) $(DIST_TAR) $(DIST_ZIP)
 
 develop: 
 	@# These have to be done separately to avoid a cockup...
@@ -113,18 +73,17 @@ develop:
 	$(PIP) install -e .[doc,test]
 
 test:
-	$(COVERAGE) run --rcfile coverage.cfg -m $(PYTEST) tests -v -r sx
-	$(COVERAGE) report --rcfile coverage.cfg
+	$(PYTEST) tests
 
 clean:
-	dh_clean
-	rm -fr dist/ $(NAME).egg-info/ tags
+	rm -fr dist/ build/ .pytest_cache/ .mypy_cache/ $(NAME).egg-info/ tags .coverage
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
+	find $(CURDIR) -name "*.pyc" -delete
 
 tags: $(PY_SOURCES)
-	ctags -R --exclude="build/*" --exclude="debian/*" --exclude="docs/*" --languages="Python"
+	ctags -R --exclude="build/*" --exclude="docs/*" --languages="Python"
 
 $(SUBDIRS):
 	$(MAKE) -C $@
@@ -138,37 +97,14 @@ $(DIST_ZIP): $(PY_SOURCES) $(SUBDIRS)
 $(DIST_WHEEL): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py bdist_wheel --universal
 
-$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(DIST_TAR)
-	cp $(DIST_TAR) ../$(NAME)_$(VER).orig.tar.gz
-	debuild -b
-	mkdir -p dist/
-	for f in $(DIST_DEB); do cp ../$${f##*/} dist/; done
-
-$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(DIST_TAR)
-	cp $(DIST_TAR) ../$(NAME)_$(VER).orig.tar.gz
-	debuild -S
-	mkdir -p dist/
-	for f in $(DIST_DSC); do cp ../$${f##*/} dist/; done
-
-copyrights: $(PY_SOURCES) $(DOC_SOURCES)
-	./copyrights
-
-changelog: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
+release:
 	$(MAKE) clean
-	# ensure there are no current uncommitted changes
 	test -z "$(shell git status --porcelain)"
-	# update the debian changelog with new release information
-	dch --newversion $(VER)$(DEB_SUFFIX)
-	# commit the changes and add a new tag
-	git commit debian/changelog -m "Updated changelog for release $(VER)"
-
-release: $(DIST_DEB) $(DIST_DSC) $(DIST_TAR) $(DIST_WHEEL)
 	git tag -s v$(VER) -m "Release v$(VER)"
-	git push --tags
-	# build a source archive and upload to PyPI
-	$(TWINE) upload $(DIST_TAR) $(DIST_WHEEL)
-	# build the deb source archive and upload to Raspbian
-	dput raspberrypi dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
-	dput raspberrypi dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
+	git push origin v$(VER)
 
-.PHONY: all install develop test doc source egg wheel zip tar deb dist clean tags release upload $(SUBDIRS)
+upload: $(DIST_TAR) $(DIST_WHEEL)
+	$(TWINE) check $(DIST_TAR) $(DIST_WHEEL)
+	$(TWINE) upload $(DIST_TAR) $(DIST_WHEEL)
+
+.PHONY: all install develop test doc source wheel zip tar dist clean tags release upload $(SUBDIRS)

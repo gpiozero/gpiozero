@@ -1,32 +1,9 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+..
+.. Copyright (c) 2017-2021 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2017-2019 Dave Jones <dave@waveform.org.uk>
-.. Copyright (c) 2017-2019 Ben Nuttall <ben@bennuttall.com>
 ..
-.. Redistribution and use in source and binary forms, with or without
-.. modification, are permitted provided that the following conditions are met:
-..
-.. * Redistributions of source code must retain the above copyright notice,
-..   this list of conditions and the following disclaimer.
-..
-.. * Redistributions in binary form must reproduce the above copyright notice,
-..   this list of conditions and the following disclaimer in the documentation
-..   and/or other materials provided with the distribution.
-..
-.. * Neither the name of the copyright holder nor the names of its contributors
-..   may be used to endorse or promote products derived from this software
-..   without specific prior written permission.
-..
-.. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-.. AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.. IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.. ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-.. LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-.. CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-.. SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-.. INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-.. CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-.. ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-.. POSSIBILITY OF SUCH DAMAGE.
+.. SPDX-License-Identifier: BSD-3-Clause
 
 .. _faq:
 
@@ -79,6 +56,61 @@ events to be detected::
     button.when_pressed = hello
 
     pause()
+
+
+What's the difference between when_pressed, is_pressed and wait_for_press?
+==========================================================================
+
+gpiozero provides a range of different approaches to reading input devices.
+Sometimes you want to ask if a button's pressed, sometimes you want to do
+something until it's pressed, and sometimes you want something to happen *when*
+it's been pressed, regardless of what else is going on.
+
+In a simple example where the button is the only device in play, all of the
+options would be equally effective. But as soon as you introduce an extra
+element, like another GPIO device, you might need to choose the right approach
+depending on your use case.
+
+* :attr:`~gpiozero.Button.is_pressed` is an attribute which reveals whether the
+  button is currently pressed by returning ``True`` or ``False``::
+
+    while True:
+        if btn.is_pressed:
+            print("Pressed")
+        else:
+            print("Not pressed")
+
+* :meth:`~gpiozero.Button.wait_for_press()` as a method which blocks the code from
+  continuing until the button is pressed. Also see
+  :meth:`~gpiozero.Button.wait_for_release()`::
+
+    while True:
+        print("Released. Waiting for press..")
+        btn.wait_for_press()
+        print("Pressed. Waiting for release...")
+        btn.wait_for_release()
+
+* :attr:`~gpiozero.Button.when_pressed` is an attribute which assigns a callback
+  function to the event of the button being pressed. Every time the button is
+  pressed, the callback function is executed in a separate thread. Also see
+  :attr:`~gpiozero.Button.when_released`::
+
+    def pressed():
+        print("Pressed")
+
+    def released():
+        print("Released")
+
+    btn.when_pressed = pressed
+    btn.when_released = released
+
+This pattern of options is common among many devices. All :doc:`input devices
+<api_input>` and :doc:`internal devices <api_internal>` have ``is_active``,
+``when_activated``, ``when_deactivated``, ``wait_for_active`` and
+``wait_for_inactive``, and many provide aliases (such as "pressed" for
+"activated").
+
+Also see a more advanced approach in the :doc:`source_values` page.
 
 
 My event handler isn't being called
@@ -181,9 +213,9 @@ version of gpiozero is available in your Python environment like so:
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
-    [gpiozero 1.5.1 (/usr/lib/python3/dist-packages)]
+    [gpiozero 1.6.0 (/usr/lib/python3/dist-packages)]
     >>> require('gpiozero')[0].version
-    '1.5.1'
+    '1.6.0'
 
 If you have multiple versions installed (e.g. from :command:`pip` and
 :command:`apt`) they will not show up in the list returned by the
