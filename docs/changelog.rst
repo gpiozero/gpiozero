@@ -12,6 +12,12 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+Release 1.6.1 (2021-03-17)
+==========================
+
+* Fix missing font files for 7-segment displays
+
+
 Release 1.6.0 (2021-03-14)
 ==========================
 
