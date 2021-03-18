@@ -110,8 +110,7 @@ class GPIOMeta(type):
         return self
 
 
-# Cross-version compatible method of using a metaclass
-class GPIOBase(GPIOMeta(str('GPIOBase'), (), {})):
+class GPIOBase(metaclass=GPIOMeta):
     def __setattr__(self, name, value):
         # This overridden __setattr__ simply ensures that additional attributes
         # cannot be set on the class after construction (it manages this in
