@@ -7,23 +7,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import os
 from collections import namedtuple
 from time import time, sleep
 from threading import Thread, Event
-try:
-    from math import isclose
-except ImportError:
-    from ..compat import isclose
+from math import isclose
 
 import pkg_resources
 
@@ -40,6 +28,7 @@ from .local import LocalPiPin, LocalPiFactory
 
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
+
 
 class MockPin(LocalPiPin):
     """

@@ -8,21 +8,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import sys
 from time import sleep, time
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 import pytest
 from colorzero import Color, Red, Green, Blue

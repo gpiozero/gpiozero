@@ -8,23 +8,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
-import sys
 import pytest
 from mock import patch
 from collections import namedtuple
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 from gpiozero.pins.mock import MockSPIDevice, MockPin
 from gpiozero import *

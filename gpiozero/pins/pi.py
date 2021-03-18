@@ -6,23 +6,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-import io
-from threading import RLock, Lock
+from threading import RLock
 from types import MethodType
-from collections import defaultdict
-try:
-    from weakref import ref, WeakMethod
-except ImportError:
-
-    from ..compat import WeakMethod
+from weakref import ref, WeakMethod
 import warnings
 
 try:
@@ -35,7 +21,6 @@ from .data import PiBoardInfo
 from ..exc import (
     PinNoPins,
     PinNonPhysical,
-    PinInvalidPin,
     SPIBadArgs,
     SPISoftwareFallback,
     )

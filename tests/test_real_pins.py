@@ -7,22 +7,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-try:
-    range = xrange
-except NameError:
-    pass
-
-import io
 import os
 import errno
 from time import time, sleep
+from math import isclose
 
 import pytest
 import pkg_resources
@@ -30,10 +18,6 @@ import pkg_resources
 from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory
 from gpiozero.pins.native import NativeFactory
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
 
 
 # This module assumes you've wired the following GPIO pins together. The pins

@@ -1,13 +1,10 @@
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-)
-str = type('')
+"""A simple interface to GPIO devices with Raspberry Pi."""
 
 import io
 import os
 import errno
 from setuptools import setup, config
+
 
 cfg = config.read_configuration(
     os.path.join(os.path.dirname(__file__), 'setup.cfg'))

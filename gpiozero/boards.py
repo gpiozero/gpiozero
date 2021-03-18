@@ -17,17 +17,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-try:
-    from itertools import izip as zip
-except ImportError:
-    pass
-
 from time import sleep
 from itertools import repeat, cycle, chain, tee
 from threading import Lock

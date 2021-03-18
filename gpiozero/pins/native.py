@@ -7,19 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-try:
-    range = xrange
-except NameError:
-    pass
-nstr = str
-str = type('')
-
 import io
 import os
 import sys
@@ -27,14 +14,9 @@ import mmap
 import errno
 import struct
 import select
-import warnings
 from time import sleep
 from threading import Thread, Event, RLock
-from collections import Counter
-try:
-    from queue import Queue, Empty
-except ImportError:
-    from Queue import Queue, Empty
+from queue import Queue, Empty
 
 from .local import LocalPiPin, LocalPiFactory
 from ..exc import (
@@ -76,9 +58,9 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     # Returns a tuple of (address-cells, size-cells) for *node*
     def _cells(node):
         with io.open(os.path.join(node, '#address-cells'), 'rb') as f:
-            address_cells = struct.unpack(nstr('>L'), f.read())[0]
+            address_cells = struct.unpack(str('>L'), f.read())[0]
         with io.open(os.path.join(node, '#size-cells'), 'rb') as f:
-            size_cells = struct.unpack(nstr('>L'), f.read())[0]
+            size_cells = struct.unpack(str('>L'), f.read())[0]
         return (address_cells, size_cells)
 
     # Returns a generator function which, given a file-like object *source*
@@ -86,7 +68,7 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     # contains one integer for each specified *length*, which is the number of
     # 32-bit device-tree cells that make up that value.
     def _reader(*lengths):
-        structs = [struct.Struct(nstr('>{cells}L'.format(cells=cells)))
+        structs = [struct.Struct(str('>{cells}L'.format(cells=cells)))
                    for cells in lengths]
         offsets = [sum(s.size for s in structs[:i])
                    for i in range(len(structs))]
@@ -191,7 +173,7 @@ class GPIOMemory(object):
         try:
             self.reg_fmt = {
                 struct.calcsize(fmt): fmt
-                for fmt in (nstr('@I'), nstr('@L'))
+                for fmt in (str('@I'), str('@L'))
             }[4]
         except KeyError:
             raise RuntimeError('unable to find native unsigned 32-bit type')
@@ -401,7 +383,8 @@ class NativeFactory(LocalPiFactory):
         This implementation does *not* currently support PWM. Attempting to
         use any class which requests PWM will raise an exception.
 
-    You can construct native pin instances manually like so::
+    You can co
+    uct native pin instances manually like so::
 
         from gpiozero.pins.native import NativeFactory
         from gpiozero import LED

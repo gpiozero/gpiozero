@@ -7,21 +7,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-str = type('')
-
 import re
 import warnings
-from collections import namedtuple
-try:
-    from math import log2
-except ImportError:
-    from .compat import log2
+from math import log2
 
 from .exc import AmbiguousTone
 

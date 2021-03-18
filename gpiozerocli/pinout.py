@@ -11,16 +11,8 @@
 A utility for querying Raspberry Pi GPIO pin-out information.
 """
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-
 import argparse
 import sys
-import textwrap
 import warnings
 import webbrowser
 

@@ -7,16 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-import warnings
-
 from RPi import GPIO
 
 from .local import LocalPiFactory, LocalPiPin

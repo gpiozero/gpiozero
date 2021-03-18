@@ -8,24 +8,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-nstr = str
-str = type('')
-
 import inspect
 import weakref
 from functools import wraps, partial
 from threading import Event
 from collections import deque
-try:
-    from statistics import median
-except ImportError:
-    from .compat import median
+from statistics import median
 import warnings
 
 from .threads import GPIOThread
@@ -41,6 +29,7 @@ callback_warning = (
     'The callback was set to None. This may have been unintentional '
     'e.g. btn.when_pressed = pressed() instead of btn.when_pressed = pressed'
 )
+
 
 class ValuesMixin(object):
     """

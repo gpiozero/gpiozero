@@ -9,21 +9,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
-
 from math import log, ceil
 from operator import or_
-try:
-    from functools import reduce
-except ImportError:
-    pass # py2's reduce is built-in
+from functools import reduce
 
 from .exc import DeviceClosed, SPIBadChannel, InputDeviceError
 from .devices import Device

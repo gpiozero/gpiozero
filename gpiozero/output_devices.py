@@ -13,22 +13,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-str = type('')
 
 from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
 from collections import OrderedDict
-try:
-    from math import log2
-except ImportError:
-    from .compat import log2
+from math import log2
 import warnings
 
 from .exc import (
@@ -45,6 +35,7 @@ try:
     from .pins.pigpio import PiGPIOFactory
 except ImportError:
     PiGPIOFactory = None
+
 
 class OutputDevice(SourceMixin, GPIODevice):
     """

@@ -13,21 +13,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-
 import warnings
-from time import sleep, time
+from time import sleep
 from threading import Event, Lock
 from itertools import tee
-try:
-    from statistics import median, mean
-except ImportError:
-    from .compat import median, mean
+from statistics import median
 
 from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
     PinInvalidState, PWMSoftwareFallback

@@ -7,22 +7,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
-
 import io
-import sys
 import pytest
 from array import array
 from mock import patch
-from collections import namedtuple
 
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import (

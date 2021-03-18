@@ -7,20 +7,14 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
 from threading import Thread, Event
 
 from .exc import ZombieThread
 
 
 _THREADS = set()
+
+
 def _threads_shutdown():
     while _THREADS:
         threads = _THREADS.copy()

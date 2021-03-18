@@ -8,14 +8,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-nstr = str
-str = type('')
 
 import os
 import atexit
@@ -29,7 +21,7 @@ from .threads import _threads_shutdown
 from .mixins import (
     ValuesMixin,
     SharedMixin,
-    )
+)
 from .exc import (
     BadPinFactory,
     DeviceClosed,
@@ -37,17 +29,17 @@ from .exc import (
     CompositeDeviceBadOrder,
     CompositeDeviceBadDevice,
     GPIOPinMissing,
-    GPIOPinInUse,
     GPIODeviceClosed,
     NativePinFactoryFallback,
     PinFactoryFallback,
-    )
+)
+
 from .compat import frozendict
 
 native_fallback_message = (
-'Falling back to the experimental pin factory NativeFactory because no other '
-'pin factory could be loaded. For best results, install RPi.GPIO or pigpio. '
-'See https://gpiozero.readthedocs.io/en/stable/api_pins.html for more information.'
+    'Falling back to the experimental pin factory NativeFactory because no other '
+    'pin factory could be loaded. For best results, install RPi.GPIO or pigpio. '
+    'See https://gpiozero.readthedocs.io/en/stable/api_pins.html for more information.'
 )
 
 
@@ -88,6 +80,7 @@ class GPIOMeta(type):
                 # the refs counter and calls the original close method when
                 # it reaches zero
                 old_close = self.close
+
                 def close():
                     self._refs = max(0, self._refs - 1)
                     if not self._refs:
@@ -101,6 +94,7 @@ class GPIOMeta(type):
                                 # just ignore the resulting KeyError here -
                                 # it's already gone
                                 pass
+
                 self.close = close
                 cls._instances[key] = weakref.ref(self)
         else:
@@ -117,7 +111,7 @@ class GPIOMeta(type):
 
 
 # Cross-version compatible method of using a metaclass
-class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
+class GPIOBase(GPIOMeta(str('GPIOBase'), (), {})):
     def __setattr__(self, name, value):
         # This overridden __setattr__ simply ensures that additional attributes
         # cannot be set on the class after construction (it manages this in
@@ -128,7 +122,7 @@ class GPIOBase(GPIOMeta(nstr('GPIOBase'), (), {})):
         if hasattr(self, '__attrs__') and name not in self.__attrs__:
             raise AttributeError(
                 "'%s' object has no attribute '%s'" % (
-                self.__class__.__name__, name))
+                    self.__class__.__name__, name))
         return super(GPIOBase, self).__setattr__(name, value)
 
     def __del__(self):
@@ -240,7 +234,7 @@ class Device(ValuesMixin, GPIOBase):
         allocating pins, providing low level interfaces (e.g. SPI), and clock
         facilities (querying and calculating elapsed times).
     """
-    pin_factory = None # instance of a Factory sub-class
+    pin_factory = None  # instance of a Factory sub-class
 
     def __init__(self, **kwargs):
         # Force pin_factory to be keyword-only, even in Python 2
@@ -398,6 +392,7 @@ class CompositeDevice(Device):
         their :attr:`value` attributes will be accessible as named elements of
         the composite device's tuple :attr:`value`.
     """
+
     def __init__(self, *args, **kwargs):
         self._all = ()
         self._named = frozendict({})
@@ -453,21 +448,21 @@ class CompositeDevice(Device):
             unnamed = len(self) - len(self._named)
             if named > 0 and unnamed > 0:
                 return "<gpiozero.%s object containing %d devices: %s and %d unnamed>" % (
-                        self.__class__.__name__,
-                        len(self), ', '.join(self._order),
-                        len(self) - len(self._named)
-                        )
+                    self.__class__.__name__,
+                    len(self), ', '.join(self._order),
+                    len(self) - len(self._named)
+                )
             elif named > 0:
                 return "<gpiozero.%s object containing %d devices: %s>" % (
-                        self.__class__.__name__,
-                        len(self),
-                        ', '.join(self._order)
-                        )
+                    self.__class__.__name__,
+                    len(self),
+                    ', '.join(self._order)
+                )
             else:
                 return "<gpiozero.%s object containing %d unnamed devices>" % (
-                        self.__class__.__name__,
-                        len(self)
-                        )
+                    self.__class__.__name__,
+                    len(self)
+                )
         except DeviceClosed:
             return super(CompositeDevice, self).__repr__()
 
@@ -536,6 +531,7 @@ class GPIODevice(Device):
         will be raised. If the pin is already in use by another device,
         :exc:`GPIOPinInUse` will be raised.
     """
+
     def __init__(self, pin=None, **kwargs):
         super(GPIODevice, self).__init__(**kwargs)
         # self._pin must be set before any possible exceptions can be raised
@@ -624,5 +620,6 @@ def _devices_shutdown():
 def _shutdown():
     _threads_shutdown()
     _devices_shutdown()
+
 
 atexit.register(_shutdown)
