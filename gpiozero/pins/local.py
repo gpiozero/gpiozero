@@ -32,7 +32,7 @@ def get_pi_revision():
     revision = None
     try:
         with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-            revision = hex(struct.unpack(str('>L'), f.read(4))[0])[2:]
+            revision = hex(struct.unpack('>L', f.read(4))[0])[2:]
     except IOError as e:
         if e.errno != errno.ENOENT:
             raise e
