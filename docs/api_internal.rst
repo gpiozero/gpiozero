@@ -79,35 +79,35 @@ named after. All classes in this section are concrete (not abstract).
 TimeOfDay
 ---------
 
-.. autoclass:: TimeOfDay(start_time, end_time, *, utc=True, event_delay=10.0, pin_factory=None)
+.. autoclass:: TimeOfDay
     :members: start_time, end_time, utc, value, is_active, when_activated, when_deactivated
 
 
 PingServer
 ----------
 
-.. autoclass:: PingServer(host, *, event_delay=10.0, pin_factory=None)
+.. autoclass:: PingServer
     :members: host, value, is_active, when_activated, when_deactivated
 
 
 CPUTemperature
 --------------
 
-.. autoclass:: CPUTemperature(sensor_file='/sys/class/thermal/thermal_zone0/temp', *, min_temp=0.0, max_temp=100.0, threshold=80.0, event_delay=5.0, pin_factory=None)
+.. autoclass:: CPUTemperature
     :members: temperature, value, is_active, when_activated, when_deactivated
 
 
 LoadAverage
 -----------
 
-.. autoclass:: LoadAverage(load_average_file='/proc/loadavg', *, min_load_average=0.0, max_load_average=1.0, threshold=0.8, minutes=5, event_delay=10.0, pin_factory=None)
+.. autoclass:: LoadAverage
     :members: load_average, value, is_active, when_activated, when_deactivated
 
 
 DiskUsage
 ---------
 
-.. autoclass:: DiskUsage(filesystem='/', *, threshold=90.0, event_delay=30.0, pin_factory=None)
+.. autoclass:: DiskUsage
     :members: usage, value, is_active, when_activated, when_deactivated
 
 
@@ -128,10 +128,10 @@ to construct classes for their own devices.
 PolledInternalDevice
 --------------------
 
-.. autoclass:: PolledInternalDevice(*, event_delay=1.0, pin_factory=None)
+.. autoclass:: PolledInternalDevice
 
 
 InternalDevice
 --------------
 
-.. autoclass:: InternalDevice(*, pin_factory=None)
+.. autoclass:: InternalDevice

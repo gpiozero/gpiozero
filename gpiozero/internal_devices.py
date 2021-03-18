@@ -28,7 +28,7 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
-    def __init__(self, pin_factory=None):
+    def __init__(self, *, pin_factory=None):
         self._closed = False
         super().__init__(pin_factory=pin_factory)
 
@@ -54,7 +54,7 @@ class PolledInternalDevice(InternalDevice):
     internal devices that lack any other mechanism to inform the instance of
     changes.
     """
-    def __init__(self, event_delay=1.0, pin_factory=None):
+    def __init__(self, *, event_delay=1.0, pin_factory=None):
         self._event_thread = None
         self._event_delay = event_delay
         super().__init__(pin_factory=pin_factory)
@@ -144,10 +144,9 @@ class PingServer(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, host, event_delay=10.0, pin_factory=None):
+    def __init__(self, host, *, event_delay=10.0, pin_factory=None):
         self._host = host
-        super().__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), self.is_active)
 
     def __repr__(self):
@@ -261,12 +260,11 @@ class CPUTemperature(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
+    def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp', *,
             min_temp=0.0, max_temp=100.0, threshold=80.0, event_delay=5.0,
             pin_factory=None):
         self.sensor_file = sensor_file
-        super().__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         try:
             if min_temp >= max_temp:
                 raise ValueError('max_temp must be greater than min_temp')
@@ -393,9 +391,9 @@ class LoadAverage(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
-        max_load_average=1.0, threshold=0.8, minutes=5, event_delay=10.0,
-        pin_factory=None):
+    def __init__(self, load_average_file='/proc/loadavg', *,
+                 min_load_average=0.0, max_load_average=1.0, threshold=0.8,
+                 minutes=5, event_delay=10.0, pin_factory=None):
         if min_load_average >= max_load_average:
             raise ValueError(
                 'max_load_average must be greater than min_load_average')
@@ -414,8 +412,7 @@ class LoadAverage(PolledInternalDevice):
             5: 1,
             15: 2,
         }[minutes]
-        super().__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -526,13 +523,12 @@ class TimeOfDay(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, start_time, end_time, utc=True, event_delay=5.0,
+    def __init__(self, start_time, end_time, *, utc=True, event_delay=5.0,
                  pin_factory=None):
         self._start_time = None
         self._end_time = None
         self._utc = True
-        super().__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         try:
             self._start_time = self._validate_time(start_time)
             self._end_time = self._validate_time(end_time)
@@ -662,7 +658,7 @@ class DiskUsage(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, filesystem='/', threshold=90.0, event_delay=30.0,
+    def __init__(self, filesystem='/', *, threshold=90.0, event_delay=30.0,
                  pin_factory=None):
         super().__init__(
             event_delay=event_delay, pin_factory=pin_factory)

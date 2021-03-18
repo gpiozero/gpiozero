@@ -33,63 +33,63 @@ represent. All classes in this section are concrete (not abstract).
 LED
 ---
 
-.. autoclass:: LED(pin, *, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: LED
     :members: on, off, toggle, blink, pin, is_lit, value
 
 
 PWMLED
 ------
 
-.. autoclass:: PWMLED(pin, *, active_high=True, initial_value=0, frequency=100, pin_factory=None)
+.. autoclass:: PWMLED
     :members: on, off, toggle, blink, pulse, pin, is_lit, value
 
 
 RGBLED
 ------
 
-.. autoclass:: RGBLED(red, green, blue, *, active_high=True, initial_value=(0, 0, 0), pwm=True, pin_factory=None)
+.. autoclass:: RGBLED
     :members: on, off, toggle, blink, pulse, red, green, blue, is_lit, color, value
 
 
 Buzzer
 ------
 
-.. autoclass:: Buzzer(pin, *, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: Buzzer
     :members: on, off, toggle, beep, pin, is_active, value
 
 
 TonalBuzzer
 -----------
 
-.. autoclass:: TonalBuzzer(pin, *, initial_value=None, mid_tone=Tone('A4'), octaves=1, pin_factory=None)
+.. autoclass:: TonalBuzzer
     :members: play, stop, octaves, min_tone, mid_tone, max_tone, tone, is_active, value
 
 
 Motor
 -----
 
-.. autoclass:: Motor(forward, backward, *, pwm=True, pin_factory=None)
+.. autoclass:: Motor
     :members: forward, backward, reverse, stop, is_active, value
 
 
 PhaseEnableMotor
 ----------------
 
-.. autoclass:: PhaseEnableMotor(phase, enable, *, pwm=True, pin_factory=None)
+.. autoclass:: PhaseEnableMotor
     :members: forward, backward, reverse, stop, is_active, value
 
 
 Servo
 -----
 
-.. autoclass:: Servo(pin, *, initial_value=0, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000, pin_factory=None)
+.. autoclass:: Servo
     :members:
 
 
 AngularServo
 ------------
 
-.. autoclass:: AngularServo(pin, *, initial_angle=0, min_angle=-90, max_angle=90, min_pulse_width=1/1000, max_pulse_width=2/1000, frame_width=20/1000, pin_factory=None)
+.. autoclass:: AngularServo
     :members: angle, max_angle, min_angle, min, max, mid, is_active, value
 
 
@@ -110,27 +110,27 @@ to construct classes for their own devices.
 DigitalOutputDevice
 -------------------
 
-.. autoclass:: DigitalOutputDevice(pin, *, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: DigitalOutputDevice
     :members: on, off, blink, value
 
 
 PWMOutputDevice
 ---------------
 
-.. autoclass:: PWMOutputDevice(pin, *, active_high=True, initial_value=0, frequency=100, pin_factory=None)
+.. autoclass:: PWMOutputDevice
     :members: on, off, blink, pulse, toggle, frequency, is_active, value
 
 
 OutputDevice
 ------------
 
-.. autoclass:: OutputDevice(pin, *, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: OutputDevice
     :members:
 
 
 GPIODevice
 ----------
 
-.. autoclass:: GPIODevice(pin, *, pin_factory=None)
+.. autoclass:: GPIODevice
     :members:
     :noindex:

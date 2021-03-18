@@ -207,28 +207,23 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         many pins as necessary and use any names, provided they're not already
         in use by something else.
     """
-    def __init__(self, *args, **kwargs):
-        pull_up = kwargs.pop('pull_up', True)
-        active_state = kwargs.pop('active_state', None)
-        bounce_time = kwargs.pop('bounce_time', None)
-        hold_time = kwargs.pop('hold_time', 1)
-        hold_repeat = kwargs.pop('hold_repeat', False)
-        pin_factory = kwargs.pop('pin_factory', None)
-        order = kwargs.pop('_order', None)
+    def __init__(self, *pins, pull_up=True, active_state=None,
+                 bounce_time=None, hold_time=1, hold_repeat=False,
+                 _order=None, pin_factory=None, **named_pins):
         super().__init__(
             *(
                 Button(pin, pull_up=pull_up, active_state=active_state,
                        bounce_time=bounce_time, hold_time=hold_time,
                        hold_repeat=hold_repeat)
-                for pin in args
+                for pin in pins
             ),
-            _order=order,
+            _order=_order,
             pin_factory=pin_factory,
             **{
                 name: Button(pin, pull_up=pull_up, active_state=active_state,
                              bounce_time=bounce_time, hold_time=hold_time,
                              hold_repeat=hold_repeat)
-                for name, pin in kwargs.items()
+                for name, pin in named_pins.items()
             }
         )
         if len(self) == 0:
@@ -287,33 +282,29 @@ class LEDCollection(CompositeOutputDevice):
     Extends :class:`CompositeOutputDevice`. Abstract base class for
     :class:`LEDBoard` and :class:`LEDBarGraph`.
     """
-    def __init__(self, *args, **kwargs):
-        pwm = kwargs.pop('pwm', False)
-        active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', False)
-        pin_factory = kwargs.pop('pin_factory', None)
-        order = kwargs.pop('_order', None)
+    def __init__(self, *pins, pwm=False, active_high=True, initial_value=False,
+                 _order=None, pin_factory=None, **named_pins):
         LEDClass = PWMLED if pwm else LED
         super().__init__(
             *(
                 pin_or_collection
                 if isinstance(pin_or_collection, LEDCollection) else
                 LEDClass(
-                    pin_or_collection, active_high, initial_value,
-                    pin_factory=pin_factory
+                    pin_or_collection, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
                 )
-                for pin_or_collection in args
+                for pin_or_collection in pins
             ),
-            _order=order,
+            _order=_order,
             pin_factory=pin_factory,
             **{
                 name: pin_or_collection
                 if isinstance(pin_or_collection, LEDCollection) else
                 LEDClass(
-                    pin_or_collection, active_high, initial_value,
-                    pin_factory=pin_factory
+                    pin_or_collection, active_high=active_high,
+                    initial_value=initial_value, pin_factory=pin_factory
                 )
-                for name, pin_or_collection in kwargs.items()
+                for name, pin_or_collection in named_pins.items()
             }
         )
         if len(self) == 0:
@@ -379,6 +370,14 @@ class LEDBoard(LEDCollection):
         found in when configured for output (warning: this can be on). If
         :data:`True`, the device will be switched on initially.
 
+    :type _order: list or None
+    :param _order:
+        If specified, this is the order of named items specified by keyword
+        arguments (to ensure that the :attr:`value` tuple is constructed with a
+        specific order). All keyword arguments *must* be included in the
+        collection. If omitted, an alphabetically sorted order will be selected
+        for keyword arguments.
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
@@ -392,11 +391,14 @@ class LEDBoard(LEDCollection):
         something else. You can also specify :class:`LEDBoard` instances to
         create trees of LEDs.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *pins, pwm=False, active_high=True, initial_value=False,
+                 _order=None, pin_factory=None, **named_pins):
         self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
-        super().__init__(*args, **kwargs)
+        super().__init__(*pins, pwm=pwm, active_high=active_high,
+                         initial_value=initial_value, _order=_order,
+                         pin_factory=pin_factory, **named_pins)
 
     def close(self):
         try:
@@ -663,19 +665,13 @@ class LEDBarGraph(LEDCollection):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, *pins, **kwargs):
+    def __init__(self, *pins, pwm=False, active_high=True, initial_value=0.0,
+                 pin_factory=None):
         # Don't allow graphs to contain collections
         for pin in pins:
             if isinstance(pin, Device):
                 raise CompositeDeviceBadDevice(
                     'Only pins may be specified for LEDBarGraph')
-        pwm = kwargs.pop('pwm', False)
-        active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', 0.0)
-        pin_factory = kwargs.pop('pin_factory', None)
-        if kwargs:
-            raise TypeError(
-                'unexpected keyword argument: %s' % kwargs.popitem()[0])
         super().__init__(
             *pins, pwm=pwm, active_high=active_high, pin_factory=pin_factory)
         try:
@@ -945,16 +941,8 @@ class LEDCharDisplay(LEDCollection):
 
     .. _Multi-segment LED displays: https://en.wikipedia.org/wiki/Seven-segment_display
     """
-    def __init__(self, *pins, **kwargs):
-        dp = kwargs.pop('dp', None)
-        font = kwargs.pop('font', None)
-        pwm = kwargs.pop('pwm', False)
-        active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', " ")
-        pin_factory = kwargs.pop('pin_factory', None)
-        if kwargs:
-            raise TypeError(
-                'unexpected keyword argument: %s' % kwargs.popiem()[0])
+    def __init__(self, *pins, dp=None, font=None, pwm=False, active_high=True,
+                 initial_value=" ", pin_factory=None):
         if not 1 < len(pins) <= 26:
             raise PinInvalidPin(
                 'Must have between 2 and 26 LEDs in LEDCharDisplay')
@@ -1098,13 +1086,8 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
     .. _multiplexed: https://en.wikipedia.org/wiki/Multiplexed_display
     .. _persistence of vision: https://en.wikipedia.org/wiki/Persistence_of_vision
     """
-    def __init__(self, char, *pins, **kwargs):
-        active_high = kwargs.pop('active_high', True)
-        initial_value = kwargs.pop('initial_value', None)
-        pin_factory = kwargs.pop('pin_factory', None)
-        if kwargs:
-            raise TypeError(
-                'unexpected keyword argument: %s' % kwargs.popiem()[0])
+    def __init__(self, char, *pins, active_high=True, initial_value=None,
+                 pin_factory=None):
         if not isinstance(char, LEDCharDisplay):
             raise ValueError('char must be an LEDCharDisplay')
         if initial_value is None:
@@ -1330,7 +1313,7 @@ class PiHutXmasTree(LEDBoard):
         so on but for the sake of brevity we represent all 24 under this
         section.
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         pins_dict = OrderedDict(star=2)
         pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
@@ -1375,7 +1358,7 @@ class LedBorg(RGBLED):
     .. _PiBorg LedBorg: https://www.piborg.org/ledborg
     """
 
-    def __init__(self, initial_value=(0, 0, 0), pwm=True, pin_factory=None):
+    def __init__(self, *, initial_value=(0, 0, 0), pwm=True, pin_factory=None):
         super().__init__(
             red='BOARD11', green='BOARD13', blue='BOARD15',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
@@ -1415,7 +1398,7 @@ class PiLiter(LEDBoard):
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         pins = ('BOARD7', 'BOARD11', 'BOARD13', 'BOARD12',
                 'BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
         super().__init__(
@@ -1453,7 +1436,7 @@ class PiLiterBarGraph(LEDBarGraph):
     .. _Ciseco Pi-LITEr: http://shop.ciseco.co.uk/pi-liter-8-led-strip-for-the-raspberry-pi/
     """
 
-    def __init__(self, pwm=False, initial_value=0.0, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=0.0, pin_factory=None):
         pins = ('BOARD7', 'BOARD11', 'BOARD13', 'BOARD12',
                 'BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
         super().__init__(
@@ -1532,7 +1515,7 @@ class TrafficLights(LEDBoard):
 
         The green :class:`LED` or :class:`PWMLED`.
     """
-    def __init__(self, red=None, amber=None, green=None,
+    def __init__(self, red=None, amber=None, green=None, *,
                  pwm=False, initial_value=False, yellow=None,
                  pin_factory=None):
         if amber is not None and yellow is not None:
@@ -1597,7 +1580,7 @@ class PiTraffic(TrafficLights):
 
     .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         super().__init__(
             'BOARD21', 'BOARD19', 'BOARD23',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
@@ -1651,7 +1634,7 @@ class PiStop(TrafficLights):
     }
 
     def __init__(
-            self, location=None, pwm=False, initial_value=False,
+            self, location=None, *, pwm=False, initial_value=False,
             pin_factory=None):
         gpios = self.LOCATIONS.get(location, None)
         if gpios is None:
@@ -1687,6 +1670,18 @@ class StatusZero(LEDBoard):
         not all strips are given labels, any remaining strips will not be
         initialised.
 
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
+        instances.
+
+    :type initial_value: bool or None
+    :param bool initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
@@ -1711,17 +1706,18 @@ class StatusZero(LEDBoard):
     """
     default_labels = ('one', 'two', 'three')
 
-    def __init__(self, *labels, **kwargs):
+    def __init__(self, *labels, pwm=False, initial_value=False,
+                 pin_factory=None):
         pins = (
             ('BOARD11', 'BOARD7'),
             ('BOARD15', 'BOARD13'),
             ('BOARD21', 'BOARD19'),
         )
-        pin_factory = kwargs.pop('pin_factory', None)
         if len(labels) == 0:
             labels = self.default_labels
         elif len(labels) > len(pins):
-            raise ValueError("StatusZero doesn't support more than three labels")
+            raise ValueError("StatusZero doesn't support more than %d "
+                             "labels" % len(pins))
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
             raise ValueError("Duplicate label %s" % dup)
@@ -1729,8 +1725,8 @@ class StatusZero(LEDBoard):
             _order=labels, pin_factory=pin_factory, **{
                 label: LEDBoard(
                     red=red, green=green, _order=('red', 'green'),
-                    pin_factory=pin_factory, **kwargs
-                )
+                    pwm=pwm, initial_value=initial_value,
+                    pin_factory=pin_factory)
                 for (green, red), label in zip(pins, labels)
             }
         )
@@ -1761,6 +1757,18 @@ class StatusBoard(CompositeOutputDevice):
         You can list up to five labels. If no labels are given, five strips
         will be initialised with names 'one' to 'five'. If some, but not all
         strips are given labels, any remaining strips will not be initialised.
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances to represent each
+        LED. If :data:`False` (the default), construct regular :class:`LED`
+        instances.
+
+    :type initial_value: bool or None
+    :param bool initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -1796,7 +1804,8 @@ class StatusBoard(CompositeOutputDevice):
     """
     default_labels = ('one', 'two', 'three', 'four', 'five')
 
-    def __init__(self, *labels, **kwargs):
+    def __init__(self, *labels, pwm=False, initial_value=False,
+                 pin_factory=None):
         pins = (
             ('BOARD11', 'BOARD7', 'BOARD8'),
             ('BOARD15', 'BOARD13', 'BOARD35'),
@@ -1804,7 +1813,6 @@ class StatusBoard(CompositeOutputDevice):
             ('BOARD29', 'BOARD23', 'BOARD37'),
             ('BOARD33', 'BOARD31', 'BOARD12'),
         )
-        pin_factory = kwargs.pop('pin_factory', None)
         if len(labels) == 0:
             labels = self.default_labels
         elif len(labels) > len(pins):
@@ -1818,8 +1826,9 @@ class StatusBoard(CompositeOutputDevice):
                     button=Button(button, pin_factory=pin_factory),
                     lights=LEDBoard(
                         red=red, green=green, _order=('red', 'green'),
-                        pin_factory=pin_factory, **kwargs
-                    ), _order=('button', 'lights'), pin_factory=pin_factory
+                        pwm=pwm, initial_value=initial_value,
+                        pin_factory=pin_factory),
+                    _order=('button', 'lights'), pin_factory=pin_factory
                 )
                 for (green, red, button), label in zip(pins, labels)
             }
@@ -1886,7 +1895,7 @@ class SnowPi(LEDBoard):
 
         The :class:`LED` or :class:`PWMLED` for the snow-man's nose.
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         super().__init__(
             arms=LEDBoard(
                 left=LEDBoard(
@@ -1947,7 +1956,7 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
 
         The :class:`Button` instance passed as the *button* parameter.
     """
-    def __init__(self, lights, buzzer, button, pin_factory=None):
+    def __init__(self, lights, buzzer, button, *, pin_factory=None):
         super().__init__(
             lights=lights, buzzer=buzzer, button=button,
             _order=('lights', 'buzzer', 'button'),
@@ -1982,7 +1991,7 @@ class FishDish(CompositeOutputDevice):
 
     .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
-    def __init__(self, pwm=False, pin_factory=None):
+    def __init__(self, *, pwm=False, pin_factory=None):
         super().__init__(
             lights=TrafficLights(
                 'BOARD21', 'BOARD15', 'BOARD7', pwm=pwm, pin_factory=pin_factory
@@ -2021,7 +2030,7 @@ class TrafficHat(CompositeOutputDevice):
 
     .. _Pi Supply Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
-    def __init__(self, pwm=False, pin_factory=None):
+    def __init__(self, *, pwm=False, pin_factory=None):
         super().__init__(
             lights=TrafficLights(
                 'BOARD18', 'BOARD16', 'BOARD15',
@@ -2067,7 +2076,7 @@ class TrafficpHat(TrafficLights):
 
     .. _Pi Supply Traffic pHAT: http://pisupp.ly/trafficphat
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         super().__init__(
             red='BOARD22', amber='BOARD18', green='BOARD16',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
@@ -2119,18 +2128,21 @@ class Robot(SourceMixin, CompositeDevice):
 
         The :class:`Motor` on the right of the robot.
     """
-    def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
-        # *args is a hack to ensure a useful message is shown when pins are
-        # supplied as sequential positional arguments e.g. 2, 3, 4, 5
+    def __init__(self, left=None, right=None, *, pwm=True, pin_factory=None):
         if not isinstance(left, tuple) or not isinstance(right, tuple):
             raise GPIOPinMissing('left and right motor pins must be given as '
                                  'tuples')
+        # XXX Urgh, this is ugly. Actually the whole "tuple of pins" thing is
+        # ugly and I'm not convinced it's "good".
+        *left, left_enable = left + (None,)[len(left) - 2:]
+        *right, right_enable = right + (None,)[len(right) - 2:]
         super().__init__(
-            left_motor=Motor(*left, pwm=pwm, pin_factory=pin_factory),
-            right_motor=Motor(*right, pwm=pwm, pin_factory=pin_factory),
+            left_motor=Motor(*left, enable=left_enable, pwm=pwm,
+                             pin_factory=pin_factory),
+            right_motor=Motor(*right, enable=right_enable, pwm=pwm,
+                              pin_factory=pin_factory),
             _order=('left_motor', 'right_motor'),
-            pin_factory=pin_factory
-        )
+            pin_factory=pin_factory)
 
     @property
     def value(self):
@@ -2146,7 +2158,7 @@ class Robot(SourceMixin, CompositeDevice):
     def value(self, value):
         self.left_motor.value, self.right_motor.value = value
 
-    def forward(self, speed=1, **kwargs):
+    def forward(self, speed=1, *, curve_left=0, curve_right=0):
         """
         Drive the robot forward by running both motors forward.
 
@@ -2166,10 +2178,6 @@ class Robot(SourceMixin, CompositeDevice):
             default is 0 (no curve). This parameter can only be specified as a
             keyword parameter, and is mutually exclusive with *curve_left*.
         """
-        curve_left = kwargs.pop('curve_left', 0)
-        curve_right = kwargs.pop('curve_right', 0)
-        if kwargs:
-            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
         if not 0 <= curve_left <= 1:
             raise ValueError('curve_left must be between 0 and 1')
         if not 0 <= curve_right <= 1:
@@ -2180,7 +2188,7 @@ class Robot(SourceMixin, CompositeDevice):
         self.left_motor.forward(speed * (1 - curve_left))
         self.right_motor.forward(speed * (1 - curve_right))
 
-    def backward(self, speed=1, **kwargs):
+    def backward(self, speed=1, *, curve_left=0, curve_right=0):
         """
         Drive the robot backward by running both motors backward.
 
@@ -2200,10 +2208,6 @@ class Robot(SourceMixin, CompositeDevice):
             default is 0 (no curve). This parameter can only be specified as a
             keyword parameter, and is mutually exclusive with *curve_left*.
         """
-        curve_left = kwargs.pop('curve_left', 0)
-        curve_right = kwargs.pop('curve_right', 0)
-        if kwargs:
-            raise TypeError('unexpected argument %s' % kwargs.popitem()[0])
         if not 0 <= curve_left <= 1:
             raise ValueError('curve_left must be between 0 and 1')
         if not 0 <= curve_right <= 1:
@@ -2284,7 +2288,7 @@ class RyanteckRobot(Robot):
     .. _Ryanteck motor controller board: https://uk.pi-supply.com/products/ryanteck-rtk-000-001-motor-controller-board-kit-raspberry-pi
     """
 
-    def __init__(self, pwm=True, pin_factory=None):
+    def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
             left=('BOARD11', 'BOARD12'), right=('BOARD15', 'BOARD16'),
             pwm=pwm, pin_factory=pin_factory
@@ -2318,7 +2322,7 @@ class CamJamKitRobot(Robot):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
-    def __init__(self, pwm=True, pin_factory=None):
+    def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
             left=('BOARD21', 'BOARD19'), right=('BOARD26', 'BOARD24'),
             pwm=pwm, pin_factory=pin_factory
@@ -2369,9 +2373,7 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
 
         The :class:`PhaseEnableMotor` on the right of the robot.
     """
-    def __init__(self, left=None, right=None, pwm=True, pin_factory=None, *args):
-        # *args is a hack to ensure a useful message is shown when pins are
-        # supplied as sequential positional arguments e.g. 2, 3, 4, 5
+    def __init__(self, left=None, right=None, *, pwm=True, pin_factory=None):
         if not isinstance(left, tuple) or not isinstance(right, tuple):
             raise GPIOPinMissing(
                 'left and right motor pins must be given as tuples'
@@ -2488,7 +2490,7 @@ class PololuDRV8835Robot(PhaseEnableRobot):
 
     .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
     """
-    def __init__(self, pwm=True, pin_factory=None):
+    def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
             left=('BOARD29', 'BOARD32'), right=('BOARD31', 'BOARD33'),
             pwm=pwm, pin_factory=pin_factory
@@ -2496,7 +2498,7 @@ class PololuDRV8835Robot(PhaseEnableRobot):
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
-    def __init__(self, pin_factory=None):
+    def __init__(self, *, pin_factory=None):
         self._lock = Lock()
         super().__init__(
             *(
@@ -2566,7 +2568,7 @@ class Energenie(SourceMixin, Device):
 
     .. _Energenie socket: https://energenie4u.co.uk/index.php/catalogue/product/ENER002-2PI
     """
-    def __init__(self, socket=None, initial_value=False, pin_factory=None):
+    def __init__(self, socket=None, *, initial_value=False, pin_factory=None):
         if socket is None:
             raise EnergenieSocketMissing('socket number must be provided')
         if not (1 <= socket <= 4):
@@ -2690,7 +2692,7 @@ class PumpkinPi(LEDBoard):
 
             The :class:`LED` or :class:`PWMLED` for each of the pumpkin's eyes.
     """
-    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
         super().__init__(
             sides=LEDBoard(
                 left=LEDBoard(
@@ -2769,7 +2771,7 @@ class JamHat(CompositeOutputDevice):
 
         The :class:`TonalBuzzer` at the bottom right of the JamHat.
     """
-    def __init__(self, pwm=False, pin_factory=None):
+    def __init__(self, *, pwm=False, pin_factory=None):
         super().__init__(
             lights_1=LEDBoard(
                 red='BOARD29', yellow='BOARD32', green='BOARD36',
@@ -2875,7 +2877,7 @@ class Pibrella(CompositeOutputDevice):
 
         .. attribute:: e, f, g, h
     """
-    def __init__(self, pwm=False, pin_factory=None):
+    def __init__(self, *, pwm=False, pin_factory=None):
         super().__init__(
             lights=TrafficLights(
                 red='BOARD13', amber='BOARD11', green='BOARD7',

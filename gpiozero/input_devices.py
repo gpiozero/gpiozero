@@ -68,7 +68,7 @@ class InputDevice(GPIODevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, pin=None, pull_up=False, active_state=None,
+    def __init__(self, pin=None, *, pull_up=False, active_state=None,
                  pin_factory=None):
         super().__init__(pin, pin_factory=pin_factory)
         try:
@@ -149,9 +149,8 @@ class DigitalInputDevice(EventsMixin, InputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, pull_up=False, active_state=None, bounce_time=None,
-            pin_factory=None):
+    def __init__(self, pin=None, *, pull_up=False, active_state=None,
+                 bounce_time=None, pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             pin_factory=pin_factory)
@@ -243,7 +242,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
         which most users can ignore).
     """
     def __init__(
-            self, pin=None, pull_up=False, active_state=None, threshold=0.5,
+            self, pin=None, *, pull_up=False, active_state=None, threshold=0.5,
             queue_len=5, sample_wait=0.0, partial=False, average=median,
             ignore=None, pin_factory=None):
         self._queue = None
@@ -398,9 +397,9 @@ class Button(HoldMixin, DigitalInputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, pull_up=True, active_state=None, bounce_time=None,
-            hold_time=1, hold_repeat=False, pin_factory=None):
+    def __init__(self, pin=None, *, pull_up=True, active_state=None,
+                 bounce_time=None, hold_time=1, hold_repeat=False,
+                 pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             bounce_time=bounce_time, pin_factory=pin_factory)
@@ -485,9 +484,9 @@ class LineSensor(SmoothedInputDevice):
 
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
-    def __init__(
-            self, pin=None, pull_up=False, active_state=None, queue_len=5,
-            sample_rate=100, threshold=0.5, partial=False, pin_factory=None):
+    def __init__(self, pin=None, *, pull_up=False, active_state=None,
+                 queue_len=5, sample_rate=100, threshold=0.5, partial=False,
+                 pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len,
@@ -574,9 +573,9 @@ class MotionSensor(SmoothedInputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, pull_up=False, active_state=None, queue_len=1,
-            sample_rate=10, threshold=0.5, partial=False, pin_factory=None):
+    def __init__(self, pin=None, *, pull_up=False, active_state=None,
+                 queue_len=1, sample_rate=10, threshold=0.5, partial=False,
+                 pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len, sample_wait=1 /
@@ -654,9 +653,8 @@ class LightSensor(SmoothedInputDevice):
 
     .. _CamJam #2 EduKit: http://camjam.me/?page_id=623
     """
-    def __init__(
-            self, pin=None, queue_len=5, charge_time_limit=0.01,
-            threshold=0.1, partial=False, pin_factory=None):
+    def __init__(self, pin=None, *, queue_len=5, charge_time_limit=0.01,
+                 threshold=0.1, partial=False, pin_factory=None):
         super().__init__(
             pin, pull_up=False, threshold=threshold, queue_len=queue_len,
             sample_wait=0.0, partial=partial, pin_factory=pin_factory)
@@ -813,9 +811,9 @@ class DistanceSensor(SmoothedInputDevice):
     """
     ECHO_LOCK = Lock()
 
-    def __init__(
-            self, echo=None, trigger=None, queue_len=9, max_distance=1,
-            threshold_distance=0.3, partial=False, pin_factory=None):
+    def __init__(self, echo=None, trigger=None, *, queue_len=9,
+                 max_distance=1, threshold_distance=0.3, partial=False,
+                 pin_factory=None):
         self._trigger = None
         super().__init__(
             echo, pull_up=False, queue_len=queue_len, sample_wait=0.06,
@@ -1119,9 +1117,8 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
     # practice with several encoders, even quite jiggly ones with no debounce
     # hardware or software
 
-    def __init__(
-            self, a, b, bounce_time=None, max_steps=16, threshold_steps=(0, 0),
-            wrap=False, pin_factory=None):
+    def __init__(self, a, b, *, bounce_time=None, max_steps=16,
+                 threshold_steps=(0, 0), wrap=False, pin_factory=None):
         min_thresh, max_thresh = threshold_steps
         if max_thresh < min_thresh:
             raise ValueError('maximum threshold cannot be less than minimum')

@@ -68,9 +68,8 @@ class OutputDevice(SourceMixin, GPIODevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, active_high=True, initial_value=False,
-            pin_factory=None):
+    def __init__(self, pin=None, *, active_high=True, initial_value=False,
+                 pin_factory=None):
         super().__init__(pin, pin_factory=pin_factory)
         self._lock = Lock()
         self.active_high = active_high
@@ -183,14 +182,12 @@ class DigitalOutputDevice(OutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, active_high=True, initial_value=False,
-            pin_factory=None):
+    def __init__(self, pin=None, *, active_high=True, initial_value=False,
+                 pin_factory=None):
         self._blink_thread = None
         self._controller = None
-        super().__init__(
-            pin, active_high, initial_value, pin_factory=pin_factory
-        )
+        super().__init__(pin, active_high=active_high,
+                         initial_value=initial_value, pin_factory=pin_factory)
 
     @property
     def value(self):
@@ -235,8 +232,7 @@ class DigitalOutputDevice(OutputDevice):
         """
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            self._blink_device, (on_time, off_time, n)
-        )
+            self._blink_device, (on_time, off_time, n))
         self._blink_thread.start()
         if not background:
             self._blink_thread.join()
@@ -384,16 +380,14 @@ class PWMOutputDevice(OutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, active_high=True, initial_value=0, frequency=100,
-            pin_factory=None):
+    def __init__(self, pin=None, *, active_high=True, initial_value=0,
+                 frequency=100, pin_factory=None):
         self._blink_thread = None
         self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
-        super().__init__(
-            pin, active_high, initial_value=None, pin_factory=pin_factory
-        )
+        super().__init__(pin, active_high=active_high, initial_value=None,
+                         pin_factory=pin_factory)
         try:
             # XXX need a way of setting these together
             self.pin.frequency = frequency
@@ -607,13 +601,12 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         :class:`~gpiozero.pins.pigpio.PiGPIOFactory`.
     """
 
-    def __init__(self, pin=None, initial_value=None, mid_tone=Tone("A4"),
+    def __init__(self, pin=None, *, initial_value=None, mid_tone=Tone("A4"),
                  octaves=1, pin_factory=None):
         self._mid_tone = None
         super().__init__(
-            pwm_device=PWMOutputDevice(
-                pin=pin, pin_factory=pin_factory
-            ), pin_factory=pin_factory)
+            pwm_device=PWMOutputDevice(pin=pin, pin_factory=pin_factory),
+            pin_factory=pin_factory)
         try:
             self._mid_tone = Tone(mid_tone)
             if not (0 < octaves <= 9):
@@ -868,9 +861,8 @@ class RGBLED(SourceMixin, Device):
 
     .. _colorzero: https://colorzero.readthedocs.io/
     """
-    def __init__(
-            self, red=None, green=None, blue=None, active_high=True,
-            initial_value=(0, 0, 0), pwm=True, pin_factory=None):
+    def __init__(self, red=None, green=None, blue=None, *, active_high=True,
+                 initial_value=(0, 0, 0), pwm=True, pin_factory=None):
         self._leds = ()
         self._blink_thread = None
         if not all(p is not None for p in [red, green, blue]):
@@ -878,9 +870,8 @@ class RGBLED(SourceMixin, Device):
         LEDClass = PWMLED if pwm else LED
         super().__init__(pin_factory=pin_factory)
         self._leds = tuple(
-            LEDClass(pin, active_high, pin_factory=pin_factory)
-            for pin in (red, green, blue)
-        )
+            LEDClass(pin, active_high=active_high, pin_factory=pin_factory)
+            for pin in (red, green, blue))
         self.value = initial_value
 
     def close(self):
@@ -1194,12 +1185,8 @@ class Motor(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, forward=None, backward=None, enable=None, pwm=True,
+    def __init__(self, forward, backward, *, enable=None, pwm=True,
                  pin_factory=None):
-        if not all(p is not None for p in [forward, backward]):
-            raise GPIOPinMissing(
-                'forward and backward pins must be provided'
-            )
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         devices = OrderedDict((
             ('forward_device', PinClass(forward, pin_factory=pin_factory)),
@@ -1338,16 +1325,12 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, phase=None, enable=None, pwm=True, pin_factory=None):
-        if not all([phase, enable]):
-            raise GPIOPinMissing('phase and enable pins must be provided')
+    def __init__(self, phase, enable, *, pwm=True, pin_factory=None):
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         super().__init__(
             phase_device=DigitalOutputDevice(phase, pin_factory=pin_factory),
             enable_device=PinClass(enable, pin_factory=pin_factory),
-            _order=('phase_device', 'enable_device'),
-            pin_factory=pin_factory
-        )
+            _order=('phase_device', 'enable_device'), pin_factory=pin_factory)
 
     @property
     def value(self):
@@ -1499,10 +1482,9 @@ class Servo(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, initial_value=0.0,
-            min_pulse_width=1/1000, max_pulse_width=2/1000,
-            frame_width=20/1000, pin_factory=None):
+    def __init__(self, pin=None, *, initial_value=0.0, min_pulse_width=1/1000,
+                 max_pulse_width=2/1000, frame_width=20/1000,
+                 pin_factory=None):
         if min_pulse_width >= max_pulse_width:
             raise ValueError('min_pulse_width must be less than max_pulse_width')
         if max_pulse_width >= frame_width:
@@ -1514,8 +1496,7 @@ class Servo(SourceMixin, CompositeDevice):
         self._value_range = 2
         super().__init__(
             pwm_device=PWMOutputDevice(
-                pin, frequency=int(1 / frame_width), pin_factory=pin_factory
-            ),
+                pin, frequency=int(1 / frame_width), pin_factory=pin_factory),
             pin_factory=pin_factory
         )
 
@@ -1722,11 +1703,9 @@ class AngularServo(Servo):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(
-            self, pin=None, initial_angle=0.0,
-            min_angle=-90, max_angle=90,
-            min_pulse_width=1/1000, max_pulse_width=2/1000,
-            frame_width=20/1000, pin_factory=None):
+    def __init__(self, pin=None, *, initial_angle=0.0, min_angle=-90,
+                 max_angle=90, min_pulse_width=1/1000, max_pulse_width=2/1000,
+                 frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
         if initial_angle is None:
@@ -1738,10 +1717,10 @@ class AngularServo(Servo):
             raise OutputDeviceBadValue(
                 "AngularServo angle must be between %s and %s, or None" %
                 (min_angle, max_angle))
-        super().__init__(
-            pin, initial_value, min_pulse_width, max_pulse_width, frame_width,
-            pin_factory=pin_factory
-        )
+        super().__init__(pin, initial_value=initial_value,
+                         min_pulse_width=min_pulse_width,
+                         max_pulse_width=max_pulse_width,
+                         frame_width=frame_width, pin_factory=pin_factory)
 
     @property
     def min_angle(self):

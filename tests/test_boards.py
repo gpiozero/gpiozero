@@ -907,12 +907,6 @@ def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         Robot(2, 3)
     with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4)
-    with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4, 5)
-    with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4, 5, 6, 7)
-    with pytest.raises(GPIOPinMissing):
         Robot((2, 3))
     with pytest.raises(GPIOPinMissing):
         Robot((2, 3), 4)
@@ -1190,12 +1184,6 @@ def test_phaseenable_robot_bad_init(mock_factory):
         PhaseEnableRobot(2)
     with pytest.raises(GPIOPinMissing):
         PhaseEnableRobot(2, 3)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4, 5)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4, 5, 6, 7)
     with pytest.raises(GPIOPinMissing):
         PhaseEnableRobot((2, 3))
     with pytest.raises(GPIOPinMissing):

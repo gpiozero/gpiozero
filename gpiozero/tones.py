@@ -76,22 +76,18 @@ class Tone(float):
         r'(?P<semi>[%s]?)'
         r'(?P<octave>[0-9])' % ''.join(semitones.keys()))
 
-    def __new__(cls, value=None, **kwargs):
-        if value is None:
-            if len(kwargs) != 1:
-                raise TypeError('expected precisely one keyword argument')
-            key, value = kwargs.popitem()
-            try:
-                return {
-                    'frequency': cls.from_frequency,
-                    'midi': cls.from_midi,
-                    'note': cls.from_note,
-                }[key](value)
-            except KeyError:
-                raise TypeError('unexpected keyword argument %r' % key)
+    def __new__(cls, value=None, *, frequency=None, midi=None, note=None):
+        n = sum(1 for arg in (value, frequency, midi, note) if arg is not None)
+        if n != 1:
+            raise TypeError('must specify a value, frequency, midi number, '
+                            'or note')
+        if note is not None:
+            return cls.from_note(note)
+        elif midi is not None:
+            return cls.from_midi(midi)
+        elif frequency is not None:
+            return cls.from_frequency(frequency)
         else:
-            if kwargs:
-                raise TypeError('cannot specify keywords with a value')
             if isinstance(value, (int, float)):
                 if 0 <= value < 128:
                     if value > 0:

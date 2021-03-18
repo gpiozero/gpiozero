@@ -235,18 +235,13 @@ class Device(ValuesMixin, GPIOBase):
     """
     pin_factory = None  # instance of a Factory sub-class
 
-    def __init__(self, **kwargs):
-        # Force pin_factory to be keyword-only, even in Python 2
-        pin_factory = kwargs.pop('pin_factory', None)
+    def __init__(self, *, pin_factory=None):
         if pin_factory is None:
             if Device.pin_factory is None:
                 Device.pin_factory = Device._default_pin_factory()
             self.pin_factory = Device.pin_factory
         else:
             self.pin_factory = pin_factory
-        if kwargs:
-            raise TypeError("Device.__init__() got unexpected keyword "
-                            "argument '%s'" % kwargs.popitem()[0])
         super().__init__()
 
     @staticmethod
@@ -392,12 +387,11 @@ class CompositeDevice(Device):
         the composite device's tuple :attr:`value`.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, _order=None, pin_factory=None, **kwargs):
         self._all = ()
         self._named = frozendict({})
         self._namedtuple = None
-        self._order = kwargs.pop('_order', None)
-        pin_factory = kwargs.pop('pin_factory', None)
+        self._order = _order
         try:
             if self._order is None:
                 self._order = sorted(kwargs.keys())
@@ -531,8 +525,8 @@ class GPIODevice(Device):
         :exc:`GPIOPinInUse` will be raised.
     """
 
-    def __init__(self, pin=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, pin=None, *, pin_factory=None):
+        super().__init__(pin_factory=pin_factory)
         # self._pin must be set before any possible exceptions can be raised
         # because it's accessed in __del__. However, it mustn't be given the
         # value of pin until we've verified that it isn't already allocated
