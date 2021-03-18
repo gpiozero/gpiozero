@@ -49,7 +49,7 @@ from .output_devices import (
     )
 from .threads import GPIOThread
 from .devices import Device, CompositeDevice
-from .mixins import SharedMixin, SourceMixin, HoldMixin
+from .mixins import SharedMixin, SourceMixin, HoldMixin, event
 from .fonts import load_font_7seg, load_font_14seg
 
 
@@ -259,13 +259,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         """
         return self[0].pull_up
 
-    @property
-    def when_changed(self):
-        return self._when_changed
-
-    @when_changed.setter
-    def when_changed(self, value):
-        self._when_changed = self._wrap_callback(value)
+    when_changed = event()
 
     def _fire_changed(self):
         if self.when_changed:

@@ -110,6 +110,10 @@ def test_shared_key(mock_factory):
         def __init__(self, pin, pin_factory=None):
             super(SharedDevice, self).__init__(pin, pin_factory=pin_factory)
 
+        @classmethod
+        def _shared_key(cls, pin, pin_factory=None):
+            return pin
+
         def _conflicts_with(self, other):
             return not isinstance(other, SharedDevice)
 

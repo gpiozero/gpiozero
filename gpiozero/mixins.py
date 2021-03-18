@@ -144,13 +144,8 @@ class SharedMixin(object):
         key (which must be storable in a :class:`dict` and, thus, immutable
         and hashable) representing the instance that can be shared. This must
         be overridden by descendents.
-
-        The default simply assumes all positional arguments are immutable and
-        returns this as the key but this is almost never the "right" thing to
-        do and almost all descendents should override this method.
         """
-        # XXX Future 2.x version should change this to raise NotImplementedError
-        return args
+        raise NotImplementedError
 
 
 class event(object):
@@ -166,6 +161,46 @@ class event(object):
         self.handlers = {}
         self.__doc__ = doc
 
+    def _wrap_callback(self, instance, fn):
+        if not callable(fn):
+            raise BadEventHandler('value must be None or a callable')
+        # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
+        # has been used to produce it) we need to dig out the "real" function
+        # that's been wrapped along with all the mandatory positional args
+        # used in the wrapper so we can test the binding
+        args = ()
+        wrapped_fn = fn
+        while isinstance(wrapped_fn, partial):
+            args = wrapped_fn.args + args
+            wrapped_fn = wrapped_fn.func
+        if inspect.isbuiltin(wrapped_fn):
+            # We can't introspect the prototype of builtins. In this case we
+            # assume that the builtin has no (mandatory) parameters; this is
+            # the most reasonable assumption on the basis that pre-existing
+            # builtins have no knowledge of gpiozero, and the sole parameter
+            # we would pass is a gpiozero object
+            return fn
+        else:
+            # Try binding ourselves to the argspec of the provided callable.
+            # If this works, assume the function is capable of accepting no
+            # parameters
+            try:
+                inspect.getcallargs(wrapped_fn, *args)
+                return fn
+            except TypeError:
+                try:
+                    # If the above fails, try binding with a single parameter
+                    # (ourselves). If this works, wrap the specified callback
+                    inspect.getcallargs(wrapped_fn, *(args + (instance,)))
+                    @wraps(fn)
+                    def wrapper():
+                        return fn(instance)
+                    return wrapper
+                except TypeError:
+                    raise BadEventHandler(
+                        'value must be a callable which accepts up to one '
+                        'mandatory parameter')
+
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
@@ -179,7 +214,7 @@ class event(object):
             except KeyError:
                 warnings.warn(CallbackSetToNone(callback_warning))
         else:
-            self.handlers[id(instance)] = instance._wrap_callback(value)
+            self.handlers[id(instance)] = self._wrap_callback(instance, value)
         enabled = any(
             obj.handlers.get(id(instance))
             for name in dir(type(instance))
@@ -305,47 +340,6 @@ class EventsMixin(object):
                                                self._last_changed)
         else:
             return None
-
-    def _wrap_callback(self, fn):
-        # XXX In 2.x, move this to the event class above
-        if not callable(fn):
-            raise BadEventHandler('value must be None or a callable')
-        # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
-        # has been used to produce it) we need to dig out the "real" function
-        # that's been wrapped along with all the mandatory positional args
-        # used in the wrapper so we can test the binding
-        args = ()
-        wrapped_fn = fn
-        while isinstance(wrapped_fn, partial):
-            args = wrapped_fn.args + args
-            wrapped_fn = wrapped_fn.func
-        if inspect.isbuiltin(wrapped_fn):
-            # We can't introspect the prototype of builtins. In this case we
-            # assume that the builtin has no (mandatory) parameters; this is
-            # the most reasonable assumption on the basis that pre-existing
-            # builtins have no knowledge of gpiozero, and the sole parameter
-            # we would pass is a gpiozero object
-            return fn
-        else:
-            # Try binding ourselves to the argspec of the provided callable.
-            # If this works, assume the function is capable of accepting no
-            # parameters
-            try:
-                inspect.getcallargs(wrapped_fn, *args)
-                return fn
-            except TypeError:
-                try:
-                    # If the above fails, try binding with a single parameter
-                    # (ourselves). If this works, wrap the specified callback
-                    inspect.getcallargs(wrapped_fn, *(args + (self,)))
-                    @wraps(fn)
-                    def wrapper():
-                        return fn(self)
-                    return wrapper
-                except TypeError:
-                    raise BadEventHandler(
-                        'value must be a callable which accepts up to one '
-                        'mandatory parameter')
 
     def _fire_activated(self):
         # These methods are largely here to be overridden by descendents
