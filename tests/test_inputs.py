@@ -113,8 +113,6 @@ def test_input_event_deactivated(mock_factory):
         pin.drive_low()
         assert event.is_set()
 
-@pytest.mark.xfail(sys.version_info < (3, 0),
-                   reason='warnings fail to reset properly on py2.7')
 def test_input_activated_callback_warning(mock_factory):
     def foo(): pass
 
@@ -468,8 +466,6 @@ def test_input_rotary_encoder_when(mock_factory):
         assert not rotated_cw.wait(0)
         assert rotated_ccw.wait(0)
 
-@pytest.mark.xfail(sys.version_info < (3, 0),
-                   reason="Threaded tests fail on 2.7; no idea why...")
 def test_input_rotary_encoder_wait(mock_factory):
     a_pin = mock_factory.pin(20)
     b_pin = mock_factory.pin(21)
