@@ -77,24 +77,18 @@ def pins(request, pin_factory):
 
 
 def setup_module(module):
-    # Python 2.7 compatible method of exclusive-open
-    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
     start = time()
     while True:
         if time() - start > 300:  # 5 minute timeout
             raise RuntimeError('timed out waiting for real pins lock')
         try:
-            fd = os.open(TEST_LOCK, flags)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                print('Waiting for lock before testing real-pins')
-                sleep(0.1)
-            else:
-                raise
-        else:
-            with os.fdopen(fd, 'w') as f:
+            with open(TEST_LOCK, 'x') as f:
                 f.write('Lock file for gpiozero real-pin tests; delete '
                         'this if the test suite is not currently running\n')
+        except FileExistsError:
+            print('Waiting for lock before testing real-pins')
+            sleep(0.1)
+        else:
             break
 
 def teardown_module(module):
