@@ -128,8 +128,8 @@ Python 2 support
 
 .. warning::
 
-    Version 1.6.0 of GPIO Zero is the last to support Python 2. The next release
-    will be Version 2.0.0 and will support Python 3 only.
+    GPIO Zero 1.6.x is the last to support Python 2. GPIO Zero 2.x will support
+    Python 3 only.
 
 Contributors
 ============

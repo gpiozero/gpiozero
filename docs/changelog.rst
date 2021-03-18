@@ -12,11 +12,19 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+Release 1.6.2 (2021-03-18)
+==========================
+
+* Correct docs referring to 1.6.0 as the last version supporting Python 2
+
+.. warning::
+
+    This is the last release to support Python 2
+
 Release 1.6.1 (2021-03-17)
 ==========================
 
 * Fix missing font files for 7-segment displays
-
 
 Release 1.6.0 (2021-03-14)
 ==========================
@@ -53,10 +61,6 @@ Release 1.6.0 (2021-03-14)
   `#895`_, `#900`_)
 * Added USB3 and Ethernet speed attributes to :func:`pi_info`
 * Various docs updates
-
-.. warning::
-
-    This is the last release to support Python 2
 
 .. _lgpio: http://abyz.me.uk/lg/py_lgpio.html
 .. _#482: https://github.com/gpiozero/gpiozero/issues/482
