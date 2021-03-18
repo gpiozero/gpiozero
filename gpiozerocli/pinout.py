@@ -19,7 +19,7 @@ import webbrowser
 from gpiozero import pi_info
 
 
-class PinoutTool(object):
+class PinoutTool:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             description=__doc__

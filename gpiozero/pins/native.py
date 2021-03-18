@@ -125,7 +125,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     return range(base, base + size)
 
 
-class GPIOMemory(object):
+class GPIOMemory:
     GPIO_BASE_OFFSET = 0x200000
     PERI_BASE_OFFSET = {
         'BCM2835': 0x20000000,
@@ -199,7 +199,7 @@ class GPIOMemory(object):
         struct.pack_into(self.reg_fmt, self.mem, index * 4, value)
 
 
-class GPIOFS(object):
+class GPIOFS:
     GPIO_PATH = '/sys/class/gpio'
 
     def __init__(self, factory, queue):
@@ -382,8 +382,7 @@ class NativeFactory(LocalPiFactory):
         This implementation does *not* currently support PWM. Attempting to
         use any class which requests PWM will raise an exception.
 
-    You can co
-    uct native pin instances manually like so::
+    You can construct native pin instances manually like so::
 
         from gpiozero.pins.native import NativeFactory
         from gpiozero import LED

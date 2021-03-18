@@ -310,7 +310,7 @@ class MockSPISelectPin(MockPin):
             self.spi_device.on_select()
 
 
-class MockSPIDevice(object):
+class MockSPIDevice:
     def __init__(
             self, clock_pin, mosi_pin=None, miso_pin=None, select_pin=None,
             clock_polarity=False, clock_phase=False, lsb_first=False,

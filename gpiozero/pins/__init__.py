@@ -31,7 +31,7 @@ from ..exc import (
     )
 
 
-class Factory(object):
+class Factory:
     """
     Generates pins and SPI interfaces for devices. This is an abstract
     base class for pin factories. Descendents *must* override the following
@@ -169,7 +169,7 @@ class Factory(object):
         """)
 
 
-class Pin(object):
+class Pin:
     """
     Abstract base class representing a pin attached to some form of controller,
     be it GPIO, SPI, ADC, etc.

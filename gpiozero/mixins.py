@@ -31,7 +31,7 @@ callback_warning = (
 )
 
 
-class ValuesMixin(object):
+class ValuesMixin:
     """
     Adds a :attr:`values` property to the class which returns an infinite
     generator of readings from the :attr:`~Device.value` property. There is
@@ -55,7 +55,7 @@ class ValuesMixin(object):
                 break
 
 
-class SourceMixin(object):
+class SourceMixin:
     """
     Adds a :attr:`source` property to the class which, given an iterable or a
     :class:`ValuesMixin` descendent, sets :attr:`~Device.value` to each member
@@ -118,7 +118,7 @@ class SourceMixin(object):
             self._source_thread.start()
 
 
-class SharedMixin(object):
+class SharedMixin:
     """
     This mixin marks a class as "shared". In this case, the meta-class
     (GPIOMeta) will use :meth:`_shared_key` to convert the constructor
@@ -148,7 +148,7 @@ class SharedMixin(object):
         raise NotImplementedError
 
 
-class event(object):
+class event:
     """
     A descriptor representing a callable event on a class descending from
     :class:`EventsMixin`.
@@ -224,7 +224,7 @@ class event(object):
         instance._start_stop_events(enabled)
 
 
-class EventsMixin(object):
+class EventsMixin:
     """
     Adds edge-detected :meth:`when_activated` and :meth:`when_deactivated`
     events to a device based on changes to the :attr:`~Device.is_active`
