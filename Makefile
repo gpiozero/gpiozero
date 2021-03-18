@@ -73,7 +73,7 @@ develop:
 	$(PIP) install -e .[doc,test]
 
 test:
-	$(PYTEST) tests
+	$(PYTEST) tests -v
 
 clean:
 	rm -fr dist/ build/ .pytest_cache/ .mypy_cache/ $(NAME).egg-info/ tags .coverage
