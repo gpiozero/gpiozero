@@ -213,9 +213,9 @@ version of gpiozero is available in your Python environment like so:
 
     >>> from pkg_resources import require
     >>> require('gpiozero')
-    [gpiozero 1.6.0 (/usr/lib/python3/dist-packages)]
+    [gpiozero 1.6.2 (/usr/lib/python3/dist-packages)]
     >>> require('gpiozero')[0].version
-    '1.6.0'
+    '1.6.2'
 
 If you have multiple versions installed (e.g. from :command:`pip` and
 :command:`apt`) they will not show up in the list returned by the

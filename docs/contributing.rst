@@ -69,8 +69,8 @@ Python 2/3
 ==========
 
 The library is 100% compatible with both Python 2.7 and Python 3 from version
-3.2 onwards. Since Python 2 is now past its `end-of-life`_, the 1.6.0 release
-(2021-03-14) is the last to support Python 2.
+3.2 onwards. Since Python 2 is now past its `end-of-life`_, the 1.6.2 release
+(2021-03-18) is the last to support Python 2.
 
 
 .. _docs: https://github.com/gpiozero/gpiozero/tree/master/docs
