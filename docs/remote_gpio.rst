@@ -222,6 +222,10 @@ pip:
 Environment variables
 =====================
 
+.. envvar:: PIGPIO_ADDR
+
+.. envvar:: PIGPIO_PORT
+
 The simplest way to use devices with remote pins is to set the
 :envvar:`PIGPIO_ADDR` environment variable to the IP address of the desired
 Raspberry Pi. You must run your Python script or launch your development

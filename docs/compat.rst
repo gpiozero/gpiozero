@@ -31,6 +31,32 @@ stable PWM implementation is advised to try the pigpio pin implementation
 instead (also supported by GPIO Zero).
 
 
+Deprecated pin-factory aliases removed
+======================================
+
+Several deprecated aliases for pin factories, which could be specified by the
+:envvar:`GPIOZERO_PIN_FACTORY` environment variable, have been removed:
+
+* "PiGPIOPin" is removed in favour of "pigpio"
+
+* "RPiGPIOPin" is removed in favour of "rpigpio"
+
+* "NativePin" is removed in favour of "native"
+
+In other words, you can no longer use the following when invoking your
+script:
+
+.. code-block:: console
+
+    $ GPIOZERO_PIN_FACTORY=PiGPIOPin python3 my_script.py
+
+Instead, you should use the following:
+
+.. code-block:: console
+
+    $ GPIOZERO_PIN_FACTORY=pigpio python3 my_script.py
+
+
 Keyword arguments
 =================
 
