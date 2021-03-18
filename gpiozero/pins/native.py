@@ -17,6 +17,7 @@ import select
 from time import sleep
 from threading import Thread, Event, RLock
 from queue import Queue, Empty
+from pathlib import Path
 
 from .local import LocalPiPin, LocalPiFactory
 from ..exc import (
@@ -28,23 +29,25 @@ from ..exc import (
     )
 
 
-def dt_resolve_alias(alias, root='/proc/device-tree'):
+def dt_resolve_alias(alias, root=Path('/proc/device-tree')):
     """
-    Returns the full path of a device-tree alias. For example:
+    Returns the full :class:`~pathlib.Path` of a device-tree alias. For
+    example:
 
         >>> dt_resolve_alias('gpio')
         '/proc/device-tree/soc/gpio@7e200000'
         >>> dt_resolve_alias('ethernet0', root='/proc/device-tree')
         '/proc/device-tree/scb/ethernet@7d580000'
     """
-    # XXX Change this return a pathlib.Path when we drop 2.x
-    filename = os.path.join(root, 'aliases', alias)
-    with io.open(filename, 'rb') as f:
+    if not isinstance(root, Path):
+        root = Path(root)
+    filename = root / 'aliases' / alias
+    with filename.open('rb') as f:
         node, tail = f.read().split(b'\0', 1)
         fs_encoding = sys.getfilesystemencoding()
-        return os.path.join(root, node.decode(fs_encoding).lstrip('/'))
+        return root / node.decode(fs_encoding).lstrip('/')
 
-def dt_peripheral_reg(node, root='/proc/device-tree'):
+def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     """
     Returns the :class:`range` covering the registers of the specified *node*
     of the device-tree, mapped to the CPU's address space. For example:
@@ -57,9 +60,9 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     """
     # Returns a tuple of (address-cells, size-cells) for *node*
     def _cells(node):
-        with io.open(os.path.join(node, '#address-cells'), 'rb') as f:
+        with (node / '#address-cells').open('rb') as f:
             address_cells = struct.unpack('>L', f.read())[0]
-        with io.open(os.path.join(node, '#size-cells'), 'rb') as f:
+        with (node / '#size-cells').open('rb') as f:
             size_cells = struct.unpack('>L', f.read())[0]
         return (address_cells, size_cells)
 
@@ -95,33 +98,30 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     # Returns a list of (child-range, parent-range) tuples for *node*
     def _ranges(node):
         child_cells, size_cells = _cells(node)
-        parent = os.path.dirname(node)
-        parent_cells, _ = _cells(parent)
+        parent_cells, _ = _cells(node.parent)
         ranges_reader = _reader(child_cells, parent_cells, size_cells)
-        with io.open(os.path.join(node, 'ranges'), 'rb') as f:
+        with (node / 'ranges').open('rb') as f:
             return [
                 (range(child_base, child_base + size),
                  range(parent_base, parent_base + size))
                 for child_base, parent_base, size in ranges_reader(f)
             ]
 
-    # XXX Replace all this gubbins with pathlib.Path stuff once we drop 2.x
-    node = os.path.join(root, node)
-    parent = os.path.dirname(node)
-    child_cells, size_cells = _cells(parent)
+    if not isinstance(root, Path):
+        root = Path(root)
+    node = root / node
+    child_cells, size_cells = _cells(node.parent)
     reg_reader = _reader(child_cells, size_cells)
-    with io.open(os.path.join(node, 'reg'), 'rb') as f:
+    with (node / 'reg').open('rb') as f:
         base, size = list(reg_reader(f))[0]
-    while parent != root:
+    while node.parent != root:
         # Iterate up the hierarchy, resolving the base address as we go
-        if os.path.exists(os.path.join(parent, 'ranges')):
-            for child_range, parent_range in _ranges(parent):
+        if (node.parent / 'ranges').exists():
+            for child_range, parent_range in _ranges(node.parent):
                 if base in child_range:
-                    # XXX Can't use .start here as python2's crappy xrange
-                    # lacks it; change this when we drop 2.x!
-                    base += parent_range[0] - child_range[0]
+                    base += parent_range.start - child_range.start
                     break
-        parent = os.path.dirname(parent)
+        node = node.parent
     return range(base, base + size)
 
 
@@ -184,8 +184,7 @@ class GPIOMemory(object):
 
     def gpio_base(self, soc):
         try:
-            # XXX Replace this with .start when 2.x is dropped
-            return dt_peripheral_reg(dt_resolve_alias('gpio'))[0]
+            return dt_peripheral_reg(dt_resolve_alias('gpio')).start
         except IOError:
             try:
                 return self.PERI_BASE_OFFSET[soc] + self.GPIO_BASE_OFFSET
