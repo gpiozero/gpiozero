@@ -41,7 +41,7 @@ TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 def pin_factory_name(request):
     return request.param
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
         factory = pkg_resources.load_entry_point(
@@ -52,14 +52,14 @@ def pin_factory(request, pin_factory_name):
         yield factory
         factory.close()
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def default_factory(request, pin_factory):
     save_pin_factory = Device.pin_factory
     Device.pin_factory = pin_factory
     yield pin_factory
     Device.pin_factory = save_pin_factory
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
