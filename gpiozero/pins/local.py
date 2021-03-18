@@ -8,25 +8,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
 import io
 import errno
 import struct
-import warnings
 from collections import defaultdict
 from threading import Lock
-try:
-    from time import monotonic
-except ImportError:
-    from time import time as monotonic
+from time import monotonic
 
 try:
     from spidev import SpiDev
@@ -45,7 +32,7 @@ def get_pi_revision():
     revision = None
     try:
         with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
-            revision = hex(struct.unpack(nstr('>L'), f.read(4))[0])[2:]
+            revision = hex(struct.unpack('>L', f.read(4))[0])[2:]
     except IOError as e:
         if e.errno != errno.ENOENT:
             raise e
@@ -67,7 +54,7 @@ class LocalPiFactory(PiFactory):
     Extends :class:`~gpiozero.pins.pi.PiFactory`. Abstract base class
     representing pins attached locally to a Pi. This forms the base class for
     local-only pin interfaces (:class:`~gpiozero.pins.rpigpio.RPiGPIOPin`,
-    :class:`~gpiozero.pins.rpio.RPIOPin`, and
+    :class:`~gpiozero.pins.lgpio.LGPIOPin`, and
     :class:`~gpiozero.pins.native.NativePin`).
     """
     pins = {}
@@ -75,7 +62,7 @@ class LocalPiFactory(PiFactory):
     _res_lock = Lock()
 
     def __init__(self):
-        super(LocalPiFactory, self).__init__()
+        super().__init__()
         # Override the reservations and pins dict to be this class' attributes.
         # This is a bit of a dirty hack, but ensures that anyone evil enough to
         # mix pin implementations doesn't try and control the same pin with
@@ -125,7 +112,7 @@ class LocalPiPin(PiPin):
             an opaque value that should only be compared with the associated
             :meth:`Factory.ticks_diff` method.
         """
-        super(LocalPiPin, self)._call_when_changed(
+        super()._call_when_changed(
             self._factory.ticks() if ticks is None else ticks,
             self.state if state is None else state)
 
@@ -137,7 +124,7 @@ class LocalPiHardwareSPI(SPI):
         self._interface = None
         if SpiDev is None:
             raise ImportError('failed to import spidev')
-        super(LocalPiHardwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         to_reserve = {clock_pin, select_pin}
         if mosi_pin is not None:
             to_reserve.add(mosi_pin)
@@ -153,7 +140,7 @@ class LocalPiHardwareSPI(SPI):
             self._interface.close()
         self._interface = None
         self.pin_factory.release_all(self)
-        super(LocalPiHardwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -209,7 +196,7 @@ class LocalPiSoftwareSPI(SPI):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         self._bus = None
         self._select = None
-        super(LocalPiSoftwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         try:
             self._clock_phase = False
             self._lsb_first = False
@@ -234,7 +221,7 @@ class LocalPiSoftwareSPI(SPI):
         if self._bus is not None:
             self._bus.close()
         self._bus = None
-        super(LocalPiSoftwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):

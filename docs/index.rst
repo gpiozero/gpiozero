@@ -23,6 +23,7 @@ Table of Contents
     source_values
     cli_tools
     faq
+    compat
     migrating_from_rpigpio
     contributing
     development

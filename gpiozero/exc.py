@@ -9,14 +9,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-str = type('')
-
 
 class GPIOZeroError(Exception):
     "Base class for all exceptions in GPIO Zero"

@@ -8,21 +8,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import sys
 from time import sleep, time
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 import pytest
 from colorzero import Color, Red, Green, Blue
@@ -967,18 +955,6 @@ def test_rgbled_close_nonpwm(mock_factory):
         led.close()
         assert led.closed
 
-def test_motor_bad_init(mock_factory):
-    with pytest.raises(GPIOPinMissing):
-        Motor()
-    with pytest.raises(GPIOPinMissing):
-        Motor(2)
-    with pytest.raises(GPIOPinMissing):
-        Motor(forward=2)
-    with pytest.raises(GPIOPinMissing):
-        Motor(backward=2)
-    with pytest.raises(TypeError):
-        Motor(a=2, b=3)
-
 def test_motor_pins(mock_factory, pwm):
     f = mock_factory.pin(1)
     b = mock_factory.pin(2)
@@ -1122,16 +1098,6 @@ def test_motor_reverse_nonpwm(mock_factory):
         assert motor.value == -1
         assert b.state == 1 and f.state == 0
 
-def test_motor_enable_pin_bad_init(mock_factory, pwm):
-    with pytest.raises(GPIOPinMissing):
-        Motor(enable=1)
-    with pytest.raises(GPIOPinMissing):
-        Motor(forward=1, enable=2)
-    with pytest.raises(GPIOPinMissing):
-        Motor(backward=1, enable=2)
-    with pytest.raises(GPIOPinMissing):
-        Motor(backward=1, enable=2, pwm=True)
-
 def test_motor_enable_pin_init(mock_factory, pwm):
     f = mock_factory.pin(1)
     b = mock_factory.pin(2)
@@ -1144,7 +1110,7 @@ def test_motor_enable_pin_init(mock_factory, pwm):
         assert motor.enable_device.pin is e
         assert isinstance(motor.enable_device, DigitalOutputDevice)
         assert e.state
-    with Motor(1, 2, 3) as motor:
+    with Motor(1, 2, enable=3) as motor:
         assert motor.forward_device.pin is f
         assert isinstance(motor.forward_device, PWMOutputDevice)
         assert motor.backward_device.pin is b
@@ -1173,18 +1139,6 @@ def test_motor_enable_pin(mock_factory, pwm):
         assert motor.value == -1
         motor.stop()
         assert motor.value == 0
-
-def test_phaseenable_motor_bad_init(mock_factory):
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableMotor()
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableMotor(2)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableMotor(phase=2)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableMotor(enable=2)
-    with pytest.raises(TypeError):
-        PhaseEnableMotor(a=2, b=3)
 
 def test_phaseenable_motor_pins(mock_factory, pwm):
     p = mock_factory.pin(1)

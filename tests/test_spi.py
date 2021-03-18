@@ -7,22 +7,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-nstr = str
-str = type('')
-
-
 import io
-import sys
 import pytest
 from array import array
 from mock import patch
-from collections import namedtuple
 
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import (
@@ -169,7 +157,7 @@ def test_spi_hardware_modes(mock_factory):
 def test_spi_software_read(mock_factory):
     class SPISlave(MockSPIDevice):
         def on_start(self):
-            super(SPISlave, self).on_start()
+            super().on_start()
             for i in range(10):
                 self.tx_word(i)
     with patch('gpiozero.pins.local.SpiDev', None), \

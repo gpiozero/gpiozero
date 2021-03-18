@@ -6,15 +6,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
-
 import operator
 from threading import RLock
 
@@ -29,7 +20,7 @@ class SPISoftwareBus(SharedMixin, Device):
         self.clock = None
         self.mosi = None
         self.miso = None
-        super(SPISoftwareBus, self).__init__()
+        super().__init__()
         self.lock = RLock()
         try:
             self.clock = OutputDevice(clock_pin, active_high=True)
@@ -42,7 +33,7 @@ class SPISoftwareBus(SharedMixin, Device):
             raise
 
     def close(self):
-        super(SPISoftwareBus, self).close()
+        super().close()
         if getattr(self, 'lock', None):
             with self.lock:
                 if self.miso is not None:

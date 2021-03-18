@@ -9,21 +9,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
-
 from math import log, ceil
 from operator import or_
-try:
-    from functools import reduce
-except ImportError:
-    pass # py2's reduce is built-in
+from functools import reduce
 
 from .exc import DeviceClosed, SPIBadChannel, InputDeviceError
 from .devices import Device
@@ -39,16 +27,14 @@ class SPIDevice(Device):
     """
     def __init__(self, **spi_args):
         self._spi = None
-        super(SPIDevice, self).__init__(
-            pin_factory=spi_args.pop('pin_factory', None)
-        )
+        super().__init__(pin_factory=spi_args.pop('pin_factory', None))
         self._spi = self.pin_factory.spi(**spi_args)
 
     def close(self):
         if getattr(self, '_spi', None):
             self._spi.close()
             self._spi = None
-        super(SPIDevice, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -129,14 +115,15 @@ class AnalogInputDevice(SPIDevice):
 
     def __init__(self, bits, max_voltage=3.3, **spi_args):
         if bits is None:
-            raise InputDeviceError('you must specify the bit resolution of the device')
+            raise InputDeviceError(
+                'you must specify the bit resolution of the device')
         self._bits = bits
         self._min_value = -(2 ** bits)
         self._range = 2 ** (bits + 1) - 1
         if max_voltage <= 0:
             raise InputDeviceError('max_voltage must be positive')
         self._max_voltage = float(max_voltage)
-        super(AnalogInputDevice, self).__init__(shared=True, **spi_args)
+        super().__init__(shared=True, **spi_args)
 
     @property
     def bits(self):
@@ -189,7 +176,7 @@ class MCP3xxx(AnalogInputDevice):
                  **spi_args):
         self._channel = channel
         self._differential = bool(differential)
-        super(MCP3xxx, self).__init__(bits, max_voltage, **spi_args)
+        super().__init__(bits, max_voltage, **spi_args)
 
     @property
     def channel(self):
@@ -293,8 +280,7 @@ class MCP30xx(MCP3xxx):
 
     def __init__(self, channel=0, differential=False, max_voltage=3.3,
                  **spi_args):
-        super(MCP30xx, self).__init__(channel, 10, differential, max_voltage,
-                                      **spi_args)
+        super().__init__(channel, 10, differential, max_voltage, **spi_args)
 
 
 class MCP32xx(MCP3xxx):
@@ -304,8 +290,7 @@ class MCP32xx(MCP3xxx):
     """
 
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
-        super(MCP32xx, self).__init__(channel, 12, differential, max_voltage,
-                                      **spi_args)
+        super().__init__(channel, 12, differential, max_voltage, **spi_args)
 
 
 class MCP33xx(MCP3xxx):
@@ -316,8 +301,7 @@ class MCP33xx(MCP3xxx):
     """
 
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
-        super(MCP33xx, self).__init__(channel, 12, differential, max_voltage,
-                                      **spi_args)
+        super().__init__(channel, 12, differential, max_voltage, **spi_args)
 
     def _read(self):
         if self.differential:
@@ -329,7 +313,7 @@ class MCP33xx(MCP3xxx):
             else:
                 return result
         else:
-            return super(MCP33xx, self)._read()
+            return super()._read()
 
     def _send(self):
         # MCP3302/04 protocol looks like the following:
@@ -371,7 +355,7 @@ class MCP33xx(MCP3xxx):
         :class:`MCP3304` in differential mode, channel 0 is read relative to
         channel 1).
         """
-        return super(MCP33xx, self).differential
+        return super().differential
 
     @property
     def value(self):
@@ -379,7 +363,7 @@ class MCP33xx(MCP3xxx):
         The current value read from the device, scaled to a value between 0 and
         1 (or -1 to +1 for devices operating in differential mode).
         """
-        return super(MCP33xx, self).value
+        return super().value
 
 
 class MCP3001(MCP30xx):
@@ -391,7 +375,7 @@ class MCP3001(MCP30xx):
     .. _MCP3001: http://www.farnell.com/datasheets/630400.pdf
     """
     def __init__(self, max_voltage=3.3, **spi_args):
-        super(MCP3001, self).__init__(0, True, max_voltage, **spi_args)
+        super().__init__(0, True, max_voltage, **spi_args)
 
     def _read(self):
         # MCP3001 protocol looks like the following:
@@ -412,7 +396,7 @@ class MCP3002(MCP30xx, MCP3xx2):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 2:
             raise SPIBadChannel('channel must be 0 or 1')
-        super(MCP3002, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3004(MCP30xx):
@@ -425,7 +409,7 @@ class MCP3004(MCP30xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 4:
             raise SPIBadChannel('channel must be between 0 and 3')
-        super(MCP3004, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3008(MCP30xx):
@@ -438,7 +422,7 @@ class MCP3008(MCP30xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 8:
             raise SPIBadChannel('channel must be between 0 and 7')
-        super(MCP3008, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3201(MCP32xx):
@@ -450,7 +434,7 @@ class MCP3201(MCP32xx):
     .. _MCP3201: http://www.farnell.com/datasheets/1669366.pdf
     """
     def __init__(self, max_voltage=3.3, **spi_args):
-        super(MCP3201, self).__init__(0, True, max_voltage, **spi_args)
+        super().__init__(0, True, max_voltage, **spi_args)
 
     def _read(self):
         # MCP3201 protocol looks like the following:
@@ -471,7 +455,7 @@ class MCP3202(MCP32xx, MCP3xx2):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 2:
             raise SPIBadChannel('channel must be 0 or 1')
-        super(MCP3202, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3204(MCP32xx):
@@ -484,7 +468,7 @@ class MCP3204(MCP32xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 4:
             raise SPIBadChannel('channel must be between 0 and 3')
-        super(MCP3204, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3208(MCP32xx):
@@ -497,7 +481,7 @@ class MCP3208(MCP32xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 8:
             raise SPIBadChannel('channel must be between 0 and 7')
-        super(MCP3208, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3301(MCP33xx):
@@ -509,7 +493,7 @@ class MCP3301(MCP33xx):
     .. _MCP3301: http://www.farnell.com/datasheets/1669397.pdf
     """
     def __init__(self, max_voltage=3.3, **spi_args):
-        super(MCP3301, self).__init__(0, True, max_voltage, **spi_args)
+        super().__init__(0, True, max_voltage, **spi_args)
 
     def _read(self):
         # MCP3301 protocol looks like the following:
@@ -538,7 +522,7 @@ class MCP3302(MCP33xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 4:
             raise SPIBadChannel('channel must be between 0 and 4')
-        super(MCP3302, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)
 
 
 class MCP3304(MCP33xx):
@@ -554,4 +538,4 @@ class MCP3304(MCP33xx):
     def __init__(self, channel=0, differential=False, max_voltage=3.3, **spi_args):
         if not 0 <= channel < 8:
             raise SPIBadChannel('channel must be between 0 and 7')
-        super(MCP3304, self).__init__(channel, differential, max_voltage, **spi_args)
+        super().__init__(channel, differential, max_voltage, **spi_args)

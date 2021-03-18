@@ -9,14 +9,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 import os
 import sys
 from textwrap import dedent
@@ -523,7 +515,7 @@ PI_REVISIONS = {
 # ANSI color codes, for the pretty printers (nothing comprehensive, just enough
 # for our purposes)
 
-class Style(object):
+class Style:
     def __init__(self, color=None):
         self.color = self._term_supports_color() if color is None else bool(color)
         self.effects = {

@@ -6,15 +6,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
-
 import sys
 import pytest
 import warnings
@@ -34,7 +25,7 @@ from gpiozero.pins.mock import MockFactory, MockPWMPin
 if sys.version_info[:2] < (3, 4):
     warnings.simplefilter('always')
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def no_default_factory(request):
     save_pin_factory = Device.pin_factory
     Device.pin_factory = None
@@ -43,7 +34,7 @@ def no_default_factory(request):
     finally:
         Device.pin_factory = save_pin_factory
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def mock_factory(request):
     save_factory = Device.pin_factory
     Device.pin_factory = MockFactory()
@@ -68,7 +59,7 @@ class ThreadedTest(Thread):
         self._args = args
         self._kwargs = kwargs
         self._result = None
-        super(ThreadedTest, self).__init__()
+        super().__init__()
         self.daemon = True
         self.start()
 
@@ -82,4 +73,3 @@ class ThreadedTest(Thread):
             return self._result
         else:
             raise RuntimeError('test thread did not finish')
-

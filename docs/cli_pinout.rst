@@ -171,8 +171,8 @@ Environment Variables
 .. envvar:: GPIOZERO_PIN_FACTORY
 
     The library to use when communicating with the GPIO pins. Defaults to
-    attempting to load RPi.GPIO, then RPIO, then pigpio, and finally uses a
-    native Python implementation. Valid values include "rpigpio", "rpio",
+    attempting to load RPi.GPIO, then lgpio, then pigpio, and finally uses a
+    native Python implementation. Valid values include "rpigpio", "lgpio",
     "pigpio", "native", and "mock". The latter is most useful on non-Pi
     platforms as it emulates a Raspberry Pi model 3B (by default).
 

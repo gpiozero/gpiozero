@@ -12,14 +12,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 import os
 
 import pigpio
@@ -87,7 +79,7 @@ class PiGPIOFactory(PiFactory):
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
     def __init__(self, host=None, port=None):
-        super(PiGPIOFactory, self).__init__()
+        super().__init__()
         if host is None:
             host = os.environ.get('PIGPIO_ADDR', 'localhost')
         if port is None:
@@ -104,7 +96,7 @@ class PiGPIOFactory(PiFactory):
         self._spis = []
 
     def close(self):
-        super(PiGPIOFactory, self).close()
+        super().close()
         # We *have* to keep track of SPI interfaces constructed with pigpio;
         # if we fail to close them they prevent future interfaces from using
         # the same pins
@@ -146,7 +138,7 @@ class PiGPIOFactory(PiFactory):
             }[shared, hardware]
 
     def spi(self, **spi_args):
-        intf = super(PiGPIOFactory, self).spi(**spi_args)
+        intf = super().spi(**spi_args)
         self._spis.append(intf)
         return intf
 
@@ -198,7 +190,7 @@ class PiGPIOPin(PiPin):
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
     def __init__(self, factory, number):
-        super(PiGPIOPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._bounce = None
@@ -313,7 +305,7 @@ class PiGPIOPin(PiPin):
             self.when_changed = f
 
     def _call_when_changed(self, gpio, level, ticks):
-        super(PiGPIOPin, self)._call_when_changed(ticks, level)
+        super()._call_when_changed(ticks, level)
 
     def _enable_event_detect(self):
         self._callback = self.factory.connection.callback(
@@ -338,7 +330,7 @@ class PiGPIOHardwareSPI(SPI):
         self._port = port
         self._device = device
         self._handle = None
-        super(PiGPIOHardwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         to_reserve = {clock_pin, select_pin}
         if mosi_pin is not None:
             to_reserve.add(mosi_pin)
@@ -368,7 +360,7 @@ class PiGPIOHardwareSPI(SPI):
             self.pin_factory.connection.spi_close(self._handle)
         self._handle = None
         self.pin_factory.release_all(self)
-        super(PiGPIOHardwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -439,7 +431,7 @@ class PiGPIOHardwareSPI(SPI):
             self._handle = self.pin_factory.connection.spi_open(
                 self._device, self._baud, self._spi_flags)
         else:
-            super(PiGPIOHardwareSPI, self)._set_lsb_first(value)
+            super()._set_lsb_first(value)
 
     def transfer(self, data):
         self._check_open()
@@ -464,7 +456,7 @@ class PiGPIOSoftwareSPI(SPI):
         self._clock_pin = clock_pin
         self._mosi_pin = mosi_pin
         self._miso_pin = miso_pin
-        super(PiGPIOSoftwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         # Can't "unreserve" MOSI/MISO on this implementation
         self.pin_factory.reserve_pins(
             self,
@@ -503,7 +495,7 @@ class PiGPIOSoftwareSPI(SPI):
             self._closed = True
             self.pin_factory.connection.bb_spi_close(self._select_pin)
         self.pin_factory.release_all(self)
-        super(PiGPIOSoftwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):

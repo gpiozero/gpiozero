@@ -11,23 +11,15 @@
 A utility for querying Raspberry Pi GPIO pin-out information.
 """
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-
 import argparse
 import sys
-import textwrap
 import warnings
 import webbrowser
 
 from gpiozero import pi_info
 
 
-class PinoutTool(object):
+class PinoutTool:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             description=__doc__

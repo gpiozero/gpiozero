@@ -38,28 +38,28 @@ named after. All classes in this section are concrete (not abstract).
 LEDBoard
 --------
 
-.. autoclass:: LEDBoard(*pins, pwm=False, active_high=True, initial_value=False, pin_factory=None, **named_pins)
+.. autoclass:: LEDBoard
     :members: on, off, blink, pulse, toggle
 
 
 LEDBarGraph
 -----------
 
-.. autoclass:: LEDBarGraph(*pins, pwm=False, active_high=True, initial_value=0, pin_factory=None)
+.. autoclass:: LEDBarGraph
     :members: value, source, values, lit_count
 
 
 LEDCharDisplay
 --------------
 
-.. autoclass:: LEDCharDisplay(*pins, dp=None, font=None, pwm=False, active_high=True, initial_value=' ', pin_factory=None)
+.. autoclass:: LEDCharDisplay
     :members: value, font
 
 
 LEDMultiCharDisplay
 -------------------
 
-.. autoclass:: LEDMultiCharDisplay(char, *pins, active_high=True, initial_value=None, pin_factory=None)
+.. autoclass:: LEDMultiCharDisplay
     :members: value, plex_delay
 
 
@@ -72,168 +72,168 @@ LEDCharFont
 ButtonBoard
 -----------
 
-.. autoclass:: ButtonBoard(*pins, pull_up=True, active_state=None, bounce_time=None, hold_time=1, hold_repeat=False, pin_factory=None, **named_pins)
+.. autoclass:: ButtonBoard
     :members: wait_for_press, wait_for_release, is_pressed, pressed_time, when_pressed, when_released, value
 
 
 TrafficLights
 -------------
 
-.. autoclass:: TrafficLights(red, amber, green, *, yellow=None, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: TrafficLights
     :members:
 
 
 TrafficLightsBuzzer
 -------------------
 
-.. autoclass:: TrafficLightsBuzzer(lights, buzzer, button, *, pin_factory=None)
+.. autoclass:: TrafficLightsBuzzer
     :members:
 
 
 PiHutXmasTree
 -------------
 
-.. autoclass:: PiHutXmasTree(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PiHutXmasTree
     :members:
 
 
 LedBorg
 -------
 
-.. autoclass:: LedBorg(*, pwm=True, initial_value=(0, 0, 0), pin_factory=None)
+.. autoclass:: LedBorg
     :members:
 
 
 PiLiter
 -------
 
-.. autoclass:: PiLiter(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PiLiter
     :members:
 
 
 PiLiterBarGraph
 ---------------
 
-.. autoclass:: PiLiterBarGraph(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PiLiterBarGraph
     :members:
 
 
 PiTraffic
 ---------
 
-.. autoclass:: PiTraffic(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PiTraffic
     :members:
 
 
 PiStop
 ------
 
-.. autoclass:: PiStop(location, *, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PiStop
     :members:
 
 
 FishDish
 --------
 
-.. autoclass:: FishDish(*, pwm=False, pin_factory=None)
+.. autoclass:: FishDish
     :members:
 
 
 TrafficHat
 ----------
 
-.. autoclass:: TrafficHat(*, pwm=False, pin_factory=None)
+.. autoclass:: TrafficHat
     :members:
 
 
 TrafficpHat
 -----------
 
-.. autoclass:: TrafficpHat(*, pwm=False, pin_factory=None)
+.. autoclass:: TrafficpHat
     :members:
 
 
 JamHat
 ------
 
-.. autoclass:: JamHat(*, pwm=False, pin_factory=None)
+.. autoclass:: JamHat
     :members:
 
 
 Pibrella
 --------
 
-.. autoclass:: Pibrella(*, pwm=False, pin_factory=None)
+.. autoclass:: Pibrella
     :members:
 
 
 Robot
 -----
 
-.. autoclass:: Robot(left, right, *, pwm=True, pin_factory=None)
+.. autoclass:: Robot
     :members:
 
 
 PhaseEnableRobot
 ----------------
 
-.. autoclass:: PhaseEnableRobot(left, right, *, pwm=True, pin_factory=None)
+.. autoclass:: PhaseEnableRobot
     :members:
 
 
 RyanteckRobot
 -------------
 
-.. autoclass:: RyanteckRobot(*, pwm=True, pin_factory=None)
+.. autoclass:: RyanteckRobot
     :members:
 
 
 CamJamKitRobot
 --------------
 
-.. autoclass:: CamJamKitRobot(*, pwm=True, pin_factory=None)
+.. autoclass:: CamJamKitRobot
     :members:
 
 
 PololuDRV8835Robot
 ------------------
 
-.. autoclass:: PololuDRV8835Robot(*, pwm=True, pin_factory=None)
+.. autoclass:: PololuDRV8835Robot
     :members:
 
 
 Energenie
 ---------
 
-.. autoclass:: Energenie(socket, *, initial_value=False, pin_factory=None)
+.. autoclass:: Energenie
     :members: on, off, socket, value
 
 
 StatusZero
 ----------
 
-.. autoclass:: StatusZero(*labels, pwm=False, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: StatusZero
     :members:
 
 
 StatusBoard
 -----------
 
-.. autoclass:: StatusBoard(*labels, pwm=False, active_high=True, initial_value=False, pin_factory=None)
+.. autoclass:: StatusBoard
     :members:
 
 
 SnowPi
 ------
 
-.. autoclass:: SnowPi(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: SnowPi
     :members:
 
 
 PumpkinPi
 ---------
 
-.. autoclass:: PumpkinPi(*, pwm=False, initial_value=False, pin_factory=None)
+.. autoclass:: PumpkinPi
     :members:
 
 
@@ -258,19 +258,19 @@ to construct classes for their own devices.
 LEDCollection
 -------------
 
-.. autoclass:: LEDCollection(*pins, pwm=False, active_high=True, initial_value=False, pin_factory=None, **named_pins)
+.. autoclass:: LEDCollection
     :members:
 
 
 CompositeOutputDevice
 ---------------------
 
-.. autoclass:: CompositeOutputDevice(*args, _order=None, pin_factory=None, **kwargs)
+.. autoclass:: CompositeOutputDevice
     :members:
 
 
 CompositeDevice
 ---------------
 
-.. autoclass:: CompositeDevice(*args, _order=None, pin_factory=None, **kwargs)
+.. autoclass:: CompositeDevice
     :members:

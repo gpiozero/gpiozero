@@ -9,14 +9,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 from weakref import ref
 from collections import defaultdict
 from threading import Lock
@@ -39,7 +31,7 @@ from ..exc import (
     )
 
 
-class Factory(object):
+class Factory:
     """
     Generates pins and SPI interfaces for devices. This is an abstract
     base class for pin factories. Descendents *must* override the following
@@ -177,7 +169,7 @@ class Factory(object):
         """)
 
 
-class Pin(object):
+class Pin:
     """
     Abstract base class representing a pin attached to some form of controller,
     be it GPIO, SPI, ADC, etc.

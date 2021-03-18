@@ -7,21 +7,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-str = type('')
-
 import re
 import warnings
-from collections import namedtuple
-try:
-    from math import log2
-except ImportError:
-    from .compat import log2
+from math import log2
 
 from .exc import AmbiguousTone
 
@@ -88,22 +76,18 @@ class Tone(float):
         r'(?P<semi>[%s]?)'
         r'(?P<octave>[0-9])' % ''.join(semitones.keys()))
 
-    def __new__(cls, value=None, **kwargs):
-        if value is None:
-            if len(kwargs) != 1:
-                raise TypeError('expected precisely one keyword argument')
-            key, value = kwargs.popitem()
-            try:
-                return {
-                    'frequency': cls.from_frequency,
-                    'midi': cls.from_midi,
-                    'note': cls.from_note,
-                }[key](value)
-            except KeyError:
-                raise TypeError('unexpected keyword argument %r' % key)
+    def __new__(cls, value=None, *, frequency=None, midi=None, note=None):
+        n = sum(1 for arg in (value, frequency, midi, note) if arg is not None)
+        if n != 1:
+            raise TypeError('must specify a value, frequency, midi number, '
+                            'or note')
+        if note is not None:
+            return cls.from_note(note)
+        elif midi is not None:
+            return cls.from_midi(midi)
+        elif frequency is not None:
+            return cls.from_frequency(frequency)
         else:
-            if kwargs:
-                raise TypeError('cannot specify keywords with a value')
             if isinstance(value, (int, float)):
                 if 0 <= value < 128:
                     if value > 0:
@@ -190,7 +174,7 @@ class Tone(float):
         .. _Hz: https://en.wikipedia.org/wiki/Hertz
         """
         if 0 < freq <= 20000:
-            return super(Tone, cls).__new__(cls, freq)
+            return super().__new__(cls, freq)
         raise ValueError('invalid frequency: %.2f' % freq)
 
     @property

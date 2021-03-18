@@ -9,15 +9,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-)
-str = type('')
-
-
 import os
 import io
 import subprocess
@@ -37,13 +28,13 @@ class InternalDevice(EventsMixin, Device):
     usually represent operating system services like the internal clock, file
     systems or network facilities.
     """
-    def __init__(self, pin_factory=None):
+    def __init__(self, *, pin_factory=None):
         self._closed = False
-        super(InternalDevice, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
 
     def close(self):
         self._closed = True
-        super(InternalDevice, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -63,17 +54,17 @@ class PolledInternalDevice(InternalDevice):
     internal devices that lack any other mechanism to inform the instance of
     changes.
     """
-    def __init__(self, event_delay=1.0, pin_factory=None):
+    def __init__(self, *, event_delay=1.0, pin_factory=None):
         self._event_thread = None
         self._event_delay = event_delay
-        super(PolledInternalDevice, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
 
     def close(self):
         try:
             self._start_stop_events(False)
         except AttributeError:
             pass  # pragma: no cover
-        super(PolledInternalDevice, self).close()
+        super().close()
 
     @property
     def event_delay(self):
@@ -97,7 +88,7 @@ class PolledInternalDevice(InternalDevice):
     def wait_for_active(self, timeout=None):
         self._start_stop_events(True)
         try:
-            return super(PolledInternalDevice, self).wait_for_active(timeout)
+            return super().wait_for_active(timeout)
         finally:
             self._start_stop_events(
                 self.when_activated or self.when_deactivated)
@@ -105,7 +96,7 @@ class PolledInternalDevice(InternalDevice):
     def wait_for_inactive(self, timeout=None):
         self._start_stop_events(True)
         try:
-            return super(PolledInternalDevice, self).wait_for_inactive(timeout)
+            return super().wait_for_inactive(timeout)
         finally:
             self._start_stop_events(
                 self.when_activated or self.when_deactivated)
@@ -153,10 +144,9 @@ class PingServer(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, host, event_delay=10.0, pin_factory=None):
+    def __init__(self, host, *, event_delay=10.0, pin_factory=None):
         self._host = host
-        super(PingServer, self).__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), self.is_active)
 
     def __repr__(self):
@@ -164,7 +154,7 @@ class PingServer(PolledInternalDevice):
             self._check_open()
             return '<gpiozero.PingServer object host="%s">' % self.host
         except DeviceClosed:
-            return super(PingServer, self).__repr__()
+            return super().__repr__()
 
     @property
     def host(self):
@@ -270,12 +260,11 @@ class CPUTemperature(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp',
+    def __init__(self, sensor_file='/sys/class/thermal/thermal_zone0/temp', *,
             min_temp=0.0, max_temp=100.0, threshold=80.0, event_delay=5.0,
             pin_factory=None):
         self.sensor_file = sensor_file
-        super(CPUTemperature, self).__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         try:
             if min_temp >= max_temp:
                 raise ValueError('max_temp must be greater than min_temp')
@@ -295,7 +284,7 @@ class CPUTemperature(PolledInternalDevice):
             self._check_open()
             return '<gpiozero.CPUTemperature object temperature=%.2f>' % self.temperature
         except DeviceClosed:
-            return super(CPUTemperature, self).__repr__()
+            return super().__repr__()
 
     @property
     def temperature(self):
@@ -402,9 +391,9 @@ class LoadAverage(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, load_average_file='/proc/loadavg', min_load_average=0.0,
-        max_load_average=1.0, threshold=0.8, minutes=5, event_delay=10.0,
-        pin_factory=None):
+    def __init__(self, load_average_file='/proc/loadavg', *,
+                 min_load_average=0.0, max_load_average=1.0, threshold=0.8,
+                 minutes=5, event_delay=10.0, pin_factory=None):
         if min_load_average >= max_load_average:
             raise ValueError(
                 'max_load_average must be greater than min_load_average')
@@ -423,8 +412,7 @@ class LoadAverage(PolledInternalDevice):
             5: 1,
             15: 2,
         }[minutes]
-        super(LoadAverage, self).__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         self._fire_events(self.pin_factory.ticks(), None)
 
     def __repr__(self):
@@ -432,7 +420,7 @@ class LoadAverage(PolledInternalDevice):
             self._check_open()
             return '<gpiozero.LoadAverage object load average=%.2f>' % self.load_average
         except DeviceClosed:
-            return super(LoadAverage, self).__repr__()
+            return super().__repr__()
 
     @property
     def load_average(self):
@@ -535,13 +523,12 @@ class TimeOfDay(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, start_time, end_time, utc=True, event_delay=5.0,
+    def __init__(self, start_time, end_time, *, utc=True, event_delay=5.0,
                  pin_factory=None):
         self._start_time = None
         self._end_time = None
         self._utc = True
-        super(TimeOfDay, self).__init__(
-            event_delay=event_delay, pin_factory=pin_factory)
+        super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         try:
             self._start_time = self._validate_time(start_time)
             self._end_time = self._validate_time(end_time)
@@ -559,7 +546,7 @@ class TimeOfDay(PolledInternalDevice):
             return '<gpiozero.TimeOfDay object active between %s and %s %s>' % (
                 self.start_time, self.end_time, ('local', 'UTC')[self.utc])
         except DeviceClosed:
-            return super(TimeOfDay, self).__repr__()
+            return super().__repr__()
 
     def _validate_time(self, value):
         if isinstance(value, datetime):
@@ -671,9 +658,9 @@ class DiskUsage(PolledInternalDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, filesystem='/', threshold=90.0, event_delay=30.0,
+    def __init__(self, filesystem='/', *, threshold=90.0, event_delay=30.0,
                  pin_factory=None):
-        super(DiskUsage, self).__init__(
+        super().__init__(
             event_delay=event_delay, pin_factory=pin_factory)
         os.statvfs(filesystem)
         if not 0 <= threshold <= 100:
@@ -688,7 +675,7 @@ class DiskUsage(PolledInternalDevice):
             self._check_open()
             return '<gpiozero.DiskUsage object usage=%.2f>' % self.usage
         except DeviceClosed:
-            return super(DiskUsage, self).__repr__()
+            return super().__repr__()
 
     @property
     def usage(self):

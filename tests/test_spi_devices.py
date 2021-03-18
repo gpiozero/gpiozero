@@ -8,23 +8,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
-import sys
 import pytest
 from mock import patch
 from collections import namedtuple
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
+from math import isclose
 
 from gpiozero.pins.mock import MockSPIDevice, MockPin
 from gpiozero import *
@@ -45,8 +32,7 @@ class MockMCP3xxx(MockSPIDevice):
     def __init__(
             self, clock_pin, mosi_pin, miso_pin, select_pin=None,
             channels=8, bits=10):
-        super(MockMCP3xxx, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin)
         self.vref = 3.3
         self.channels = [0.0] * channels
         self.channel_bits = 3
@@ -54,7 +40,7 @@ class MockMCP3xxx(MockSPIDevice):
         self.state = 'idle'
 
     def on_start(self):
-        super(MockMCP3xxx, self).on_start()
+        super().on_start()
         self.state = 'idle'
 
     def on_bit(self):
@@ -93,11 +79,11 @@ class MockMCP3xxx(MockSPIDevice):
 
 class MockMCP3xx1(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, bits=10):
-        super(MockMCP3xx1, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=2, bits=bits)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
+                         bits=bits)
 
     def on_start(self):
-        super(MockMCP3xx1, self).on_start()
+        super().on_start()
         result = self.channels[0] - self.channels[1]
         result = clamp(result, 0, self.vref)
         result = scale(result, self.vref, self.bits)
@@ -111,8 +97,8 @@ class MockMCP3xx2(MockMCP3xxx):
     def __init__(
             self, clock_pin, mosi_pin, miso_pin, select_pin=None,
             bits=10):
-        super(MockMCP3xx2, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=2, bits=bits)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
+                         bits=bits)
         self.channel_bits = 1
 
 
@@ -120,8 +106,7 @@ class MockMCP33xx(MockMCP3xxx):
     def __init__(
             self, clock_pin, mosi_pin, miso_pin, select_pin=None,
             channels=8):
-        super(MockMCP33xx, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels, 12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels, 12)
 
     def on_result(self, differential, channel):
         if differential:
@@ -139,59 +124,55 @@ class MockMCP33xx(MockMCP3xxx):
 
 class MockMCP3001(MockMCP3xx1):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3001, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
 
 
 class MockMCP3002(MockMCP3xx2):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3002, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
 
 
 class MockMCP3004(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3004, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=4, bits=10)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4,
+                         bits=10)
 
 
 class MockMCP3008(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3008, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=8, bits=10)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8,
+                         bits=10)
 
 
 class MockMCP3201(MockMCP3xx1):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3201, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
 
 
 class MockMCP3202(MockMCP3xx2):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3202, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
 
 
 class MockMCP3204(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3204, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=4, bits=12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4,
+                         bits=12)
 
 
 class MockMCP3208(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3208, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=8, bits=12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8,
+                         bits=12)
 
 
 class MockMCP3301(MockMCP3xxx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3301, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=2, bits=12)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
+                         bits=12)
 
     def on_start(self):
-        super(MockMCP3301, self).on_start()
+        super().on_start()
         result = self.channels[0] - self.channels[1]
         result = clamp(result, -self.vref, self.vref)
         result = scale(result, self.vref, self.bits)
@@ -202,14 +183,12 @@ class MockMCP3301(MockMCP3xxx):
 
 class MockMCP3302(MockMCP33xx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3302, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=4)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4)
 
 
 class MockMCP3304(MockMCP33xx):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super(MockMCP3304, self).__init__(
-            clock_pin, mosi_pin, miso_pin, select_pin, channels=8)
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8)
 
 
 def single_mcp_test(mock, pot, channel, bits):

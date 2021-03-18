@@ -8,24 +8,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-nstr = str
-str = type('')
-
 import inspect
 import weakref
 from functools import wraps, partial
 from threading import Event
 from collections import deque
-try:
-    from statistics import median
-except ImportError:
-    from .compat import median
+from statistics import median
 import warnings
 
 from .threads import GPIOThread
@@ -42,7 +30,8 @@ callback_warning = (
     'e.g. btn.when_pressed = pressed() instead of btn.when_pressed = pressed'
 )
 
-class ValuesMixin(object):
+
+class ValuesMixin:
     """
     Adds a :attr:`values` property to the class which returns an infinite
     generator of readings from the :attr:`~Device.value` property. There is
@@ -66,7 +55,7 @@ class ValuesMixin(object):
                 break
 
 
-class SourceMixin(object):
+class SourceMixin:
     """
     Adds a :attr:`source` property to the class which, given an iterable or a
     :class:`ValuesMixin` descendent, sets :attr:`~Device.value` to each member
@@ -82,11 +71,11 @@ class SourceMixin(object):
         self._source = None
         self._source_thread = None
         self._source_delay = 0.01
-        super(SourceMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def close(self):
         self.source = None
-        super(SourceMixin, self).close()
+        super().close()
 
     def _copy_values(self, source):
         for v in source:
@@ -129,7 +118,7 @@ class SourceMixin(object):
             self._source_thread.start()
 
 
-class SharedMixin(object):
+class SharedMixin:
     """
     This mixin marks a class as "shared". In this case, the meta-class
     (GPIOMeta) will use :meth:`_shared_key` to convert the constructor
@@ -146,7 +135,7 @@ class SharedMixin(object):
 
     def __del__(self):
         self._refs = 0
-        super(SharedMixin, self).__del__()
+        super().__del__()
 
     @classmethod
     def _shared_key(cls, *args, **kwargs):
@@ -155,16 +144,11 @@ class SharedMixin(object):
         key (which must be storable in a :class:`dict` and, thus, immutable
         and hashable) representing the instance that can be shared. This must
         be overridden by descendents.
-
-        The default simply assumes all positional arguments are immutable and
-        returns this as the key but this is almost never the "right" thing to
-        do and almost all descendents should override this method.
         """
-        # XXX Future 2.x version should change this to raise NotImplementedError
-        return args
+        raise NotImplementedError
 
 
-class event(object):
+class event:
     """
     A descriptor representing a callable event on a class descending from
     :class:`EventsMixin`.
@@ -176,6 +160,46 @@ class event(object):
     def __init__(self, doc=None):
         self.handlers = {}
         self.__doc__ = doc
+
+    def _wrap_callback(self, instance, fn):
+        if not callable(fn):
+            raise BadEventHandler('value must be None or a callable')
+        # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
+        # has been used to produce it) we need to dig out the "real" function
+        # that's been wrapped along with all the mandatory positional args
+        # used in the wrapper so we can test the binding
+        args = ()
+        wrapped_fn = fn
+        while isinstance(wrapped_fn, partial):
+            args = wrapped_fn.args + args
+            wrapped_fn = wrapped_fn.func
+        if inspect.isbuiltin(wrapped_fn):
+            # We can't introspect the prototype of builtins. In this case we
+            # assume that the builtin has no (mandatory) parameters; this is
+            # the most reasonable assumption on the basis that pre-existing
+            # builtins have no knowledge of gpiozero, and the sole parameter
+            # we would pass is a gpiozero object
+            return fn
+        else:
+            # Try binding ourselves to the argspec of the provided callable.
+            # If this works, assume the function is capable of accepting no
+            # parameters
+            try:
+                inspect.getcallargs(wrapped_fn, *args)
+                return fn
+            except TypeError:
+                try:
+                    # If the above fails, try binding with a single parameter
+                    # (ourselves). If this works, wrap the specified callback
+                    inspect.getcallargs(wrapped_fn, *(args + (instance,)))
+                    @wraps(fn)
+                    def wrapper():
+                        return fn(instance)
+                    return wrapper
+                except TypeError:
+                    raise BadEventHandler(
+                        'value must be a callable which accepts up to one '
+                        'mandatory parameter')
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -190,7 +214,7 @@ class event(object):
             except KeyError:
                 warnings.warn(CallbackSetToNone(callback_warning))
         else:
-            self.handlers[id(instance)] = instance._wrap_callback(value)
+            self.handlers[id(instance)] = self._wrap_callback(instance, value)
         enabled = any(
             obj.handlers.get(id(instance))
             for name in dir(type(instance))
@@ -200,7 +224,7 @@ class event(object):
         instance._start_stop_events(enabled)
 
 
-class EventsMixin(object):
+class EventsMixin:
     """
     Adds edge-detected :meth:`when_activated` and :meth:`when_deactivated`
     events to a device based on changes to the :attr:`~Device.is_active`
@@ -215,7 +239,7 @@ class EventsMixin(object):
         initialization to set initial states.
     """
     def __init__(self, *args, **kwargs):
-        super(EventsMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._active_event = Event()
         self._inactive_event = Event()
         self._last_active = None
@@ -237,7 +261,7 @@ class EventsMixin(object):
                 del ev.handlers[id(self)]
             except KeyError:
                 pass
-        super(EventsMixin, self).close()
+        super().close()
 
     def wait_for_active(self, timeout=None):
         """
@@ -317,47 +341,6 @@ class EventsMixin(object):
         else:
             return None
 
-    def _wrap_callback(self, fn):
-        # XXX In 2.x, move this to the event class above
-        if not callable(fn):
-            raise BadEventHandler('value must be None or a callable')
-        # If fn is wrapped with partial (i.e. partial, partialmethod, or wraps
-        # has been used to produce it) we need to dig out the "real" function
-        # that's been wrapped along with all the mandatory positional args
-        # used in the wrapper so we can test the binding
-        args = ()
-        wrapped_fn = fn
-        while isinstance(wrapped_fn, partial):
-            args = wrapped_fn.args + args
-            wrapped_fn = wrapped_fn.func
-        if inspect.isbuiltin(wrapped_fn):
-            # We can't introspect the prototype of builtins. In this case we
-            # assume that the builtin has no (mandatory) parameters; this is
-            # the most reasonable assumption on the basis that pre-existing
-            # builtins have no knowledge of gpiozero, and the sole parameter
-            # we would pass is a gpiozero object
-            return fn
-        else:
-            # Try binding ourselves to the argspec of the provided callable.
-            # If this works, assume the function is capable of accepting no
-            # parameters
-            try:
-                inspect.getcallargs(wrapped_fn, *args)
-                return fn
-            except TypeError:
-                try:
-                    # If the above fails, try binding with a single parameter
-                    # (ourselves). If this works, wrap the specified callback
-                    inspect.getcallargs(wrapped_fn, *(args + (self,)))
-                    @wraps(fn)
-                    def wrapper():
-                        return fn(self)
-                    return wrapper
-                except TypeError:
-                    raise BadEventHandler(
-                        'value must be a callable which accepts up to one '
-                        'mandatory parameter')
-
     def _fire_activated(self):
         # These methods are largely here to be overridden by descendents
         if self.when_activated:
@@ -430,7 +413,7 @@ class HoldMixin(EventsMixin):
     """
     def __init__(self, *args, **kwargs):
         self._hold_thread = None
-        super(HoldMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._when_held = None
         self._held_from = None
         self._hold_time = 1
@@ -441,15 +424,15 @@ class HoldMixin(EventsMixin):
         if self._hold_thread is not None:
             self._hold_thread.stop()
         self._hold_thread = None
-        super(HoldMixin, self).close()
+        super().close()
 
     def _fire_activated(self):
-        super(HoldMixin, self)._fire_activated()
+        super()._fire_activated()
         self._hold_thread.holding.set()
 
     def _fire_deactivated(self):
         self._held_from = None
-        super(HoldMixin, self)._fire_deactivated()
+        super()._fire_deactivated()
 
     def _fire_held(self):
         if self.when_held:
@@ -528,7 +511,7 @@ class HoldThread(GPIOThread):
     device is active.
     """
     def __init__(self, parent):
-        super(HoldThread, self).__init__(
+        super().__init__(
             target=self.held, args=(weakref.proxy(parent),))
         self.holding = Event()
         self.start()
@@ -570,7 +553,7 @@ class GPIOQueue(GPIOThread):
             raise BadWaitTime('sample_wait must be 0 or greater')
         if ignore is None:
             ignore = set()
-        super(GPIOQueue, self).__init__(target=self.fill)
+        super().__init__(target=self.fill)
         self.queue = deque(maxlen=queue_len)
         self.partial = bool(partial)
         self.sample_wait = float(sample_wait)

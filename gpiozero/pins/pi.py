@@ -6,23 +6,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-import io
-from threading import RLock, Lock
+from threading import RLock
 from types import MethodType
-from collections import defaultdict
-try:
-    from weakref import ref, WeakMethod
-except ImportError:
-
-    from ..compat import WeakMethod
+from weakref import ref, WeakMethod
 import warnings
 
 try:
@@ -35,7 +21,6 @@ from .data import PiBoardInfo
 from ..exc import (
     PinNoPins,
     PinNonPhysical,
-    PinInvalidPin,
     SPIBadArgs,
     SPISoftwareFallback,
     )
@@ -77,7 +62,7 @@ class PiFactory(Factory):
     :class:`~gpiozero.pins.local.LocalPiFactory`.
     """
     def __init__(self):
-        super(PiFactory, self).__init__()
+        super().__init__()
         self._info = None
         self.pins = {}
         self.pin_class = None
@@ -88,11 +73,11 @@ class PiFactory(Factory):
         self.pins.clear()
 
     def reserve_pins(self, requester, *pins):
-        super(PiFactory, self).reserve_pins(
+        super().reserve_pins(
             requester, *(self.pi_info.to_gpio(pin) for pin in pins))
 
     def release_pins(self, reserver, *pins):
-        super(PiFactory, self).release_pins(
+        super().release_pins(
             reserver, *(self.pi_info.to_gpio(pin) for pin in pins))
 
     def pin(self, spec):
@@ -262,7 +247,7 @@ class PiPin(Pin):
     * :meth:`_set_edges`
     """
     def __init__(self, factory, number):
-        super(PiPin, self).__init__()
+        super().__init__()
         self._factory = factory
         self._when_changed_lock = RLock()
         self._when_changed = None

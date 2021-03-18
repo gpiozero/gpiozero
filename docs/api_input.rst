@@ -31,42 +31,42 @@ represent. All classes in this section are concrete (not abstract).
 Button
 ------
 
-.. autoclass:: Button(pin, *, pull_up=True, active_state=None, bounce_time=None, hold_time=1, hold_repeat=False, pin_factory=None)
+.. autoclass:: Button
     :members: wait_for_press, wait_for_release, pin, is_pressed, is_held, hold_time, held_time, hold_repeat, pull_up, when_pressed, when_released, when_held, value
 
 
 LineSensor (TRCT5000)
 ---------------------
 
-.. autoclass:: LineSensor(pin, *, queue_len=5, sample_rate=100, threshold=0.5, partial=False, pin_factory=None)
+.. autoclass:: LineSensor
     :members: wait_for_line, wait_for_no_line, pin, line_detected, when_line, when_no_line, value
 
 
 MotionSensor (D-SUN PIR)
 ------------------------
 
-.. autoclass:: MotionSensor(pin, *, queue_len=1, sample_rate=10, threshold=0.5, partial=False, pin_factory=None)
+.. autoclass:: MotionSensor
     :members: wait_for_motion, wait_for_no_motion, pin, motion_detected, when_motion, when_no_motion, value
 
 
 LightSensor (LDR)
 -----------------
 
-.. autoclass:: LightSensor(pin, *, queue_len=5, charge_time_limit=0.01, threshold=0.1, partial=False, pin_factory=None)
+.. autoclass:: LightSensor
     :members: wait_for_light, wait_for_dark, pin, light_detected, when_light, when_dark, value
 
 
 DistanceSensor (HC-SR04)
 ------------------------
 
-.. autoclass:: DistanceSensor(echo, trigger, *, queue_len=30, max_distance=1, threshold_distance=0.3, partial=False, pin_factory=None)
+.. autoclass:: DistanceSensor
     :members: wait_for_in_range, wait_for_out_of_range, trigger, echo, when_in_range, when_out_of_range, max_distance, distance, threshold_distance, value
 
 
 RotaryEncoder
 -------------
 
-.. autoclass:: RotaryEncoder(a, b, *, bounce_time=None, max_steps=16, threshold_steps=(0, 0), wrap=False, pin_factory=None)
+.. autoclass:: RotaryEncoder
     :members: wait_for_rotate, wait_for_rotate_clockwise, wait_for_rotate_counter_clockwise, when_rotated, when_rotated_clockwise, when_rotated_counter_clockwise, steps, value, max_steps, threshold_steps, wrap
 
 
@@ -87,26 +87,26 @@ to construct classes for their own devices.
 DigitalInputDevice
 ------------------
 
-.. autoclass:: DigitalInputDevice(pin, *, pull_up=False, active_state=None, bounce_time=None, pin_factory=None)
+.. autoclass:: DigitalInputDevice
     :members: wait_for_active, wait_for_inactive, when_activated, when_deactivated, active_time, inactive_time, value
 
 
 SmoothedInputDevice
 -------------------
 
-.. autoclass:: SmoothedInputDevice(pin, *, pull_up=False, active_state=None, threshold=0.5, queue_len=5, sample_wait=0.0, partial=False, pin_factory=None)
+.. autoclass:: SmoothedInputDevice
     :members: is_active, value, threshold, partial, queue_len
 
 
 InputDevice
 -----------
 
-.. autoclass:: InputDevice(pin, *, pull_up=False, active_state=None, pin_factory=None)
+.. autoclass:: InputDevice
     :members: pull_up, is_active, value
 
 
 GPIODevice
 ----------
 
-.. autoclass:: GPIODevice(pin, pin_factory=None)
+.. autoclass:: GPIODevice
     :members:

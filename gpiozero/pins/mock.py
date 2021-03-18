@@ -7,23 +7,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import os
 from collections import namedtuple
 from time import time, sleep
 from threading import Thread, Event
-try:
-    from math import isclose
-except ImportError:
-    from ..compat import isclose
+from math import isclose
 
 import pkg_resources
 
@@ -41,13 +29,14 @@ from .local import LocalPiPin, LocalPiFactory
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
 
+
 class MockPin(LocalPiPin):
     """
     A mock pin used primarily for testing. This class does *not* support PWM.
     """
 
     def __init__(self, factory, number):
-        super(MockPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._function = 'input'
         self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._state = self._pull == 'up'
@@ -176,7 +165,7 @@ class MockConnectedPin(MockPin):
     check that one pin can influence another.
     """
     def __init__(self, factory, number, input_pin=None):
-        super(MockConnectedPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self.input_pin = input_pin
 
     def _change_state(self, value):
@@ -185,7 +174,7 @@ class MockConnectedPin(MockPin):
                 self.input_pin.drive_high()
             else:
                 self.input_pin.drive_low()
-        return super(MockConnectedPin, self)._change_state(value)
+        return super()._change_state(value)
 
 
 class MockChargingPin(MockPin):
@@ -196,13 +185,13 @@ class MockChargingPin(MockPin):
     to time the charging rate).
     """
     def __init__(self, factory, number, charge_time=0.01):
-        super(MockChargingPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self.charge_time = charge_time # dark charging time
         self._charge_stop = Event()
         self._charge_thread = None
 
     def _set_function(self, value):
-        super(MockChargingPin, self)._set_function(value)
+        super()._set_function(value)
         if value == 'input':
             if self._charge_thread:
                 self._charge_stop.set()
@@ -237,13 +226,13 @@ class MockTriggerPin(MockPin):
     the echo pin to drive high for the echo time.
     """
     def __init__(self, factory, number, echo_pin=None, echo_time=0.04):
-        super(MockTriggerPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self.echo_pin = echo_pin
         self.echo_time = echo_time # longest echo time
         self._echo_thread = None
 
     def _set_state(self, value):
-        super(MockTriggerPin, self)._set_state(value)
+        super()._set_state(value)
         if value:
             if self._echo_thread:
                 self._echo_thread.join()
@@ -262,12 +251,12 @@ class MockPWMPin(MockPin):
     This derivative of :class:`MockPin` adds PWM support.
     """
     def __init__(self, factory, number):
-        super(MockPWMPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._frequency = None
 
     def close(self):
         self.frequency = None
-        super(MockPWMPin, self).close()
+        super().close()
 
     def _set_state(self, value):
         if self._function == 'input':
@@ -295,11 +284,11 @@ class MockSPIClockPin(MockPin):
     this class will be used for the clock pin.
     """
     def __init__(self, factory, number):
-        super(MockSPIClockPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self.spi_devices = getattr(self, 'spi_devices', [])
 
     def _set_state(self, value):
-        super(MockSPIClockPin, self)._set_state(value)
+        super()._set_state(value)
         for dev in self.spi_devices:
             dev.on_clock()
 
@@ -312,16 +301,16 @@ class MockSPISelectPin(MockPin):
     and this class will be used for the select pin.
     """
     def __init__(self, factory, number):
-        super(MockSPISelectPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self.spi_device = getattr(self, 'spi_device', None)
 
     def _set_state(self, value):
-        super(MockSPISelectPin, self)._set_state(value)
+        super()._set_state(value)
         if self.spi_device:
             self.spi_device.on_select()
 
 
-class MockSPIDevice(object):
+class MockSPIDevice:
     def __init__(
             self, clock_pin, mosi_pin=None, miso_pin=None, select_pin=None,
             clock_polarity=False, clock_phase=False, lsb_first=False,
@@ -441,7 +430,7 @@ class MockFactory(LocalPiFactory):
         constructor, or :class:`MockPin` if that is unspecified.
     """
     def __init__(self, revision=None, pin_class=None):
-        super(MockFactory, self).__init__()
+        super().__init__()
         if revision is None:
             revision = os.environ.get('GPIOZERO_MOCK_REVISION', 'a02082')
         if pin_class is None:

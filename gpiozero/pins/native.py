@@ -7,19 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-try:
-    range = xrange
-except NameError:
-    pass
-nstr = str
-str = type('')
-
 import io
 import os
 import sys
@@ -27,14 +14,10 @@ import mmap
 import errno
 import struct
 import select
-import warnings
 from time import sleep
 from threading import Thread, Event, RLock
-from collections import Counter
-try:
-    from queue import Queue, Empty
-except ImportError:
-    from Queue import Queue, Empty
+from queue import Queue, Empty
+from pathlib import Path
 
 from .local import LocalPiPin, LocalPiFactory
 from ..exc import (
@@ -46,23 +29,25 @@ from ..exc import (
     )
 
 
-def dt_resolve_alias(alias, root='/proc/device-tree'):
+def dt_resolve_alias(alias, root=Path('/proc/device-tree')):
     """
-    Returns the full path of a device-tree alias. For example:
+    Returns the full :class:`~pathlib.Path` of a device-tree alias. For
+    example:
 
         >>> dt_resolve_alias('gpio')
         '/proc/device-tree/soc/gpio@7e200000'
         >>> dt_resolve_alias('ethernet0', root='/proc/device-tree')
         '/proc/device-tree/scb/ethernet@7d580000'
     """
-    # XXX Change this return a pathlib.Path when we drop 2.x
-    filename = os.path.join(root, 'aliases', alias)
-    with io.open(filename, 'rb') as f:
+    if not isinstance(root, Path):
+        root = Path(root)
+    filename = root / 'aliases' / alias
+    with filename.open('rb') as f:
         node, tail = f.read().split(b'\0', 1)
         fs_encoding = sys.getfilesystemencoding()
-        return os.path.join(root, node.decode(fs_encoding).lstrip('/'))
+        return root / node.decode(fs_encoding).lstrip('/')
 
-def dt_peripheral_reg(node, root='/proc/device-tree'):
+def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     """
     Returns the :class:`range` covering the registers of the specified *node*
     of the device-tree, mapped to the CPU's address space. For example:
@@ -75,10 +60,10 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     """
     # Returns a tuple of (address-cells, size-cells) for *node*
     def _cells(node):
-        with io.open(os.path.join(node, '#address-cells'), 'rb') as f:
-            address_cells = struct.unpack(nstr('>L'), f.read())[0]
-        with io.open(os.path.join(node, '#size-cells'), 'rb') as f:
-            size_cells = struct.unpack(nstr('>L'), f.read())[0]
+        with (node / '#address-cells').open('rb') as f:
+            address_cells = struct.unpack('>L', f.read())[0]
+        with (node / '#size-cells').open('rb') as f:
+            size_cells = struct.unpack('>L', f.read())[0]
         return (address_cells, size_cells)
 
     # Returns a generator function which, given a file-like object *source*
@@ -86,7 +71,7 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     # contains one integer for each specified *length*, which is the number of
     # 32-bit device-tree cells that make up that value.
     def _reader(*lengths):
-        structs = [struct.Struct(nstr('>{cells}L'.format(cells=cells)))
+        structs = [struct.Struct('>{cells}L'.format(cells=cells))
                    for cells in lengths]
         offsets = [sum(s.size for s in structs[:i])
                    for i in range(len(structs))]
@@ -113,37 +98,34 @@ def dt_peripheral_reg(node, root='/proc/device-tree'):
     # Returns a list of (child-range, parent-range) tuples for *node*
     def _ranges(node):
         child_cells, size_cells = _cells(node)
-        parent = os.path.dirname(node)
-        parent_cells, _ = _cells(parent)
+        parent_cells, _ = _cells(node.parent)
         ranges_reader = _reader(child_cells, parent_cells, size_cells)
-        with io.open(os.path.join(node, 'ranges'), 'rb') as f:
+        with (node / 'ranges').open('rb') as f:
             return [
                 (range(child_base, child_base + size),
                  range(parent_base, parent_base + size))
                 for child_base, parent_base, size in ranges_reader(f)
             ]
 
-    # XXX Replace all this gubbins with pathlib.Path stuff once we drop 2.x
-    node = os.path.join(root, node)
-    parent = os.path.dirname(node)
-    child_cells, size_cells = _cells(parent)
+    if not isinstance(root, Path):
+        root = Path(root)
+    node = root / node
+    child_cells, size_cells = _cells(node.parent)
     reg_reader = _reader(child_cells, size_cells)
-    with io.open(os.path.join(node, 'reg'), 'rb') as f:
+    with (node / 'reg').open('rb') as f:
         base, size = list(reg_reader(f))[0]
-    while parent != root:
+    while node.parent != root:
         # Iterate up the hierarchy, resolving the base address as we go
-        if os.path.exists(os.path.join(parent, 'ranges')):
-            for child_range, parent_range in _ranges(parent):
+        if (node.parent / 'ranges').exists():
+            for child_range, parent_range in _ranges(node.parent):
                 if base in child_range:
-                    # XXX Can't use .start here as python2's crappy xrange
-                    # lacks it; change this when we drop 2.x!
-                    base += parent_range[0] - child_range[0]
+                    base += parent_range.start - child_range.start
                     break
-        parent = os.path.dirname(parent)
+        node = node.parent
     return range(base, base + size)
 
 
-class GPIOMemory(object):
+class GPIOMemory:
     GPIO_BASE_OFFSET = 0x200000
     PERI_BASE_OFFSET = {
         'BCM2835': 0x20000000,
@@ -191,7 +173,7 @@ class GPIOMemory(object):
         try:
             self.reg_fmt = {
                 struct.calcsize(fmt): fmt
-                for fmt in (nstr('@I'), nstr('@L'))
+                for fmt in ('@I', '@L')
             }[4]
         except KeyError:
             raise RuntimeError('unable to find native unsigned 32-bit type')
@@ -202,8 +184,7 @@ class GPIOMemory(object):
 
     def gpio_base(self, soc):
         try:
-            # XXX Replace this with .start when 2.x is dropped
-            return dt_peripheral_reg(dt_resolve_alias('gpio'))[0]
+            return dt_peripheral_reg(dt_resolve_alias('gpio')).start
         except IOError:
             try:
                 return self.PERI_BASE_OFFSET[soc] + self.GPIO_BASE_OFFSET
@@ -218,7 +199,7 @@ class GPIOMemory(object):
         struct.pack_into(self.reg_fmt, self.mem, index * 4, value)
 
 
-class GPIOFS(object):
+class GPIOFS:
     GPIO_PATH = '/sys/class/gpio'
 
     def __init__(self, factory, queue):
@@ -322,7 +303,7 @@ class GPIOFS(object):
 
 class NativeWatchThread(Thread):
     def __init__(self, factory, queue):
-        super(NativeWatchThread, self).__init__(
+        super().__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
         self._stop_evt = Event()
@@ -360,7 +341,7 @@ class NativeWatchThread(Thread):
 
 class NativeDispatchThread(Thread):
     def __init__(self, factory, queue):
-        super(NativeDispatchThread, self).__init__(
+        super().__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
         self._stop_evt = Event()
@@ -410,7 +391,7 @@ class NativeFactory(LocalPiFactory):
         led = LED(12, pin_factory=factory)
     """
     def __init__(self):
-        super(NativeFactory, self).__init__()
+        super().__init__()
         queue = Queue()
         self.mem = GPIOMemory(self.pi_info.soc)
         self.fs = GPIOFS(self, queue)
@@ -424,7 +405,7 @@ class NativeFactory(LocalPiFactory):
         if self.dispatch is not None:
             self.dispatch.close()
             self.dispatch = None
-        super(NativeFactory, self).close()
+        super().close()
         if self.fs is not None:
             self.fs.close()
             self.fs = None
@@ -452,7 +433,7 @@ class NativePin(LocalPiPin):
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
 
     def __init__(self, factory, number):
-        super(NativePin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._reg_init(factory, number)
         self._last_call = None
         self._when_changed = None
@@ -569,7 +550,7 @@ class Native2835Pin(NativePin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
     def _reg_init(self, factory, number):
-        super(Native2835Pin, self)._reg_init(factory, number)
+        super()._reg_init(factory, number)
         self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
         self._pull_shift = number % 32
         self._pull = 'floating'
@@ -609,7 +590,7 @@ class Native2711Pin(NativePin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
     def _reg_init(self, factory, number):
-        super(Native2711Pin, self)._reg_init(factory, number)
+        super()._reg_init(factory, number)
         self._pull_offset = self.factory.mem.GPPUPPDN_OFFSET + (number // 16)
         self._pull_shift = (number % 16) * 2
 

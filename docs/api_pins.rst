@@ -83,6 +83,8 @@ importing will work but attempting to create a device will raise
 Changing the pin factory
 ========================
 
+.. envvar:: GPIOZERO_PIN_FACTORY
+
 The default pin factory can be replaced by specifying a value for the
 :envvar:`GPIOZERO_PIN_FACTORY` environment variable. For example:
 
@@ -135,8 +137,6 @@ they are tried by default.
 | rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
 +---------+-----------------------------------------------+-------------------------------------------+
 | lgpio   | :class:`gpiozero.pins.lgpio.LGPIOFactory`     | :class:`gpiozero.pins.lgpio.LGPIOPin`     |
-+---------+-----------------------------------------------+-------------------------------------------+
-| rpio    | :class:`gpiozero.pins.rpio.RPIOFactory`       | :class:`gpiozero.pins.rpio.RPIOPin`       |
 +---------+-----------------------------------------------+-------------------------------------------+
 | pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
@@ -334,16 +334,6 @@ lgpio
 .. autoclass:: gpiozero.pins.lgpio.LGPIOFactory
 
 .. autoclass:: gpiozero.pins.lgpio.LGPIOPin
-
-
-RPIO
-====
-
-.. module:: gpiozero.pins.rpio
-
-.. autoclass:: gpiozero.pins.rpio.RPIOFactory
-
-.. autoclass:: gpiozero.pins.rpio.RPIOPin
 
 
 PiGPIO

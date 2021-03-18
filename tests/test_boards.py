@@ -14,15 +14,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import sys
 import pytest
 from time import sleep
@@ -916,12 +907,6 @@ def test_robot_bad_init(mock_factory):
     with pytest.raises(GPIOPinMissing):
         Robot(2, 3)
     with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4)
-    with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4, 5)
-    with pytest.raises(GPIOPinMissing):
-        Robot(2, 3, 4, 5, 6, 7)
-    with pytest.raises(GPIOPinMissing):
         Robot((2, 3))
     with pytest.raises(GPIOPinMissing):
         Robot((2, 3), 4)
@@ -1199,12 +1184,6 @@ def test_phaseenable_robot_bad_init(mock_factory):
         PhaseEnableRobot(2)
     with pytest.raises(GPIOPinMissing):
         PhaseEnableRobot(2, 3)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4, 5)
-    with pytest.raises(GPIOPinMissing):
-        PhaseEnableRobot(2, 3, 4, 5, 6, 7)
     with pytest.raises(GPIOPinMissing):
         PhaseEnableRobot((2, 3))
     with pytest.raises(GPIOPinMissing):

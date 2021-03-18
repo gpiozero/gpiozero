@@ -7,22 +7,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-try:
-    range = xrange
-except NameError:
-    pass
-
-import io
 import os
 import errno
 from time import time, sleep
+from math import isclose
 
 import pytest
 import pkg_resources
@@ -30,10 +18,6 @@ import pkg_resources
 from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory
 from gpiozero.pins.native import NativeFactory
-try:
-    from math import isclose
-except ImportError:
-    from gpiozero.compat import isclose
 
 
 # This module assumes you've wired the following GPIO pins together. The pins
@@ -57,7 +41,7 @@ TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 def pin_factory_name(request):
     return request.param
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
         factory = pkg_resources.load_entry_point(
@@ -68,14 +52,14 @@ def pin_factory(request, pin_factory_name):
         yield factory
         factory.close()
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def default_factory(request, pin_factory):
     save_pin_factory = Device.pin_factory
     Device.pin_factory = pin_factory
     yield pin_factory
     Device.pin_factory = save_pin_factory
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
@@ -93,24 +77,18 @@ def pins(request, pin_factory):
 
 
 def setup_module(module):
-    # Python 2.7 compatible method of exclusive-open
-    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
     start = time()
     while True:
         if time() - start > 300:  # 5 minute timeout
             raise RuntimeError('timed out waiting for real pins lock')
         try:
-            fd = os.open(TEST_LOCK, flags)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                print('Waiting for lock before testing real-pins')
-                sleep(0.1)
-            else:
-                raise
-        else:
-            with os.fdopen(fd, 'w') as f:
+            with open(TEST_LOCK, 'x') as f:
                 f.write('Lock file for gpiozero real-pin tests; delete '
                         'this if the test suite is not currently running\n')
+        except FileExistsError:
+            print('Waiting for lock before testing real-pins')
+            sleep(0.1)
+        else:
             break
 
 def teardown_module(module):

@@ -12,6 +12,18 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+Release 2.0 (???)
+=================
+
+* Removed Python 2.x support; many thanks to Fangchen Li for a substantial
+  amount of work on this! (`#799`_ `#896`_)
+* Removed RPIO pin implementation
+* Added :doc:`compat` chapter
+
+.. _#799: https://github.com/gpiozero/gpiozero/issues/799
+.. _#896: https://github.com/gpiozero/gpiozero/issues/896
+
+
 Release 1.6.2 (2021-03-18)
 ==========================
 
