@@ -83,8 +83,6 @@ importing will work but attempting to create a device will raise
 Changing the pin factory
 ========================
 
-.. envvar:: GPIOZERO_PIN_FACTORY
-
 The default pin factory can be replaced by specifying a value for the
 :envvar:`GPIOZERO_PIN_FACTORY` environment variable. For example:
 
