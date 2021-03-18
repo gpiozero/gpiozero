@@ -70,7 +70,7 @@ class InputDevice(GPIODevice):
     """
     def __init__(self, pin=None, pull_up=False, active_state=None,
                  pin_factory=None):
-        super(InputDevice, self).__init__(pin, pin_factory=pin_factory)
+        super().__init__(pin, pin_factory=pin_factory)
         try:
             self.pin.function = 'input'
             pull = {None: 'floating', True: 'up', False: 'down'}[pull_up]
@@ -111,7 +111,7 @@ class InputDevice(GPIODevice):
             return "<gpiozero.%s object on pin %r, pull_up=%s, is_active=%s>" % (
                 self.__class__.__name__, self.pin, self.pull_up, self.is_active)
         except:
-            return super(InputDevice, self).__repr__()
+            return super().__repr__()
 
 
 class DigitalInputDevice(EventsMixin, InputDevice):
@@ -152,7 +152,7 @@ class DigitalInputDevice(EventsMixin, InputDevice):
     def __init__(
             self, pin=None, pull_up=False, active_state=None, bounce_time=None,
             pin_factory=None):
-        super(DigitalInputDevice, self).__init__(
+        super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             pin_factory=pin_factory)
         try:
@@ -247,7 +247,7 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             queue_len=5, sample_wait=0.0, partial=False, average=median,
             ignore=None, pin_factory=None):
         self._queue = None
-        super(SmoothedInputDevice, self).__init__(
+        super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             pin_factory=pin_factory)
         try:
@@ -270,16 +270,16 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             # because we're trying to close the thread anyway
             pass
         self._queue = None
-        super(SmoothedInputDevice, self).close()
+        super().close()
 
     def __repr__(self):
         try:
             self._check_open()
         except DeviceClosed:
-            return super(SmoothedInputDevice, self).__repr__()
+            return super().__repr__()
         else:
             if self.partial or self._queue.full.is_set():
-                return super(SmoothedInputDevice, self).__repr__()
+                return super().__repr__()
             else:
                 return "<gpiozero.%s object on pin %r, pull_up=%s>" % (
                     self.__class__.__name__, self.pin, self.pull_up)
@@ -401,7 +401,7 @@ class Button(HoldMixin, DigitalInputDevice):
     def __init__(
             self, pin=None, pull_up=True, active_state=None, bounce_time=None,
             hold_time=1, hold_repeat=False, pin_factory=None):
-        super(Button, self).__init__(
+        super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             bounce_time=bounce_time, pin_factory=pin_factory)
         self.hold_time = hold_time
@@ -412,7 +412,7 @@ class Button(HoldMixin, DigitalInputDevice):
         """
         Returns 1 if the button is currently pressed, and 0 if it is not.
         """
-        return super(Button, self).value
+        return super().value
 
 Button.is_pressed = Button.is_active
 Button.pressed_time = Button.active_time
@@ -488,7 +488,7 @@ class LineSensor(SmoothedInputDevice):
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=5,
             sample_rate=100, threshold=0.5, partial=False, pin_factory=None):
-        super(LineSensor, self).__init__(
+        super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len,
             sample_wait=1 / sample_rate, partial=partial,
@@ -502,7 +502,7 @@ class LineSensor(SmoothedInputDevice):
         is nearer 0 for black under the sensor, and nearer 1 for white under
         the sensor.
         """
-        return super(LineSensor, self).value
+        return super().value
 
     @property
     def line_detected(self):
@@ -577,7 +577,7 @@ class MotionSensor(SmoothedInputDevice):
     def __init__(
             self, pin=None, pull_up=False, active_state=None, queue_len=1,
             sample_rate=10, threshold=0.5, partial=False, pin_factory=None):
-        super(MotionSensor, self).__init__(
+        super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
             threshold=threshold, queue_len=queue_len, sample_wait=1 /
             sample_rate, partial=partial, pin_factory=pin_factory, average=mean)
@@ -591,7 +591,7 @@ class MotionSensor(SmoothedInputDevice):
         a *queue_len* greater than 1, this will be an averaged value where
         values closer to 1 imply motion detection.
         """
-        return super(MotionSensor, self).value
+        return super().value
 
 MotionSensor.motion_detected = MotionSensor.is_active
 MotionSensor.when_motion = MotionSensor.when_activated
@@ -657,7 +657,7 @@ class LightSensor(SmoothedInputDevice):
     def __init__(
             self, pin=None, queue_len=5, charge_time_limit=0.01,
             threshold=0.1, partial=False, pin_factory=None):
-        super(LightSensor, self).__init__(
+        super().__init__(
             pin, pull_up=False, threshold=threshold, queue_len=queue_len,
             sample_wait=0.0, partial=partial, pin_factory=pin_factory)
         try:
@@ -703,7 +703,7 @@ class LightSensor(SmoothedInputDevice):
         """
         Returns a value between 0 (dark) and 1 (light).
         """
-        return super(LightSensor, self).value
+        return super().value
 
 LightSensor.light_detected = LightSensor.is_active
 LightSensor.when_light = LightSensor.when_activated
@@ -817,7 +817,7 @@ class DistanceSensor(SmoothedInputDevice):
             self, echo=None, trigger=None, queue_len=9, max_distance=1,
             threshold_distance=0.3, partial=False, pin_factory=None):
         self._trigger = None
-        super(DistanceSensor, self).__init__(
+        super().__init__(
             echo, pull_up=False, queue_len=queue_len, sample_wait=0.06,
             partial=partial, ignore=frozenset({None}), pin_factory=pin_factory
         )
@@ -853,7 +853,7 @@ class DistanceSensor(SmoothedInputDevice):
         except AttributeError:
             pass
         self._trigger = None
-        super(DistanceSensor, self).close()
+        super().close()
 
     @property
     def max_distance(self):
@@ -905,7 +905,7 @@ class DistanceSensor(SmoothedInputDevice):
         difference, and 1, indicating the reflector is at or beyond the
         specified *max_distance*.
         """
-        return super(DistanceSensor, self).value
+        return super().value
 
     @property
     def trigger(self):
@@ -1137,7 +1137,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         self._rotate_event = Event()
         self._rotate_cw_event = Event()
         self._rotate_ccw_event = Event()
-        super(RotaryEncoder, self).__init__(
+        super().__init__(
             a=InputDevice(a, pull_up=True, pin_factory=pin_factory),
             b=InputDevice(b, pull_up=True, pin_factory=pin_factory),
             _order=('a', 'b'), pin_factory=pin_factory)
@@ -1156,7 +1156,7 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
             return "<gpiozero.%s object on pins %r and %r>" % (
                 self.__class__.__name__, self.a.pin, self.b.pin)
         except DeviceClosed:
-            return super(RotaryEncoder, self).__repr__()
+            return super().__repr__()
 
     def _a_changed(self, ticks, state):
         edge = (self.a._state_to_value(state) << 1) | (self._edge & 0x1)

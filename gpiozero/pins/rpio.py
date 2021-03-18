@@ -48,7 +48,7 @@ class RPIOFactory(LocalPiFactory):
     .. _RPIO: https://pythonhosted.org/RPIO/
     """
     def __init__(self):
-        super(RPIOFactory, self).__init__()
+        super().__init__()
         RPIO.setmode(RPIO.BCM)
         RPIO.setwarnings(False)
         RPIO.wait_for_interrupts(threaded=True)
@@ -85,7 +85,7 @@ class RPIOPin(LocalPiPin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
     def __init__(self, factory, number):
-        super(RPIOPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = False
         self._duty_cycle = None
@@ -198,7 +198,7 @@ class RPIOPin(LocalPiPin):
             self.when_changed = f
 
     def _call_when_changed(self, channel, value):
-        super(RPIOPin, self)._call_when_changed()
+        super()._call_when_changed()
 
     def _enable_event_detect(self):
         RPIO.add_interrupt_callback(

@@ -71,7 +71,7 @@ class OutputDevice(SourceMixin, GPIODevice):
     def __init__(
             self, pin=None, active_high=True, initial_value=False,
             pin_factory=None):
-        super(OutputDevice, self).__init__(pin, pin_factory=pin_factory)
+        super().__init__(pin, pin_factory=pin_factory)
         self._lock = Lock()
         self.active_high = active_high
         if initial_value is None:
@@ -118,7 +118,7 @@ class OutputDevice(SourceMixin, GPIODevice):
         Returns 1 if the device is currently active and 0 otherwise. Setting
         this property changes the state of the device.
         """
-        return super(OutputDevice, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -149,7 +149,7 @@ class OutputDevice(SourceMixin, GPIODevice):
             return '<gpiozero.%s object on pin %r, active_high=%s, is_active=%s>' % (
                 self.__class__.__name__, self.pin, self.active_high, self.is_active)
         except:
-            return super(OutputDevice, self).__repr__()
+            return super().__repr__()
 
 
 class DigitalOutputDevice(OutputDevice):
@@ -188,13 +188,13 @@ class DigitalOutputDevice(OutputDevice):
             pin_factory=None):
         self._blink_thread = None
         self._controller = None
-        super(DigitalOutputDevice, self).__init__(
+        super().__init__(
             pin, active_high, initial_value, pin_factory=pin_factory
         )
 
     @property
     def value(self):
-        return super(DigitalOutputDevice, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -203,7 +203,7 @@ class DigitalOutputDevice(OutputDevice):
 
     def close(self):
         self._stop_blink()
-        super(DigitalOutputDevice, self).close()
+        super().close()
 
     def on(self):
         self._stop_blink()
@@ -391,7 +391,7 @@ class PWMOutputDevice(OutputDevice):
         self._controller = None
         if not 0 <= initial_value <= 1:
             raise OutputDeviceBadValue("initial_value must be between 0 and 1")
-        super(PWMOutputDevice, self).__init__(
+        super().__init__(
             pin, active_high, initial_value=None, pin_factory=pin_factory
         )
         try:
@@ -412,7 +412,7 @@ class PWMOutputDevice(OutputDevice):
         except AttributeError:
             # If the pin's already None, ignore the exception
             pass
-        super(PWMOutputDevice, self).close()
+        super().close()
 
     def _state_to_value(self, state):
         return float(state if self.active_high else 1 - state)
@@ -423,7 +423,7 @@ class PWMOutputDevice(OutputDevice):
     def _write(self, value):
         if not 0 <= value <= 1:
             raise OutputDeviceBadValue("PWM value must be between 0 and 1")
-        super(PWMOutputDevice, self)._write(value)
+        super()._write(value)
 
     @property
     def value(self):
@@ -431,7 +431,7 @@ class PWMOutputDevice(OutputDevice):
         The duty cycle of the PWM device. 0.0 is off, 1.0 is fully on. Values
         in between may be specified for varying levels of power in the device.
         """
-        return super(PWMOutputDevice, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -610,7 +610,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
     def __init__(self, pin=None, initial_value=None, mid_tone=Tone("A4"),
                  octaves=1, pin_factory=None):
         self._mid_tone = None
-        super(TonalBuzzer, self).__init__(
+        super().__init__(
             pwm_device=PWMOutputDevice(
                 pin=pin, pin_factory=pin_factory
             ), pin_factory=pin_factory)
@@ -646,7 +646,7 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
                 return '<gpiozero.TonalBuzzer object on pin %r, playing %s>' % (
                     self.pwm_device.pin, self.tone.note)
         except DeviceClosed:
-            return super(TonalBuzzer, self).__repr__()
+            return super().__repr__()
 
     def play(self, tone):
         """
@@ -876,7 +876,7 @@ class RGBLED(SourceMixin, Device):
         if not all(p is not None for p in [red, green, blue]):
             raise GPIOPinMissing('red, green, and blue pins must be provided')
         LEDClass = PWMLED if pwm else LED
-        super(RGBLED, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         self._leds = tuple(
             LEDClass(pin, active_high, pin_factory=pin_factory)
             for pin in (red, green, blue)
@@ -889,7 +889,7 @@ class RGBLED(SourceMixin, Device):
             for led in self._leds:
                 led.close()
         self._leds = ()
-        super(RGBLED, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -1211,7 +1211,7 @@ class Motor(SourceMixin, CompositeDevice):
                 initial_value=True,
                 pin_factory=pin_factory
             )
-        super(Motor, self).__init__(_order=devices.keys(), **devices)
+        super().__init__(_order=devices.keys(), **devices)
 
     @property
     def value(self):
@@ -1342,7 +1342,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         if not all([phase, enable]):
             raise GPIOPinMissing('phase and enable pins must be provided')
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
-        super(PhaseEnableMotor, self).__init__(
+        super().__init__(
             phase_device=DigitalOutputDevice(phase, pin_factory=pin_factory),
             enable_device=PinClass(enable, pin_factory=pin_factory),
             _order=('phase_device', 'enable_device'),
@@ -1512,7 +1512,7 @@ class Servo(SourceMixin, CompositeDevice):
         self._dc_range = (max_pulse_width - min_pulse_width) / frame_width
         self._min_value = -1
         self._value_range = 2
-        super(Servo, self).__init__(
+        super().__init__(
             pwm_device=PWMOutputDevice(
                 pin, frequency=int(1 / frame_width), pin_factory=pin_factory
             ),
@@ -1738,7 +1738,7 @@ class AngularServo(Servo):
             raise OutputDeviceBadValue(
                 "AngularServo angle must be between %s and %s, or None" %
                 (min_angle, max_angle))
-        super(AngularServo, self).__init__(
+        super().__init__(
             pin, initial_value, min_pulse_width, max_pulse_width, frame_width,
             pin_factory=pin_factory
         )

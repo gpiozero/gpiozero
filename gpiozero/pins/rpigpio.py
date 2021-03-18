@@ -47,13 +47,13 @@ class RPiGPIOFactory(LocalPiFactory):
     """
 
     def __init__(self):
-        super(RPiGPIOFactory, self).__init__()
+        super().__init__()
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         self.pin_class = RPiGPIOPin
 
     def close(self):
-        super(RPiGPIOFactory, self).close()
+        super().close()
         GPIO.cleanup()
 
 
@@ -91,7 +91,7 @@ class RPiGPIOPin(LocalPiPin):
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
     def __init__(self, factory, number):
-        super(RPiGPIOPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
         self._pwm = None
         self._frequency = None
@@ -210,7 +210,7 @@ class RPiGPIOPin(LocalPiPin):
             self.when_changed = f
 
     def _call_when_changed(self, channel):
-        super(RPiGPIOPin, self)._call_when_changed()
+        super()._call_when_changed()
 
     def _enable_event_detect(self):
         GPIO.add_event_detect(

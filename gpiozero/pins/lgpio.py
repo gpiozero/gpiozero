@@ -61,13 +61,13 @@ class LGPIOFactory(LocalPiFactory):
     .. _lgpio: http://abyz.me.uk/lg/py_lgpio.html
     """
     def __init__(self, chip=0):
-        super(LGPIOFactory, self).__init__()
+        super().__init__()
         self._handle = lgpio.gpiochip_open(chip)
         self._chip = chip
         self.pin_class = LGPIOPin
 
     def close(self):
-        super(LGPIOFactory, self).close()
+        super().close()
         if self._handle is not None:
             lgpio.gpiochip_close(self._handle)
             self._handle = None
@@ -80,7 +80,7 @@ class LGPIOFactory(LocalPiFactory):
         # support via lgpio instead of spidev
         if hardware:
             return [LGPIOHardwareSPI, LGPIOHardwareSPIShared][shared]
-        return super(LGPIOFactory, self)._get_spi_class(shared, hardware=False)
+        return super()._get_spi_class(shared, hardware=False)
 
 
 class LGPIOPin(LocalPiPin):
@@ -116,7 +116,7 @@ class LGPIOPin(LocalPiPin):
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
     def __init__(self, factory, number):
-        super(LGPIOPin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._pwm = None
         self._bounce = None
         self._callback = None
@@ -239,7 +239,7 @@ class LGPIOPin(LocalPiPin):
             self.when_changed = f
 
     def _call_when_changed(self, chip, gpio, level, ticks):
-        super(LGPIOPin, self)._call_when_changed(ticks / 1000000000, level)
+        super()._call_when_changed(ticks / 1000000000, level)
 
     def _enable_event_detect(self):
         lgpio.gpio_claim_alert(
@@ -275,7 +275,7 @@ class LGPIOHardwareSPI(SPI):
         self._baud = 500000
         self._spi_flags = 0
         self._handle = None
-        super(LGPIOHardwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         to_reserve = {clock_pin, select_pin}
         if mosi_pin is not None:
             to_reserve.add(mosi_pin)
@@ -295,7 +295,7 @@ class LGPIOHardwareSPI(SPI):
             lgpio.spi_close(self._handle)
         self._handle = None
         self.pin_factory.release_all(self)
-        super(LGPIOHardwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):

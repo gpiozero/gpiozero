@@ -71,11 +71,11 @@ class SourceMixin:
         self._source = None
         self._source_thread = None
         self._source_delay = 0.01
-        super(SourceMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def close(self):
         self.source = None
-        super(SourceMixin, self).close()
+        super().close()
 
     def _copy_values(self, source):
         for v in source:
@@ -135,7 +135,7 @@ class SharedMixin:
 
     def __del__(self):
         self._refs = 0
-        super(SharedMixin, self).__del__()
+        super().__del__()
 
     @classmethod
     def _shared_key(cls, *args, **kwargs):
@@ -239,7 +239,7 @@ class EventsMixin:
         initialization to set initial states.
     """
     def __init__(self, *args, **kwargs):
-        super(EventsMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._active_event = Event()
         self._inactive_event = Event()
         self._last_active = None
@@ -261,7 +261,7 @@ class EventsMixin:
                 del ev.handlers[id(self)]
             except KeyError:
                 pass
-        super(EventsMixin, self).close()
+        super().close()
 
     def wait_for_active(self, timeout=None):
         """
@@ -413,7 +413,7 @@ class HoldMixin(EventsMixin):
     """
     def __init__(self, *args, **kwargs):
         self._hold_thread = None
-        super(HoldMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._when_held = None
         self._held_from = None
         self._hold_time = 1
@@ -424,15 +424,15 @@ class HoldMixin(EventsMixin):
         if self._hold_thread is not None:
             self._hold_thread.stop()
         self._hold_thread = None
-        super(HoldMixin, self).close()
+        super().close()
 
     def _fire_activated(self):
-        super(HoldMixin, self)._fire_activated()
+        super()._fire_activated()
         self._hold_thread.holding.set()
 
     def _fire_deactivated(self):
         self._held_from = None
-        super(HoldMixin, self)._fire_deactivated()
+        super()._fire_deactivated()
 
     def _fire_held(self):
         if self.when_held:
@@ -511,7 +511,7 @@ class HoldThread(GPIOThread):
     device is active.
     """
     def __init__(self, parent):
-        super(HoldThread, self).__init__(
+        super().__init__(
             target=self.held, args=(weakref.proxy(parent),))
         self.holding = Event()
         self.start()
@@ -553,7 +553,7 @@ class GPIOQueue(GPIOThread):
             raise BadWaitTime('sample_wait must be 0 or greater')
         if ignore is None:
             ignore = set()
-        super(GPIOQueue, self).__init__(target=self.fill)
+        super().__init__(target=self.fill)
         self.queue = deque(maxlen=queue_len)
         self.partial = bool(partial)
         self.sample_wait = float(sample_wait)

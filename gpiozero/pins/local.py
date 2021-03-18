@@ -62,7 +62,7 @@ class LocalPiFactory(PiFactory):
     _res_lock = Lock()
 
     def __init__(self):
-        super(LocalPiFactory, self).__init__()
+        super().__init__()
         # Override the reservations and pins dict to be this class' attributes.
         # This is a bit of a dirty hack, but ensures that anyone evil enough to
         # mix pin implementations doesn't try and control the same pin with
@@ -112,7 +112,7 @@ class LocalPiPin(PiPin):
             an opaque value that should only be compared with the associated
             :meth:`Factory.ticks_diff` method.
         """
-        super(LocalPiPin, self)._call_when_changed(
+        super()._call_when_changed(
             self._factory.ticks() if ticks is None else ticks,
             self.state if state is None else state)
 
@@ -124,7 +124,7 @@ class LocalPiHardwareSPI(SPI):
         self._interface = None
         if SpiDev is None:
             raise ImportError('failed to import spidev')
-        super(LocalPiHardwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         to_reserve = {clock_pin, select_pin}
         if mosi_pin is not None:
             to_reserve.add(mosi_pin)
@@ -140,7 +140,7 @@ class LocalPiHardwareSPI(SPI):
             self._interface.close()
         self._interface = None
         self.pin_factory.release_all(self)
-        super(LocalPiHardwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):
@@ -196,7 +196,7 @@ class LocalPiSoftwareSPI(SPI):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         self._bus = None
         self._select = None
-        super(LocalPiSoftwareSPI, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         try:
             self._clock_phase = False
             self._lsb_first = False
@@ -221,7 +221,7 @@ class LocalPiSoftwareSPI(SPI):
         if self._bus is not None:
             self._bus.close()
         self._bus = None
-        super(LocalPiSoftwareSPI, self).close()
+        super().close()
 
     @property
     def closed(self):

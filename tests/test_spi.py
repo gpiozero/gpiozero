@@ -157,7 +157,7 @@ def test_spi_hardware_modes(mock_factory):
 def test_spi_software_read(mock_factory):
     class SPISlave(MockSPIDevice):
         def on_start(self):
-            super(SPISlave, self).on_start()
+            super().on_start()
             for i in range(10):
                 self.tx_word(i)
     with patch('gpiozero.pins.local.SpiDev', None), \

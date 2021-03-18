@@ -303,7 +303,7 @@ class GPIOFS:
 
 class NativeWatchThread(Thread):
     def __init__(self, factory, queue):
-        super(NativeWatchThread, self).__init__(
+        super().__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
         self._stop_evt = Event()
@@ -341,7 +341,7 @@ class NativeWatchThread(Thread):
 
 class NativeDispatchThread(Thread):
     def __init__(self, factory, queue):
-        super(NativeDispatchThread, self).__init__(
+        super().__init__(
             target=self._run, args=(factory, queue))
         self.daemon = True
         self._stop_evt = Event()
@@ -391,7 +391,7 @@ class NativeFactory(LocalPiFactory):
         led = LED(12, pin_factory=factory)
     """
     def __init__(self):
-        super(NativeFactory, self).__init__()
+        super().__init__()
         queue = Queue()
         self.mem = GPIOMemory(self.pi_info.soc)
         self.fs = GPIOFS(self, queue)
@@ -405,7 +405,7 @@ class NativeFactory(LocalPiFactory):
         if self.dispatch is not None:
             self.dispatch.close()
             self.dispatch = None
-        super(NativeFactory, self).close()
+        super().close()
         if self.fs is not None:
             self.fs.close()
             self.fs = None
@@ -433,7 +433,7 @@ class NativePin(LocalPiPin):
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
 
     def __init__(self, factory, number):
-        super(NativePin, self).__init__(factory, number)
+        super().__init__(factory, number)
         self._reg_init(factory, number)
         self._last_call = None
         self._when_changed = None
@@ -550,7 +550,7 @@ class Native2835Pin(NativePin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
     def _reg_init(self, factory, number):
-        super(Native2835Pin, self)._reg_init(factory, number)
+        super()._reg_init(factory, number)
         self._pull_offset = self.factory.mem.GPPUDCLK_OFFSET + (number // 32)
         self._pull_shift = number % 32
         self._pull = 'floating'
@@ -590,7 +590,7 @@ class Native2711Pin(NativePin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
 
     def _reg_init(self, factory, number):
-        super(Native2711Pin, self)._reg_init(factory, number)
+        super()._reg_init(factory, number)
         self._pull_offset = self.factory.mem.GPPUPPDN_OFFSET + (number // 16)
         self._pull_shift = (number % 16) * 2
 

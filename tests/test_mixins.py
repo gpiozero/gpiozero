@@ -108,7 +108,7 @@ def test_bad_callback(mock_factory):
 def test_shared_key(mock_factory):
     class SharedDevice(SharedMixin, GPIODevice):
         def __init__(self, pin, pin_factory=None):
-            super(SharedDevice, self).__init__(pin, pin_factory=pin_factory)
+            super().__init__(pin, pin_factory=pin_factory)
 
         @classmethod
         def _shared_key(cls, pin, pin_factory=None):

@@ -122,7 +122,7 @@ class CompositeOutputDevice(SourceMixin, CompositeDevice):
         A tuple containing a value for each subordinate device. This property
         can also be set to update the state of all subordinate output devices.
         """
-        return super(CompositeOutputDevice, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -215,7 +215,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         hold_repeat = kwargs.pop('hold_repeat', False)
         pin_factory = kwargs.pop('pin_factory', None)
         order = kwargs.pop('_order', None)
-        super(ButtonBoard, self).__init__(
+        super().__init__(
             *(
                 Button(pin, pull_up=pull_up, active_state=active_state,
                        bounce_time=bounce_time, hold_time=hold_time,
@@ -266,7 +266,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
             self.when_changed()
 
     def _fire_events(self, ticks, new_value):
-        super(ButtonBoard, self)._fire_events(ticks, new_value)
+        super()._fire_events(ticks, new_value)
         old_value, self._last_value = self._last_value, new_value
         if old_value is None:
             # Initial "indeterminate" value; don't do anything
@@ -294,7 +294,7 @@ class LEDCollection(CompositeOutputDevice):
         pin_factory = kwargs.pop('pin_factory', None)
         order = kwargs.pop('_order', None)
         LEDClass = PWMLED if pwm else LED
-        super(LEDCollection, self).__init__(
+        super().__init__(
             *(
                 pin_or_collection
                 if isinstance(pin_or_collection, LEDCollection) else
@@ -396,14 +396,14 @@ class LEDBoard(LEDCollection):
         self._blink_thread = None
         self._blink_leds = []
         self._blink_lock = Lock()
-        super(LEDBoard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def close(self):
         try:
             self._stop_blink()
         except AttributeError:
             pass
-        super(LEDBoard, self).close()
+        super().close()
 
     def on(self, *args):
         """
@@ -431,7 +431,7 @@ class LEDBoard(LEDCollection):
             for index in args:
                 self[index].on()
         else:
-            super(LEDBoard, self).on()
+            super().on()
 
     def off(self, *args):
         """
@@ -459,7 +459,7 @@ class LEDBoard(LEDCollection):
             for index in args:
                 self[index].off()
         else:
-            super(LEDBoard, self).off()
+            super().off()
 
     def toggle(self, *args):
         """
@@ -486,7 +486,7 @@ class LEDBoard(LEDCollection):
             for index in args:
                 self[index].toggle()
         else:
-            super(LEDBoard, self).toggle()
+            super().toggle()
 
     def blink(
             self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
@@ -676,7 +676,7 @@ class LEDBarGraph(LEDCollection):
         if kwargs:
             raise TypeError(
                 'unexpected keyword argument: %s' % kwargs.popitem()[0])
-        super(LEDBarGraph, self).__init__(
+        super().__init__(
             *pins, pwm=pwm, active_high=active_high, pin_factory=pin_factory)
         try:
             self.value = initial_value
@@ -785,7 +785,7 @@ class LEDCharFont(MutableMapping):
     provided by :func:`gpiozero.fonts.load_segment_font`.
     """
     def __init__(self, font):
-        super(LEDCharFont, self).__init__()
+        super().__init__()
         self._map = OrderedDict([
             (char, tuple(int(bool(pin)) for pin in pins))
             for char, pins in font.items()
@@ -984,7 +984,7 @@ class LEDCharDisplay(LEDCollection):
         if dp is not None:
             pins['dp'] = dp
             order.append('dp')
-        super(LEDCharDisplay, self).__init__(
+        super().__init__(
             pwm=pwm, active_high=active_high, initial_value=None,
             _order=order, pin_factory=pin_factory, **pins)
         if initial_value is not None:
@@ -1029,7 +1029,7 @@ class LEDCharDisplay(LEDCollection):
         mapping will always be returned. This also implies that the value
         queried need not match the value set.
         """
-        state = super(LEDCharDisplay, self).value
+        state = super().value
         if hasattr(self, 'dp'):
             state, dp = state[:-1], state[-1]
         else:
@@ -1119,7 +1119,7 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
                 pin_factory=pin_factory)
             for pin in pins
         ))
-        super(LEDMultiCharDisplay, self).__init__(
+        super().__init__(
             plex=plex, char=char, pin_factory=pin_factory)
         self.value = initial_value
 
@@ -1128,7 +1128,7 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
             self._stop_plex()
         except AttributeError:
             pass
-        super(LEDMultiCharDisplay, self).close()
+        super().close()
 
     def _stop_plex(self):
         if self._plex_thread:
@@ -1336,7 +1336,7 @@ class PiHutXmasTree(LEDBoard):
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
         for i, pin in enumerate(pins):
             pins_dict['led%d' % (i+1)] = pin
-        super(PiHutXmasTree, self).__init__(
+        super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=pins_dict.keys(),
             pin_factory=pin_factory,
@@ -1376,7 +1376,7 @@ class LedBorg(RGBLED):
     """
 
     def __init__(self, initial_value=(0, 0, 0), pwm=True, pin_factory=None):
-        super(LedBorg, self).__init__(
+        super().__init__(
             red='BOARD11', green='BOARD13', blue='BOARD15',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
         )
@@ -1418,7 +1418,7 @@ class PiLiter(LEDBoard):
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
         pins = ('BOARD7', 'BOARD11', 'BOARD13', 'BOARD12',
                 'BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
-        super(PiLiter, self).__init__(
+        super().__init__(
             *pins, pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
         )
 
@@ -1456,7 +1456,7 @@ class PiLiterBarGraph(LEDBarGraph):
     def __init__(self, pwm=False, initial_value=0.0, pin_factory=None):
         pins = ('BOARD7', 'BOARD11', 'BOARD13', 'BOARD12',
                 'BOARD15', 'BOARD16', 'BOARD18', 'BOARD22')
-        super(PiLiterBarGraph, self).__init__(
+        super().__init__(
             *pins, pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
         )
 
@@ -1548,7 +1548,7 @@ class TrafficLights(LEDBoard):
         if not all(p is not None for p in devices.values()):
             raise GPIOPinMissing('%s pins must be provided' %
                                  ', '.join(devices.keys()))
-        super(TrafficLights, self).__init__(
+        super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=devices.keys(), pin_factory=pin_factory,
             **devices)
@@ -1558,7 +1558,7 @@ class TrafficLights(LEDBoard):
             name = 'yellow'
         elif name == 'yellow' and not self._display_yellow:
             name = 'amber'
-        return super(TrafficLights, self).__getattr__(name)
+        return super().__getattr__(name)
 
 
 class PiTraffic(TrafficLights):
@@ -1598,7 +1598,7 @@ class PiTraffic(TrafficLights):
     .. _Low Voltage Labs PI-TRAFFIC: http://lowvoltagelabs.com/products/pi-traffic/
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(PiTraffic, self).__init__(
+        super().__init__(
             'BOARD21', 'BOARD19', 'BOARD23',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
         )
@@ -1657,7 +1657,7 @@ class PiStop(TrafficLights):
         if gpios is None:
             raise ValueError('location must be one of: %s' %
                              ', '.join(sorted(self.LOCATIONS.keys())))
-        super(PiStop, self).__init__(
+        super().__init__(
             *gpios, pwm=pwm, initial_value=initial_value,
             pin_factory=pin_factory)
 
@@ -1725,7 +1725,7 @@ class StatusZero(LEDBoard):
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
             raise ValueError("Duplicate label %s" % dup)
-        super(StatusZero, self).__init__(
+        super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: LEDBoard(
                     red=red, green=green, _order=('red', 'green'),
@@ -1812,7 +1812,7 @@ class StatusBoard(CompositeOutputDevice):
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
             raise ValueError("Duplicate label %s" % dup)
-        super(StatusBoard, self).__init__(
+        super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: CompositeOutputDevice(
                     button=Button(button, pin_factory=pin_factory),
@@ -1887,7 +1887,7 @@ class SnowPi(LEDBoard):
         The :class:`LED` or :class:`PWMLED` for the snow-man's nose.
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(SnowPi, self).__init__(
+        super().__init__(
             arms=LEDBoard(
                 left=LEDBoard(
                     top='BOARD11', middle='BOARD12', bottom='BOARD15',
@@ -1948,7 +1948,7 @@ class TrafficLightsBuzzer(CompositeOutputDevice):
         The :class:`Button` instance passed as the *button* parameter.
     """
     def __init__(self, lights, buzzer, button, pin_factory=None):
-        super(TrafficLightsBuzzer, self).__init__(
+        super().__init__(
             lights=lights, buzzer=buzzer, button=button,
             _order=('lights', 'buzzer', 'button'),
             pin_factory=pin_factory
@@ -1983,7 +1983,7 @@ class FishDish(CompositeOutputDevice):
     .. _Pi Supply FishDish: https://www.pi-supply.com/product/fish-dish-raspberry-pi-led-buzzer-board/
     """
     def __init__(self, pwm=False, pin_factory=None):
-        super(FishDish, self).__init__(
+        super().__init__(
             lights=TrafficLights(
                 'BOARD21', 'BOARD15', 'BOARD7', pwm=pwm, pin_factory=pin_factory
             ),
@@ -2022,7 +2022,7 @@ class TrafficHat(CompositeOutputDevice):
     .. _Pi Supply Traffic HAT: https://uk.pi-supply.com/products/traffic-hat-for-raspberry-pi
     """
     def __init__(self, pwm=False, pin_factory=None):
-        super(TrafficHat, self).__init__(
+        super().__init__(
             lights=TrafficLights(
                 'BOARD18', 'BOARD16', 'BOARD15',
                 pwm=pwm, pin_factory=pin_factory
@@ -2068,7 +2068,7 @@ class TrafficpHat(TrafficLights):
     .. _Pi Supply Traffic pHAT: http://pisupp.ly/trafficphat
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(TrafficpHat, self).__init__(
+        super().__init__(
             red='BOARD22', amber='BOARD18', green='BOARD16',
             pwm=pwm, initial_value=initial_value, pin_factory=pin_factory
         )
@@ -2125,7 +2125,7 @@ class Robot(SourceMixin, CompositeDevice):
         if not isinstance(left, tuple) or not isinstance(right, tuple):
             raise GPIOPinMissing('left and right motor pins must be given as '
                                  'tuples')
-        super(Robot, self).__init__(
+        super().__init__(
             left_motor=Motor(*left, pwm=pwm, pin_factory=pin_factory),
             right_motor=Motor(*right, pwm=pwm, pin_factory=pin_factory),
             _order=('left_motor', 'right_motor'),
@@ -2140,7 +2140,7 @@ class Robot(SourceMixin, CompositeDevice):
         ``(1, 1)`` representing full speed forwards, and ``(0, 0)``
         representing stopped.
         """
-        return super(Robot, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -2285,7 +2285,7 @@ class RyanteckRobot(Robot):
     """
 
     def __init__(self, pwm=True, pin_factory=None):
-        super(RyanteckRobot, self).__init__(
+        super().__init__(
             left=('BOARD11', 'BOARD12'), right=('BOARD15', 'BOARD16'),
             pwm=pwm, pin_factory=pin_factory
         )
@@ -2319,7 +2319,7 @@ class CamJamKitRobot(Robot):
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(self, pwm=True, pin_factory=None):
-        super(CamJamKitRobot, self).__init__(
+        super().__init__(
             left=('BOARD21', 'BOARD19'), right=('BOARD26', 'BOARD24'),
             pwm=pwm, pin_factory=pin_factory
         )
@@ -2376,7 +2376,7 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
             raise GPIOPinMissing(
                 'left and right motor pins must be given as tuples'
             )
-        super(PhaseEnableRobot, self).__init__(
+        super().__init__(
             left_motor=PhaseEnableMotor(*left, pwm=pwm, pin_factory=pin_factory),
             right_motor=PhaseEnableMotor(*right, pwm=pwm, pin_factory=pin_factory),
             _order=('left_motor', 'right_motor'),
@@ -2390,7 +2390,7 @@ class PhaseEnableRobot(SourceMixin, CompositeDevice):
         speeds of the robot's two motors (left and right). This property can
         also be set to alter the speed of both motors.
         """
-        return super(PhaseEnableRobot, self).value
+        return super().value
 
     @value.setter
     def value(self, value):
@@ -2489,7 +2489,7 @@ class PololuDRV8835Robot(PhaseEnableRobot):
     .. _Pololu DRV8835 Dual Motor Driver Kit: https://www.pololu.com/product/2753
     """
     def __init__(self, pwm=True, pin_factory=None):
-        super(PololuDRV8835Robot, self).__init__(
+        super().__init__(
             left=('BOARD29', 'BOARD32'), right=('BOARD31', 'BOARD33'),
             pwm=pwm, pin_factory=pin_factory
         )
@@ -2498,7 +2498,7 @@ class PololuDRV8835Robot(PhaseEnableRobot):
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
     def __init__(self, pin_factory=None):
         self._lock = Lock()
-        super(_EnergenieMaster, self).__init__(
+        super().__init__(
             *(
                 OutputDevice(pin, pin_factory=pin_factory)
                 for pin in ('BOARD11', 'BOARD15', 'BOARD16', 'BOARD13')
@@ -2511,7 +2511,7 @@ class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
     def close(self):
         if getattr(self, '_lock', None):
             with self._lock:
-                super(_EnergenieMaster, self).close()
+                super().close()
         self._lock = None
 
     @classmethod
@@ -2572,7 +2572,7 @@ class Energenie(SourceMixin, Device):
         if not (1 <= socket <= 4):
             raise EnergenieBadSocket('socket number must be between 1 and 4')
         self._value = None
-        super(Energenie, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
         self._socket = socket
         self._master = _EnergenieMaster(pin_factory=pin_factory)
         if initial_value:
@@ -2691,7 +2691,7 @@ class PumpkinPi(LEDBoard):
             The :class:`LED` or :class:`PWMLED` for each of the pumpkin's eyes.
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
-        super(PumpkinPi, self).__init__(
+        super().__init__(
             sides=LEDBoard(
                 left=LEDBoard(
                     bottom='BOARD12', midbottom='BOARD11', middle='BOARD36',
@@ -2770,7 +2770,7 @@ class JamHat(CompositeOutputDevice):
         The :class:`TonalBuzzer` at the bottom right of the JamHat.
     """
     def __init__(self, pwm=False, pin_factory=None):
-        super(JamHat, self).__init__(
+        super().__init__(
             lights_1=LEDBoard(
                 red='BOARD29', yellow='BOARD32', green='BOARD36',
                 pwm=pwm, _order=('red', 'yellow', 'green'),
@@ -2792,14 +2792,14 @@ class JamHat(CompositeOutputDevice):
         Turns all the LEDs on and makes the buzzer play its mid tone.
         """
         self.buzzer.value = 0
-        super(JamHat, self).on()
+        super().on()
 
     def off(self):
         """
         Turns all the LEDs off and stops the buzzer.
         """
         self.buzzer.value = None
-        super(JamHat, self).off()
+        super().off()
 
 
 class Pibrella(CompositeOutputDevice):
@@ -2876,7 +2876,7 @@ class Pibrella(CompositeOutputDevice):
         .. attribute:: e, f, g, h
     """
     def __init__(self, pwm=False, pin_factory=None):
-        super(Pibrella, self).__init__(
+        super().__init__(
             lights=TrafficLights(
                 red='BOARD13', amber='BOARD11', green='BOARD7',
                 pwm=pwm, pin_factory=pin_factory
@@ -2900,11 +2900,11 @@ class Pibrella(CompositeOutputDevice):
         Turns all the LEDs on and makes the buzzer play its mid tone.
         """
         self.buzzer.value = 0
-        super(Pibrella, self).on()
+        super().on()
 
     def off(self):
         """
         Turns all the LEDs off and stops the buzzer.
         """
         self.buzzer.value = None
-        super(Pibrella, self).off()
+        super().off()

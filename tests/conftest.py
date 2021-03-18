@@ -59,7 +59,7 @@ class ThreadedTest(Thread):
         self._args = args
         self._kwargs = kwargs
         self._result = None
-        super(ThreadedTest, self).__init__()
+        super().__init__()
         self.daemon = True
         self.start()
 

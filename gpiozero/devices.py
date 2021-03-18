@@ -48,7 +48,7 @@ class GPIOMeta(type):
 
     def __new__(mcls, name, bases, cls_dict):
         # Construct the class as normal
-        cls = super(GPIOMeta, mcls).__new__(mcls, name, bases, cls_dict)
+        cls = super().__new__(mcls, name, bases, cls_dict)
         # If there's a method in the class which has no docstring, search
         # the base classes recursively for a docstring to copy
         for attr_name, attr in cls_dict.items():
@@ -74,7 +74,7 @@ class GPIOMeta(type):
                 self = cls._instances[key]()
                 self._refs += 1
             except (KeyError, AttributeError) as e:
-                self = super(GPIOMeta, cls).__call__(*args, **kwargs)
+                self = super().__call__(*args, **kwargs)
                 self._refs = 1
                 # Replace the close method with one that merely decrements
                 # the refs counter and calls the original close method when
@@ -99,7 +99,7 @@ class GPIOMeta(type):
                 cls._instances[key] = weakref.ref(self)
         else:
             # Construct the instance as normal
-            self = super(GPIOMeta, cls).__call__(*args, **kwargs)
+            self = super().__call__(*args, **kwargs)
         # At this point __new__ and __init__ have all been run. We now fix the
         # set of attributes on the class by dir'ing the instance and creating a
         # frozenset of the result called __attrs__ (which is queried by
@@ -122,7 +122,7 @@ class GPIOBase(metaclass=GPIOMeta):
             raise AttributeError(
                 "'%s' object has no attribute '%s'" % (
                     self.__class__.__name__, name))
-        return super(GPIOBase, self).__setattr__(name, value)
+        return super().__setattr__(name, value)
 
     def __del__(self):
         # NOTE: Yes, we implicitly call close() on __del__(), and yes for you
@@ -247,7 +247,7 @@ class Device(ValuesMixin, GPIOBase):
         if kwargs:
             raise TypeError("Device.__init__() got unexpected keyword "
                             "argument '%s'" % kwargs.popitem()[0])
-        super(Device, self).__init__()
+        super().__init__()
 
     @staticmethod
     def _default_pin_factory():
@@ -423,7 +423,7 @@ class CompositeDevice(Device):
                     dev.close()
             raise
         self._all = args + tuple(kwargs[v] for v in self._order)
-        super(CompositeDevice, self).__init__(pin_factory=pin_factory)
+        super().__init__(pin_factory=pin_factory)
 
     def __getattr__(self, name):
         # if _named doesn't exist yet, pretend it's an empty dict
@@ -438,7 +438,7 @@ class CompositeDevice(Device):
         # make named components read-only properties
         if name in self._named:
             raise AttributeError("can't set attribute %s" % name)
-        return super(CompositeDevice, self).__setattr__(name, value)
+        return super().__setattr__(name, value)
 
     def __repr__(self):
         try:
@@ -463,7 +463,7 @@ class CompositeDevice(Device):
                     len(self)
                 )
         except DeviceClosed:
-            return super(CompositeDevice, self).__repr__()
+            return super().__repr__()
 
     def __len__(self):
         return len(self._all)
@@ -532,7 +532,7 @@ class GPIODevice(Device):
     """
 
     def __init__(self, pin=None, **kwargs):
-        super(GPIODevice, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # self._pin must be set before any possible exceptions can be raised
         # because it's accessed in __del__. However, it mustn't be given the
         # value of pin until we've verified that it isn't already allocated
@@ -557,7 +557,7 @@ class GPIODevice(Device):
             raise
 
     def close(self):
-        super(GPIODevice, self).close()
+        super().close()
         if getattr(self, '_pin', None) is not None:
             self.pin_factory.release_pins(self, self._pin.number)
             self._pin.close()
@@ -572,7 +572,7 @@ class GPIODevice(Device):
 
     def _check_open(self):
         try:
-            super(GPIODevice, self)._check_open()
+            super()._check_open()
         except DeviceClosed as e:
             # For backwards compatibility; GPIODeviceClosed is deprecated
             raise GPIODeviceClosed(str(e))
