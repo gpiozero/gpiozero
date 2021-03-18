@@ -21,10 +21,7 @@ from time import sleep
 from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 
 from .exc import (
     DeviceClosed,

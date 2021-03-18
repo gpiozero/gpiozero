@@ -14,10 +14,7 @@ str = type('')
 
 import io
 from collections import Counter
-try:
-    from itertools import izip as zip, izip_longest as zip_longest
-except ImportError:
-    from itertools import zip_longest
+from itertools import zip_longest
 
 
 def load_segment_font(filename_or_obj, width, height, pins):
