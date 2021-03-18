@@ -2084,33 +2084,26 @@ class Robot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a generic dual-motor robot.
 
-    This class is constructed with two tuples representing the forward and
-    backward pins of the left and right controllers respectively. For example,
-    if the left motor's controller is connected to GPIOs 4 and 14, while the
-    right motor's controller is connected to GPIOs 17 and 18 then the following
-    example will drive the robot forward::
+    This class is constructed with two motor instances representing the left
+    and right wheels of the robot respectively. For example, if the left
+    motor's controller is connected to GPIOs 4 and 14, while the right motor's
+    controller is connected to GPIOs 17 and 18 then the following example will
+    drive the robot forward::
 
         from gpiozero import Robot
 
-        robot = Robot(left=(4, 14), right=(17, 18))
+        robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
         robot.forward()
 
-    :param tuple left:
-        A tuple of two (or three) GPIO pins representing the forward and
-        backward inputs of the left motor's controller. Use three pins if your
-        motor controller requires an enable pin.
+    :type left: Motor or PhaseEnableMotor
+    :param left:
+        A :class:`~gpiozero.Motor` or a :class:`~gpiozero.PhaseEnableMotor`
+        for the left wheel of the robot.
 
-    :param tuple right:
-        A tuple of two (or three) GPIO pins representing the forward and
-        backward inputs of the right motor's controller. Use three pins if your
-        motor controller requires an enable pin.
-
-    :param bool pwm:
-        If :data:`True` (the default), construct :class:`PWMOutputDevice`
-        instances for the motor controller pins, allowing both direction and
-        variable speed control. If :data:`False`, construct
-        :class:`DigitalOutputDevice` instances, allowing only direction
-        control.
+    :type right: Motor or PhaseEnableMotor
+    :param right:
+        A :class:`~gpiozero.Motor` or a :class:`~gpiozero.PhaseEnableMotor`
+        for the right wheel of the robot.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -2125,21 +2118,14 @@ class Robot(SourceMixin, CompositeDevice):
 
         The :class:`Motor` on the right of the robot.
     """
-    def __init__(self, left=None, right=None, *, pwm=True, pin_factory=None):
-        if not isinstance(left, tuple) or not isinstance(right, tuple):
-            raise GPIOPinMissing('left and right motor pins must be given as '
-                                 'tuples')
-        # XXX Urgh, this is ugly. Actually the whole "tuple of pins" thing is
-        # ugly and I'm not convinced it's "good".
-        *left, left_enable = left + (None,)[len(left) - 2:]
-        *right, right_enable = right + (None,)[len(right) - 2:]
-        super().__init__(
-            left_motor=Motor(*left, enable=left_enable, pwm=pwm,
-                             pin_factory=pin_factory),
-            right_motor=Motor(*right, enable=right_enable, pwm=pwm,
-                              pin_factory=pin_factory),
-            _order=('left_motor', 'right_motor'),
-            pin_factory=pin_factory)
+    def __init__(self, left, right, *, pin_factory=None):
+        if not isinstance(left, (Motor, PhaseEnableMotor)):
+            raise GPIOPinMissing('left must be a Motor or PhaseEnableMotor')
+        if not isinstance(right, (Motor, PhaseEnableMotor)):
+            raise GPIOPinMissing('right must be a Motor or PhaseEnableMotor')
+        super().__init__(left_motor=left, right_motor=right,
+                         _order=('left_motor', 'right_motor'),
+                         pin_factory=pin_factory)
 
     @property
     def value(self):
@@ -2287,9 +2273,9 @@ class RyanteckRobot(Robot):
 
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=('BOARD11', 'BOARD12'), right=('BOARD15', 'BOARD16'),
-            pwm=pwm, pin_factory=pin_factory
-        )
+            left=Motor('BOARD11', 'BOARD12', pwm=pwm),
+            right=Motor('BOARD15', 'BOARD16', pwm=pwm),
+            pin_factory=pin_factory)
 
 
 class CamJamKitRobot(Robot):
@@ -2321,148 +2307,14 @@ class CamJamKitRobot(Robot):
     """
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=('BOARD21', 'BOARD19'), right=('BOARD26', 'BOARD24'),
-            pwm=pwm, pin_factory=pin_factory
-        )
+            left=Motor('BOARD21', 'BOARD19', pwm=pwm),
+            right=Motor('BOARD26', 'BOARD24', pwm=pwm),
+            pin_factory=pin_factory)
 
 
-class PhaseEnableRobot(SourceMixin, CompositeDevice):
+class PololuDRV8835Robot(Robot):
     """
-    Extends :class:`CompositeDevice` to represent a dual-motor robot based
-    around a Phase/Enable motor board.
-
-    This class is constructed with two tuples representing the phase
-    (direction) and enable (speed) pins of the left and right controllers
-    respectively. For example, if the left motor's controller is connected to
-    GPIOs 12 and 5, while the right motor's controller is connected to GPIOs 13
-    and 6 so the following example will drive the robot forward::
-
-        from gpiozero import PhaseEnableRobot
-
-        robot = PhaseEnableRobot(left=(5, 12), right=(6, 13))
-        robot.forward()
-
-    :param tuple left:
-        A tuple of two GPIO pins representing the phase and enable inputs
-        of the left motor's controller.
-
-    :param tuple right:
-        A tuple of two GPIO pins representing the phase and enable inputs
-        of the right motor's controller.
-
-    :param bool pwm:
-        If :data:`True` (the default), construct :class:`PWMOutputDevice`
-        instances for the motor controller's enable pins, allowing both
-        direction and variable speed control. If :data:`False`, construct
-        :class:`DigitalOutputDevice` instances, allowing only direction
-        control.
-
-    :type pin_factory: Factory or None
-    :param pin_factory:
-        See :doc:`api_pins` for more information (this is an advanced feature
-        which most users can ignore).
-
-    .. attribute:: left_motor
-
-        The :class:`PhaseEnableMotor` on the left of the robot.
-
-    .. attribute:: right_motor
-
-        The :class:`PhaseEnableMotor` on the right of the robot.
-    """
-    def __init__(self, left=None, right=None, *, pwm=True, pin_factory=None):
-        if not isinstance(left, tuple) or not isinstance(right, tuple):
-            raise GPIOPinMissing(
-                'left and right motor pins must be given as tuples'
-            )
-        super().__init__(
-            left_motor=PhaseEnableMotor(*left, pwm=pwm, pin_factory=pin_factory),
-            right_motor=PhaseEnableMotor(*right, pwm=pwm, pin_factory=pin_factory),
-            _order=('left_motor', 'right_motor'),
-            pin_factory=pin_factory
-        )
-
-    @property
-    def value(self):
-        """
-        Returns a tuple of two floating point values (-1 to 1) representing the
-        speeds of the robot's two motors (left and right). This property can
-        also be set to alter the speed of both motors.
-        """
-        return super().value
-
-    @value.setter
-    def value(self, value):
-        self.left_motor.value, self.right_motor.value = value
-
-    def forward(self, speed=1):
-        """
-        Drive the robot forward by running both motors forward.
-
-        :param float speed:
-            Speed at which to drive the motors, as a value between 0 (stopped)
-            and 1 (full speed). The default is 1.
-        """
-        self.left_motor.forward(speed)
-        self.right_motor.forward(speed)
-
-    def backward(self, speed=1):
-        """
-        Drive the robot backward by running both motors backward.
-
-        :param float speed:
-            Speed at which to drive the motors, as a value between 0 (stopped)
-            and 1 (full speed). The default is 1.
-        """
-        self.left_motor.backward(speed)
-        self.right_motor.backward(speed)
-
-    def left(self, speed=1):
-        """
-        Make the robot turn left by running the right motor forward and left
-        motor backward.
-
-        :param float speed:
-            Speed at which to drive the motors, as a value between 0 (stopped)
-            and 1 (full speed). The default is 1.
-        """
-        self.right_motor.forward(speed)
-        self.left_motor.backward(speed)
-
-    def right(self, speed=1):
-        """
-        Make the robot turn right by running the left motor forward and right
-        motor backward.
-
-        :param float speed:
-            Speed at which to drive the motors, as a value between 0 (stopped)
-            and 1 (full speed). The default is 1.
-        """
-        self.left_motor.forward(speed)
-        self.right_motor.backward(speed)
-
-    def reverse(self):
-        """
-        Reverse the robot's current motor directions. If the robot is currently
-        running full speed forward, it will run full speed backward. If the
-        robot is turning left at half-speed, it will turn right at half-speed.
-        If the robot is currently stopped it will remain stopped.
-        """
-        self.left_motor.value = -self.left_motor.value
-        self.right_motor.value = -self.right_motor.value
-
-    def stop(self):
-        """
-        Stop the robot.
-        """
-        self.left_motor.stop()
-        self.right_motor.stop()
-
-
-class PololuDRV8835Robot(PhaseEnableRobot):
-    """
-    Extends :class:`PhaseEnableRobot` for the `Pololu DRV8835 Dual Motor Driver
-    Kit`_.
+    Extends :class:`Robot` for the `Pololu DRV8835 Dual Motor Driver Kit`_.
 
     The Pololu DRV8835 pins are fixed and therefore there's no need to specify
     them when constructing this class. The following example drives the robot
@@ -2489,9 +2341,9 @@ class PololuDRV8835Robot(PhaseEnableRobot):
     """
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=('BOARD29', 'BOARD32'), right=('BOARD31', 'BOARD33'),
-            pwm=pwm, pin_factory=pin_factory
-        )
+            left=PhaseEnableMotor('BOARD29', 'BOARD32', pwm=pwm),
+            right=PhaseEnableMotor('BOARD31', 'BOARD33', pwm=pwm),
+            pin_factory=pin_factory)
 
 
 class _EnergenieMaster(SharedMixin, CompositeOutputDevice):
