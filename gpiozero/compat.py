@@ -10,7 +10,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import operator
-import functools
+from functools import reduce
 from collections.abc import Mapping
 
 
@@ -38,5 +38,5 @@ class frozendict(Mapping):
     def __hash__(self):
         if self.__hash is None:
             hashes = map(hash, self.items())
-            self.__hash = functools.reduce(operator.xor, hashes, 0)
+            self.__hash = reduce(operator.xor, hashes, 0)
         return self.__hash
