@@ -61,15 +61,15 @@ Keyword arguments
 =================
 
 Many classes in GPIO Zero 1.x were documented as having keyword-only arguments
-in their constructors and methods. For example, the :class:`PiLiter` was
-documented as having the constructor: ``PiLiter(*, pwm=False,
+in their constructors and methods. For example, the :class:`~gpiozero.PiLiter`
+was documented as having the constructor: ``PiLiter(*, pwm=False,
 initial_value=False, pin_factory=None)`` implying that all its arguments were
 keyword only.
 
 However, despite being documented in this manner, this was rarely enforced as
 it was extremely difficult to do so under Python 2.x without complicating the
 code-base considerably (Python 2.x lacked the "*" syntax to declare
-keyword-only arguments; they could only be implemented via "!*!*kwargs"
+keyword-only arguments; they could only be implemented via "\*\*kwargs"
 arguments and dictionary manipulation).
 
 In GPIO Zero 2.x, all such arguments are now *actually* keyword arguments. If
