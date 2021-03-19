@@ -143,7 +143,7 @@ Wait for a pull-up button to be pressed in RPi.GPIO::
 
 The equivalent in GPIO Zero::
 
-    from gpiozero import Buttons
+    from gpiozero import Button
 
     btn = Button(4)
 
@@ -165,7 +165,7 @@ for a falling edge, we're waiting for a rising edge::
 
 Again, in GPIO Zero, the only difference is in the initialization::
 
-    from gpiozero import Buttons
+    from gpiozero import Button
 
     btn = Button(4, pull_up=False)
 
@@ -195,7 +195,7 @@ and the edge direction::
 In GPIO Zero, you assign the :attr:`~Button.when_pressed` and
 :attr:`~Button.when_released` properties to set up callbacks on those actions::
 
-    from gpiozero import Buttons
+    from gpiozero import Button
 
     def pressed():
         print("button was pressed")
