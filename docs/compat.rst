@@ -3,6 +3,8 @@ Backwards Compatibility
 =======================
 
 
+.. currentmodule:: gpiozero
+
 GPIO Zero 2.x is a new major version and thus backwards incompatible changes
 can be expected. We have attempted to keep these as minimal as reasonably
 possible while taking advantage of the opportunity to clean up things. This
@@ -61,8 +63,8 @@ Keyword arguments
 =================
 
 Many classes in GPIO Zero 1.x were documented as having keyword-only arguments
-in their constructors and methods. For example, the :class:`~gpiozero.PiLiter`
-was documented as having the constructor: ``PiLiter(*, pwm=False,
+in their constructors and methods. For example, the :class:`PiLiter` was
+documented as having the constructor: ``PiLiter(*, pwm=False,
 initial_value=False, pin_factory=None)`` implying that all its arguments were
 keyword only.
 
@@ -85,6 +87,56 @@ However, if you had omitted the keyword you will need to modify your code::
     from gpiozero import PiLiter
 
     l = PiLiter(True)  # this will no longer work
+
+
+Robots take Motors, and PhaseEnableRobot is removed
+===================================================
+
+The GPIO Zero 1.x API specified that a :class:`Robot` was constructed with two
+tuples that were in turn used to construct two :class:`Motor` instances. The
+2.x API replaces this with simply passing in the :class:`Motor`, or
+:class:`PhaseEnableMotor` instances you wish to use as the left and right
+wheels.
+
+If your current code uses pins 4 and 14 for the left wheel, and 17 and 18 for
+the right wheel, it may look like this::
+
+    from gpiozero import Robot
+
+    r = Robot(left=(4, 14), right=(17, 18))
+
+This should be changed to the following::
+
+    from gpiozero import Robot, Motor
+
+    r = Robot(left=Motor(4, 14), right=Motor(17, 18))
+
+Likewise, if you are currently using :class:`PhaseEnableRobot` your code may
+look like this::
+
+    from gpiozero import PhaseEnableRobot
+
+    r = PhaseEnableRobot(left=(4, 14), right=(17, 18))
+
+This should be changed to the following::
+
+    from gpiozero import Robot, PhaseEnableMotor
+
+    r = Robot(left=PhaseEnableMotor(4, 14),
+              right=PhaseEnableMotor(17, 18))
+
+This change came about because the :class:`Motor` class was also documented as
+having two mandatory parameters (*forward* and *backward*) and several
+keyword-only parameters, including the *enable* pin. However, *enable* was
+treated as a positional argument for the sake of constructing :class:`Robot`
+which was inconsistent. Furthermore, :class:`PhaseEnableRobot` was more or less
+a redundant duplicate of :class:`Robot` but was lacking a couple of features
+added to :class:`Robot` later (notable "curved" turning).
+
+Although the new API requires a little more typing, it does mean that phase
+enable robot boards now inherit all the functionality of :class:`Robot` because
+that's all they use. Theoretically you could also mix and match regular motors
+and phase-enable motors although there's little sense in doing so.
 
 
 .. _Python documentation: https://docs.python.org/3/
