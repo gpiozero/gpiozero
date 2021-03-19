@@ -53,7 +53,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     of the device-tree, mapped to the CPU's address space. For example:
 
         >>> reg = dt_peripheral_reg(dt_resolve_alias('gpio'))
-        >>> '%#x..%#x' % (reg.start, reg.stop)
+        >>> '{reg.start:#x}..{reg.stop:#x}'.format(reg=reg)
         '0xfe200000..0xfe2000b4'
         >>> hex(dt_peripheral_reg(dt_resolve_alias('ethernet0')).start)
         '0xfd580000'
@@ -221,13 +221,13 @@ class GPIOFS:
         return os.path.join(self.GPIO_PATH, name)
 
     def path_value(self, pin):
-        return self.path('gpio%d/value' % pin)
+        return self.path('gpio{pin:d}/value'.format(pin=pin))
 
     def path_dir(self, pin):
-        return self.path('gpio%d/direction' % pin)
+        return self.path('gpio{pin:d}/direction'.format(pin=pin))
 
     def path_edge(self, pin):
-        return self.path('gpio%d/edge' % pin)
+        return self.path('gpio{pin:d}/edge'.format(pin=pin))
 
     def exported(self, pin):
         return pin in self._exports
@@ -270,7 +270,8 @@ class GPIOFS:
                         else:
                             raise
                 if result is None:
-                    raise RuntimeError('failed to export pin %d' % pin)
+                    raise RuntimeError(
+                        'failed to export pin {pin:d}'.format(pin=pin))
             return result
 
     def unexport(self, pin):
@@ -474,7 +475,9 @@ class NativePin(LocalPiPin):
         try:
             value = self.GPIO_FUNCTIONS[value]
         except KeyError:
-            raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
+            raise PinInvalidFunction(
+                'invalid function "{value}" for pin {self!r}'.format(
+                    self=self, value=value))
         self.factory.mem[self._func_offset] = (
             self.factory.mem[self._func_offset]
             & ~(7 << self._func_shift)
@@ -486,7 +489,8 @@ class NativePin(LocalPiPin):
 
     def _set_state(self, value):
         if self.function == 'input':
-            raise PinSetInput('cannot set state of pin %r' % self)
+            raise PinSetInput(
+                'cannot set state of pin {self!r}'.format(self=self))
         if value:
             self.factory.mem[self._set_offset] = 1 << self._set_shift
         else:
@@ -524,7 +528,9 @@ class NativePin(LocalPiPin):
             if e.errno == errno.ENOENT and value == 'none':
                 pass
             elif e.errno == errno.EINVAL:
-                raise PinInvalidEdges('invalid edge specification "%s" for pin %r' % self)
+                raise PinInvalidEdges(
+                    'invalid edge specification "{value}" for pin '
+                    '{self!r}'.format(self=self, value=value))
             else:
                 raise
 
@@ -560,13 +566,17 @@ class Native2835Pin(NativePin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull('cannot set pull on non-input pin %r' % self)
+            raise PinFixedPull(
+                'cannot set pull on non-input pin {self!r}'.format(self=self))
         if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
-            raise PinFixedPull('%r has a physical pull-up resistor' % self)
+            raise PinFixedPull(
+                '{self!r} has a physical pull-up resistor'.format(self=self))
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
-            raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
+            raise PinInvalidPull(
+                'invalid pull direction "{value}" for pin {self!r}'.format(
+                    self=self, value=value))
         self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
         sleep(0.000000214)
         self.factory.mem[self._pull_offset] = 1 << self._pull_shift
@@ -600,13 +610,17 @@ class Native2711Pin(NativePin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull('cannot set pull on non-input pin %r' % self)
+            raise PinFixedPull(
+                'cannot set pull on non-input pin {self!r}'.format(self=self))
         if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
-            raise PinFixedPull('%r has a physical pull-up resistor' % self)
+            raise PinFixedPull(
+                '{self!r} has a physical pull-up resistor'.format(self=self))
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
-            raise PinInvalidPull('invalid pull direction "%s" for pin %r' % (value, self))
+            raise PinInvalidPull(
+                'invalid pull direction "{value}" for pin {self!r}'.format(
+                    self=self, value=value))
         self.factory.mem[self._pull_offset] = (
             self.factory.mem[self._pull_offset]
             & ~(3 << self._pull_shift)

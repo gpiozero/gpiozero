@@ -145,8 +145,10 @@ class OutputDevice(SourceMixin, GPIODevice):
 
     def __repr__(self):
         try:
-            return '<gpiozero.%s object on pin %r, active_high=%s, is_active=%s>' % (
-                self.__class__.__name__, self.pin, self.active_high, self.is_active)
+            return (
+                '<gpiozero.{self.__class__.__name__} object on pin '
+                '{self.pin!r}, active_high={self.active_high}, '
+                'is_active={self.is_active}>'.format(self=self))
         except:
             return super().__repr__()
 
@@ -616,14 +618,14 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
                 self.min_tone.note
             except ValueError:
                 raise ValueError(
-                    '%r is too low for %d octaves' %
-                    (self._mid_tone, self._octaves))
+                    '{self._mid_tone!r} is too low for {self._octaves} '
+                    'octaves'.format(self=self))
             try:
                 self.max_tone.note
             except ValueError:
                 raise ValueError(
-                    '%r is too high for %d octaves' %
-                    (self._mid_tone, self._octaves))
+                    '{self._mid_tone!r} is too high for {self._octaves} '
+                    'octaves'.format(self=self))
             self.value = initial_value
         except:
             self.close()
@@ -633,11 +635,14 @@ class TonalBuzzer(SourceMixin, CompositeDevice):
         try:
             self._check_open()
             if self.value is None:
-                return '<gpiozero.TonalBuzzer object on pin %r, silent>' % (
-                    self.pwm_device.pin,)
+                return (
+                    '<gpiozero.{self.__class__.__name__} object on pin '
+                    '{self.pwm_device.pin!r}, silent>'.format(self=self))
             else:
-                return '<gpiozero.TonalBuzzer object on pin %r, playing %s>' % (
-                    self.pwm_device.pin, self.tone.note)
+                return (
+                    '<gpiozero.{self.__class__.__name__} object on pin '
+                    '{self.pwm_device.pin!r}, playing '
+                    '{self.tone.note}>'.format(self=self))
         except DeviceClosed:
             return super().__repr__()
 
@@ -1715,8 +1720,9 @@ class AngularServo(Servo):
             initial_value = 2 * ((initial_angle - min_angle) / self._angular_range) - 1
         else:
             raise OutputDeviceBadValue(
-                "AngularServo angle must be between %s and %s, or None" %
-                (min_angle, max_angle))
+                "AngularServo angle must be between {min_angle} and "
+                "{max_angle}, or None".format(min_angle=min_angle,
+                                              max_angle=max_angle))
         super().__init__(pin, initial_value=initial_value,
                          min_pulse_width=min_pulse_width,
                          max_pulse_width=max_pulse_width,
@@ -1774,5 +1780,5 @@ class AngularServo(Servo):
                 self._min_value)
         else:
             raise OutputDeviceBadValue(
-                "AngularServo angle must be between %s and %s, or None" %
-                (self.min_angle, self.max_angle))
+                "AngularServo angle must be between {self.min_angle} and "
+                "{self.max_angle}, or None".format(self=self))

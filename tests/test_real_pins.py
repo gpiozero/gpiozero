@@ -47,7 +47,8 @@ def pin_factory(request, pin_factory_name):
         factory = pkg_resources.load_entry_point(
             'gpiozero', 'gpiozero_pin_factories', pin_factory_name)()
     except Exception as e:
-        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+        pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
+            pin_factory_name=pin_factory_name, e=e))
     else:
         yield factory
         factory.close()
@@ -183,7 +184,8 @@ def test_bad_duty_cycle(pins):
             sleep(0.1)
         test_pin.frequency = 100
     except PinPWMUnsupported:
-        pytest.skip("%r doesn't support PWM" % test_pin.factory)
+        pytest.skip("{test_pin.factory!r} doesn't support PWM".format(
+            test_pin=test_pin))
     else:
         try:
             with pytest.raises(ValueError):
@@ -200,7 +202,8 @@ def test_duty_cycles(pins):
             sleep(0.1)
         test_pin.frequency = 100
     except PinPWMUnsupported:
-        pytest.skip("%r doesn't support PWM" % test_pin.factory)
+        pytest.skip("{test_pin.factory!r} doesn't support PWM".format(
+            test_pin=test_pin))
     else:
         try:
             for duty_cycle in (0.0, 0.1, 0.5, 1.0):
@@ -223,7 +226,8 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
     try:
         device = GPIODevice(TEST_PIN)
     except Exception as e:
-        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+        pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
+            pin_factory_name=pin_factory_name, e=e))
     else:
         try:
             group = 'gpiozero_pin_factories'
@@ -241,7 +245,8 @@ def test_compatibility_names(no_default_factory):
     try:
         device = GPIODevice(TEST_PIN)
     except Exception as e:
-        pytest.skip("skipped factory %s: %s" % (pin_factory_name, str(e)))
+        pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
+            pin_factory_name=pin_factory_name, e=e))
     else:
         try:
             assert isinstance(Device.pin_factory, NativeFactory)

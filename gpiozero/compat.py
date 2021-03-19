@@ -17,26 +17,26 @@ from collections.abc import Mapping
 # Copied from the MIT-licensed https://github.com/slezica/python-frozendict
 class frozendict(Mapping):
     def __init__(self, *args, **kwargs):
-        self.__dict = dict(*args, **kwargs)
-        self.__hash = None
+        self._dict = dict(*args, **kwargs)
+        self._hash = None
 
     def __getitem__(self, key):
-        return self.__dict[key]
+        return self._dict[key]
 
     def copy(self, **add_or_replace):
         return frozendict(self, **add_or_replace)
 
     def __iter__(self):
-        return iter(self.__dict)
+        return iter(self._dict)
 
     def __len__(self):
-        return len(self.__dict)
+        return len(self._dict)
 
     def __repr__(self):
-        return '<frozendict %s>' % repr(self.__dict)
+        return '<frozendict {self._dict!r}>'.format(self=self)
 
     def __hash__(self):
-        if self.__hash is None:
+        if self._hash is None:
             hashes = map(hash, self.items())
-            self.__hash = reduce(operator.xor, hashes, 0)
-        return self.__hash
+            self._hash = reduce(operator.xor, hashes, 0)
+        return self._hash

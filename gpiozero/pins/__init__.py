@@ -66,8 +66,9 @@ class Factory:
                 for reserver_ref in self._reservations[pin]:
                     reserver = reserver_ref()
                     if reserver is not None and requester._conflicts_with(reserver):
-                        raise GPIOPinInUse('pin %s is already in use by %r' %
-                                           (pin, reserver))
+                        raise GPIOPinInUse(
+                            'pin {pin} is already in use by {reserver!r}'.format(
+                                pin=pin, reserver=reserver))
                 self._reservations[pin].append(ref(requester))
 
     def release_pins(self, reserver, *pins):
@@ -270,7 +271,7 @@ class Pin:
 
     def _set_state(self, value):
         raise PinSetInput(  # pragma: no cover
-            "Cannot set the state of pin %r" % self)
+            "Cannot set the state of pin {self!r}".format(self=self))
 
     state = property(
         lambda self: self._get_state(),
@@ -303,7 +304,7 @@ class Pin:
 
     def _set_pull(self, value):
         raise PinFixedPull(  # pragma: no cover
-            "Cannot change pull-up on pin %r" % self)
+            "Cannot change pull-up on pin {self!r}".format(self=self))
 
     pull = property(
         lambda self: self._get_pull(),
@@ -325,7 +326,7 @@ class Pin:
     def _set_frequency(self, value):
         if value is not None:
             raise PinPWMUnsupported(  # pragma: no cover
-                "PWM is not supported on pin %r" % self)
+                "PWM is not supported on pin {self!r}".format(self=self))
 
     frequency = property(
         lambda self: self._get_frequency(),
@@ -346,7 +347,8 @@ class Pin:
     def _set_bounce(self, value):
         if value is not None:  # pragma: no cover
             raise PinEdgeDetectUnsupported(
-                "Edge detection is not supported on pin %r" % self)
+                "Edge detection is not supported on pin {self!r}".format(
+                    self=self))
 
     bounce = property(
         lambda self: self._get_bounce(),
@@ -387,7 +389,7 @@ class Pin:
 
     def _set_edges(self, value):
         raise PinEdgeDetectUnsupported(  # pragma: no cover
-            "Edge detection is not supported on pin %r" % self)
+            "Edge detection is not supported on pin {self!r}".format(self=self))
 
     edges = property(
         lambda self: self._get_edges(),
@@ -417,7 +419,7 @@ class Pin:
 
     def _set_when_changed(self, value):
         raise PinEdgeDetectUnsupported(  # pragma: no cover
-            "Edge detection is not supported on pin %r" % self)
+            "Edge detection is not supported on pin {self!r}".format(self=self))
 
     when_changed = property(
         lambda self: self._get_when_changed(),
@@ -604,7 +606,7 @@ class SPI(Device):
 
     def _set_clock_mode(self, value):
         raise SPIFixedClockMode(  # pragma: no cover
-            "clock_mode cannot be changed on %r" % self)
+            "clock_mode cannot be changed on {self!r}".format(self=self))
 
     clock_mode = property(
         lambda self: self._get_clock_mode(),
@@ -635,7 +637,7 @@ class SPI(Device):
 
     def _set_lsb_first(self, value):
         raise SPIFixedBitOrder(  # pragma: no cover
-            "lsb_first cannot be changed on %r" % self)
+            "lsb_first cannot be changed on {self!r}".format(self=self))
 
     lsb_first = property(
         lambda self: self._get_lsb_first(),
@@ -688,7 +690,7 @@ class SPI(Device):
 
     def _set_select_high(self, value):
         raise SPIFixedSelect(  # pragma: no cover
-            "select_high cannot be changed on %r" % self)
+            "select_high cannot be changed on {self!r}".format(self=self))
 
     select_high = property(
         lambda self: self._get_select_high(),
@@ -734,7 +736,7 @@ class SPI(Device):
 
     def _set_bits_per_word(self, value):
         raise SPIFixedWordSize(  # pragma: no cover
-            "bits_per_word cannot be changed on %r" % self)
+            "bits_per_word cannot be changed on {self!r}".format(self=self))
 
     bits_per_word = property(
         lambda self: self._get_bits_per_word(),
@@ -752,7 +754,7 @@ class SPI(Device):
 
     def _set_rate(self, value):
         raise SPIFixedRate(  # pragma: no cover
-            "rate cannot be changed on %r" % self)
+            "rate cannot be changed on {self!r}".format(self=self))
 
     rate = property(
         lambda self: self._get_rate(),

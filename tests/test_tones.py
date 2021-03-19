@@ -55,7 +55,7 @@ def test_tone_str(A4):
     assert str(A4) == "A4"
     assert str(A4.up()) == "A#4"
     assert str(A4.down(12)) == "A3"
-    assert repr(A4) == "<Tone %s midi=69 frequency=440.00Hz>" % ('note=%r' % 'A4')
+    assert repr(A4) == "<Tone note={note!r} midi=69 frequency=440.00Hz>".format(note='A4')
     assert repr(Tone(13000)) == '<Tone frequency=13000.00Hz>'
 
 def test_tone_from_frequency(A4):

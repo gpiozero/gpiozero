@@ -1315,7 +1315,7 @@ class PiHutXmasTree(LEDBoard):
         pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
         for i, pin in enumerate(pins):
-            pins_dict['led%d' % (i+1)] = pin
+            pins_dict['led{:d}'.format(i + 1)] = pin
         super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=pins_dict.keys(),
@@ -1526,8 +1526,8 @@ class TrafficLights(LEDBoard):
             devices['amber'] = amber
         devices['green'] = green
         if not all(p is not None for p in devices.values()):
-            raise GPIOPinMissing('%s pins must be provided' %
-                                 ', '.join(devices.keys()))
+            raise GPIOPinMissing('{keys} pins must be provided'.format(
+                keys=', '.join(devices.keys())))
         super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=devices.keys(), pin_factory=pin_factory,
@@ -1635,8 +1635,8 @@ class PiStop(TrafficLights):
             pin_factory=None):
         gpios = self.LOCATIONS.get(location, None)
         if gpios is None:
-            raise ValueError('location must be one of: %s' %
-                             ', '.join(sorted(self.LOCATIONS.keys())))
+            raise ValueError('location must be one of: {locations}'.format(
+                locations=', '.join(sorted(self.LOCATIONS.keys()))))
         super().__init__(
             *gpios, pwm=pwm, initial_value=initial_value,
             pin_factory=pin_factory)
@@ -1713,11 +1713,11 @@ class StatusZero(LEDBoard):
         if len(labels) == 0:
             labels = self.default_labels
         elif len(labels) > len(pins):
-            raise ValueError("StatusZero doesn't support more than %d "
-                             "labels" % len(pins))
+            raise ValueError("StatusZero doesn't support more than {count} "
+                             "labels".format(count=len(pins)))
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
-            raise ValueError("Duplicate label %s" % dup)
+            raise ValueError("Duplicate label {dup}".format(dup=dup))
         super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: LEDBoard(
@@ -1816,7 +1816,7 @@ class StatusBoard(CompositeOutputDevice):
             raise ValueError("StatusBoard doesn't support more than five labels")
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
-            raise ValueError("Duplicate label %s" % dup)
+            raise ValueError("Duplicate label {dup}".format(dup=dup))
         super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: CompositeOutputDevice(
@@ -2591,7 +2591,9 @@ class Energenie(SourceMixin, Device):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.Energenie object on socket %d>" % self._socket
+            return (
+                "<gpiozero.Energenie object on socket "
+                "{self._socket}>".format(self=self))
         except DeviceClosed:
             return "<gpiozero.Energenie object closed>"
 

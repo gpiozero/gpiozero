@@ -65,7 +65,8 @@ class MockPin(LocalPiPin):
 
     def _set_state(self, value):
         if self._function == 'input':
-            raise PinSetInput('cannot set state of pin %r' % self)
+            raise PinSetInput('cannot set state of pin {self!r}'.format(
+                self=self))
         assert self._function == 'output'
         assert 0 <= value <= 1
         self._change_state(bool(value))
@@ -91,9 +92,11 @@ class MockPin(LocalPiPin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull('cannot set pull on non-input pin %r' % self)
+            raise PinFixedPull(
+                'cannot set pull on non-input pin {self!r}'.format(self=self))
         if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
-            raise PinFixedPull('%r has a physical pull-up resistor' % self)
+            raise PinFixedPull(
+                '{self!r} has a physical pull-up resistor'.format(self=self))
         if value not in ('floating', 'up', 'down'):
             raise PinInvalidPull('pull must be floating, up, or down')
         self._pull = value
@@ -260,7 +263,8 @@ class MockPWMPin(MockPin):
 
     def _set_state(self, value):
         if self._function == 'input':
-            raise PinSetInput('cannot set state of pin %r' % self)
+            raise PinSetInput(
+                'cannot set state of pin {self!r}'.format(self=self))
         assert self._function == 'output'
         assert 0 <= value <= 1
         self._change_state(float(value))
@@ -443,7 +447,8 @@ class MockFactory(LocalPiFactory):
             group = 'gpiozero_mock_pin_classes'
             pin_class = pkg_resources.load_entry_point(dist, group, pin_class.lower())
         if not issubclass(pin_class, MockPin):
-            raise ValueError('invalid mock pin_class: %r' % pin_class)
+            raise ValueError(
+                'invalid mock pin_class: {self!r}'.format(self=self))
         self.pin_class = pin_class
 
     def _get_revision(self):
@@ -477,5 +482,7 @@ class MockFactory(LocalPiFactory):
         else:
             # Ensure the pin class expected supports PWM (or not)
             if issubclass(pin_class, MockPWMPin) != isinstance(pin, MockPWMPin):
-                raise ValueError('pin %d is already in use as a %s' % (n, pin.__class__.__name__))
+                raise ValueError(
+                    'pin {n} is already in use as a '
+                    '{pin.__class__.__name__}'.format(n=n, pin=pin))
         return pin

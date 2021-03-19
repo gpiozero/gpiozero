@@ -43,9 +43,13 @@ class InternalDevice(EventsMixin, Device):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.%s object>" % self.__class__.__name__
+            return (
+                "<gpiozero.{self.__class__.__name__} object>".format(
+                    self=self))
         except DeviceClosed:
-            return "<gpiozero.%s object closed>" % self.__class__.__name__
+            return (
+                "<gpiozero.{self.__class__.__name__} object closed>".format(
+                    self=self))
 
 
 class PolledInternalDevice(InternalDevice):
@@ -152,7 +156,8 @@ class PingServer(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.PingServer object host="%s">' % self.host
+            return '<gpiozero.PingServer object host="{self.host}">'.format(
+                self=self)
         except DeviceClosed:
             return super().__repr__()
 
@@ -282,7 +287,9 @@ class CPUTemperature(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.CPUTemperature object temperature=%.2f>' % self.temperature
+            return (
+                '<gpiozero.{self.__class__.__name__} object '
+                'temperature={self.temperature:.2f}>'.format(self=self))
         except DeviceClosed:
             return super().__repr__()
 
@@ -418,7 +425,9 @@ class LoadAverage(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.LoadAverage object load average=%.2f>' % self.load_average
+            return (
+                '<gpiozero.{self.__class__.__name__} object '
+                'load average={self.load_average:.2f}>'.format(self=self))
         except DeviceClosed:
             return super().__repr__()
 
@@ -543,8 +552,10 @@ class TimeOfDay(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.TimeOfDay object active between %s and %s %s>' % (
-                self.start_time, self.end_time, ('local', 'UTC')[self.utc])
+            return (
+                '<gpiozero.{self.__class__.__name__} object active between '
+                '{self.start_time} and {self.end_time} {tz}>'.format(
+                    self=self, tz=('local', 'UTC')[self.utc]))
         except DeviceClosed:
             return super().__repr__()
 
@@ -673,7 +684,9 @@ class DiskUsage(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.DiskUsage object usage=%.2f>' % self.usage
+            return (
+                '<gpiozero.{self.__class__.__name__} object '
+                'usage={self.usage:.2f}>'.format(self=self))
         except DeviceClosed:
             return super().__repr__()
 

@@ -145,7 +145,9 @@ class LGPIOPin(LocalPiPin):
                 'output': lgpio.gpio_claim_output,
             }[value](self.factory._handle, self.number)
         except KeyError:
-            raise PinInvalidFunction('invalid function "%s" for pin %r' % (value, self))
+            raise PinInvalidFunction(
+                'invalid function "{value}" for pin {self!r}'.format(
+                    value=value, self=self))
 
     def _get_state(self):
         if self._pwm:
@@ -160,9 +162,12 @@ class LGPIOPin(LocalPiPin):
             try:
                 lgpio.tx_pwm(self.factory._handle, self.number, *self._pwm)
             except lgpio.error:
-                raise PinInvalidState('invalid state "%s" for pin %r' % (value, self))
+                raise PinInvalidState(
+                    'invalid state "{value}" for pin {self!r}'.format(
+                        self=self, value=value))
         elif self.function == 'input':
-            raise PinSetInput('cannot set state of pin %r' % self)
+            raise PinSetInput('cannot set state of pin {self!r}'.format(
+                self=self))
         else:
             lgpio.gpio_write(self.factory._handle, self.number, bool(value))
 
@@ -177,9 +182,11 @@ class LGPIOPin(LocalPiPin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull('cannot set pull on non-input pin %r' % self)
+            raise PinFixedPull(
+                'cannot set pull on non-input pin {self!r}'.format(self=self))
         if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
-            raise PinFixedPull('%r has a physical pull-up resistor' % self)
+            raise PinFixedPull(
+                '{self!r} has a physical pull-up resistor'.format(self=self))
         try:
             flags = {
                 'up': lgpio.SET_BIAS_PULL_UP,
@@ -187,7 +194,9 @@ class LGPIOPin(LocalPiPin):
                 'floating': lgpio.SET_BIAS_DISABLE,
             }[value]
         except KeyError:
-            raise PinInvalidPull('invalid pull "%s" for pin %r' % (value, self))
+            raise PinInvalidPull(
+                'invalid pull "{value}" for pin {self!r}'.format(
+                    self=self, value=value))
         else:
             # Simply calling gpio_claim_input is insufficient to change the
             # line flags on a pin; it needs to be freed and re-claimed
@@ -204,7 +213,8 @@ class LGPIOPin(LocalPiPin):
     def _set_frequency(self, value):
         if not self._pwm and value is not None and value > 0:
             if self.function != 'output':
-                raise PinPWMFixedValue('cannot start PWM on pin %r' % self)
+                raise PinPWMFixedValue(
+                    'cannot start PWM on pin {self!r}'.format(self=self))
             lgpio.tx_pwm(self.factory._handle, self.number, value, 0)
             self._pwm = (value, 0)
         elif self._pwm and value is not None and value > 0:
@@ -304,7 +314,8 @@ class LGPIOHardwareSPI(SPI):
     def __repr__(self):
         try:
             self._check_open()
-            return 'SPI(port=%d, device=%d)' % (self._port, self._device)
+            return 'SPI(port={self._port:d}, device={self._device:d})'.format(
+                self=self)
         except DeviceClosed:
             return 'SPI(closed)'
 
@@ -314,7 +325,8 @@ class LGPIOHardwareSPI(SPI):
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
-            raise SPIInvalidClockMode("%d is not a valid SPI clock mode" % value)
+            raise SPIInvalidClockMode(
+                "{value} is not a valid SPI clock mode".format(value=value))
         lgpio.spi_close(self._handle)
         self._spi_flags = value
         self._handle = lgpio.spi_open(
@@ -335,21 +347,21 @@ class LGPIOHardwareSPI(SPI):
         self._check_open()
         count, data = lgpio.spi_read(self._handle, n)
         if count < 0:
-            raise IOError('SPI transfer error %d' % count)
+            raise IOError('SPI transfer error {count}'.format(count=count))
         return [int(b) for b in data]
 
     def write(self, data):
         self._check_open()
         count = lgpio.spi_write(self._handle, data)
         if count < 0:
-            raise IOError('SPI transfer error %d' % count)
+            raise IOError('SPI transfer error {count}'.format(count=count))
         return len(data)
 
     def transfer(self, data):
         self._check_open()
         count, data = lgpio.spi_xfer(self._handle, data)
         if count < 0:
-            raise IOError('SPI transfer error %d' % count)
+            raise IOError('SPI transfer error {count}'.format(count=count))
         return [int(b) for b in data]
 
 

@@ -73,8 +73,8 @@ class Tone(float):
     }
     regex = re.compile(
         r'(?P<note>[A-G])'
-        r'(?P<semi>[%s]?)'
-        r'(?P<octave>[0-9])' % ''.join(semitones.keys()))
+        r'(?P<semi>[{semitones}]?)'
+        r'(?P<octave>[0-9])'.format(semitones=''.join(semitones.keys())))
 
     def __new__(cls, value=None, *, frequency=None, midi=None, note=None):
         n = sum(1 for arg in (value, frequency, midi, note) if arg is not None)
@@ -115,14 +115,15 @@ class Tone(float):
         except ValueError:
             midi = ''
         else:
-            midi = ' midi=%r' % midi
+            midi = ' midi={midi!r}'.format(midi=midi)
         try:
             note = self.note
         except ValueError:
             note = ''
         else:
-            note = ' note=%r' % note
-        return "<Tone%s%s frequency=%.2fHz>" % (note, midi, self.frequency)
+            note = ' note={note!r}'.format(note=note)
+        return "<Tone{note}{midi} frequency={self.frequency:.2f}Hz>".format(
+            note=note, midi=midi, self=self)
 
     @classmethod
     def from_midi(cls, midi_note):
@@ -138,7 +139,7 @@ class Tone(float):
             A4_midi = 69
             A4_freq = 440
             return cls.from_frequency(A4_freq * 2 ** ((midi - A4_midi) / 12))
-        raise ValueError('invalid MIDI note: %r' % midi)
+        raise ValueError('invalid MIDI note: {midi!r}'.format(midi=midi))
 
     @classmethod
     def from_note(cls, note):
@@ -163,7 +164,8 @@ class Tone(float):
                     Tone.tones.index(match.group('note')) +
                     Tone.semitones[match.group('semi')] +
                     octave * 12)
-        raise ValueError('invalid note specification: %r' % note)
+        raise ValueError(
+            'invalid note specification: {note!r}'.format(note=note))
 
     @classmethod
     def from_frequency(cls, freq):
@@ -175,7 +177,7 @@ class Tone(float):
         """
         if 0 < freq <= 20000:
             return super().__new__(cls, freq)
-        raise ValueError('invalid frequency: %.2f' % freq)
+        raise ValueError('invalid frequency: {freq:.2f}'.format(freq=freq))
 
     @property
     def frequency(self):
@@ -197,7 +199,9 @@ class Tone(float):
         result = int(round(12 * log2(self.frequency / 440) + 69))
         if 0 <= result < 128:
             return result
-        raise ValueError('%f is outside the MIDI note range' % self.frequency)
+        raise ValueError(
+            '{self.frequency:f} is outside the MIDI note range'.format(
+                self=self))
 
     @property
     def note(self):
@@ -217,7 +221,9 @@ class Tone(float):
                 ('#' if Tone.tones[index] == Tone.tones[index - 1] else '') +
                 str(octave)
             )
-        raise ValueError('%f is outside the notation range' % self.frequency)
+        raise ValueError(
+            '{self.frequency:f} is outside the notation range'.format(
+                self=self))
 
     def up(self, n=1):
         """

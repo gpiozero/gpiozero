@@ -131,8 +131,8 @@ def test_device_pin_parsing(mock_factory):
 def test_device_repr(mock_factory):
     with GPIODevice(4) as device:
         assert repr(device) == (
-            '<gpiozero.GPIODevice object on pin %s, '
-            'is_active=False>' % device.pin)
+            '<gpiozero.GPIODevice object on pin {device.pin}, '
+            'is_active=False>'.format(device=device))
 
 def test_device_repr_after_close(mock_factory):
     with GPIODevice(2) as device:

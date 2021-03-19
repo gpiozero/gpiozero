@@ -83,14 +83,14 @@ class InputDevice(GPIODevice):
         if pull_up is None:
             if active_state is None:
                 raise PinInvalidState(
-                    'Pin %d is defined as floating, but "active_state" is not '
-                    'defined' % self.pin.number)
+                    'Pin {self.pin.number} is defined as floating, but '
+                    '"active_state" is not defined'.format(self=self))
             self._active_state = bool(active_state)
         else:
             if active_state is not None:
                 raise PinInvalidState(
-                    'Pin %d is not floating, but "active_state" is not None' %
-                    self.pin.number)
+                    'Pin {self.pin.number} is not floating, but '
+                    '"active_state" is not None'.format(self=self))
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state
 
@@ -108,8 +108,10 @@ class InputDevice(GPIODevice):
 
     def __repr__(self):
         try:
-            return "<gpiozero.%s object on pin %r, pull_up=%s, is_active=%s>" % (
-                self.__class__.__name__, self.pin, self.pull_up, self.is_active)
+            return (
+                "<gpiozero.{self.__class__.__name__} object on pin "
+                "{self.pin!r}, pull_up={self.pull_up}, "
+                "is_active={self.is_active}>".format(self=self))
         except:
             return super().__repr__()
 
@@ -280,8 +282,9 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
             if self.partial or self._queue.full.is_set():
                 return super().__repr__()
             else:
-                return "<gpiozero.%s object on pin %r, pull_up=%s>" % (
-                    self.__class__.__name__, self.pin, self.pull_up)
+                return (
+                    "<gpiozero.{self.__class__.__name__} object on pin "
+                    "{self.pin!r}, pull_up={self.pull_up}>".format(self=self))
 
     @property
     def queue_len(self):
@@ -1150,8 +1153,9 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.%s object on pins %r and %r>" % (
-                self.__class__.__name__, self.a.pin, self.b.pin)
+            return (
+                "<gpiozero.{self.__class__.__name__} object on pins "
+                "{self.a.pin!r} and {self.b.pin!r}>".format(self=self))
         except DeviceClosed:
             return super().__repr__()
 

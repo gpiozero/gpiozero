@@ -75,9 +75,13 @@ class SPIDevice(Device):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.%s object using %r>" % (self.__class__.__name__, self._spi)
+            return (
+                "<gpiozero.{self.__class__.__name__} object using "
+                "{self._spi!r}>".format(self=self))
         except DeviceClosed:
-            return "<gpiozero.%s object closed>" % self.__class__.__name__
+            return (
+                "<gpiozero.{self.__class__.__name__} object "
+                "closed>".format(self=self))
 
 
 class AnalogInputDevice(SPIDevice):

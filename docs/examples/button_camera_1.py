@@ -8,7 +8,7 @@ camera = PiCamera()
 
 def capture():
     timestamp = datetime.now().isoformat()
-    camera.capture('/home/pi/%s.jpg' % timestamp)
+    camera.capture('/home/pi/{timestamp}.jpg'.format(timestamp=timestamp))
 
 button.when_pressed = capture
 

@@ -124,7 +124,8 @@ class PiFactory(Factory):
         shared = bool(kwargs.pop('shared', False))
         if kwargs:
             raise SPIBadArgs(
-                'unrecognized keyword argument %s' % kwargs.popitem()[0])
+                'unrecognized keyword argument {arg}'.format(
+                    arg=kwargs.popitem()[0]))
         try:
             port, device = spi_port_device(**spi_args)
         except SPIBadArgs:
@@ -138,7 +139,7 @@ class PiFactory(Factory):
                 warnings.warn(
                     SPISoftwareFallback(
                         'failed to initialize hardware SPI, falling back to '
-                        'software (error was: %s)' % str(e)))
+                        'software (error was: {e!s})'.format(e=e)))
         return self._get_spi_class(shared, hardware=False)(
             pin_factory=self, **spi_args)
 
@@ -187,13 +188,14 @@ class PiFactory(Factory):
                 selected_hw = SPI_HARDWARE_PINS[spi_args['port']]
             except KeyError:
                 raise SPIBadArgs(
-                    'port %d is not a valid SPI port' % spi_args['port'])
+                    'port {spi_args[port]} is not a valid SPI port'.format(
+                        spi_args=spi_args))
             try:
                 selected_hw['select'][spi_args['device']]
             except IndexError:
                 raise SPIBadArgs(
-                    'device must be in the range 0..%d' %
-                    len(selected_hw['select']))
+                    'device must be in the range 0..{count}'.format(
+                        count=len(selected_hw['select'])))
             spi_args = {
                 key: value if key != 'select_pin' else selected_hw['select'][spi_args['device']]
                 for key, value in pin_defaults.items()
@@ -255,16 +257,15 @@ class PiPin(Pin):
         try:
             factory.pi_info.physical_pin(repr(self))
         except PinNoPins:
-            warnings.warn(
-                PinNonPhysical(
-                    'no physical pins exist for %s' % repr(self)))
+            warnings.warn(PinNonPhysical(
+                'no physical pins exist for {self!r}'.format(self=self)))
 
     @property
     def number(self):
         return self._number
 
     def __repr__(self):
-        return 'GPIO%d' % self._number
+        return 'GPIO{self._number}'.format(self=self)
 
     @property
     def factory(self):

@@ -277,7 +277,7 @@ def test_pprint_missing_pin():
             if i == 3:
                 assert '(3)' not in s
             else:
-                assert ('(%d)' % i)
+                assert '({i:d})'.format(i=i)
 
 def test_pprint_rows_cols():
     assert '{0:row1}'.format(pi_info('900092').headers['J8']) == '1o'

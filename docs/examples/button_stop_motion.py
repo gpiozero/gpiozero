@@ -8,5 +8,5 @@ camera.start_preview()
 frame = 1
 while True:
     button.wait_for_press()
-    camera.capture('/home/pi/frame%03d.jpg' % frame)
+    camera.capture('/home/pi/frame{frame:03d}.jpg'.format(frame=frame))
     frame += 1

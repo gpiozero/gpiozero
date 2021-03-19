@@ -583,9 +583,11 @@ class Style:
                             codes.append(40 + self.colors[spec])
                     except KeyError:
                         raise ValueError(
-                            'invalid format specification "%s"' % spec)
+                            'invalid format specification "{spec}"'.format(
+                                spec=spec))
         if self.color:
-            return '\x1b[%sm' % (';'.join(str(code) for code in codes))
+            return '\x1b[{codes}m'.format(
+                codes=';'.join(str(code) for code in codes))
         else:
             return ''
 
@@ -715,7 +717,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
                     pin = self.pins[pin]
                     cells = [
                         Cell(pin.function, '><'[col % 2], self._func_style(pin.function, style)),
-                        Cell('(%d)' % pin.number, '><'[col % 2], ''),
+                        Cell('({pin.number})'.format(pin=pin), '><'[col % 2], ''),
                         ]
                     if col % 2:
                         cells = reversed(cells)
@@ -747,7 +749,9 @@ class HeaderInfo(namedtuple('HeaderInfo', (
 
     def _format_row(self, row, style):
         if row > self.rows:
-            raise ValueError('invalid row %d for header %s' % (row, self.name))
+            raise ValueError(
+                'invalid row {row} for header {self.name}'.format(
+                    row=row, self=self))
         start_pin = (row - 1) * self.columns + 1
         return ''.join(
             self._format_pin(pin, style)
@@ -757,7 +761,9 @@ class HeaderInfo(namedtuple('HeaderInfo', (
 
     def _format_col(self, col, style):
         if col > self.columns:
-            raise ValueError('invalid col %d for header %s' % (col, self.name))
+            raise ValueError(
+                'invalid col {col} for header {self.name}'.format(
+                    col=col, self=self))
         return ''.join(
             self._format_pin(pin, style)
             for n in range(col, self.rows * self.columns + 1, self.columns)
@@ -1019,7 +1025,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                     2: '2.0',
                     }.get(revcode_revision, 'Unknown')
             else:
-                pcb_revision = '1.%d' % revcode_revision
+                pcb_revision = '1.{revcode_revision}'.format(
+                    revcode_revision=revcode_revision)
             soc = {
                 0: 'BCM2835',
                 1: 'BCM2836',
@@ -1187,7 +1194,9 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 usb3 = 0
                 eth_speed = ethernet * 100
             except KeyError:
-                raise PinUnknownPi('unknown old-style revision "%x"' % revision)
+                raise PinUnknownPi(
+                    'unknown old-style revision "{revision:x}"'.format(
+                        revision=revision))
         headers = {
             header: HeaderInfo(name=header, rows=max(header_data) // 2, columns=2, pins={
                 number: PinInfo(
@@ -1199,7 +1208,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             for header, header_data in headers.items()
             }
         return cls(
-            '%04x' % revision,
+            '{revision:04x}'.format(revision=revision),
             model,
             pcb_revision,
             released,
@@ -1253,11 +1262,14 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         """
         result = self.physical_pins(function)
         if len(result) > 1:
-            raise PinMultiplePins('multiple pins can be used for %s' % function)
+            raise PinMultiplePins(
+                'multiple pins can be used for {function}'.format(
+                    function=function))
         elif result:
             return result.pop()
         else:
-            raise PinNoPins('no pins can be used for %s' % function)
+            raise PinNoPins('no pins can be used for {function}'.format(
+                function=function))
 
     def pulled_up(self, function):
         """
@@ -1298,8 +1310,8 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
         """
         if isinstance(spec, int):
             if not 0 <= spec < 54:
-                raise PinInvalidPin('invalid GPIO port %d specified '
-                                    '(range 0..53) ' % spec)
+                raise PinInvalidPin('invalid GPIO port {spec} specified '
+                                    '(range 0..53) '.format(spec=spec))
             return spec
         else:
             if isinstance(spec, bytes):
@@ -1315,41 +1327,42 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 main_head = 'P1' if 'P1' in self.headers else 'J8'
                 try:
                     return self.to_gpio({
-                        0:  '%s:11' % main_head,
-                        1:  '%s:12' % main_head,
-                        2:  '%s:13' % main_head,
-                        3:  '%s:15' % main_head,
-                        4:  '%s:16' % main_head,
-                        5:  '%s:18' % main_head,
-                        6:  '%s:22' % main_head,
-                        7:  '%s:7'  % main_head,
-                        8:  '%s:3'  % main_head,
-                        9:  '%s:5'  % main_head,
-                        10: '%s:24' % main_head,
-                        11: '%s:26' % main_head,
-                        12: '%s:19' % main_head,
-                        13: '%s:21' % main_head,
-                        14: '%s:23' % main_head,
-                        15: '%s:8'  % main_head,
-                        16: '%s:10' % main_head,
+                        0:  '{main_head}:11'.format(main_head=main_head),
+                        1:  '{main_head}:12'.format(main_head=main_head),
+                        2:  '{main_head}:13'.format(main_head=main_head),
+                        3:  '{main_head}:15'.format(main_head=main_head),
+                        4:  '{main_head}:16'.format(main_head=main_head),
+                        5:  '{main_head}:18'.format(main_head=main_head),
+                        6:  '{main_head}:22'.format(main_head=main_head),
+                        7:  '{main_head}:7' .format(main_head=main_head),
+                        8:  '{main_head}:3' .format(main_head=main_head),
+                        9:  '{main_head}:5' .format(main_head=main_head),
+                        10: '{main_head}:24'.format(main_head=main_head),
+                        11: '{main_head}:26'.format(main_head=main_head),
+                        12: '{main_head}:19'.format(main_head=main_head),
+                        13: '{main_head}:21'.format(main_head=main_head),
+                        14: '{main_head}:23'.format(main_head=main_head),
+                        15: '{main_head}:8' .format(main_head=main_head),
+                        16: '{main_head}:10'.format(main_head=main_head),
                         17: 'P5:3',
                         18: 'P5:4',
                         19: 'P5:5',
                         20: 'P5:6',
-                        21: '%s:29' % main_head,
-                        22: '%s:31' % main_head,
-                        23: '%s:33' % main_head,
-                        24: '%s:35' % main_head,
-                        25: '%s:37' % main_head,
-                        26: '%s:32' % main_head,
-                        27: '%s:36' % main_head,
-                        28: '%s:38' % main_head,
-                        29: '%s:40' % main_head,
-                        30: '%s:27' % main_head,
-                        31: '%s:28' % main_head,
+                        21: '{main_head}:29'.format(main_head=main_head),
+                        22: '{main_head}:31'.format(main_head=main_head),
+                        23: '{main_head}:33'.format(main_head=main_head),
+                        24: '{main_head}:35'.format(main_head=main_head),
+                        25: '{main_head}:37'.format(main_head=main_head),
+                        26: '{main_head}:32'.format(main_head=main_head),
+                        27: '{main_head}:36'.format(main_head=main_head),
+                        28: '{main_head}:38'.format(main_head=main_head),
+                        29: '{main_head}:40'.format(main_head=main_head),
+                        30: '{main_head}:27'.format(main_head=main_head),
+                        31: '{main_head}:28'.format(main_head=main_head),
                         }[int(spec[3:])])
                 except KeyError:
-                    raise PinInvalidPin('%s is not a valid wiringPi pin' % spec)
+                    raise PinInvalidPin(
+                        '{spec} is not a valid wiringPi pin'.format(spec=spec))
             elif ':' in spec:
                 header, pin = spec.split(':', 1)
                 if pin.isdigit():
@@ -1357,20 +1370,27 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                         header = self.headers[header]
                     except KeyError:
                         raise PinInvalidPin(
-                            'there is no %s header on this Pi' % header)
+                            'there is no {header} header on this Pi'.format(
+                                header=header))
                     try:
                         function = header.pins[int(pin)].function
                     except KeyError:
                         raise PinInvalidPin(
-                            'no such pin %s on header %s' % (pin, header.name))
+                            'no such pin {pin} on header {header.name}'.format(
+                                pin=pin, header=header))
                     if function.startswith('GPIO') and function[4:].isdigit():
                         return self.to_gpio(int(function[4:]))
                     else:
-                        raise PinInvalidPin('%s is not a GPIO pin' % spec)
+                        raise PinInvalidPin('{spec} is not a GPIO pin'.format(
+                            spec=spec))
             elif spec.startswith('BOARD') and spec[5:].isdigit():
                 main_head = ({'P1', 'J8', 'SODIMM'} & set(self.headers)).pop()
-                return self.to_gpio('%s:%s' % (main_head, spec[5:]))
-            raise PinInvalidPin('%s is not a valid pin spec' % spec)
+                return self.to_gpio('{main_head}:{spec}'.format(
+                    # NOTE: the spec slice should just go in the f-string
+                    # when we convert to them
+                    main_head=main_head, spec=spec[5:]))
+            raise PinInvalidPin('{spec} is not a valid pin spec'.format(
+                spec=spec))
 
     def __repr__(self):
         return '{cls}({fields})'.format(
