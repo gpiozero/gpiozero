@@ -9,7 +9,7 @@
 
 import os
 from collections import namedtuple
-from time import time, sleep
+from time import time, sleep, monotonic
 from threading import Thread, Event
 from math import isclose
 
@@ -24,13 +24,13 @@ from ..exc import (
     PinInvalidBounce,
     )
 from ..devices import Device
-from .local import LocalPiPin, LocalPiFactory
+from .pi import PiPin, PiFactory
 
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
 
 
-class MockPin(LocalPiPin):
+class MockPin(PiPin):
     """
     A mock pin used primarily for testing. This class does *not* support PWM.
     """
@@ -73,7 +73,7 @@ class MockPin(LocalPiPin):
 
     def _change_state(self, value):
         if self._state != value:
-            t = time()
+            t = monotonic()
             self._state = value
             self.states.append(PinState(t - self._last_change, value))
             self._last_change = t
@@ -130,6 +130,9 @@ class MockPin(LocalPiPin):
     def _enable_event_detect(self):
         pass
 
+    def _call_when_changed(self):
+        super()._call_when_changed(self._last_change, self._state)
+
     def drive_high(self):
         assert self._function == 'input'
         if self._change_state(True):
@@ -143,7 +146,7 @@ class MockPin(LocalPiPin):
                 self._call_when_changed()
 
     def clear_states(self):
-        self._last_change = time()
+        self._last_change = monotonic()
         self.states = [PinState(0.0, self._state)]
 
     def assert_states(self, expected_states):
@@ -416,7 +419,7 @@ class MockSPIDevice:
         self.tx_buf.extend(bits)
 
 
-class MockFactory(LocalPiFactory):
+class MockFactory(PiFactory):
     """
     Factory for generating mock pins. The *revision* parameter specifies what
     revision of Pi the mock factory pretends to be (this affects the result of
@@ -486,3 +489,11 @@ class MockFactory(LocalPiFactory):
                     'pin {n} is already in use as a '
                     '{pin.__class__.__name__}'.format(n=n, pin=pin))
         return pin
+
+    @staticmethod
+    def ticks():
+        return monotonic()
+
+    @staticmethod
+    def ticks_diff(later, earlier):
+        return later - earlier

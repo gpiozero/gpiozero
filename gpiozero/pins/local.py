@@ -88,12 +88,7 @@ class LocalPiFactory(PiFactory):
 
     @staticmethod
     def ticks_diff(later, earlier):
-        # NOTE: technically the guarantee to always return a positive result
-        # cannot be maintained in versions where monotonic() is not available
-        # and we fall back to time(). However, in that situation we've no
-        # access to a true monotonic source, and no idea how far the clock has
-        # skipped back so this is the best we can do anyway.
-        return max(0, later - earlier)
+        return later - earlier
 
 
 class LocalPiPin(PiPin):
