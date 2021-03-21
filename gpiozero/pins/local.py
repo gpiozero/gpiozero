@@ -121,7 +121,7 @@ class LocalPiHardwareSPI(SPI):
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         self._port, self._device = spi_port_device(
             clock_pin, mosi_pin, miso_pin, select_pin)
-        self._interface = None
+        self._bus = None
         if SpiDev is None:
             raise ImportError('failed to import spidev')
         super().__init__(pin_factory=pin_factory)
@@ -131,20 +131,20 @@ class LocalPiHardwareSPI(SPI):
         if miso_pin is not None:
             to_reserve.add(miso_pin)
         self.pin_factory.reserve_pins(self, *to_reserve)
-        self._interface = SpiDev()
-        self._interface.open(self._port, self._device)
-        self._interface.max_speed_hz = 500000
+        self._bus = SpiDev()
+        self._bus.open(self._port, self._device)
+        self._bus.max_speed_hz = 500000
 
     def close(self):
-        if self._interface is not None:
-            self._interface.close()
-        self._interface = None
+        if self._bus is not None:
+            self._bus.close()
+        self._bus = None
         self.pin_factory.release_all(self)
         super().close()
 
     @property
     def closed(self):
-        return self._interface is None
+        return self._bus is None
 
     def __repr__(self):
         try:
@@ -159,37 +159,37 @@ class LocalPiHardwareSPI(SPI):
         :attr:`bits_per_word` bits or less) to the SPI interface, and reads an
         equivalent number of words, returning them as a list of integers.
         """
-        return self._interface.xfer2(data)
+        return self._bus.xfer2(data)
 
     def _get_clock_mode(self):
-        return self._interface.mode
+        return self._bus.mode
 
     def _set_clock_mode(self, value):
-        self._interface.mode = value
+        self._bus.mode = value
 
     def _get_lsb_first(self):
-        return self._interface.lsbfirst
+        return self._bus.lsbfirst
 
     def _set_lsb_first(self, value):
-        self._interface.lsbfirst = bool(value)
+        self._bus.lsbfirst = bool(value)
 
     def _get_select_high(self):
-        return self._interface.cshigh
+        return self._bus.cshigh
 
     def _set_select_high(self, value):
-        self._interface.cshigh = bool(value)
+        self._bus.cshigh = bool(value)
 
     def _get_bits_per_word(self):
-        return self._interface.bits_per_word
+        return self._bus.bits_per_word
 
     def _set_bits_per_word(self, value):
-        self._interface.bits_per_word = value
+        self._bus.bits_per_word = value
 
     def _get_rate(self):
-        return self._interface.max_speed_hz
+        return self._bus.max_speed_hz
 
     def _set_rate(self, value):
-        self._interface.max_speed_hz = int(value)
+        self._bus.max_speed_hz = int(value)
 
 
 class LocalPiSoftwareSPI(SPI):
