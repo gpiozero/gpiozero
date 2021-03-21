@@ -17,6 +17,19 @@ from ..exc import DeviceClosed
 
 
 class SPISoftware(SPI):
+    """
+    A software bit-banged implementation of the :class:`gpiozero.pins.SPI`
+    interface.
+
+    This is a reasonable basis for a *local* SPI software implementation, but
+    be aware that it's unlikely to be usable for remote operation (a dedicated
+    daemon that locally handles SPI transactions should be used for such
+    operations). Instances will happily share their clock, mosi, and miso pins
+    with other instances provided each has a distinct select pin.
+
+    See :class:`~gpiozero.pins.spi.SPISoftwareBus` for the actual SPI
+    transfer logic.
+    """
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, *,
                  pin_factory):
         self._bus = None
@@ -113,6 +126,17 @@ class SPISoftware(SPI):
 
 
 class SPISoftwareBus(SharedMixin, Device):
+    """
+    A software bit-banged SPI bus implementation, used by
+    :class:`~gpiozero.pins.spi.SPISoftware` to implement shared SPI interfaces.
+
+    .. warning::
+
+        This implementation has no rate control; it simply clocks out data as
+        fast as it can as Python isn't terribly quick on a Pi anyway, and the
+        extra logic required for rate control is liable to reduce the maximum
+        achievable data rate quite substantially.
+    """
     def __init__(self, clock_pin, mosi_pin, miso_pin, *, pin_factory):
         self.lock = None
         self.clock = None

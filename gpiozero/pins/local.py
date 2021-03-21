@@ -23,7 +23,8 @@ except ImportError:
 from . import SPI
 from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS, spi_port_device
 from .spi import SPISoftware
-from ..devices import Device, SharedMixin
+from ..devices import Device
+from ..mixins import SharedMixin
 from ..output_devices import OutputDevice
 from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
 

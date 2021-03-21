@@ -41,6 +41,7 @@ TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 def pin_factory_name(request):
     return request.param
 
+
 @pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
@@ -53,12 +54,14 @@ def pin_factory(request, pin_factory_name):
         yield factory
         factory.close()
 
+
 @pytest.fixture()
 def default_factory(request, pin_factory):
     save_pin_factory = Device.pin_factory
     Device.pin_factory = pin_factory
     yield pin_factory
     Device.pin_factory = save_pin_factory
+
 
 @pytest.fixture(scope='function')
 def pins(request, pin_factory):
@@ -92,6 +95,7 @@ def setup_module(module):
         else:
             break
 
+
 def teardown_module(module):
     os.unlink(TEST_LOCK)
 
@@ -101,10 +105,12 @@ def test_pin_numbers(pins):
     assert test_pin.number == TEST_PIN
     assert input_pin.number == INPUT_PIN
 
+
 def test_function_bad(pins):
     test_pin, input_pin = pins
     with pytest.raises(PinInvalidFunction):
         test_pin.function = 'foo'
+
 
 def test_output(pins):
     test_pin, input_pin = pins
@@ -114,12 +120,14 @@ def test_output(pins):
     test_pin.state = 1
     assert input_pin.state == 1
 
+
 def test_output_with_state(pins):
     test_pin, input_pin = pins
     test_pin.output_with_state(0)
     assert input_pin.state == 0
     test_pin.output_with_state(1)
     assert input_pin.state == 1
+
 
 def test_pull(pins):
     test_pin, input_pin = pins
@@ -132,6 +140,7 @@ def test_pull(pins):
     assert test_pin.state == 0
     assert input_pin.state == 0
 
+
 def test_pull_bad(pins):
     test_pin, input_pin = pins
     test_pin.function = 'input'
@@ -139,6 +148,7 @@ def test_pull_bad(pins):
         test_pin.pull = 'foo'
     with pytest.raises(PinInvalidPull):
         test_pin.input_with_pull('foo')
+
 
 def test_pull_down_warning(pin_factory):
     if pin_factory.pi_info.pulled_up('GPIO2'):
@@ -153,6 +163,7 @@ def test_pull_down_warning(pin_factory):
     else:
         pytest.skip("GPIO2 isn't pulled up on this pi")
 
+
 def test_input_with_pull(pins):
     test_pin, input_pin = pins
     input_pin.pull = 'floating'
@@ -163,6 +174,7 @@ def test_input_with_pull(pins):
     assert test_pin.state == 0
     assert input_pin.state == 0
 
+
 def test_pulls_are_weak(pins):
     test_pin, input_pin = pins
     test_pin.function = 'output'
@@ -172,6 +184,7 @@ def test_pulls_are_weak(pins):
         assert input_pin.state == 0
         test_pin.state = 1
         assert input_pin.state == 1
+
 
 def test_bad_duty_cycle(pins):
     test_pin, input_pin = pins
@@ -192,6 +205,7 @@ def test_bad_duty_cycle(pins):
                 test_pin.state = 1.1
         finally:
             test_pin.frequency = None
+
 
 def test_duty_cycles(pins):
     test_pin, input_pin = pins
@@ -214,11 +228,13 @@ def test_duty_cycles(pins):
         finally:
             test_pin.frequency = None
 
+
 def test_explicit_factory(no_default_factory, pin_factory):
     with GPIODevice(TEST_PIN, pin_factory=pin_factory) as device:
         assert Device.pin_factory is None
         assert device.pin_factory is pin_factory
         assert device.pin.number == TEST_PIN
+
 
 def test_envvar_factory(no_default_factory, pin_factory_name):
     os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
@@ -240,6 +256,7 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             device.close()
             Device.pin_factory.close()
 
+
 def test_compatibility_names(no_default_factory):
     os.environ['GPIOZERO_PIN_FACTORY'] = 'NATIVE'
     try:
@@ -256,12 +273,14 @@ def test_compatibility_names(no_default_factory):
             device.close()
             Device.pin_factory.close()
 
+
 def test_bad_factory(no_default_factory):
     os.environ['GPIOZERO_PIN_FACTORY'] = 'foobarbaz'
     # Waits for someone to implement the foobarbaz pin factory just to
     # mess with our tests ...
     with pytest.raises(BadPinFactory):
         GPIODevice(TEST_PIN)
+
 
 def test_default_factory(no_default_factory):
     assert Device.pin_factory is None
@@ -277,3 +296,6 @@ def test_default_factory(no_default_factory):
         finally:
             device.close()
             Device.pin_factory.close()
+# XXX Test two simultaneous SPI devices sharing clock, MOSI, and MISO, with
+# separate select pins (including threaded tests which attempt simultaneous
+# reading/writing)

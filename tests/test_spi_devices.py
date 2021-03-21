@@ -29,10 +29,10 @@ def scale(v, ref, bits):
 
 
 class MockMCP3xxx(MockSPIDevice):
-    def __init__(
-            self, clock_pin, mosi_pin, miso_pin, select_pin=None,
-            channels=8, bits=10):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 channels=8, bits=10, pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin,
+                         pin_factory=pin_factory)
         self.vref = 3.3
         self.channels = [0.0] * channels
         self.channel_bits = 3
@@ -78,9 +78,10 @@ class MockMCP3xxx(MockSPIDevice):
 
 
 class MockMCP3xx1(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, bits=10):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 bits=10, pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
-                         bits=bits)
+                         bits=bits, pin_factory=pin_factory)
 
     def on_start(self):
         super().on_start()
@@ -94,19 +95,18 @@ class MockMCP3xx1(MockMCP3xxx):
 
 
 class MockMCP3xx2(MockMCP3xxx):
-    def __init__(
-            self, clock_pin, mosi_pin, miso_pin, select_pin=None,
-            bits=10):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 bits=10, pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
-                         bits=bits)
+                         bits=bits, pin_factory=pin_factory)
         self.channel_bits = 1
 
 
 class MockMCP33xx(MockMCP3xxx):
-    def __init__(
-            self, clock_pin, mosi_pin, miso_pin, select_pin=None,
-            channels=8):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels, 12)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 channels=8, pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin,
+                         channels=channels, bits=12, pin_factory=pin_factory)
 
     def on_result(self, differential, channel):
         if differential:
@@ -123,53 +123,66 @@ class MockMCP33xx(MockMCP3xxx):
 
 
 class MockMCP3001(MockMCP3xx1):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10,
+                         pin_factory=pin_factory)
 
 
 class MockMCP3002(MockMCP3xx2):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=10,
+                         pin_factory=pin_factory)
 
 
 class MockMCP3004(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4,
-                         bits=10)
+                         bits=10, pin_factory=pin_factory)
 
 
 class MockMCP3008(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8,
-                         bits=10)
+                         bits=10, pin_factory=pin_factory)
 
 
 class MockMCP3201(MockMCP3xx1):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12,
+                         pin_factory=pin_factory)
 
 
 class MockMCP3202(MockMCP3xx2):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, bits=12,
+                         pin_factory=pin_factory)
 
 
 class MockMCP3204(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4,
-                         bits=12)
+                         bits=12, pin_factory=pin_factory)
 
 
 class MockMCP3208(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8,
-                         bits=12)
+                         bits=12, pin_factory=pin_factory)
 
 
 class MockMCP3301(MockMCP3xxx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
         super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=2,
-                         bits=12)
+                         bits=12, pin_factory=pin_factory)
 
     def on_start(self):
         super().on_start()
@@ -182,13 +195,17 @@ class MockMCP3301(MockMCP3xxx):
 
 
 class MockMCP3302(MockMCP33xx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=4,
+                         pin_factory=pin_factory)
 
 
 class MockMCP3304(MockMCP33xx):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None):
-        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8)
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin=None, *,
+                 pin_factory=None):
+        super().__init__(clock_pin, mosi_pin, miso_pin, select_pin, channels=8,
+                         pin_factory=pin_factory)
 
 
 def single_mcp_test(mock, pot, channel, bits):
@@ -207,6 +224,7 @@ def single_mcp_test(mock, pot, channel, bits):
     assert pot.raw_value == scale - 1
     assert isclose(pot.value, 1.0, abs_tol=tolerance)
     assert isclose(pot.voltage, pot.max_voltage, abs_tol=voltage_tolerance)
+
 
 def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False):
     scale = 2**bits
@@ -244,6 +262,7 @@ def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False)
         assert isclose(pot.value, 0.0, abs_tol=tolerance)
         assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
 
+
 def test_analog_input_device_bad_init(mock_factory):
     with pytest.raises(InputDeviceError):
         AnalogInputDevice(None)
@@ -253,6 +272,7 @@ def test_analog_input_device_bad_init(mock_factory):
         AnalogInputDevice(8, 0)
     with pytest.raises(InputDeviceError):
         AnalogInputDevice(bits=8, max_voltage=-1)
+
 
 def test_MCP3001(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -266,6 +286,7 @@ def test_MCP3001(mock_factory):
         assert repr(pot) == '<gpiozero.MCP3001 object closed>'
         with MCP3001(max_voltage=5.0) as pot:
             differential_mcp_test(mock, pot, 0, 1, 10)
+
 
 def test_MCP3002(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -281,6 +302,7 @@ def test_MCP3002(mock_factory):
         with MCP3002(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 10)
 
+
 def test_MCP3004(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
         mock = MockMCP3004(11, 10, 9, 8)
@@ -293,6 +315,7 @@ def test_MCP3004(mock_factory):
             single_mcp_test(mock, pot, 3, 10)
         with MCP3004(channel=3, differential=True) as pot:
             differential_mcp_test(mock, pot, 3, 2, 10)
+
 
 def test_MCP3008(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -307,6 +330,7 @@ def test_MCP3008(mock_factory):
         with MCP3008(channel=0, differential=True) as pot:
             differential_mcp_test(mock, pot, 0, 1, 10)
 
+
 def test_MCP3201(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
         mock = MockMCP3201(11, 10, 9, 8)
@@ -315,6 +339,7 @@ def test_MCP3201(mock_factory):
             differential_mcp_test(mock, pot, 0, 1, 12)
         with MCP3201(max_voltage=5.0) as pot:
             differential_mcp_test(mock, pot, 0, 1, 12)
+
 
 def test_MCP3202(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -329,6 +354,7 @@ def test_MCP3202(mock_factory):
         with MCP3202(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 12)
 
+
 def test_MCP3204(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
         mock = MockMCP3204(11, 10, 9, 8)
@@ -341,6 +367,7 @@ def test_MCP3204(mock_factory):
             single_mcp_test(mock, pot, 1, 12)
         with MCP3204(channel=1, differential=True) as pot:
             differential_mcp_test(mock, pot, 1, 0, 12)
+
 
 def test_MCP3208(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -355,6 +382,7 @@ def test_MCP3208(mock_factory):
         with MCP3208(channel=7, differential=True) as pot:
             differential_mcp_test(mock, pot, 7, 6, 12)
 
+
 def test_MCP3301(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
         mock = MockMCP3301(11, 10, 9, 8)
@@ -363,6 +391,7 @@ def test_MCP3301(mock_factory):
             differential_mcp_test(mock, pot, 0, 1, 12, full=True)
         with MCP3301(max_voltage=5.0) as pot:
             differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+
 
 def test_MCP3302(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
@@ -376,6 +405,7 @@ def test_MCP3302(mock_factory):
             single_mcp_test(mock, pot, 0, 12)
         with MCP3302(channel=0, differential=True) as pot:
             differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+
 
 def test_MCP3304(mock_factory):
     with patch('gpiozero.pins.local.SpiDev', None):
