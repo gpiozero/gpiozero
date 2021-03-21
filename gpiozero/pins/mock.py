@@ -24,7 +24,10 @@ from ..exc import (
     PinInvalidBounce,
     )
 from ..devices import Device
+from ..mixins import SharedMixin
+from . import SPI
 from .pi import PiPin, PiFactory
+from .spi import SPISoftware
 
 
 PinState = namedtuple('PinState', ('timestamp', 'state'))
@@ -318,14 +321,17 @@ class MockSPISelectPin(MockPin):
 
 
 class MockSPIDevice:
-    def __init__(
-            self, clock_pin, mosi_pin=None, miso_pin=None, select_pin=None,
-            clock_polarity=False, clock_phase=False, lsb_first=False,
-            bits_per_word=8, select_high=False):
-        self.clock_pin = Device.pin_factory.pin(clock_pin, pin_class=MockSPIClockPin)
-        self.mosi_pin = None if mosi_pin is None else Device.pin_factory.pin(mosi_pin)
-        self.miso_pin = None if miso_pin is None else Device.pin_factory.pin(miso_pin)
-        self.select_pin = None if select_pin is None else Device.pin_factory.pin(select_pin, pin_class=MockSPISelectPin)
+    def __init__(self, clock_pin, mosi_pin=None, miso_pin=None,
+                 select_pin=None, *, clock_polarity=False, clock_phase=False,
+                 lsb_first=False, bits_per_word=8, select_high=False,
+                 pin_factory=None):
+        if pin_factory is None:
+            pin_factory = Device.pin_factory
+            assert isinstance(pin_factory, MockFactory)
+        self.clock_pin = pin_factory.pin(clock_pin, pin_class=MockSPIClockPin)
+        self.mosi_pin = None if mosi_pin is None else pin_factory.pin(mosi_pin)
+        self.miso_pin = None if miso_pin is None else pin_factory.pin(miso_pin)
+        self.select_pin = None if select_pin is None else pin_factory.pin(select_pin, pin_class=MockSPISelectPin)
         self.clock_polarity = clock_polarity
         self.clock_phase = clock_phase
         self.lsb_first = lsb_first
@@ -490,6 +496,9 @@ class MockFactory(PiFactory):
                     '{pin.__class__.__name__}'.format(n=n, pin=pin))
         return pin
 
+    def _get_spi_class(self, shared, hardware):
+        return MockSPIInterfaceShared if shared else MockSPIInterface
+
     @staticmethod
     def ticks():
         return monotonic()
@@ -497,3 +506,14 @@ class MockFactory(PiFactory):
     @staticmethod
     def ticks_diff(later, earlier):
         return later - earlier
+
+
+class MockSPIInterface(SPISoftware):
+    pass
+
+
+class MockSPIInterfaceShared(SharedMixin, MockSPIInterface):
+    @classmethod
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory):
+        return (clock_pin, select_pin)

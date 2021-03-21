@@ -22,7 +22,7 @@ except ImportError:
 
 from . import SPI
 from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS, spi_port_device
-from .spi import SPISoftwareBus
+from .spi import SPISoftware
 from ..devices import Device, SharedMixin
 from ..output_devices import OutputDevice
 from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
@@ -187,93 +187,8 @@ class LocalPiHardwareSPI(SPI):
         self._bus.max_speed_hz = int(value)
 
 
-class LocalPiSoftwareSPI(SPI):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
-        self._bus = None
-        self._select = None
-        super().__init__(pin_factory=pin_factory)
-        try:
-            self._clock_phase = False
-            self._lsb_first = False
-            self._bits_per_word = 8
-            self._bus = SPISoftwareBus(clock_pin, mosi_pin, miso_pin)
-            self._select = OutputDevice(
-                select_pin, active_high=False, pin_factory=pin_factory)
-        except:
-            self.close()
-            raise
-
-    def _conflicts_with(self, other):
-        return not (
-            isinstance(other, LocalPiSoftwareSPI) and
-            (self._select.pin.number != other._select.pin.number)
-            )
-
-    def close(self):
-        if self._select:
-            self._select.close()
-        self._select = None
-        if self._bus is not None:
-            self._bus.close()
-        self._bus = None
-        super().close()
-
-    @property
-    def closed(self):
-        return self._bus is None
-
-    def __repr__(self):
-        try:
-            self._check_open()
-            return 'SPI(clock_pin=%d, mosi_pin=%d, miso_pin=%d, select_pin=%d)' % (
-                self._bus.clock.pin.number,
-                self._bus.mosi.pin.number,
-                self._bus.miso.pin.number,
-                self._select.pin.number)
-        except DeviceClosed:
-            return 'SPI(closed)'
-
-    def transfer(self, data):
-        with self._bus.lock:
-            self._select.on()
-            try:
-                return self._bus.transfer(
-                    data, self._clock_phase, self._lsb_first, self._bits_per_word)
-            finally:
-                self._select.off()
-
-    def _get_clock_mode(self):
-        with self._bus.lock:
-            return (not self._bus.clock.active_high) << 1 | self._clock_phase
-
-    def _set_clock_mode(self, value):
-        if not (0 <= value < 4):
-            raise SPIInvalidClockMode("%d is not a valid clock mode" % value)
-        with self._bus.lock:
-            self._bus.clock.active_high = not (value & 2)
-            self._clock_phase = bool(value & 1)
-
-    def _get_lsb_first(self):
-        return self._lsb_first
-
-    def _set_lsb_first(self, value):
-        self._lsb_first = bool(value)
-
-    def _get_bits_per_word(self):
-        return self._bits_per_word
-
-    def _set_bits_per_word(self, value):
-        if value < 1:
-            raise ValueError('bits_per_word must be positive')
-        self._bits_per_word = int(value)
-
-    def _get_select_high(self):
-        return self._select.active_high
-
-    def _set_select_high(self, value):
-        with self._bus.lock:
-            self._select.active_high = value
-            self._select.off()
+class LocalPiSoftwareSPI(SPISoftware):
+    pass
 
 
 class LocalPiHardwareSPIShared(SharedMixin, LocalPiHardwareSPI):
