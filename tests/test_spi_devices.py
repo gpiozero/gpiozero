@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pytest
-from mock import patch
 from collections import namedtuple
 from math import isclose
 

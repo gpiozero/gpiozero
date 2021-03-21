@@ -12,7 +12,7 @@ import io
 import re
 import errno
 import pytest
-from mock import patch, MagicMock
+from unittest import mock
 
 import gpiozero.pins.data
 import gpiozero.pins.local
@@ -22,13 +22,13 @@ from gpiozero import *
 
 
 def test_pi_revision():
-    with patch('gpiozero.devices.Device.pin_factory', LocalPiFactory()):
+    with mock.patch('gpiozero.devices.Device.pin_factory', LocalPiFactory()):
         # Can't use MockPin for this as we want something that'll actually try
         # and read /proc/device-tree/system/linux,revision and /proc/cpuinfo
         # (MockPin simply parrots the 3B's data); LocalPiFactory is used as we
         # can definitely instantiate it (strictly speaking it's abstract but
         # we're only interested in the pi_info stuff)
-        with patch('io.open') as m:
+        with mock.patch('io.open') as m:
             m.return_value.__enter__.side_effect = [
                 # Pretend /proc/device-tree/system/linux,revision doesn't
                 # exist, and that /proc/cpuinfo contains the Revision: 0002
@@ -120,7 +120,7 @@ def test_pi_info_not_a_pi():
     class NotAPiFactory(LocalPiFactory):
         def _get_pi_info(self):
             return None
-    with patch('gpiozero.devices.Device.pin_factory', NotAPiFactory()):
+    with mock.patch('gpiozero.devices.Device.pin_factory', NotAPiFactory()):
         with pytest.raises(PinUnknownPi):
             pi_info()
 
@@ -146,7 +146,7 @@ def test_pulled_up():
     assert not pi_info('a21041').pulled_up('GPIO47')
 
 def test_pprint_content():
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         pi_info('900092').pprint(color=False)
@@ -171,7 +171,7 @@ def test_pprint_content():
         assert len(''.join(stdout.output).splitlines()) == 100
 
 def test_format_content():
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         pi_info('900092').pprint(color=False)
@@ -188,7 +188,7 @@ def test_pprint_headers():
     assert len(pi_info('0002').headers) == 1
     assert len(pi_info('000e').headers) == 2
     assert len(pi_info('900092').headers) == 1
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         pi_info('0002').pprint()
@@ -208,7 +208,7 @@ def test_pprint_headers():
         assert 'P5:\n' not in s
 
 def test_format_headers():
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         info = pi_info('c03131')
@@ -223,7 +223,7 @@ def test_format_headers():
             '{0.headers[J8]:mono foo}'.format(info)
 
 def test_pprint_color():
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         pi_info('900092').pprint(color=False)
@@ -238,7 +238,7 @@ def test_pprint_color():
         pi_info('900092').pprint()
         s = ''.join(stdout.output)
         assert '\x1b[0m' not in s # default should output mono
-        with patch('os.isatty') as isatty:
+        with mock.patch('os.isatty') as isatty:
             isatty.return_value = True
             stdout.fileno.side_effect = None
             stdout.output = []
@@ -251,7 +251,7 @@ def test_pprint_styles():
         Style.from_style_content('mono color full')
     with pytest.raises(ValueError):
         Style.from_style_content('full specs')
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         s = '{0:full}'.format(pi_info('900092'))
         assert '\x1b[0m' not in s # ensure default is mono when stdout is not a tty
     with pytest.raises(ValueError):
@@ -268,7 +268,7 @@ def test_pprint_missing_pin():
         7: PinInfo(7, '3V3',   False, 4, 1),
         8: PinInfo(8, 'GND',   False, 4, 2),
         })
-    with patch('sys.stdout') as stdout:
+    with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
         s = ''.join(stdout.output)

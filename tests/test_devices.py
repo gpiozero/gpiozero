@@ -9,9 +9,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import warnings
-from mock import patch
 import pytest
 import errno
+from unittest import mock
 
 from gpiozero import *
 from gpiozero.pins.mock import MockFactory
@@ -21,9 +21,9 @@ file_not_found = IOError(errno.ENOENT, 'File not found')
 
 
 def test_default_pin_factory_order():
-    with patch('sys.path') as path, \
-         patch('io.open') as io, \
-         patch('os.environ.get') as get:
+    with mock.patch('sys.path') as path, \
+         mock.patch('io.open') as io, \
+         mock.patch('os.environ.get') as get:
         # ensure no pin libraries can be imported
         path.return_value = []
         # ensure /proc/device-tree... is not found when trying native
