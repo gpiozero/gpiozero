@@ -11,13 +11,15 @@ import os
 import errno
 from time import time, sleep
 from math import isclose
+from unittest import mock
 
 import pytest
 import pkg_resources
 
 from gpiozero import *
-from gpiozero.pins.mock import MockConnectedPin, MockFactory
+from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
 from gpiozero.pins.native import NativeFactory
+from gpiozero.pins.local import LocalPiFactory
 
 
 # This module assumes you've wired the following GPIO pins together. The pins
@@ -29,6 +31,11 @@ INPUT_PIN = int(os.environ.get('GPIOZERO_TEST_INPUT_PIN', '27'))
 TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 
 
+local_only = pytest.mark.skipif(
+    not isinstance(Device.pin_factory, LocalPiFactory),
+    reason="Test cannot run with non-local pin factories")
+
+
 @pytest.fixture(
     scope='module',
     params=[
@@ -36,7 +43,6 @@ TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
         for name in pkg_resources.\
             get_distribution('gpiozero').\
             get_entry_map('gpiozero_pin_factories').keys()
-        if not name.endswith('Pin') # leave out compatibility names
     ])
 def pin_factory_name(request):
     return request.param
@@ -68,6 +74,9 @@ def pins(request, pin_factory):
     # Why return both pins in a single fixture? If we defined one fixture for
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
     # NativePin(27) and so on. This isn't supported, so we don't test it
+    assert not (
+        {INPUT_PIN, TEST_PIN} & {2, 3, 7, 8, 9, 10, 11}), \
+            'Cannot use SPI (7-11) or I2C (2-3) pins for tests'
     input_pin = pin_factory.pin(INPUT_PIN)
     input_pin.function = 'input'
     input_pin.pull = 'down'
@@ -296,6 +305,113 @@ def test_default_factory(no_default_factory):
         finally:
             device.close()
             Device.pin_factory.close()
+
+
+def test_spi_init(pin_factory):
+    with pin_factory.spi() as intf:
+        assert isinstance(intf, SPI)
+        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)'
+        intf.close()
+        assert intf.closed
+        assert repr(intf) == 'SPI(closed)'
+    with pin_factory.spi(port=0, device=1) as intf:
+        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=7)'
+    with pin_factory.spi(clock_pin=11, mosi_pin=10, select_pin=8) as intf:
+        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)'
+    # Ensure we support "partial" SPI where we don't reserve a pin because
+    # the device wants it for general IO (see SPI screens which use a pin
+    # for data/commands)
+    with pin_factory.spi(clock_pin=11, mosi_pin=10, miso_pin=None, select_pin=7) as intf:
+        assert isinstance(intf, SPI)
+    with pin_factory.spi(clock_pin=11, mosi_pin=None, miso_pin=9, select_pin=7) as intf:
+        assert isinstance(intf, SPI)
+    with pin_factory.spi(shared=True) as intf:
+        assert isinstance(intf, SPI)
+    with pytest.raises(ValueError):
+        pin_factory.spi(port=1)
+    with pytest.raises(ValueError):
+        pin_factory.spi(device=2)
+    with pytest.raises(ValueError):
+        pin_factory.spi(port=0, clock_pin=12)
+    with pytest.raises(ValueError):
+        pin_factory.spi(foo='bar')
+
+
+def test_spi_hardware_conflict(default_factory):
+    with LED(11) as led:
+        with pytest.raises(GPIOPinInUse):
+            Device.pin_factory.spi(port=0, device=0)
+    with Device.pin_factory.spi(port=0, device=0) as spi:
+        with pytest.raises(GPIOPinInUse):
+            LED(11)
+
+
+def test_spi_hardware_same_bus(default_factory):
+    with Device.pin_factory.spi(device=0) as intf:
+        with pytest.raises(GPIOPinInUse):
+            Device.pin_factory.spi(device=0)
+        with Device.pin_factory.spi(device=1) as another_intf:
+            assert intf._bus is another_intf._bus
+
+
+def test_spi_hardware_shared_bus(default_factory):
+    with Device.pin_factory.spi(device=0, shared=True) as intf:
+        with Device.pin_factory.spi(device=0, shared=True) as another_intf:
+            assert intf is another_intf
+
+
+@local_only
+def test_spi_hardware_read(default_factory):
+    with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
+        spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
+        with Device.pin_factory.spi() as intf:
+            assert intf.read(3) == [0, 1, 2]
+            assert intf.read(6) == list(range(6))
+
+
+@local_only
+def test_spi_hardware_write(default_factory):
+    with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
+        spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
+        with Device.pin_factory.spi() as intf:
+            assert intf.write([0, 1, 2]) == 3
+            assert spidev.return_value.xfer2.called_with([0, 1, 2])
+            assert intf.write(list(range(6))) == 6
+            assert spidev.return_value.xfer2.called_with(list(range(6)))
+
+
+@local_only
+def test_spi_hardware_modes(default_factory):
+    with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
+        spidev.return_value.mode = 0
+        spidev.return_value.lsbfirst = False
+        spidev.return_value.cshigh = True
+        spidev.return_value.bits_per_word = 8
+        with Device.pin_factory.spi() as intf:
+            assert intf.clock_mode == 0
+            assert not intf.clock_polarity
+            assert not intf.clock_phase
+            intf.clock_polarity = False
+            assert intf.clock_mode == 0
+            intf.clock_polarity = True
+            assert intf.clock_mode == 2
+            intf.clock_phase = True
+            assert intf.clock_mode == 3
+            assert not intf.lsb_first
+            assert intf.select_high
+            assert intf.bits_per_word == 8
+            intf.select_high = False
+            intf.lsb_first = True
+            intf.bits_per_word = 12
+            assert not spidev.return_value.cshigh
+            assert spidev.return_value.lsbfirst
+            assert spidev.return_value.bits_per_word == 12
+            intf.rate = 1000000
+            assert intf.rate == 1000000
+            intf.rate = 500000
+            assert intf.rate == 500000
+
+
 # XXX Test two simultaneous SPI devices sharing clock, MOSI, and MISO, with
 # separate select pins (including threaded tests which attempt simultaneous
 # reading/writing)

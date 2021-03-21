@@ -263,6 +263,80 @@ def differential_mcp_test(mock, pot, pos_channel, neg_channel, bits, full=False)
         assert isclose(pot.voltage, 0.0, abs_tol=voltage_tolerance)
 
 
+def test_spi_software_read(mock_factory):
+    class SPISlave(MockSPIDevice):
+        def on_start(self):
+            super().on_start()
+            for i in range(10):
+                self.tx_word(i)
+    with SPISlave(11, 10, 9, 8) as slave, mock_factory.spi() as master:
+        assert master.read(3) == [0, 1, 2]
+        assert master.read(6) == [0, 1, 2, 3, 4, 5]
+        slave.clock_phase = True
+        master.clock_phase = True
+        assert master.read(3) == [0, 1, 2]
+        assert master.read(6) == [0, 1, 2, 3, 4, 5]
+
+
+def test_spi_software_write(mock_factory):
+    with MockSPIDevice(11, 10, 9, 8) as test_device, mock_factory.spi() as master:
+        master.write([0])
+        assert test_device.rx_word() == 0
+        master.write([2, 0])
+        # 0b 0000_0010 0000_0000
+        assert test_device.rx_word() == 512
+        master.write([0, 1, 1])
+        # 0b 0000_0000 0000_0001 0000_0001
+        assert test_device.rx_word() == 257
+
+
+def test_spi_software_write_lsb_first(mock_factory):
+    with MockSPIDevice(11, 10, 9, 8, lsb_first=True) as test_device, \
+            mock_factory.spi() as master:
+        # lsb_first means the bit-strings above get reversed
+        master.write([0])
+        assert test_device.rx_word() == 0
+        master.write([2, 0])
+        # 0b 0000_0000 0100_0000
+        assert test_device.rx_word() == 64
+        master.write([0, 1, 1])
+        # 0b 1000_0000 1000_0000 0000_0000
+        assert test_device.rx_word() == 8421376
+
+
+def test_spi_software_clock_mode(mock_factory):
+    with mock_factory.spi() as master:
+        assert master.clock_mode == 0
+        assert not master.clock_polarity
+        assert not master.clock_phase
+        master.clock_polarity = False
+        assert master.clock_mode == 0
+        master.clock_polarity = True
+        assert master.clock_mode == 2
+        master.clock_phase = True
+        assert master.clock_mode == 3
+        master.clock_mode = 0
+        assert not master.clock_polarity
+        assert not master.clock_phase
+        with pytest.raises(ValueError):
+            master.clock_mode = 5
+
+
+def test_spi_software_attr(mock_factory):
+    with mock_factory.spi() as master:
+        assert not master.lsb_first
+        assert not master.select_high
+        assert master.bits_per_word == 8
+        master.bits_per_word = 12
+        assert master.bits_per_word == 12
+        master.lsb_first = True
+        assert master.lsb_first
+        master.select_high = True
+        assert master.select_high
+        with pytest.raises(ValueError):
+            master.bits_per_word = 0
+
+
 def test_analog_input_device_bad_init(mock_factory):
     with pytest.raises(InputDeviceError):
         AnalogInputDevice(None)
@@ -275,147 +349,136 @@ def test_analog_input_device_bad_init(mock_factory):
 
 
 def test_MCP3001(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3001(11, 10, 9, 8)
-        with MCP3001() as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3001 object')
-            differential_mcp_test(mock, pot, 0, 1, 10)
-            assert not pot.closed
-            pot.close()
-            assert pot.closed
-        assert repr(pot) == '<gpiozero.MCP3001 object closed>'
-        with MCP3001(max_voltage=5.0) as pot:
-            differential_mcp_test(mock, pot, 0, 1, 10)
+    mock = MockMCP3001(11, 10, 9, 8)
+    with MCP3001() as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3001 object')
+        differential_mcp_test(mock, pot, 0, 1, 10)
+        assert not pot.closed
+        pot.close()
+        assert pot.closed
+    assert repr(pot) == '<gpiozero.MCP3001 object closed>'
+    with MCP3001(max_voltage=5.0) as pot:
+        differential_mcp_test(mock, pot, 0, 1, 10)
 
 
 def test_MCP3002(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3002(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3002(channel=5)
-        with MCP3002(channel=1) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3002 object')
-            single_mcp_test(mock, pot, 1, 10)
-        assert repr(pot) == '<gpiozero.MCP3002 object closed>'
-        with MCP3002(channel=1, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 1, 10)
-        with MCP3002(channel=1, differential=True) as pot:
-            differential_mcp_test(mock, pot, 1, 0, 10)
+    mock = MockMCP3002(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3002(channel=5)
+    with MCP3002(channel=1) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3002 object')
+        single_mcp_test(mock, pot, 1, 10)
+    assert repr(pot) == '<gpiozero.MCP3002 object closed>'
+    with MCP3002(channel=1, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 1, 10)
+    with MCP3002(channel=1, differential=True) as pot:
+        differential_mcp_test(mock, pot, 1, 0, 10)
 
 
 def test_MCP3004(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3004(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3004(channel=5)
-        with MCP3004(channel=3) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3004 object')
-            single_mcp_test(mock, pot, 3, 10)
-        with MCP3004(channel=3, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 3, 10)
-        with MCP3004(channel=3, differential=True) as pot:
-            differential_mcp_test(mock, pot, 3, 2, 10)
+    mock = MockMCP3004(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3004(channel=5)
+    with MCP3004(channel=3) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3004 object')
+        single_mcp_test(mock, pot, 3, 10)
+    with MCP3004(channel=3, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 3, 10)
+    with MCP3004(channel=3, differential=True) as pot:
+        differential_mcp_test(mock, pot, 3, 2, 10)
 
 
 def test_MCP3008(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3008(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3008(channel=9)
-        with MCP3008(channel=0) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3008 object')
-            single_mcp_test(mock, pot, 0, 10)
-        with MCP3008(channel=1, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 1, 10)
-        with MCP3008(channel=0, differential=True) as pot:
-            differential_mcp_test(mock, pot, 0, 1, 10)
+    mock = MockMCP3008(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3008(channel=9)
+    with MCP3008(channel=0) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3008 object')
+        single_mcp_test(mock, pot, 0, 10)
+    with MCP3008(channel=1, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 1, 10)
+    with MCP3008(channel=0, differential=True) as pot:
+        differential_mcp_test(mock, pot, 0, 1, 10)
 
 
 def test_MCP3201(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3201(11, 10, 9, 8)
-        with MCP3201() as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3201 object')
-            differential_mcp_test(mock, pot, 0, 1, 12)
-        with MCP3201(max_voltage=5.0) as pot:
-            differential_mcp_test(mock, pot, 0, 1, 12)
+    mock = MockMCP3201(11, 10, 9, 8)
+    with MCP3201() as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3201 object')
+        differential_mcp_test(mock, pot, 0, 1, 12)
+    with MCP3201(max_voltage=5.0) as pot:
+        differential_mcp_test(mock, pot, 0, 1, 12)
 
 
 def test_MCP3202(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3202(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3202(channel=5)
-        with MCP3202(channel=1) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3202 object')
-            single_mcp_test(mock, pot, 1, 12)
-        with MCP3202(channel=1, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 1, 12)
-        with MCP3202(channel=1, differential=True) as pot:
-            differential_mcp_test(mock, pot, 1, 0, 12)
+    mock = MockMCP3202(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3202(channel=5)
+    with MCP3202(channel=1) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3202 object')
+        single_mcp_test(mock, pot, 1, 12)
+    with MCP3202(channel=1, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 1, 12)
+    with MCP3202(channel=1, differential=True) as pot:
+        differential_mcp_test(mock, pot, 1, 0, 12)
 
 
 def test_MCP3204(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3204(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3204(channel=5)
-        with MCP3204(channel=1) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3204 object')
-            single_mcp_test(mock, pot, 1, 12)
-        with MCP3204(channel=1, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 1, 12)
-        with MCP3204(channel=1, differential=True) as pot:
-            differential_mcp_test(mock, pot, 1, 0, 12)
+    mock = MockMCP3204(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3204(channel=5)
+    with MCP3204(channel=1) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3204 object')
+        single_mcp_test(mock, pot, 1, 12)
+    with MCP3204(channel=1, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 1, 12)
+    with MCP3204(channel=1, differential=True) as pot:
+        differential_mcp_test(mock, pot, 1, 0, 12)
 
 
 def test_MCP3208(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3208(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3208(channel=9)
-        with MCP3208(channel=7) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3208 object')
-            single_mcp_test(mock, pot, 7, 12)
-        with MCP3208(channel=7, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 7, 12)
-        with MCP3208(channel=7, differential=True) as pot:
-            differential_mcp_test(mock, pot, 7, 6, 12)
+    mock = MockMCP3208(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3208(channel=9)
+    with MCP3208(channel=7) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3208 object')
+        single_mcp_test(mock, pot, 7, 12)
+    with MCP3208(channel=7, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 7, 12)
+    with MCP3208(channel=7, differential=True) as pot:
+        differential_mcp_test(mock, pot, 7, 6, 12)
 
 
 def test_MCP3301(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3301(11, 10, 9, 8)
-        with MCP3301() as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3301 object')
-            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
-        with MCP3301(max_voltage=5.0) as pot:
-            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+    mock = MockMCP3301(11, 10, 9, 8)
+    with MCP3301() as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3301 object')
+        differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+    with MCP3301(max_voltage=5.0) as pot:
+        differential_mcp_test(mock, pot, 0, 1, 12, full=True)
 
 
 def test_MCP3302(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3302(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3302(channel=4)
-        with MCP3302(channel=0) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3302 object')
-            single_mcp_test(mock, pot, 0, 12)
-        with MCP3302(channel=0, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 0, 12)
-        with MCP3302(channel=0, differential=True) as pot:
-            differential_mcp_test(mock, pot, 0, 1, 12, full=True)
+    mock = MockMCP3302(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3302(channel=4)
+    with MCP3302(channel=0) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3302 object')
+        single_mcp_test(mock, pot, 0, 12)
+    with MCP3302(channel=0, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 0, 12)
+    with MCP3302(channel=0, differential=True) as pot:
+        differential_mcp_test(mock, pot, 0, 1, 12, full=True)
 
 
 def test_MCP3304(mock_factory):
-    with patch('gpiozero.pins.local.SpiDev', None):
-        mock = MockMCP3304(11, 10, 9, 8)
-        with pytest.raises(ValueError):
-            MCP3304(channel=9)
-        with MCP3304(channel=5) as pot:
-            assert repr(pot).startswith('<gpiozero.MCP3304 object')
-            single_mcp_test(mock, pot, 5, 12)
-        with MCP3304(channel=5, max_voltage=5.0) as pot:
-            single_mcp_test(mock, pot, 5, 12)
-        with MCP3304(channel=5, differential=True) as pot:
-            differential_mcp_test(mock, pot, 5, 4, 12, full=True)
+    mock = MockMCP3304(11, 10, 9, 8)
+    with pytest.raises(ValueError):
+        MCP3304(channel=9)
+    with MCP3304(channel=5) as pot:
+        assert repr(pot).startswith('<gpiozero.MCP3304 object')
+        single_mcp_test(mock, pot, 5, 12)
+    with MCP3304(channel=5, max_voltage=5.0) as pot:
+        single_mcp_test(mock, pot, 5, 12)
+    with MCP3304(channel=5, differential=True) as pot:
+        differential_mcp_test(mock, pot, 5, 4, 12, full=True)

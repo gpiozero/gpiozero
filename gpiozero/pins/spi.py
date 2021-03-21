@@ -13,7 +13,7 @@ from . import SPI
 from ..devices import Device, SharedMixin
 from ..input_devices import InputDevice
 from ..output_devices import OutputDevice
-from ..exc import DeviceClosed
+from ..exc import DeviceClosed, SPIInvalidClockMode
 
 
 class SPISoftware(SPI):
