@@ -14,9 +14,9 @@ import warnings
 from posix import statvfs_result
 from subprocess import CalledProcessError
 from threading import Event
+from unittest import mock
 
 import pytest
-import mock
 
 from gpiozero import *
 from datetime import datetime, time

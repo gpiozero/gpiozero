@@ -18,8 +18,7 @@ import sys
 import pytest
 from time import sleep
 from threading import Event
-
-import mock
+from unittest import mock
 
 from gpiozero import *
 from gpiozero.fonts import *
