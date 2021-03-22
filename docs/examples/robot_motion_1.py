@@ -1,7 +1,7 @@
-from gpiozero import Robot, MotionSensor
+from gpiozero import Robot, Motor, MotionSensor
 from signal import pause
 
-robot = Robot(left=(4, 14), right=(17, 18))
+robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
 pir = MotionSensor(5)
 
 pir.when_motion = robot.forward

@@ -1,4 +1,4 @@
-from gpiozero import Robot
+from gpiozero import Robot, Motor
 from bluedot import BlueDot
 from signal import pause
 
@@ -18,7 +18,7 @@ def drive():
         else:
             yield (0, 0)
 
-robot = Robot(left=(4, 14), right=(17, 18))
+robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
 bd = BlueDot()
 
 robot.source = drive()

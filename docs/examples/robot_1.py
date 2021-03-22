@@ -1,7 +1,7 @@
-from gpiozero import Robot
+from gpiozero import Robot, Motor
 from time import sleep
 
-robot = Robot(left=(4, 14), right=(17, 18))
+robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
 
 for i in range(4):
     robot.forward()
