@@ -151,8 +151,8 @@ def test_pprint_content():
         stdout.write = lambda buf: stdout.output.append(buf)
         pi_info('900092').pprint(color=False)
         s = ''.join(stdout.output)
-        assert ('o' * 20 + ' ') in s # first header row
-        assert ('1' + 'o' * 19 + ' ') in s # second header row
+        assert ('-' + 'o' * 20) in s # first header row
+        assert (' ' + '1' + 'o' * 19) in s # second header row
         assert 'PiZero' in s
         assert 'V1.2' in s # PCB revision
         assert '900092' in s # Pi revision
