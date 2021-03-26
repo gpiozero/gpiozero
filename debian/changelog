@@ -1,4 +1,4 @@
-gpiozero (1.6.0) stable; urgency=medium
+gpiozero (1.6.2-1) stable; urgency=medium
 
   * Added "RotaryEncoder" class (thanks to Paulo Mateus) (#482, #928)
   * Added support for multi-segment character displays with "LEDCharDisplay"

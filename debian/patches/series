@@ -1,0 +1,3 @@
+use-setup-cfg.patch
+no-coverage.patch
+local-objects-inv.patch

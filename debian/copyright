@@ -3,7 +3,7 @@ Upstream-Name: gpiozero
 Source: https://github.com/gpiozero/gpiozero
 
 Files: *
-Copyright: 2015-2018 Ben Nuttall <ben@raspberrypi.org>
+Copyright: 2015-2021 Ben Nuttall <ben@raspberrypi.org> and others
 License: BSD-3-Clause
 
 License: BSD-3-Clause

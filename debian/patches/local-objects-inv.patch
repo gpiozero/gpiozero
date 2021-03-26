@@ -1,0 +1,28 @@
+Author: Dave Jones <dave.jones@canonical.com>
+Forwarded: not-needed
+Description: Use local objects.inv for intersphinx mappings
+ When building the package on the buildd's the lack of internet access means
+ intersphinx cannot retrieve the objects.inv indexes. This patch simply uses
+ the local copies of these from the relevant -doc packages (where available)
+
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -67,9 +67,16 @@
+ # -- Intersphinx configuration --------------------------------------------
+ 
+ intersphinx_mapping = {
+-    'python': ('https://docs.python.org/3.7', None),
++    'python': ('https://docs.python.org/3.7',
++               (None,) + tuple(
++                   str(p) for p in
++                   Path('/usr/share/doc/').glob('python3.*/html/objects.inv')
++               )
++              ),
+     'picamera': ('https://picamera.readthedocs.io/en/latest', None),
+-    'colorzero': ('https://colorzero.readthedocs.io/en/latest', None),
++    'colorzero': ('https://colorzero.readthedocs.io/en/latest',
++                  (None, '/usr/share/doc/python3-colorzero/html/objects.inv')
++                 ),
+     }
+ 
+ # -- Options for HTML output ----------------------------------------------

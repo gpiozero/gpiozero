@@ -1,0 +1,15 @@
+Author: Dave Jones <dave.jones@canonical.com>
+Forwarded: not-needed
+Description: Don't run coverage during test suite
+
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -67,7 +67,7 @@
+     mocktriggerpin   = gpiozero.pins.mock:MockTriggerPin
+ 
+ [tools:pytest]
+-addopts = -rsx --cov --tb=short
++addopts = -rsx --tb=short
+ testpaths = tests
+ 
+ [coverage:run]

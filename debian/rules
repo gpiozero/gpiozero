@@ -5,6 +5,7 @@
 export DH_OPTIONS
 
 export PYBUILD_NAME=gpiozero
+export PYBUILD_TEST_ARGS=-k-test_real_pins.py
 
 %:
 	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild
@@ -15,9 +16,15 @@ override_dh_auto_install:
 	rm debian/python-gpiozero/usr/bin/pinout
 
 override_dh_auto_test:
-	# Don't run the tests!
+	python3 setup.py sdist
+	dh_auto_test
 
 override_dh_auto_build:
 	dh_auto_build
 	PYTHONPATH=. sphinx-build -N -bhtml docs/ build/html
 	PYTHONPATH=. sphinx-build -N -bman docs/ build/man
+
+override_dh_installdocs:
+	dh_installdocs --doc-main-package=python3-gpiozero -ppython-gpiozero-doc
+	dh_installdocs -ppython-gpiozero
+	dh_installdocs -ppython3-gpiozero

@@ -2,27 +2,34 @@ Source: gpiozero
 Maintainer: Ben Nuttall <ben@raspberrypi.org>
 Homepage: http://gpiozero.readthedocs.io/
 Section: python
-Priority: extra
+Priority: optional
 Build-Depends:
- debhelper (>= 8),
+ debhelper-compat (= 12),
  dh-python,
  python-all (>= 2.7),
  python-setuptools,
+ python-mock,
+ python-pytest,
+ python-colorzero,
+ python-colorzero-doc,
  python3-all,
+ python3-doc,
+ python3-colorzero,
  python3-setuptools,
- python3-sphinx
-Standards-Version: 3.9.6
+ python3-sphinx,
+ python3-sphinx-rtd-theme,
+ python3-mock,
+ python3-pytest,
+Standards-Version: 4.3.0
 Vcs-Git: https://github.com/gpiozero/gpiozero.git
 Vcs-Browser: https://github.com/gpiozero/gpiozero
-X-Python-Version: >= 2.7
-X-Python3-Version: >= 3.2
 
 Package: python-gpiozero
 Architecture: all
 Section: python
 Depends: ${misc:Depends}, ${python:Depends}, python-pkg-resources
 Recommends: python-rpi.gpio, python-spidev
-Suggests: python-gpiozero-docs
+Suggests: python-gpiozero-doc
 Description: Simple API for controlling devices attached to a Pi's GPIO pins.
  gpiozero builds on various pin libraries to provide a set of classes designed
  to simplify interaction with devices connected to the GPIO pins, from simple
@@ -37,7 +44,7 @@ Architecture: all
 Section: python
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Recommends: python3-rpi.gpio, python3-spidev
-Suggests: python-gpiozero-docs
+Suggests: python-gpiozero-doc
 Description: Simple API for controlling devices attached to a Pi's GPIO pins.
  gpiozero builds on various pin libraries to provide a set of classes designed
  to simplify interaction with devices connected to the GPIO pins, from simple

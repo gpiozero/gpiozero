@@ -5,6 +5,5 @@ Abstract: Documentation for the gpiozero API
 Section: Programming/Python
 
 Format: HTML
-Index: /usr/share/doc/python-gpiozero-doc/html/index.html
-Files: /usr/share/doc/python-gpiozero-doc/html/*
-
+Index: /usr/share/doc/python3-gpiozero/html/index.html
+Files: /usr/share/doc/python3-gpiozero/html/*
