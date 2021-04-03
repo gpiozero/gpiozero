@@ -16,24 +16,44 @@ try:
 except ImportError:
     SpiDev = None
 
-from . import Factory, Pin
-from .data import PiBoardInfo
+from . import Factory, Pin, BoardInfo, HeaderInfo, PinInfo
+from .data import (
+    REV1_P1,
+    REV2_P1,
+    REV2_P5,
+    PLUS_J8,
+    PLUS_POE,
+    CM_SODIMM,
+    CM3_SODIMM,
+    CM4_J2,
+    CM4_J6,
+    A_BOARD,
+    REV1_BOARD,
+    REV2_BOARD,
+    APLUS_BOARD,
+    BPLUS_BOARD,
+    CM_BOARD,
+    CM3PLUS_BOARD,
+    ZERO12_BOARD,
+    ZERO13_BOARD,
+    ZERO2_BOARD,
+    A3PLUS_BOARD,
+    B3PLUS_BOARD,
+    B4_BOARD,
+    CM4_BOARD,
+    P400_BOARD,
+    PI_REVISIONS,
+    SPI_HARDWARE_PINS,
+    )
+from ..compat import frozendict
+from ..devices import Device
 from ..exc import (
     PinNoPins,
     PinNonPhysical,
+    PinUnknownPi,
     SPIBadArgs,
     SPISoftwareFallback,
     )
-
-
-SPI_HARDWARE_PINS = {
-    0: {
-        'clock':  11,
-        'mosi':   10,
-        'miso':   9,
-        'select': (8, 7),
-    },
-}
 
 
 def spi_port_device(clock_pin, mosi_pin, miso_pin, select_pin):
@@ -53,6 +73,299 @@ def spi_port_device(clock_pin, mosi_pin, miso_pin, select_pin):
             device = pins['select'].index(select_pin)
             return (port, device)
     raise SPIBadArgs('invalid pin selection for hardware SPI')
+
+
+class PiBoardInfo(BoardInfo):
+    __slots__ = () # workaround python issue #24931
+
+    @classmethod
+    def from_revision(cls, revision):
+        if revision & 0x800000:
+            # New-style revision, parse information from bit-pattern:
+            #
+            # MSB -----------------------> LSB
+            # NOQuuuWuFMMMCCCCPPPPTTTTTTTTRRRR
+            #
+            # N        - Overvoltage (0=allowed, 1=disallowed)
+            # O        - OTP programming (0=allowed, 1=disallowed)
+            # Q        - OTP read (0=allowed, 1=disallowed)
+            # u        - Unused
+            # W        - Warranty bit (0=intact, 1=voided by overclocking)
+            # F        - New flag (1=valid new-style revision, 0=old-style)
+            # MMM      - Memory size (see memory dict below)
+            # CCCC     - Manufacturer (see manufacturer dict below)
+            # PPPP     - Processor (see soc dict below)
+            # TTTTTTTT - Type (see model dict below)
+            # RRRR     - Revision (0, 1, 2, etc.)
+            revcode_memory       = (revision & 0x700000) >> 20
+            revcode_manufacturer = (revision & 0xf0000)  >> 16
+            revcode_processor    = (revision & 0xf000)   >> 12
+            revcode_type         = (revision & 0xff0)    >> 4
+            revcode_revision     = (revision & 0x0f)
+            model = {
+                0x0:  'A',
+                0x1:  'B',
+                0x2:  'A+',
+                0x3:  'B+',
+                0x4:  '2B',
+                0x6:  'CM',
+                0x8:  '3B',
+                0x9:  'Zero',
+                0xa:  'CM3',
+                0xc:  'Zero W',
+                0xd:  '3B+',
+                0xe:  '3A+',
+                0x10: 'CM3+',
+                0x11: '4B',
+                0x12: 'Zero2W',
+                0x13: '400',
+                0x14: 'CM4',
+                }.get(revcode_type, '???')
+            if model in ('A', 'B'):
+                pcb_revision = {
+                    0: '1.0', # is this right?
+                    1: '1.0',
+                    2: '2.0',
+                    }.get(revcode_revision, 'Unknown')
+            else:
+                pcb_revision = '1.{revcode_revision}'.format(
+                    revcode_revision=revcode_revision)
+            soc = {
+                0: 'BCM2835',
+                1: 'BCM2836',
+                2: 'BCM2837',
+                3: 'BCM2711',
+                }.get(revcode_processor, 'Unknown')
+            manufacturer = {
+                0: 'Sony',
+                1: 'Egoman',
+                2: 'Embest',
+                3: 'Sony Japan',
+                4: 'Embest',
+                5: 'Stadium',
+                }.get(revcode_manufacturer, 'Unknown')
+            memory = {
+                0: 256,
+                1: 512,
+                2: 1024,
+                3: 2048,
+                4: 4096,
+                5: 8192,
+                }.get(revcode_memory, None)
+            released = {
+                'A':      '2013Q1',
+                'B':      '2012Q1' if pcb_revision == '1.0' else '2012Q4',
+                'A+':     '2014Q4' if memory == 512 else '2016Q3',
+                'B+':     '2014Q3',
+                '2B':     '2015Q1' if pcb_revision in ('1.0', '1.1') else '2016Q3',
+                'CM':     '2014Q2',
+                '3B':     '2016Q1' if manufacturer in ('Sony', 'Embest') else '2016Q4',
+                'Zero':   '2015Q4' if pcb_revision == '1.2' else '2016Q2',
+                'CM3':    '2017Q1',
+                'Zero W': '2017Q1',
+                '3B+':    '2018Q1',
+                '3A+':    '2018Q4',
+                'CM3+':   '2019Q1',
+                '4B':     '2020Q2' if memory == 8192 else '2019Q2',
+                'CM4':    '2020Q4',
+                '400':    '2020Q4',
+                'Zero2W': '2021Q4',
+                }.get(model, 'Unknown')
+            storage = {
+                'A':    'SD',
+                'B':    'SD',
+                'CM':   'eMMC',
+                'CM3':  'eMMC / off-board',
+                'CM3+': 'eMMC / off-board',
+                'CM4':  'eMMC / off-board',
+                }.get(model, 'MicroSD')
+            usb = {
+                'A':      1,
+                'A+':     1,
+                'Zero':   1,
+                'Zero W': 1,
+                'Zero2W': 1,
+                'B':      2,
+                'CM':     1,
+                'CM3':    1,
+                '3A+':    1,
+                'CM3+':   1,
+                'CM4':    2,
+                '400':    3,
+                }.get(model, 4)
+            usb3 = {
+                '4B':     2,
+                '400':    2,
+                }.get(model, 0)
+            ethernet = {
+                'A':      0,
+                'A+':     0,
+                'Zero':   0,
+                'Zero W': 0,
+                'Zero2W': 0,
+                'CM':     0,
+                'CM3':    0,
+                '3A+':    0,
+                'CM3+':   0,
+                }.get(model, 1)
+            eth_speed = {
+                'B':      100,
+                'B+':     100,
+                '2B':     100,
+                '3B':     100,
+                '3B+':    300,
+                '4B':     1000,
+                '400':    1000,
+                'CM4':    1000,
+                }.get(model, 0)
+            bluetooth = wifi = {
+                '3B':     True,
+                'Zero W': True,
+                'Zero2W': True,
+                '3B+':    True,
+                '3A+':    True,
+                '4B':     True,
+                '400':    True,
+                'CM4':    True,
+                }.get(model, False)
+            csi = {
+                'Zero':   0 if pcb_revision == '1.2' else 1,
+                'CM':     2,
+                'CM3':    2,
+                'CM3+':   2,
+                '400':    0,
+                'CM4':    2,
+                }.get(model, 1)
+            dsi = {
+                'Zero':   0,
+                'Zero W': 0,
+                'Zero2W': 0,
+                }.get(model, csi)
+            headers = {
+                'A':    {'P1': REV2_P1, 'P5': REV2_P5},
+                'B':    {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
+                'CM':   {'SODIMM': CM_SODIMM},
+                'CM3':  {'SODIMM': CM3_SODIMM},
+                'CM3+': {'SODIMM': CM3_SODIMM},
+                '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
+                '4B':   {'J8': PLUS_J8, 'POE': PLUS_POE},
+                'CM4':  {'J8': PLUS_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
+                }.get(model, {'J8': PLUS_J8})
+            board = {
+                'A':      A_BOARD,
+                'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
+                'A+':     APLUS_BOARD,
+                'CM':     CM_BOARD,
+                'CM3':    CM_BOARD,
+                'CM3+':   CM3PLUS_BOARD,
+                'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
+                'Zero W': ZERO13_BOARD,
+                'Zero2W': ZERO2_BOARD,
+                '3A+':    A3PLUS_BOARD,
+                '3B+':    B3PLUS_BOARD,
+                '4B':     B4_BOARD,
+                'CM4':    CM4_BOARD,
+                '400':    P400_BOARD,
+                }.get(model, BPLUS_BOARD)
+        else:
+            # Old-style revision, use the lookup table
+            try:
+                (
+                    model,
+                    pcb_revision,
+                    released,
+                    soc,
+                    manufacturer,
+                    memory,
+                    storage,
+                    usb,
+                    ethernet,
+                    wifi,
+                    bluetooth,
+                    csi,
+                    dsi,
+                    headers,
+                    board,
+                    ) = PI_REVISIONS[revision]
+                usb3 = 0
+                eth_speed = ethernet * 100
+            except KeyError:
+                raise PinUnknownPi(
+                    'unknown old-style revision "{revision:x}"'.format(
+                        revision=revision))
+        headers = frozendict({
+            header: HeaderInfo(
+                name=header, rows=max(header_data) // 2, columns=2,
+                pins=frozendict({
+                    number: cls._make_pin(
+                        header, number, row + 1, col + 1, spec, pull_up)
+                    for number, (spec, pull_up) in header_data.items()
+                    for row, col in (divmod(number - 1, 2),)
+                })
+            )
+            for header, header_data in headers.items()
+        })
+        return cls(
+            '{revision:04x}'.format(revision=revision),
+            model,
+            pcb_revision,
+            released,
+            soc,
+            manufacturer,
+            memory,
+            storage,
+            usb,
+            usb3,
+            ethernet,
+            eth_speed,
+            wifi,
+            bluetooth,
+            csi,
+            dsi,
+            headers,
+            board,
+            )
+
+    @staticmethod
+    def _make_pin(header, number, row, col, spec, pull_up):
+        is_gpio = spec.startswith('GPIO') and spec[4:].isdigit()
+        pull = 'up' if pull_up else ''
+        phys_spec = '{header}:{number}'.format(header=header, number=number)
+        specs = {spec, phys_spec}
+        if header in ('P1', 'J8', 'SODIMM'):
+            specs.add('BOARD{number}'.format(number=number))
+        if is_gpio:
+            gpio = int(spec[4:])
+            specs.add(gpio)
+            specs.add('BCM{gpio}'.format(gpio=gpio))
+            try:
+                specs.add('WPI{n}'.format(n={
+                    'J8:3':  8,  'J8:5':  9,  'J8:7':  7,  'J8:8':  15,
+                    'J8:10': 16, 'J8:11': 0,  'J8:12': 1,  'J8:13': 2,
+                    'J8:15': 3,  'J8:16': 4,  'J8:18': 5,  'J8:19': 12,
+                    'J8:21': 13, 'J8:22': 6,  'J8:23': 14, 'J8:24': 10,
+                    'J8:26': 11, 'J8:27': 30, 'J8:28': 31, 'J8:29': 21,
+                    'J8:31': 22, 'J8:32': 26, 'J8:33': 23, 'J8:35': 24,
+                    'J8:36': 27, 'J8:37': 25, 'J8:38': 28, 'J8:40': 29,
+                    'P1:3':  8,  'P1:5':  9,  'P1:7':  7,  'P1:8':  15,
+                    'P1:10': 16, 'P1:11': 0,  'P1:12': 1,  'P1:13': 2,
+                    'P1:15': 3,  'P1:16': 4,  'P1:18': 5,  'P1:19': 12,
+                    'P1:21': 13, 'P1:22': 6,  'P1:23': 14, 'P1:24': 10,
+                    'P1:26': 11, 'P1:27': 30, 'P1:28': 31, 'P1:29': 21,
+                    'P1:31': 22, 'P1:32': 26, 'P1:33': 23, 'P1:35': 24,
+                    'P1:36': 27, 'P1:37': 25, 'P1:38': 28, 'P1:40': 29,
+                    'P5:3':  17, 'P5:4':  18, 'P5:5':  19, 'P5:6':  20,
+                }[phys_spec]))
+            except KeyError:
+                pass
+        return PinInfo(
+            number=number, spec=spec, specs=frozenset(specs), pull=pull,
+            row=row, col=col, is_gpio=is_gpio)
+
+    @property
+    def description(self):
+        return "Raspberry Pi {self.model} rev {self.pcb_revision}".format(
+            self=self)
 
 
 class PiFactory(Factory):
@@ -96,7 +409,7 @@ class PiFactory(Factory):
         """
         raise NotImplementedError
 
-    def _get_pi_info(self):
+    def _get_board_info(self):
         if self._info is None:
             self._info = PiBoardInfo.from_revision(self._get_revision())
         return self._info
@@ -318,3 +631,32 @@ class PiPin(Pin):
         on pin :attr:`number`.
         """
         raise NotImplementedError
+
+
+def pi_info(revision=None):
+    """
+    Returns a :class:`PiBoardInfo` instance containing information about a
+    *revision* of the Raspberry Pi.
+
+    :param str revision:
+        The revision of the Pi to return information about. If this is omitted
+        or :data:`None` (the default), then the library will attempt to determine
+        the model of Pi it is running on and return information about that.
+    """
+    if revision is None:
+        if Device.pin_factory is None:
+            Device.pin_factory = Device._default_pin_factory()
+        result = Device.pin_factory.board_info
+        if result is None:
+            raise PinUnknownPi('The default pin_factory is not attached to a Pi')
+        else:
+            return result
+    else:
+        if isinstance(revision, bytes):
+            revision = revision.decode('ascii')
+        if isinstance(revision, str):
+            revision = int(revision, base=16)
+        else:
+            # be nice to people passing an int (or something numeric anyway)
+            revision = int(revision)
+        return PiBoardInfo.from_revision(revision)

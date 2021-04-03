@@ -510,3 +510,11 @@ PI_REVISIONS = {
     0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                APLUS_BOARD,  ),
     }
 
+SPI_HARDWARE_PINS = {
+    0: {
+        'clock':  11,
+        'mosi':   10,
+        'miso':   9,
+        'select': (8, 7),
+    },
+}
