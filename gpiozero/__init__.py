@@ -21,11 +21,12 @@ from .pins import (
     Factory,
     Pin,
     SPI,
-)
-from .pins.data import (
-    PiBoardInfo,
+    BoardInfo,
     HeaderInfo,
     PinInfo,
+)
+from .pins.pi import (
+    PiBoardInfo,
     pi_info,
 )
 # Yes, import * is naughty, but exc imports nothing else so there's no cross
