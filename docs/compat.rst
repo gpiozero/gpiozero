@@ -138,6 +138,10 @@ enable robot boards now inherit all the functionality of :class:`Robot` because
 that's all they use. Theoretically you could also mix and match regular motors
 and phase-enable motors although there's little sense in doing so.
 
+The former functionality (passing tuples to the :class:`Robot` constructor)
+will remain as deprecated functionality for gpiozero 2.0, but will be removed
+in a future 2.x release.
+
 
 .. _Python documentation: https://docs.python.org/3/
 .. _porting guide: https://docs.python.org/3/howto/pyporting.html

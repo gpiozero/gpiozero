@@ -16,6 +16,7 @@
 
 import sys
 import pytest
+import warnings
 from time import sleep
 from threading import Event
 
@@ -904,9 +905,18 @@ def test_robot_bad_init(mock_factory, pwm):
     with pytest.raises(TypeError):
         Robot()
     with pytest.raises(GPIOPinMissing):
-        Robot(Motor(2, 3), (4, 5))
+        Robot(Motor(2, 3), None)
     with pytest.raises(GPIOPinMissing):
-        Robot((4, 5), Motor(2, 3))
+        Robot(None, Motor(2, 3))
+
+def test_robot_deprecation(mock_factory, pwm):
+    pins = [mock_factory.pin(n) for n in (2, 3, 4, 5)]
+    with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
+        with Robot((2, 3), (4, 5)) as robot:
+            assert len(w) == 2
+            assert w[0].category == DeprecationWarning
+            assert w[1].category == DeprecationWarning
 
 def test_robot(mock_factory, pwm):
     pins = [mock_factory.pin(n) for n in (2, 3, 4, 5)]

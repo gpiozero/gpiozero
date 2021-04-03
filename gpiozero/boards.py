@@ -17,6 +17,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import warnings
 from time import sleep
 from itertools import repeat, cycle, chain, tee
 from threading import Lock
@@ -2120,9 +2121,25 @@ class Robot(SourceMixin, CompositeDevice):
     """
     def __init__(self, left, right, *, pin_factory=None):
         if not isinstance(left, (Motor, PhaseEnableMotor)):
-            raise GPIOPinMissing('left must be a Motor or PhaseEnableMotor')
+            if isinstance(left, tuple):
+                warnings.warn(
+                    DeprecationWarning(
+                        "Passing a tuple as the left parameter of the Robot "
+                        "constructor is deprecated; please pass a Motor or "
+                        "PhaseEnableMotor instance instead"))
+                left = Motor(*left)
+            else:
+                raise GPIOPinMissing('left must be a Motor or PhaseEnableMotor')
         if not isinstance(right, (Motor, PhaseEnableMotor)):
-            raise GPIOPinMissing('right must be a Motor or PhaseEnableMotor')
+            if isinstance(right, tuple):
+                warnings.warn(
+                    DeprecationWarning(
+                        "Passing a tuple as the right parameter of the Robot "
+                        "constructor is deprecated; please pass a Motor or "
+                        "PhaseEnableMotor instance instead"))
+                right = Motor(*right)
+            else:
+                raise GPIOPinMissing('right must be a Motor or PhaseEnableMotor')
         super().__init__(left_motor=left, right_motor=right,
                          _order=('left_motor', 'right_motor'),
                          pin_factory=pin_factory)
