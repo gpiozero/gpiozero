@@ -63,31 +63,41 @@ class Factory:
         self._reservations = defaultdict(list)
         self._res_lock = Lock()
 
-    def reserve_pins(self, requester, *pins):
+    def reserve_pins(self, requester, *specs):
         """
         Called to indicate that the device reserves the right to use the
-        specified *pins*. This should be done during device construction.  If
-        pins are reserved, you must ensure that the reservation is released by
-        eventually called :meth:`release_pins`.
+        specified pin *specs*. This should be done during device construction.
+        If pins are reserved, you must ensure that the reservation is released
+        by eventually called :meth:`release_pins`.
         """
         with self._res_lock:
+            pins = (
+                info
+                for spec in specs
+                for header, info in self.board_info.find_by_spec(spec)
+            )
             for pin in pins:
                 for reserver_ref in self._reservations[pin]:
                     reserver = reserver_ref()
                     if reserver is not None and requester._conflicts_with(reserver):
                         raise GPIOPinInUse(
-                            'pin {pin} is already in use by {reserver!r}'.format(
-                                pin=pin, reserver=reserver))
+                            'pin {pin.spec} is already in use by '
+                            '{reserver!r}'.format(pin=pin, reserver=reserver))
                 self._reservations[pin].append(ref(requester))
 
-    def release_pins(self, reserver, *pins):
+    def release_pins(self, reserver, *specs):
         """
-        Releases the reservation of *reserver* against *pins*.  This is
+        Releases the reservation of *reserver* against pin *specs*.  This is
         typically called during :meth:`~gpiozero.Device.close` to clean up
         reservations taken during construction. Releasing a reservation that is
         not currently held will be silently ignored (to permit clean-up after
         failed / partial construction).
         """
+        pins = (
+            info
+            for spec in specs
+            for header, info in self.board_info.find_by_spec(spec)
+        )
         with self._res_lock:
             for pin in pins:
                 self._reservations[pin] = [
@@ -106,7 +116,8 @@ class Factory:
         # then causes a subtle bug in LocalPiFactory which does something
         # horribly naughty (with good reason) and makes its _reservations
         # dictionary equivalent to a class-level one.
-        self.release_pins(reserver, *self._reservations)
+        self.release_pins(reserver, *(
+            pin.spec for pin in self._reservations))
 
     def close(self):
         """

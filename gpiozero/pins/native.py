@@ -394,10 +394,10 @@ class NativeFactory(LocalPiFactory):
     def __init__(self):
         super().__init__()
         queue = Queue()
-        self.mem = GPIOMemory(self.pi_info.soc)
+        self.mem = GPIOMemory(self.board_info.soc)
         self.fs = GPIOFS(self, queue)
         self.dispatch = NativeDispatchThread(self, queue)
-        if self.pi_info.soc == 'BCM2711':
+        if self.board_info.soc == 'BCM2711':
             self.pin_class = Native2711Pin
         else:
             self.pin_class = Native2835Pin
@@ -441,7 +441,7 @@ class NativePin(LocalPiPin):
         self._change_thread = None
         self._change_event = Event()
         self.function = 'input'
-        self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self.pull = 'up' if self.factory.board_info.pulled_up(repr(self)) else 'floating'
         self.bounce = None
         self.edges = 'none'
 
@@ -466,7 +466,7 @@ class NativePin(LocalPiPin):
         self.frequency = None
         self.when_changed = None
         self.function = 'input'
-        self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self.pull = 'up' if self.factory.board_info.pulled_up(repr(self)) else 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[(self.factory.mem[self._func_offset] >> self._func_shift) & 7]
@@ -568,7 +568,7 @@ class Native2835Pin(NativePin):
         if self.function != 'input':
             raise PinFixedPull(
                 'cannot set pull on non-input pin {self!r}'.format(self=self))
-        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
+        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
             raise PinFixedPull(
                 '{self!r} has a physical pull-up resistor'.format(self=self))
         try:
@@ -612,7 +612,7 @@ class Native2711Pin(NativePin):
         if self.function != 'input':
             raise PinFixedPull(
                 'cannot set pull on non-input pin {self!r}'.format(self=self))
-        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
+        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
             raise PinFixedPull(
                 '{self!r} has a physical pull-up resistor'.format(self=self))
         try:

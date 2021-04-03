@@ -17,7 +17,7 @@ from unittest import mock
 import gpiozero.pins.data
 import gpiozero.pins.local
 from gpiozero.pins.local import LocalPiFactory
-from gpiozero.pins.data import Style, HeaderInfo, PinInfo
+from gpiozero.pins.style import Style
 from gpiozero import *
 
 

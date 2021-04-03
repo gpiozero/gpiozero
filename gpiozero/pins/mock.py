@@ -41,7 +41,7 @@ class MockPin(PiPin):
     def __init__(self, factory, number):
         super().__init__(factory, number)
         self._function = 'input'
-        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
+        self._pull = 'up' if self.factory.board_info.pulled_up(repr(self)) else 'floating'
         self._state = self._pull == 'up'
         self._bounce = None
         self._edges = 'both'
@@ -97,7 +97,7 @@ class MockPin(PiPin):
         if self.function != 'input':
             raise PinFixedPull(
                 'cannot set pull on non-input pin {self!r}'.format(self=self))
-        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
+        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
             raise PinFixedPull(
                 '{self!r} has a physical pull-up resistor'.format(self=self))
         if value not in ('floating', 'up', 'down'):
@@ -442,7 +442,7 @@ class MockFactory(PiFactory):
     Factory for generating mock pins.
 
     The *revision* parameter specifies what revision of Pi the mock factory
-    pretends to be (this affects the result of the :attr:`Factory.pi_info`
+    pretends to be (this affects the result of the :attr:`Factory.board_info`
     attribute as well as where pull-ups are assumed to be).
 
     The *pin_class* attribute specifies which mock pin class will be generated
@@ -500,7 +500,7 @@ class MockFactory(PiFactory):
         """
         if pin_class is None:
             pin_class = self.pin_class
-        n = self.pi_info.to_gpio(spec)
+        n = self.board_info.to_gpio(spec)
         try:
             pin = self.pins[n]
         except KeyError:

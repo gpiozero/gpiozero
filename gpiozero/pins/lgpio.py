@@ -184,7 +184,7 @@ class LGPIOPin(LocalPiPin):
         if self.function != 'input':
             raise PinFixedPull(
                 'cannot set pull on non-input pin {self!r}'.format(self=self))
-        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
+        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
             raise PinFixedPull(
                 '{self!r} has a physical pull-up resistor'.format(self=self))
         try:

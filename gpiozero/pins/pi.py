@@ -385,22 +385,16 @@ class PiFactory(Factory):
             pin.close()
         self.pins.clear()
 
-    def reserve_pins(self, requester, *pins):
-        super().reserve_pins(
-            requester, *(self.pi_info.to_gpio(pin) for pin in pins))
-
-    def release_pins(self, reserver, *pins):
-        super().release_pins(
-            reserver, *(self.pi_info.to_gpio(pin) for pin in pins))
-
     def pin(self, spec):
-        n = self.pi_info.to_gpio(spec)
-        try:
-            pin = self.pins[n]
-        except KeyError:
-            pin = self.pin_class(self, n)
-            self.pins[n] = pin
-        return pin
+        for header, info in self.board_info.find_by_spec(spec):
+            try:
+                pin = self.pins[info]
+            except KeyError:
+                pin = self.pin_class(self, info)
+                self.pins[info] = pin
+            return pin
+        raise PinInvalidPin('{spec} is not a valid pin spec'.format(
+            spec=spec))
 
     def _get_revision(self):
         """
@@ -489,7 +483,7 @@ class PiFactory(Factory):
         elif set(spi_args) <= set(pin_defaults):
             spi_args = {
                 key: None if spi_args.get(key, default) is None else
-                    self.pi_info.to_gpio(spi_args.get(key, default))
+                    self.board_info.to_gpio(spi_args.get(key, default))
                 for key, default in pin_defaults.items()
                 }
         elif set(spi_args) <= set(dev_defaults):
