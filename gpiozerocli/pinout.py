@@ -7,99 +7,76 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""
-A utility for querying Raspberry Pi GPIO pin-out information.
-"""
-
 import argparse
 import sys
 import warnings
 import webbrowser
 
-from gpiozero import pi_info
+from . import CliTool
+from gpiozero import Device
+from gpiozero.pins.pi import PiBoardInfo
+from gpiozero.pins.style import Style
 
 
-class PinoutTool:
+class PinoutTool(CliTool):
+    """
+    A utility for querying GPIO pin-out information.
+    """
     def __init__(self):
-        self.parser = argparse.ArgumentParser(
-            description=__doc__
-        )
+        super().__init__()
         self.parser.add_argument(
             '-r', '--revision',
             dest='revision',
-            default='',
-            help='RPi revision. Default is to autodetect revision of current device'
-        )
+            type=lambda s: int(s, base=16),
+            default=None,
+            help='Board revision. Default is to autodetect revision of '
+            'current device')
         self.parser.add_argument(
             '-c', '--color',
             action="store_true",
             default=None,
-            help='Force colored output (by default, the output will include ANSI'
-            'color codes if run in a color-capable terminal). See also --monochrome'
-        )
+            help='Force colored output (by default, the output will include '
+            'ANSI color codes if run in a color-capable terminal). See also '
+            '--monochrome')
         self.parser.add_argument(
             '-m', '--monochrome',
             dest='color',
             action='store_false',
-            help='Force monochrome output. See also --color'
-        )
+            help='Force monochrome output. See also --color')
         self.parser.add_argument(
             '-x', '--xyz',
             dest='xyz',
             action='store_true',
-            help='Open pinout.xyz in the default web browser'
-        )
-
-    def __call__(self, args=None):
-        if args is None:
-            args = sys.argv[1:]
-        try:
-            return self.main(self.parser.parse_args(args)) or 0
-        except argparse.ArgumentError as e:
-            # argparse errors are already nicely formatted, print to stderr and
-            # exit with code 2
-            raise e
-        except Exception as e:
-            raise
-            # Output anything else nicely formatted on stderr and exit code 1
-            self.parser.exit(1, '{prog}: error: {message}\n'.format(
-                prog=self.parser.prog, message=e))
+            help='Open pinout.xyz in the default web browser')
 
     def main(self, args):
         warnings.simplefilter('ignore')
         if args.xyz:
             webbrowser.open('https://pinout.xyz')
         else:
-            if args.revision == '':
+            if args.revision is None:
                 try:
-                    pi_info().pprint(color=args.color)
+                    Device.ensure_pin_factory()
+                    board_info = Device.pin_factory.board_info
                 except ImportError:
-                    formatter = self.parser._get_formatter()
-                    formatter.add_text(
-                        "Unable to initialize GPIO Zero. This usually means "
-                        "that you are not running %(prog)s on a Raspberry Pi. "
-                        "If you still wish to run %(prog)s, set the "
-                        "GPIOZERO_PIN_FACTORY environment variable to 'mock' "
-                        "and retry, or refer to the Remote GPIO section of "
-                        "the manual* to configure your environment to "
-                        "remotely access your Pi."
-                    )
-                    formatter.add_text(
-                        "* https://gpiozero.readthedocs.io/en/stable/"
-                        "remote_gpio.html"
-                    )
-                    sys.stderr.write(formatter.format_help())
+                    sys.stderr.write(self.get_gpiozero_help())
+                    return 1
                 except IOError:
-                    raise IOError('This device is not a Raspberry Pi')
+                    sys.stderr.write('Unrecognized board')
+                    return 1
             else:
-                pi_info(args.revision).pprint(color=args.color)
-            formatter = self.parser._get_formatter()
+                board_info = PiBoardInfo.from_revision(args.revision)
+            style = Style(color=args.color)
+            sys.stdout.write(f'{board_info:{style} full}')
+            formatter = self.get_formatter()
             formatter.add_text(
                 "For further information, please refer to "
-                "https://pinout.xyz/"
-            )
+                "https://pinout.xyz/")
             sys.stdout.write('\n')
             sys.stdout.write(formatter.format_help())
+
+    def output(self, board):
+        return
 
 
 main = PinoutTool()
