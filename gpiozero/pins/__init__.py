@@ -203,6 +203,7 @@ class Pin:
     represent the capabilities of pins. Descendents *must* override the
     following methods:
 
+    * :meth:`_get_info`
     * :meth:`_get_function`
     * :meth:`_set_function`
     * :meth:`_get_state`
@@ -268,6 +269,18 @@ class Pin:
         """
         self.function = 'input'
         self.pull = pull
+
+    def _get_info(self):
+        raise NotImplementedError
+
+    info = property(
+        lambda self: self._get_info(),
+        doc="""\
+        Returns the :class:`PinInfo` associated with the pin. This can be used
+        to determine physical properties of the pin, including its location on
+        the header, fixed pulls, and the various specs that can be used to
+        identify it.
+        """)
 
     def _get_function(self):
         raise NotImplementedError

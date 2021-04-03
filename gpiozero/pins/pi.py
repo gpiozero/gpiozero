@@ -48,6 +48,7 @@ from .data import (
 from ..compat import frozendict
 from ..devices import Device
 from ..exc import (
+    PinInvalidPin,
     PinNoPins,
     PinNonPhysical,
     PinUnknownPi,
@@ -555,24 +556,29 @@ class PiPin(Pin):
     * :meth:`_get_edges`
     * :meth:`_set_edges`
     """
-    def __init__(self, factory, number):
+    def __init__(self, factory, info):
         super().__init__()
+        if not info.is_gpio:
+            raise PinInvalidPin('{info} is not a GPIO pin'.format(info=info))
         self._factory = factory
+        self._info = info
+        self._number = int(info.spec[4:])
         self._when_changed_lock = RLock()
         self._when_changed = None
-        self._number = number
-        try:
-            factory.pi_info.physical_pin(repr(self))
-        except PinNoPins:
-            warnings.warn(PinNonPhysical(
-                'no physical pins exist for {self!r}'.format(self=self)))
+
+    @property
+    def info(self):
+        return self._info
 
     @property
     def number(self):
+        warnings.warn(
+            DeprecationWarning(
+                "PiPin.number is deprecated; please use Pin.info.spec instead"))
         return self._number
 
     def __repr__(self):
-        return 'GPIO{self._number}'.format(self=self)
+        return self._info.spec
 
     @property
     def factory(self):

@@ -191,35 +191,38 @@ class PiGPIOPin(PiPin):
     GPIO_PULL_UP_NAMES = {v: k for (k, v) in GPIO_PULL_UPS.items()}
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    def __init__(self, factory, number):
-        super().__init__(factory, number)
-        self._pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
+    def __init__(self, factory, info):
+        super().__init__(factory, info)
+        self._pull = info.pull or 'floating'
         self._pwm = False
         self._bounce = None
         self._callback = None
         self._edges = pigpio.EITHER_EDGE
         try:
-            self.factory.connection.set_mode(self.number, pigpio.INPUT)
+            self.factory.connection.set_mode(self._number, pigpio.INPUT)
         except pigpio.error as e:
             raise ValueError(e)
-        self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[self._pull])
-        self.factory.connection.set_glitch_filter(self.number, 0)
+        self.factory.connection.set_pull_up_down(
+            self._number, self.GPIO_PULL_UPS[self._pull])
+        self.factory.connection.set_glitch_filter(self._number, 0)
 
     def close(self):
         if self.factory.connection:
             self.frequency = None
             self.when_changed = None
             self.function = 'input'
-            self.pull = 'up' if self.factory.pi_info.pulled_up(repr(self)) else 'floating'
+            self.pull = self.info.pull or 'floating'
 
     def _get_function(self):
-        return self.GPIO_FUNCTION_NAMES[self.factory.connection.get_mode(self.number)]
+        return self.GPIO_FUNCTION_NAMES[
+            self.factory.connection.get_mode(self._number)]
 
     def _set_function(self, value):
         if value != 'input':
             self._pull = 'floating'
         try:
-            self.factory.connection.set_mode(self.number, self.GPIO_FUNCTIONS[value])
+            self.factory.connection.set_mode(
+                self._number, self.GPIO_FUNCTIONS[value])
         except KeyError:
             raise PinInvalidFunction(
                 'invalid function "{value}" for pin {self!r}'.format(
@@ -228,18 +231,18 @@ class PiGPIOPin(PiPin):
     def _get_state(self):
         if self._pwm:
             return (
-                self.factory.connection.get_PWM_dutycycle(self.number) /
-                self.factory.connection.get_PWM_range(self.number)
+                self.factory.connection.get_PWM_dutycycle(self._number) /
+                self.factory.connection.get_PWM_range(self._number)
                 )
         else:
-            return bool(self.factory.connection.read(self.number))
+            return bool(self.factory.connection.read(self._number))
 
     def _set_state(self, value):
         if self._pwm:
             try:
-                value = int(value * self.factory.connection.get_PWM_range(self.number))
-                if value != self.factory.connection.get_PWM_dutycycle(self.number):
-                    self.factory.connection.set_PWM_dutycycle(self.number, value)
+                value = int(value * self.factory.connection.get_PWM_range(self._number))
+                if value != self.factory.connection.get_PWM_dutycycle(self._number):
+                    self.factory.connection.set_PWM_dutycycle(self._number, value)
             except pigpio.error:
                 raise PinInvalidState(
                     'invalid state "{value}" for pin {self!r}'.format(
@@ -249,7 +252,7 @@ class PiGPIOPin(PiPin):
                 'cannot set state of pin {self!r}'.format(self=self))
         else:
             # write forces pin to OUTPUT, hence the check above
-            self.factory.connection.write(self.number, bool(value))
+            self.factory.connection.write(self._number, bool(value))
 
     def _get_pull(self):
         return self._pull
@@ -258,11 +261,12 @@ class PiGPIOPin(PiPin):
         if self.function != 'input':
             raise PinFixedPull(
                 'cannot set pull on non-input pin {self!r}'.format(self=self))
-        if value != 'up' and self.factory.pi_info.pulled_up(repr(self)):
+        if self.info.pull and value != self.info.pull:
             raise PinFixedPull(
-                '{self!r} has a physical pull-up resistor'.format(self=self))
+                '{self!r} has a fixed pull resistor'.format(self=self))
         try:
-            self.factory.connection.set_pull_up_down(self.number, self.GPIO_PULL_UPS[value])
+            self.factory.connection.set_pull_up_down(
+                self._number, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
             raise PinInvalidPull(
@@ -271,7 +275,7 @@ class PiGPIOPin(PiPin):
 
     def _get_frequency(self):
         if self._pwm:
-            return self.factory.connection.get_PWM_frequency(self.number)
+            return self.factory.connection.get_PWM_frequency(self._number)
         return None
 
     def _set_frequency(self, value):
@@ -282,17 +286,17 @@ class PiGPIOPin(PiPin):
             # NOTE: the pin's state *must* be set to zero; if it's currently
             # high, starting PWM and setting a 0 duty-cycle *doesn't* bring
             # the pin low; it stays high!
-            self.factory.connection.write(self.number, 0)
-            self.factory.connection.set_PWM_frequency(self.number, int(value))
-            self.factory.connection.set_PWM_range(self.number, 10000)
-            self.factory.connection.set_PWM_dutycycle(self.number, 0)
+            self.factory.connection.write(self._number, 0)
+            self.factory.connection.set_PWM_frequency(self._number, int(value))
+            self.factory.connection.set_PWM_range(self._number, 10000)
+            self.factory.connection.set_PWM_dutycycle(self._number, 0)
             self._pwm = True
         elif self._pwm and value is not None:
-            if value != self.factory.connection.get_PWM_frequency(self.number):
-                self.factory.connection.set_PWM_frequency(self.number, int(value))
-                self.factory.connection.set_PWM_range(self.number, 10000)
+            if value != self.factory.connection.get_PWM_frequency(self._number):
+                self.factory.connection.set_PWM_frequency(self._number, int(value))
+                self.factory.connection.set_PWM_range(self._number, 10000)
         elif self._pwm and value is None:
-            self.factory.connection.write(self.number, 0)
+            self.factory.connection.write(self._number, 0)
             self._pwm = False
 
     def _get_bounce(self):
@@ -303,7 +307,8 @@ class PiGPIOPin(PiPin):
             value = 0
         elif not 0 <= value <= 0.3:
             raise PinInvalidBounce('bounce must be between 0 and 0.3')
-        self.factory.connection.set_glitch_filter(self.number, int(value * 1000000))
+        self.factory.connection.set_glitch_filter(
+            self._number, int(value * 1000000))
 
     def _get_edges(self):
         return self.GPIO_EDGES_NAMES[self._edges]
@@ -321,7 +326,7 @@ class PiGPIOPin(PiPin):
 
     def _enable_event_detect(self):
         self._callback = self.factory.connection.callback(
-                self.number, self._edges, self._call_when_changed)
+                self._number, self._edges, self._call_when_changed)
 
     def _disable_event_detect(self):
         if self._callback is not None:
