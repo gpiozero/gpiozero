@@ -2,13 +2,113 @@
 Backwards Compatibility
 =======================
 
+.. currentmodule:: gpiozero
+
 
 .. currentmodule:: gpiozero
 
 GPIO Zero 2.x is a new major version and thus backwards incompatible changes
 can be expected. We have attempted to keep these as minimal as reasonably
 possible while taking advantage of the opportunity to clean up things. This
-chapter documents breaking changes from version 1.x of the library to 2.x.
+chapter documents breaking changes from version 1.x of the library to 2.x, and
+all deprecated functionality which will still work in release 2.0 but is
+scheduled for removal in a future 2.x release.
+
+
+Finding and fixing deprecated usage
+===================================
+
+As of release 2.0, all deprecated functionality will raise
+:exc:`DeprecationWarning` when used. By default, the Python interpreter
+suppresses these warnings (as they're only of interest to developers, not
+users) but you can easily configure different behaviour.
+
+The following example script uses a number of deprecated functions::
+
+    import gpiozero
+
+    board = gpiozero.pi_info()
+    for header in board.headers.values():
+        for pin in header.pins.values():
+            if pin.pull_up:
+                print(pin.function, 'is pulled up')
+
+Despite using deprecated functionality the script runs happily (and silently)
+with gpiozero 2.0. To discover what deprecated functions are being used, we add
+a couple of lines to tell the warnings module that we want "default" handling
+of :exc:`DeprecationWarning`; "default" handling means that the first time an
+attempt is made to raise this warning at a particular location, the warning's
+details will be printed to the console. All future invocations from the same
+location will be ignored. This saves flooding the console with warning details
+from tight loops. With this change, the script looks like this::
+
+    import gpiozero
+
+    import warnings
+    warnings.filterwarnings('default', category=DeprecationWarning)
+
+    board = gpiozero.pi_info()
+    for header in board.headers.values():
+        for pin in header.pins.values():
+            if pin.pull_up:
+                print(pin.function, 'is pulled up')
+
+And produces the following output on the console when run:
+
+.. code-block:: text
+
+    XXX COMPLETE ME XXX
+
+This tells us which pieces of deprecated functionality are being used in our
+script, but it doesn't tell us where in the script they were used. For this,
+it is more useful to have warnings converted into full blown exceptions. With
+this change, each time a :exc:`DeprecationWarning` would have been printed, it
+will instead cause the script to terminate with an unhandled exception and a
+full stack trace::
+
+    import gpiozero
+
+    import warnings
+    warnings.filterwarnings('error', category=DeprecationWarning)
+
+    board = gpiozero.pi_info()
+    for header in board.headers.values():
+        for pin in header.pins.values():
+            if pin.pull_up:
+                print(pin.function, 'is pulled up')
+
+Now when we run the script it produces the following:
+
+.. code-block:: pycon
+
+    XXX COMPLETE ME XXX
+
+This tells us that line 10 of our script is using deprecated functionality, and
+provides a hint of how to fix it. We change line 9 to use the "pull" attribute
+instead. Now we run again, and this time get the following:
+
+.. code-block:: pycon
+
+    XXX COMPLETE ME XXX
+
+Now we can tell line 10 has a problem, and once again the exception tells us
+how to fix it. We continue in this fashion until the script looks like this::
+
+    import gpiozero
+
+    import warnings
+    warnings.filterwarnings('error', category=DeprecationWarning)
+
+    board = gpiozero.pi_info()
+    for header in board.headers.values():
+        for pin in header.pins.values():
+            if pin.pull == 'up':
+                print(pin.spec, 'is pulled up')
+
+The script now runs to completion, so we can be confident it's no longer using
+any deprecated functionality and will run happily even when this functionality
+is removed in a future 2.x release. At this point, you may wish to remove the
+``filterwarnings`` line as well (or at least comment it out).
 
 
 Python 2.x support dropped
@@ -21,7 +121,9 @@ supported). If your code is not compatible with Python 3, you should follow the
 
 As of GPIO Zero 2.0, the lowest supported Python version will be 3.5. This base
 version may advance with minor releases, but we will make a reasonable best
-effort not to break compatibility with old Python 3.x versions.
+effort not to break compatibility with old Python 3.x versions, and to ensure
+that GPIO Zero can run on the version of Python in Debian oldstable at the
+time of its release.
 
 
 RPIO pin factory removed
@@ -74,7 +176,7 @@ code-base considerably (Python 2.x lacked the "*" syntax to declare
 keyword-only arguments; they could only be implemented via "\*\*kwargs"
 arguments and dictionary manipulation).
 
-In GPIO Zero 2.x, all such arguments are now *actually* keyword arguments. If
+In GPIO Zero 2.0, all such arguments are now *actually* keyword arguments. If
 your code complied with the 1.x documentation you shouldn't notice any
 difference. In other words, the following is still fine::
 
@@ -142,6 +244,36 @@ The former functionality (passing tuples to the :class:`Robot` constructor)
 will remain as deprecated functionality for gpiozero 2.0, but will be removed
 in a future 2.x release.
 
+
+PiBoardInfo, HeaderInfo, PinInfo
+================================
+
+
+The :class:`PiBoardInfo` class, and the associated :class:`HeaderInfo` and
+:class:`PinInfo` classes have undergone a major re-structuring. This is partly
+because some of the prior terminology was confusing (e.g. the meaning of
+:attr:`PinInfo.function` and :attr:`Pin.function` clashed), and partly because
+with the addition of the "lgpio" factory it's entirely possible to use gpiozero
+on non-Pi boards (although at present the :class:`pins.lgpio.LGPIOFactory` is
+still written assuming it is only ever used on a Pi).
+
+As a result the following classes, methods, and attributes are deprecated
+(not yet removed, but will be in a future release within the 2.x series):
+
+* :attr:`Factory.pi_info` is deprecated in favour of :attr:`Factory.board_info`
+  which returns a :class:`BoardInfo` instead of :class:`PiBoardInfo` (which is
+  now a subclass of the former).
+
+* :attr:`PinInfo.pull_up` is deprecated in favour of :attr:`PinInfo.pull`.
+
+* :attr:`PinInfo.function` is deprecated in favour of :attr:`PinInfo.spec`.
+
+* :meth:`BoardInfo.physical_pins`, :meth:`BoardInfo.physical_pin`,
+  :meth:`BoardInfo.pulled_up`, and :meth:`BoardInfo.to_gpio` are all
+  deprecated in favour of a combination of the new
+  :meth:`BoardInfo.find_by_spec` and the attributes mentioned above.
+
+* :attr:`PiPin.number` is deprecated in favour of :attr:`Pin.info.spec`.
 
 .. _Python documentation: https://docs.python.org/3/
 .. _porting guide: https://docs.python.org/3/howto/pyporting.html
