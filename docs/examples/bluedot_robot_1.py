@@ -1,9 +1,9 @@
 from bluedot import BlueDot
-from gpiozero import Robot
+from gpiozero import Robot, Motor
 from signal import pause
 
 bd = BlueDot()
-robot = Robot(left=(4, 14), right=(17, 18))
+robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
 
 def move(pos):
     if pos.top:

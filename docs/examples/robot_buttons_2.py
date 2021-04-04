@@ -1,8 +1,8 @@
-from gpiozero import Button, Robot
+from gpiozero import Button, Robot, Motor
 from time import sleep
 from signal import pause
 
-robot = Robot((17, 18), (22, 23))
+robot = Robot(Motor(17, 18), Motor(22, 23))
 
 left = Button(2)
 right = Button(3)

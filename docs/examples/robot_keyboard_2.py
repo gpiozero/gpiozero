@@ -1,7 +1,7 @@
-from gpiozero import Robot
+from gpiozero import Robot, Motor
 from evdev import InputDevice, list_devices, ecodes
 
-robot = Robot(left=(4, 14), right=(17, 18))
+robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
 
 # Get the list of available input devices
 devices = [InputDevice(device) for device in list_devices()]

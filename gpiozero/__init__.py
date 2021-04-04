@@ -110,7 +110,6 @@ from .boards import (
     Robot,
     RyanteckRobot,
     CamJamKitRobot,
-    PhaseEnableRobot,
     PololuDRV8835Robot,
     Energenie,
     PumpkinPi,
