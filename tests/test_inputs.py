@@ -15,8 +15,7 @@ import warnings
 from time import sleep
 from threading import Event
 from functools import partial
-
-import mock
+from unittest import mock
 
 from conftest import ThreadedTest
 from gpiozero.pins.mock import MockChargingPin, MockTriggerPin

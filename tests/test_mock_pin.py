@@ -21,6 +21,7 @@ def test_mock_pin_init(mock_factory):
         Device.pin_factory.pin(60)
     assert Device.pin_factory.pin(2).number == 2
 
+
 def test_mock_pin_defaults(mock_factory):
     pin = Device.pin_factory.pin(4)
     assert pin.bounce == None
@@ -34,14 +35,17 @@ def test_mock_pin_defaults(mock_factory):
     pin = Device.pin_factory.pin(2)
     assert pin.pull == 'up'
 
+
 def test_mock_pin_open_close(mock_factory):
     pin = Device.pin_factory.pin(2)
     pin.close()
+
 
 def test_mock_pin_init_twice_same_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2)
     pin2 = Device.pin_factory.pin(pin1.number)
     assert pin1 is pin2
+
 
 def test_mock_pin_init_twice_different_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2)
@@ -49,6 +53,7 @@ def test_mock_pin_init_twice_different_pin(mock_factory):
     assert pin1 != pin2
     assert pin1.number == 2
     assert pin2.number == pin1.number+1
+
 
 def test_mock_pwm_pin_defaults(mock_factory):
     pin = Device.pin_factory.pin(4, pin_class=MockPWMPin)
@@ -63,14 +68,17 @@ def test_mock_pwm_pin_defaults(mock_factory):
     pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     assert pin.pull == 'up'
 
+
 def test_mock_pwm_pin_open_close(mock_factory):
     pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     pin.close()
+
 
 def test_mock_pwm_pin_init_twice_same_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPWMPin)
     pin2 = Device.pin_factory.pin(pin1.number, pin_class=MockPWMPin)
     assert pin1 is pin2
+
 
 def test_mock_pwm_pin_init_twice_different_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPWMPin)
@@ -78,6 +86,7 @@ def test_mock_pwm_pin_init_twice_different_pin(mock_factory):
     assert pin1 != pin2
     assert pin1.number == 2
     assert pin2.number == pin1.number+1
+
 
 def test_mock_pin_init_twice_different_modes(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPin)
@@ -88,11 +97,13 @@ def test_mock_pin_init_twice_different_modes(mock_factory):
     with pytest.raises(ValueError):
         Device.pin_factory.pin(pin2.number, pin_class=MockPin)
 
+
 def test_mock_pin_frequency_unsupported(mock_factory):
     pin = Device.pin_factory.pin(2)
     pin.frequency = None
     with pytest.raises(PinPWMUnsupported):
         pin.frequency = 100
+
 
 def test_mock_pin_frequency_supported(mock_factory):
     pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
@@ -102,6 +113,7 @@ def test_mock_pin_frequency_supported(mock_factory):
     pin.state = 0.5
     pin.frequency = None
     assert not pin.state
+
 
 def test_mock_pin_pull(mock_factory):
     pin = Device.pin_factory.pin(4)
@@ -123,6 +135,7 @@ def test_mock_pin_pull(mock_factory):
     with pytest.raises(PinFixedPull):
         pin.pull = 'floating'
 
+
 def test_mock_pin_state(mock_factory):
     pin = Device.pin_factory.pin(2)
     with pytest.raises(PinSetInput):
@@ -134,6 +147,7 @@ def test_mock_pin_state(mock_factory):
     assert pin.state == 0
     pin.state = 0.5
     assert pin.state == 1
+
 
 def test_mock_pin_connected_state(mock_factory):
     input_pin = Device.pin_factory.pin(4)
@@ -151,6 +165,7 @@ def test_mock_pin_connected_state(mock_factory):
     pin3.state = 1
     assert input_pin.state == 1
 
+
 def test_mock_pin_functions(mock_factory):
     pin = Device.pin_factory.pin(2)
     assert pin.function == 'input'
@@ -160,6 +175,7 @@ def test_mock_pin_functions(mock_factory):
     assert pin.function == 'input'
     with pytest.raises(ValueError):
         pin.function = 'foo'
+
 
 def test_mock_pwm_pin_state(mock_factory):
     pin = Device.pin_factory.pin(2, pin_class=MockPWMPin)
@@ -172,6 +188,7 @@ def test_mock_pwm_pin_state(mock_factory):
     assert pin.state == 0
     pin.state = 0.5
     assert pin.state == 0.5
+
 
 def test_mock_pin_edges(mock_factory):
     pin = Device.pin_factory.pin(2)
@@ -198,6 +215,7 @@ def test_mock_pin_edges(mock_factory):
     assert pin.state
     assert not fired.is_set()
     assert pin.edges == 'falling'
+
 
 def test_mock_charging_pin(mock_factory):
     pin = Device.pin_factory.pin(4, pin_class=MockChargingPin, charge_time=1)

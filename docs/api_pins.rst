@@ -375,3 +375,5 @@ Mock
 .. autoclass:: gpiozero.pins.mock.MockChargingPin
 
 .. autoclass:: gpiozero.pins.mock.MockTriggerPin
+
+.. autoclass:: gpiozero.pins.mock.MockSPIDevice

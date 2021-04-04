@@ -3,7 +3,7 @@
 # External utilities
 PYTHON=python
 PIP=pip
-PYTEST=py.test
+PYTEST=pytest
 TWINE=twine
 PYFLAGS=
 DEST_DIR=/
@@ -73,7 +73,7 @@ develop:
 	$(PIP) install -e .[doc,test]
 
 test:
-	$(PYTEST) tests -v
+	$(PYTEST)
 
 clean:
 	rm -fr dist/ build/ .pytest_cache/ .mypy_cache/ $(NAME).egg-info/ tags .coverage
