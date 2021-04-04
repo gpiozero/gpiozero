@@ -63,6 +63,12 @@ class Factory:
         self._reservations = defaultdict(list)
         self._res_lock = Lock()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+
     def reserve_pins(self, requester, *specs):
         """
         Called to indicate that the device reserves the right to use the
@@ -226,6 +232,12 @@ class Pin:
     * :meth:`_get_when_changed`
     * :meth:`_set_when_changed`
     """
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
 
     def __repr__(self):
         return "<Pin>"  # pragma: no cover
