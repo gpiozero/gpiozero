@@ -18,7 +18,6 @@ from operator import attrgetter
 from collections import defaultdict, namedtuple
 
 from .style import Style
-from .data import V5, V3_3, V1_8, GND, NC
 from ..devices import Device
 from ..exc import (
     PinInvalidPin,
@@ -69,31 +68,31 @@ class Factory:
     def __exit__(self, *exc_info):
         self.close()
 
-    def reserve_pins(self, requester, *specs):
+    def reserve_pins(self, requester, *names):
         """
         Called to indicate that the device reserves the right to use the
-        specified pin *specs*. This should be done during device construction.
+        specified pin *names*. This should be done during device construction.
         If pins are reserved, you must ensure that the reservation is released
         by eventually called :meth:`release_pins`.
         """
         with self._res_lock:
             pins = (
                 info
-                for spec in specs
-                for header, info in self.board_info.find_by_spec(spec)
+                for name in names
+                for header, info in self.board_info.find_pin(name)
             )
             for pin in pins:
                 for reserver_ref in self._reservations[pin]:
                     reserver = reserver_ref()
                     if reserver is not None and requester._conflicts_with(reserver):
                         raise GPIOPinInUse(
-                            'pin {pin.spec} is already in use by '
+                            'pin {pin.name} is already in use by '
                             '{reserver!r}'.format(pin=pin, reserver=reserver))
                 self._reservations[pin].append(ref(requester))
 
-    def release_pins(self, reserver, *specs):
+    def release_pins(self, reserver, *names):
         """
-        Releases the reservation of *reserver* against pin *specs*.  This is
+        Releases the reservation of *reserver* against pin *names*.  This is
         typically called during :meth:`~gpiozero.Device.close` to clean up
         reservations taken during construction. Releasing a reservation that is
         not currently held will be silently ignored (to permit clean-up after
@@ -101,8 +100,8 @@ class Factory:
         """
         pins = (
             info
-            for spec in specs
-            for header, info in self.board_info.find_by_spec(spec)
+            for name in names
+            for header, info in self.board_info.find_pin(name)
         )
         with self._res_lock:
             for pin in pins:
@@ -822,12 +821,12 @@ class SPI(Device):
 
 class PinInfo(namedtuple('PinInfo', (
     'number',
-    'spec',
-    'specs',
+    'name',
+    'names',
     'pull',
     'row',
     'col',
-    'is_gpio',
+    'interfaces',
     ))):
     """
     This class is a :func:`~collections.namedtuple` derivative used to
@@ -839,32 +838,28 @@ class PinInfo(namedtuple('PinInfo', (
         An integer containing the physical pin number on the header (starting
         from 1 in accordance with convention).
 
-    .. attribute:: spec
+    .. attribute:: name
 
         A string describing the function of the pin. Some common examples
         include "GND" (for pins connecting to ground), "3V3" (for pins which
         output 3.3 volts), "GPIO9" (for GPIO9 in the board's numbering scheme),
         etc.
 
-        When :attr:`is_gpio` is :data:`True`, the spec can be used with
+    .. attribute:: names
+
+        A set of all the names that can be used to identify this pin with
+        :meth:`BoardInfo.find_pin`. The :attr:`name` attribute is the "typical"
+        name for this pin, and will be one of the values in this set.
+
+        When "gpio" is in :attr:`interfaces`, these names can be used with
         :meth:`Factory.pin` to construct a :class:`Pin` instance representing
         this pin.
 
-    .. attribute:: specs
-
-        A set of all the values (note: not necessarily just strings) that can
-        be used to describe this pin (and when :attr:`is_gpio` is :data:`True`,
-        the set of all values that can be used to construct a :class:`Pin`
-        instance).
-
-        The :attr:`spec` is the "canonical" spec for this pin, and will be one
-        of the values in this set.
-
     .. attribute:: pull
 
-        A string indicating the fixed pull of the pin, if any. This is blank
-        if the pin has no fixed pull, but may be "up" in the case of pins
-        typically used for I2C such as GPIO2 and GPIO3 on a Raspberry Pi.
+        A string indicating the fixed pull of the pin, if any. This is a blank
+        string if the pin has no fixed pull, but may be "up" in the case of
+        pins typically used for I2C such as GPIO2 and GPIO3 on a Raspberry Pi.
 
     .. attribute:: row
 
@@ -876,26 +871,28 @@ class PinInfo(namedtuple('PinInfo', (
         An integer indicating in which column the pin is physically located
         in the header (1-based)
 
-    .. attribute:: is_gpio
+    .. attribute:: interfaces
 
-        A bool which is :data:`True` if this is a pin which can be controlled
-        by calling :meth:`Factory.pin` with its :attr:`spec`.
-
-    .. autoattribute:: function
+        A :class:`dict` mapping interfaces that this pin can be a part of to
+        the description of that pin in that interface (e.g. "i2c" might map to
+        "I2C0 SDA"). Typical keys are "gpio", "spi", "i2c", "uart", "pwm",
+        "smi", and "dpi".
 
     .. autoattribute:: pull_up
+
+    .. autoattribute:: function
     """
     __slots__ = () # workaround python issue #24931
 
     @property
     def function(self):
         """
-        A deprecated alias for :attr:`spec`.
+        Deprecated alias of :attr:`name`.
         """
         warnings.warn(
             DeprecationWarning(
-                "PinInfo.function is deprecated; please use PinInfo.spec"))
-        return self.spec
+                "PinInfo.function is deprecated; please use PinInfo.name"))
+        return self.name
 
     @property
     def pull_up(self):
@@ -962,13 +959,13 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     __slots__ = () # workaround python issue #24931
 
     def _pin_style(self, pin, style):
-        if pin.is_gpio:
+        if 'gpio' in pin.interfaces:
             return style('bold green')
-        elif pin.spec == V5:
+        elif pin.name == '5V':
             return style('bold red')
-        elif pin.spec in (V3_3, V1_8):
+        elif pin.name in {'3V3', '1V8'}:
             return style('bold cyan')
-        elif pin.spec in (GND, NC):
+        elif pin.name in {'GND', 'NC'}:
             return style('bold black')
         else:
             return style('yellow')
@@ -984,7 +981,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
                 try:
                     pin = self.pins[pin]
                     cells = [
-                        Cell(pin.spec, '><'[col % 2], self._pin_style(pin, style)),
+                        Cell(pin.name, '><'[col % 2], self._pin_style(pin, style)),
                         Cell('({pin.number})'.format(pin=pin), '><'[col % 2], ''),
                         ]
                     if col % 2:
@@ -1241,15 +1238,15 @@ class BoardInfo(namedtuple('BoardInfo', (
     """
     __slots__ = () # workaround python issue #24931
 
-    def find_by_spec(self, spec):
+    def find_pin(self, name):
         """
-        A generator function which, given a pin *spec*, yields tuples of
-        :class:`HeaderInfo` and :class:`PinInfo` instances for which *spec*
-        appears in :attr:`PinInfo.specs`.
+        A generator function which, given a pin *name*, yields tuples of
+        :class:`HeaderInfo` and :class:`PinInfo` instances for which *name*
+        equals :attr:`PinInfo.name`.
         """
         for header in self.headers.values():
             for pin in header.pins.values():
-                if spec in pin.specs:
+                if name in pin.names:
                     yield header, pin
 
     def physical_pins(self, function):
@@ -1268,10 +1265,10 @@ class BoardInfo(namedtuple('BoardInfo', (
         warnings.warn(
             DeprecationWarning(
                 "PiBoardInfo.physical_pins is deprecated; please use "
-                "BoardInfo.find_by_spec instead"))
+                "BoardInfo.find_pin instead"))
         return {
             (header.name, pin.number)
-            for header, pin in self.find_by_spec(function)
+            for header, pin in self.find_pin(function)
         }
 
     def physical_pin(self, function):
@@ -1291,7 +1288,7 @@ class BoardInfo(namedtuple('BoardInfo', (
         warnings.warn(
             DeprecationWarning(
                 "PiBoardInfo.physical_pin is deprecated; please use "
-                "BoardInfo.find_by_spec instead"))
+                "BoardInfo.find_pin instead"))
         result = self.physical_pins(function)
         if len(result) > 1:
             raise PinMultiplePins(
@@ -1317,8 +1314,8 @@ class BoardInfo(namedtuple('BoardInfo', (
         warnings.warn(
             DeprecationWarning(
                 "PiBoardInfo.pulled_up is deprecated; please use "
-                "BoardInfo.find_by_spec and PinInfo.pull instead"))
-        for header, pin in self.find_by_spec(function):
+                "BoardInfo.find_pin and PinInfo.pull instead"))
+        for header, pin in self.find_pin(function):
             return pin.pull == 'up'
         return False
 
@@ -1337,13 +1334,13 @@ class BoardInfo(namedtuple('BoardInfo', (
         warnings.warn(
             DeprecationWarning(
                 "PiBoardInfo.to_gpio is deprecated; please use "
-                "BoardInfo.find_by_spec and PinInfo.spec instead"))
-        for header, pin in self.find_by_spec(spec):
-            if pin.is_gpio:
+                "BoardInfo.find_pin and PinInfo.name instead"))
+        for header, pin in self.find_pin(spec):
+            if 'gpio' in pin.interfaces:
                 # XXX This assumes GPIO specs are always of the form "GPIOn"
                 # which is *probably* reasonable but should we enforce this
                 # somewhere?
-                return int(pin.spec[4:])
+                return int(pin.name[4:])
             else:
                 raise PinInvalidPin('{spec} is not a GPIO pin'.format(
                     spec=spec))

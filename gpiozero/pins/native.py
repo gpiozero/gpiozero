@@ -433,15 +433,15 @@ class NativePin(LocalPiPin):
 
     GPIO_FUNCTION_NAMES = {v: k for (k, v) in GPIO_FUNCTIONS.items()}
 
-    def __init__(self, factory, number):
-        super().__init__(factory, number)
-        self._reg_init(factory, number)
+    def __init__(self, factory, info):
+        super().__init__(factory, info)
+        self._reg_init(factory, self._number)
         self._last_call = None
         self._when_changed = None
         self._change_thread = None
         self._change_event = Event()
         self.function = 'input'
-        self.pull = 'up' if self.factory.board_info.pulled_up(repr(self)) else 'floating'
+        self.pull = info.pull or 'floating'
         self.bounce = None
         self.edges = 'none'
 
@@ -510,7 +510,7 @@ class NativePin(LocalPiPin):
 
     def _get_edges(self):
         try:
-            with io.open(self.factory.fs.path_edge(self.number), 'r') as f:
+            with io.open(self.factory.fs.path_edge(self._number), 'r') as f:
                 return f.read().strip()
         except IOError as e:
             if e.errno == errno.ENOENT:
@@ -520,9 +520,9 @@ class NativePin(LocalPiPin):
 
     def _set_edges(self, value):
         if value != 'none':
-            self.factory.fs.export(self.number)
+            self.factory.fs.export(self._number)
         try:
-            with io.open(self.factory.fs.path_edge(self.number), 'w') as f:
+            with io.open(self.factory.fs.path_edge(self._number), 'w') as f:
                 f.write(value)
         except IOError as e:
             if e.errno == errno.ENOENT and value == 'none':
@@ -535,11 +535,11 @@ class NativePin(LocalPiPin):
                 raise
 
     def _enable_event_detect(self):
-        self.factory.fs.watch(self.number)
+        self.factory.fs.watch(self._number)
         self._last_call = None
 
     def _disable_event_detect(self):
-        self.factory.fs.unwatch(self.number)
+        self.factory.fs.unwatch(self._number)
 
 
 class Native2835Pin(NativePin):

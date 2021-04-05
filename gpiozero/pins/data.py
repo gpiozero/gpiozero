@@ -9,60 +9,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Some useful constants for describing pins
-
-V1_8   = '1V8'
-V3_3   = '3V3'
-V5     = '5V'
-GND    = 'GND'
-NC     = 'NC' # not connected
-GPIO0  = 'GPIO0'
-GPIO1  = 'GPIO1'
-GPIO2  = 'GPIO2'
-GPIO3  = 'GPIO3'
-GPIO4  = 'GPIO4'
-GPIO5  = 'GPIO5'
-GPIO6  = 'GPIO6'
-GPIO7  = 'GPIO7'
-GPIO8  = 'GPIO8'
-GPIO9  = 'GPIO9'
-GPIO10 = 'GPIO10'
-GPIO11 = 'GPIO11'
-GPIO12 = 'GPIO12'
-GPIO13 = 'GPIO13'
-GPIO14 = 'GPIO14'
-GPIO15 = 'GPIO15'
-GPIO16 = 'GPIO16'
-GPIO17 = 'GPIO17'
-GPIO18 = 'GPIO18'
-GPIO19 = 'GPIO19'
-GPIO20 = 'GPIO20'
-GPIO21 = 'GPIO21'
-GPIO22 = 'GPIO22'
-GPIO23 = 'GPIO23'
-GPIO24 = 'GPIO24'
-GPIO25 = 'GPIO25'
-GPIO26 = 'GPIO26'
-GPIO27 = 'GPIO27'
-GPIO28 = 'GPIO28'
-GPIO29 = 'GPIO29'
-GPIO30 = 'GPIO30'
-GPIO31 = 'GPIO31'
-GPIO32 = 'GPIO32'
-GPIO33 = 'GPIO33'
-GPIO34 = 'GPIO34'
-GPIO35 = 'GPIO35'
-GPIO36 = 'GPIO36'
-GPIO37 = 'GPIO37'
-GPIO38 = 'GPIO38'
-GPIO39 = 'GPIO39'
-GPIO40 = 'GPIO40'
-GPIO41 = 'GPIO41'
-GPIO42 = 'GPIO42'
-GPIO43 = 'GPIO43'
-GPIO44 = 'GPIO44'
-GPIO45 = 'GPIO45'
-
 # Board layout ASCII art
 
 REV1_BOARD = """\
@@ -276,210 +222,379 @@ P400_BOARD = """\
 {style:black on white}`------------------------------------------------------------------------'{style:reset}
                                                  Raspberry Pi {style:bold red}{model}{style:reset} Rev {pcb_revision}"""
 
-# Pin maps for various board revisions and headers
+# Pin maps for various board revisions and headers. Much of the information
+# below is derived from the BCM2835 ARM Peripherals datasheet, but Gadgetoid's
+# superb https://pinout.xyz site was also a great deal of help in filling in
+# the gaps!
+
+import re
+def gpiof(*names):
+    return {
+        'gpio' if re.match(r'GPIO\d+$', name) else
+        'i2c'  if re.match(r'I2C\d (SDA|SCL)$', name) else
+        'spi'  if re.match(r'SPI\d (SCLK|MOSI|MISO|CE\d)$', name) else
+        'uart' if re.match(r'UART\d (RXD|TXD|RTS|CTS)$', name) else
+        'smi'  if re.match(r'SMI (name[AD]\d+|SOE / SE|SWE / SRW)$', name) else
+        'dpi'  if re.match(r'DPI (D\d+|PCLK|DE|[HV]SYNC)$', name) else
+        'pwm'  if re.match(r'PWM\d+ \d+$', name) else
+        'pcm'  if re.match(r'PCM (CLK|FS|DIN|DOUT)$', name) else
+        'sdio' if re.match(r'SD\d+ (CLK|CMD|DAT\d+)$', name) else
+        'jtag' if re.match(r'JTAG (TDI|TDO|TCK|TMS|RTCK|TRST)$', name) else
+        'mii'  if re.match(r'(RG)?MII ', name) else
+        '': name
+        for name in names
+        if name
+    }
+
+V1_8 = {'': '1V8'}
+V3_3 = {'': '3V3'}
+V5   = {'': '5V'}
+GND  = {'': 'GND'}
+NC   = {'': 'NC'}  # not connected
+
+#                   gpio      alt0         alt1             alt2         alt3              alt4         alt5
+PI1_GPIO0  = gpiof('GPIO0',  'I2C0 SDA',  'SMI SA5',       'DPI PCLK')
+PI1_GPIO1  = gpiof('GPIO1',  'I2C0 SCL',  'SMI SA4',       'DPI DE')
+PI1_GPIO2  = gpiof('GPIO2',  'I2C1 SDA',  'SMI SA3',       'DPI VSYNC')
+PI1_GPIO3  = gpiof('GPIO3',  'I2C1 SCL',  'SMI SA2',       'DPI HSYNC')
+PI1_GPIO4  = gpiof('GPIO4',  'GPCLK0',    'SMI SA1',       'DPI D0',    '',               '',          'JTAG TDI')
+PI1_GPIO5  = gpiof('GPIO5',  'GPCLK1',    'SMI SA0',       'DPI D1',    '',               '',          'JTAG TDO')
+PI1_GPIO6  = gpiof('GPIO6',  'GPCLK2',    'SMI SOE / SE',  'DPI D2',    '',               '',          'JTAG RTCK')
+PI1_GPIO7  = gpiof('GPIO7',  'SPI0 CE1',  'SMI SWE / SRW', 'DPI D3')
+PI1_GPIO8  = gpiof('GPIO8',  'SPI0 CE0',  'SMI SD0',       'DPI D4')
+PI1_GPIO9  = gpiof('GPIO9',  'SPI0 MISO', 'SMI SD1',       'DPI D5')
+PI1_GPIO10 = gpiof('GPIO10', 'SPI0 MOSI', 'SMI SD2',       'DPI D6')
+PI1_GPIO11 = gpiof('GPIO11', 'SPI0 SCLK', 'SMI SD3',       'DPI D7')
+PI1_GPIO12 = gpiof('GPIO12', 'PWM0 0',    'SMI SD4',       'DPI D8',    '',               '',          'JTAG TMS' )
+PI1_GPIO13 = gpiof('GPIO13', 'PWM0 1',    'SMI SD5',       'DPI D9',    '',               '',          'JTAG TCK' )
+PI1_GPIO14 = gpiof('GPIO14', 'UART0 TXD', 'SMI SD6',       'DPI D10'    '',               '',          'UART1 TXD')
+PI1_GPIO15 = gpiof('GPIO15', 'UART0 RXD', 'SMI SD7',       'DPI D11'    '',               '',          'UART1 RXD')
+PI1_GPIO16 = gpiof('GPIO16', '',          'SMI SD8',       'DPI D11',   'UART0 CTS',      'SPI1 CE2',  'UART1 CTS')
+PI1_GPIO17 = gpiof('GPIO17', '',          'SMI SD9',       'DPI D13',   'UART0 RTS',      'SPI1 CE1',  'UART1 RTS')
+PI1_GPIO18 = gpiof('GPIO18', 'PCM CLK',   'SMI SD10',      'DPI D14',   'BSC SDA / MOSI', 'SPI1 CE0',  'PWM0 0')
+PI1_GPIO19 = gpiof('GPIO19', 'PCM FS',    'SMI SD11',      'DPI D15',   'BSC SCL / SCLK', 'SPI1 MISO', 'PWM0 1')
+PI1_GPIO20 = gpiof('GPIO20', 'PCM DIN',   'SMI SD12',      'DPI D16',   'BSC MISO',       'SPI1 MOSI', 'GPCLK0')
+PI1_GPIO21 = gpiof('GPIO21', 'PCM DOUT',  'SMI SD13',      'DPI D17',   'BSC CE',         'SPI1 SCLK', 'GPCLK1')
+PI1_GPIO22 = gpiof('GPIO22', 'SD0 CLK',   'SMI SD14',      'DPI D18',   'SD1 CLK',        'JTAG TRST')
+PI1_GPIO23 = gpiof('GPIO23', 'SD0 CMD',   'SMI SD15',      'DPI D19',   'SD1 CMD',        'JTAG RTCK')
+PI1_GPIO24 = gpiof('GPIO24', 'SD0 DAT0',  'SMI SD16',      'DPI D20',   'SD1 DAT0',       'JTAG TDO')
+PI1_GPIO25 = gpiof('GPIO25', 'SD0 DAT1',  'SMI SD17',      'DPI D21',   'SD1 DAT1',       'JTAG TCK')
+PI1_GPIO26 = gpiof('GPIO26', 'SD0 DAT2',  '',              'DPI D22',   'SD1 DAT2',       'JTAG TDI')
+PI1_GPIO27 = gpiof('GPIO27', 'SD0 DAT3',  '',              'DPI D23',   'SD1 DAT3',       'JTAG TMS')
+PI1_GPIO28 = gpiof('GPIO28', 'I2C0 SDA',  'SMI SA5',       'PCM CLK')
+PI1_GPIO29 = gpiof('GPIO29', 'I2C0 SCL',  'SMI SA4',       'PCM FS')
+PI1_GPIO30 = gpiof('GPIO30', '',          'SMI SA3',       'PCM DIN',   'UART0 CTS',      '',          'UART1 CTS')
+PI1_GPIO31 = gpiof('GPIO31', '',          'SMI SA2',       'PCM DOUT',  'UART0 RTS',      '',          'UART1 RTS')
+PI1_GPIO32 = gpiof('GPIO32', 'GPCLK0',    'SMI SA1',       '',          'UART0 TXD',      '',          'UART1 TXD')
+PI1_GPIO33 = gpiof('GPIO33', '',          'SMI SA0',       '',          'UART0 RXD',      '',          'UART1 RXD')
+PI1_GPIO34 = gpiof('GPIO34', 'GPCLK0',    'SMI SOE / SE')
+PI1_GPIO35 = gpiof('GPIO35', 'SPI0 CE1',  'SMI SWE / SRW')
+PI1_GPIO36 = gpiof('GPIO36', 'SPI0 CE0',  'SMI SD0',       'UART0 TXD')
+PI1_GPIO37 = gpiof('GPIO37', 'SPI0 MISO', 'SMI SD1',       'UART0 RXD')
+PI1_GPIO38 = gpiof('GPIO38', 'SPI0 MOSI', 'SMI SD2',       'UART0 RTS')
+PI1_GPIO39 = gpiof('GPIO39', 'SPI0 SCLK', 'SMI SD3',       'UART0 CTS')
+PI1_GPIO40 = gpiof('GPIO40', 'PWM0 0',    'SMI SD4',       '',          '',               'SPI2 MISO', 'UART1 TXD')
+PI1_GPIO41 = gpiof('GPIO41', 'PWM0 1',    'SMI SD5',       '',          '',               'SPI2 MOSI', 'UART1 RXD')
+PI1_GPIO42 = gpiof('GPIO42', 'GPCLK1',    'SMI SD6',       '',          '',               'SPI2 SCLK', 'UART1 RTS')
+PI1_GPIO43 = gpiof('GPIO43', 'GPCLK2',    'SMI SD7',       '',          '',               'SPI2 CE0',  'UART1 CTS')
+PI1_GPIO44 = gpiof('GPIO44', 'GPCLK1',    'I2C0 SDA',      'I2C1 SDA',  '',               'SPI2 CE1')
+PI1_GPIO45 = gpiof('GPIO45', 'PWM0 1',    'I2C0 SCL',      'I2C1 SCL',  '',               'SPI2 CE2')
+PI1_GPIO46 = gpiof('GPIO46')
+PI1_GPIO47 = gpiof('GPIO47')
+PI1_GPIO48 = gpiof('GPIO48')
+PI1_GPIO49 = gpiof('GPIO49')
+PI1_GPIO50 = gpiof('GPIO50')
+PI1_GPIO51 = gpiof('GPIO51')
+PI1_GPIO52 = gpiof('GPIO52')
+PI1_GPIO53 = gpiof('GPIO53')
+
+#                   gpio      alt0         alt1             alt2         alt3              alt4                alt5
+PI4_GPIO0  = gpiof('GPIO0',  'I2C0 SDA',  'SMI SA5',       'DPI PCLK',  'SPI3 CE0',       'UART2 TXD',        'I2C6 SDA')
+PI4_GPIO1  = gpiof('GPIO1',  'I2C0 SCL',  'SMI SA4',       'DPI DE',    'SPI3 MISO',      'UART2 RXD',        'I2C6 SCL')
+PI4_GPIO2  = gpiof('GPIO2',  'I2C1 SDA',  'SMI SA3',       'DPI VSYNC', 'SPI3 MOSI',      'UART2 CTS',        'I2C3 SDA')
+PI4_GPIO3  = gpiof('GPIO3',  'I2C1 SCL',  'SMI SA2',       'DPI HSYNC', 'SPI3 SCLK',      'UART2 RTS',        'I2C3 SCL')
+PI4_GPIO4  = gpiof('GPIO4',  'GPCLK0',    'SMI SA1',       'DPI D0',    'SPI4 CE0',       'UART3 TXD',        'I2C3 SDA')
+PI4_GPIO5  = gpiof('GPIO5',  'GPCLK1',    'SMI SA0',       'DPI D1',    'SPI4 MISO',      'UART3 RXD',        'I2C3 SCL')
+PI4_GPIO6  = gpiof('GPIO6',  'GPCLK2',    'SMI SOE / SE',  'DPI D2',    'SPI4 MOSI',      'UART3 CTS',        'I2C4 SDA')
+PI4_GPIO7  = gpiof('GPIO7',  'SPI0 CE1',  'SMI SWE / SRW', 'DPI D3',    'SPI4 SCLK',      'UART3 RTS',        'I2C4 SCL')
+PI4_GPIO8  = gpiof('GPIO8',  'SPI0 CE0',  'SMI SD0',       'DPI D4',    'BSC CE',         'UART4 TXD',        'I2C4 SDA')
+PI4_GPIO9  = gpiof('GPIO9',  'SPI0 MISO', 'SMI SD1',       'DPI D5',    'BSC MISO',       'UART4 RXD',        'I2C4 SCL')
+PI4_GPIO10 = gpiof('GPIO10', 'SPI0 MOSI', 'SMI SD2',       'DPI D6',    'BSC SDA / MOSI', 'UART4 CTS',        'I2C5 SDA')
+PI4_GPIO11 = gpiof('GPIO11', 'SPI0 SCLK', 'SMI SD3',       'DPI D7',    'BSC SCL / SCLK', 'UART4 RTS',        'I2C5 SCL')
+PI4_GPIO12 = gpiof('GPIO12', 'PWM0 0',    'SMI SD4',       'DPI D8',    'SPI5 CE0',       'UART5 TXD',        'I2C5 SDA')
+PI4_GPIO13 = gpiof('GPIO13', 'PWM0 1',    'SMI SD5',       'DPI D9',    'SPI5 MISO',      'UART5 RXD',        'I2C5 SCL')
+PI4_GPIO14 = gpiof('GPIO14', 'UART0 TXD', 'SMI SD6',       'DPI D10',   'SPI5 MOSI',      'UART5 CTS',        'UART1 TXD')
+PI4_GPIO15 = gpiof('GPIO15', 'UART0 RXD', 'SMI SD7',       'DPI D11',   'SPI5 SCLK',      'UART5 RTS',        'UART1 RXD')
+PI4_GPIO16 = gpiof('GPIO16', '',          'SMI SD8',       'DPI D12',   'UART0 CTS',      'SPI1 CE2',         'UART1 CTS')
+PI4_GPIO17 = gpiof('GPIO17', '',          'SMI SD9',       'DPI D13',   'UART0 RTS',      'SPI1 CE1',         'UART1 RTS')
+PI4_GPIO18 = gpiof('GPIO18', 'PCM CLK',   'SMI SD10',      'DPI D14',   'SPI6 CE0',       'SPI1 CE0',         'PWM0 0')
+PI4_GPIO19 = gpiof('GPIO19', 'PCM FS',    'SMI SD11',      'DPI D15',   'SPI6 MISO',      'SPI1 MISO',        'PWM0 1')
+PI4_GPIO20 = gpiof('GPIO20', 'PCM DIN',   'SMI SD12',      'DPI D16',   'SPI6 MOSI',      'SPI1 MOSI',        'GPCLK0')
+PI4_GPIO21 = gpiof('GPIO21', 'PCM DOUT',  'SMI SD13',      'DPI D17',   'SPI6 SCLK',      'SPI1 SCLK',        'GPCLK1')
+PI4_GPIO22 = gpiof('GPIO22', 'SD0 CLK',   'SMI SD14',      'DPI D18',   'SD1 CLK',        'JTAG TRST',        'I2C6 SDA')
+PI4_GPIO23 = gpiof('GPIO23', 'SD0 CMD',   'SMI SD15',      'DPI D19',   'SD1 CMD',        'JTAG RTCK',        'I2C6 SCL')
+PI4_GPIO24 = gpiof('GPIO24', 'SD0 DAT0',  'SMI SD16',      'DPI D20',   'SD1 DAT0',       'JTAG TDO',         'SPI3 CE1')
+PI4_GPIO25 = gpiof('GPIO25', 'SD0 DAT1',  'SMI SD17',      'DPI D21',   'SD1 DAT1',       'JTAG TCK',         'SPI4 CE1')
+PI4_GPIO26 = gpiof('GPIO26', 'SDA DAT2',  '',              'DPI D22',   'SD1 DAT2',       'JTAG TDI',         'SPI5 CE1')
+PI4_GPIO27 = gpiof('GPIO27', 'SDA DAT3',  '',              'DPI D23',   'SD1 DAT3',       'JTAG TMS',         'SPI6 CE1')
+PI4_GPIO28 = gpiof('GPIO28', 'I2C0 SDA',  'SMI SA5',       'PCM CLK',   '',               'MII RX ERR',       'RGMII MDIO')
+PI4_GPIO29 = gpiof('GPIO29', 'I2C0 SCL',  'SMI SA4',       'PCM FS',    '',               'MII TX ERR',       'RGMII MDC')
+PI4_GPIO30 = gpiof('GPIO30', '',          'SMI SA3',       'PCM DIN',   'UART0 CTS',      'MII CRS',          'UART1 CTS')
+PI4_GPIO31 = gpiof('GPIO31', '',          'SMI SA2',       'PCM DOUT',  'UART0 RTS',      'MII COL',          'UART1 RTS')
+PI4_GPIO32 = gpiof('GPIO32', 'GPCLK0',    'SMI SA1',       '',          'UART0 TXD',      'SD CARD PRES',     'UART1 TXD')
+PI4_GPIO33 = gpiof('GPIO33', '',          'SMI SA0',       '',          'UART0 RXD',      'SD CARD WRPROT',   'UART1 RXD')
+PI4_GPIO34 = gpiof('GPIO34', 'GPCLK0',    'SMI SOE / SE',  '',          'SD1 CLK',        'SD CARD LED',      'RGMII IRQ')
+PI4_GPIO35 = gpiof('GPIO35', 'SPI0 CE1',  'SMI SWE / SRW', '',          'SD1 CMD',        'RGMII START STOP')
+PI4_GPIO36 = gpiof('GPIO36', 'SPI0 CE0',  'SMI SD0',       'UART0 TXD', 'SD1 DAT0',       'RGMII RX OK',      'MII RX ERR')
+PI4_GPIO37 = gpiof('GPIO37', 'SPI0 MISO', 'SMI SD1',       'UART0 RXD', 'SD1 DAT1',       'RGMII MDIO',       'MII TX ERR')
+PI4_GPIO38 = gpiof('GPIO38', 'SPI0 MOSI', 'SMI SD2',       'UART0 RTS', 'SD1 DAT2',       'RGMII MDC',        'MII CRS')
+PI4_GPIO39 = gpiof('GPIO39', 'SPI0 SCLK', 'SMI SD3',       'UART0 CTS', 'SD1 DAT3',       'RGMII IRQ',        'MII COL')
+PI4_GPIO40 = gpiof('GPIO40', 'PWM1 0',    'SMI SD4',       '',          'SD1 DAT4',       'SPI0 MISO',        'UART1 TXD')
+PI4_GPIO41 = gpiof('GPIO41', 'PWM1 1',    'SMI SD5',       '',          'SD1 DAT5',       'SPI0 MOSI',        'UART1 RXD')
+PI4_GPIO42 = gpiof('GPIO42', 'GPCLK1',    'SMI SD6',       '',          'SD1 DAT6',       'SPI0 SCLK',        'UART1 RTS')
+PI4_GPIO43 = gpiof('GPIO43', 'GPCLK2',    'SMI SD7',       '',          'SD1 DAT7',       'SPI0 CE0',         'UART1 CTS')
+PI4_GPIO44 = gpiof('GPIO44', 'GPCLK1',    'I2C0 SDA',      'I2C1 SDA',  '',               'SPI0 CE1',         'SD CARD VOLT')
+PI4_GPIO45 = gpiof('GPIO45', 'PWM0 1',    'I2C0 SCL',      'I2C1 SCL',  '',               'SPI0 CE2',         'SD CARD PWR0')
+PI4_GPIO46 = gpiof('GPIO46')
+PI4_GPIO47 = gpiof('GPIO47')
+PI4_GPIO48 = gpiof('GPIO48')
+PI4_GPIO49 = gpiof('GPIO49')
+PI4_GPIO50 = gpiof('GPIO50')
+PI4_GPIO51 = gpiof('GPIO51')
+PI4_GPIO52 = gpiof('GPIO52')
+PI4_GPIO53 = gpiof('GPIO53')
+PI4_GPIO54 = gpiof('GPIO54')
+PI4_GPIO55 = gpiof('GPIO55')
+PI4_GPIO56 = gpiof('GPIO56')
+PI4_GPIO57 = gpiof('GPIO57')
+
+del gpiof
+del re
 
 REV1_P1 = {
-#   pin  func  pullup  pin  func  pullup
-    1:  (V3_3,   False), 2:  (V5,     False),
-    3:  (GPIO0,  True),  4:  (V5,     False),
-    5:  (GPIO1,  True),  6:  (GND,    False),
-    7:  (GPIO4,  False), 8:  (GPIO14, False),
-    9:  (GND,    False), 10: (GPIO15, False),
-    11: (GPIO17, False), 12: (GPIO18, False),
-    13: (GPIO21, False), 14: (GND,    False),
-    15: (GPIO22, False), 16: (GPIO23, False),
-    17: (V3_3,   False), 18: (GPIO24, False),
-    19: (GPIO10, False), 20: (GND,    False),
-    21: (GPIO9,  False), 22: (GPIO25, False),
-    23: (GPIO11, False), 24: (GPIO8,  False),
-    25: (GND,    False), 26: (GPIO7,  False),
-    }
+    1:  V3_3,       2:  V5,
+    3:  PI1_GPIO0,  4:  V5,
+    5:  PI1_GPIO1,  6:  GND,
+    7:  PI1_GPIO4,  8:  PI1_GPIO14,
+    9:  GND,        10: PI1_GPIO15,
+    11: PI1_GPIO17, 12: PI1_GPIO18,
+    13: PI1_GPIO21, 14: GND,
+    15: PI1_GPIO22, 16: PI1_GPIO23,
+    17: V3_3,       18: PI1_GPIO24,
+    19: PI1_GPIO10, 20: GND,
+    21: PI1_GPIO9,  22: PI1_GPIO25,
+    23: PI1_GPIO11, 24: PI1_GPIO8,
+    25: GND,        26: PI1_GPIO7,
+}
 
 REV2_P1 = {
-    1:  (V3_3,   False), 2:  (V5,     False),
-    3:  (GPIO2,  True),  4:  (V5,     False),
-    5:  (GPIO3,  True),  6:  (GND,    False),
-    7:  (GPIO4,  False), 8:  (GPIO14, False),
-    9:  (GND,    False), 10: (GPIO15, False),
-    11: (GPIO17, False), 12: (GPIO18, False),
-    13: (GPIO27, False), 14: (GND,    False),
-    15: (GPIO22, False), 16: (GPIO23, False),
-    17: (V3_3,   False), 18: (GPIO24, False),
-    19: (GPIO10, False), 20: (GND,    False),
-    21: (GPIO9,  False), 22: (GPIO25, False),
-    23: (GPIO11, False), 24: (GPIO8,  False),
-    25: (GND,    False), 26: (GPIO7,  False),
-    }
+    1:  V3_3,       2:  V5,
+    3:  PI1_GPIO2,  4:  V5,
+    5:  PI1_GPIO3,  6:  GND,
+    7:  PI1_GPIO4,  8:  PI1_GPIO14,
+    9:  GND,        10: PI1_GPIO15,
+    11: PI1_GPIO17, 12: PI1_GPIO18,
+    13: PI1_GPIO27, 14: GND,
+    15: PI1_GPIO22, 16: PI1_GPIO23,
+    17: V3_3,       18: PI1_GPIO24,
+    19: PI1_GPIO10, 20: GND,
+    21: PI1_GPIO9,  22: PI1_GPIO25,
+    23: PI1_GPIO11, 24: PI1_GPIO8,
+    25: GND,        26: PI1_GPIO7,
+}
 
 REV2_P5 = {
-    1:  (V5,     False), 2:  (V3_3,   False),
-    3:  (GPIO28, False), 4:  (GPIO29, False),
-    5:  (GPIO30, False), 6:  (GPIO31, False),
-    7:  (GND,    False), 8:  (GND,    False),
-    }
+    1:  V5,         2: V3_3,
+    3:  PI1_GPIO28, 4: PI1_GPIO29,
+    5:  PI1_GPIO30, 6: PI1_GPIO31,
+    7:  GND,        8: GND,
+}
 
 PLUS_J8 = {
-    1:  (V3_3,   False), 2:  (V5,     False),
-    3:  (GPIO2,  True),  4:  (V5,     False),
-    5:  (GPIO3,  True),  6:  (GND,    False),
-    7:  (GPIO4,  False), 8:  (GPIO14, False),
-    9:  (GND,    False), 10: (GPIO15, False),
-    11: (GPIO17, False), 12: (GPIO18, False),
-    13: (GPIO27, False), 14: (GND,    False),
-    15: (GPIO22, False), 16: (GPIO23, False),
-    17: (V3_3,   False), 18: (GPIO24, False),
-    19: (GPIO10, False), 20: (GND,    False),
-    21: (GPIO9,  False), 22: (GPIO25, False),
-    23: (GPIO11, False), 24: (GPIO8,  False),
-    25: (GND,    False), 26: (GPIO7,  False),
-    27: (GPIO0,  False), 28: (GPIO1,  False),
-    29: (GPIO5,  False), 30: (GND,    False),
-    31: (GPIO6,  False), 32: (GPIO12, False),
-    33: (GPIO13, False), 34: (GND,    False),
-    35: (GPIO19, False), 36: (GPIO16, False),
-    37: (GPIO26, False), 38: (GPIO20, False),
-    39: (GND,    False), 40: (GPIO21, False),
-    }
+    1:  V3_3,       2:  V5,
+    3:  PI1_GPIO2,  4:  V5,
+    5:  PI1_GPIO3,  6:  GND,
+    7:  PI1_GPIO4,  8:  PI1_GPIO14,
+    9:  GND,        10: PI1_GPIO15,
+    11: PI1_GPIO17, 12: PI1_GPIO18,
+    13: PI1_GPIO27, 14: GND,
+    15: PI1_GPIO22, 16: PI1_GPIO23,
+    17: V3_3,       18: PI1_GPIO24,
+    19: PI1_GPIO10, 20: GND,
+    21: PI1_GPIO9,  22: PI1_GPIO25,
+    23: PI1_GPIO11, 24: PI1_GPIO8,
+    25: GND,        26: PI1_GPIO7,
+    27: PI1_GPIO0,  28: PI1_GPIO1,
+    29: PI1_GPIO5,  30: GND,
+    31: PI1_GPIO6,  32: PI1_GPIO12,
+    33: PI1_GPIO13, 34: GND,
+    35: PI1_GPIO19, 36: PI1_GPIO16,
+    37: PI1_GPIO26, 38: PI1_GPIO20,
+    39: GND,        40: PI1_GPIO21,
+}
+
+PI4_J8 = {
+    1:  V3_3,       2:  V5,
+    3:  PI4_GPIO2,  4:  V5,
+    5:  PI4_GPIO3,  6:  GND,
+    7:  PI4_GPIO4,  8:  PI4_GPIO14,
+    9:  GND,        10: PI4_GPIO15,
+    11: PI4_GPIO17, 12: PI4_GPIO18,
+    13: PI4_GPIO27, 14: GND,
+    15: PI4_GPIO22, 16: PI4_GPIO23,
+    17: V3_3,       18: PI4_GPIO24,
+    19: PI4_GPIO10, 20: GND,
+    21: PI4_GPIO9,  22: PI4_GPIO25,
+    23: PI4_GPIO11, 24: PI4_GPIO8,
+    25: GND,        26: PI4_GPIO7,
+    27: PI4_GPIO0,  28: PI4_GPIO1,
+    29: PI4_GPIO5,  30: GND,
+    31: PI4_GPIO6,  32: PI4_GPIO12,
+    33: PI4_GPIO13, 34: GND,
+    35: PI4_GPIO19, 36: PI4_GPIO16,
+    37: PI4_GPIO26, 38: PI4_GPIO20,
+    39: GND,        40: PI4_GPIO21,
+}
 
 PLUS_POE = {
-    1: ('TR01', False), 2: ('TR00', False),
-    3: ('TR03', False), 4: ('TR02', False),
-    }
+    1: {'': 'TR01'}, 2: {'': 'TR00'},
+    3: {'': 'TR03'}, 4: {'': 'TR02'},
+}
 
 CM_SODIMM = {
-    1:   (GND,              False), 2:   ('EMMC DISABLE N', False),
-    3:   (GPIO0,            False), 4:   (NC,               False),
-    5:   (GPIO1,            False), 6:   (NC,               False),
-    7:   (GND,              False), 8:   (NC,               False),
-    9:   (GPIO2,            False), 10:  (NC,               False),
-    11:  (GPIO3,            False), 12:  (NC,               False),
-    13:  (GND,              False), 14:  (NC,               False),
-    15:  (GPIO4,            False), 16:  (NC,               False),
-    17:  (GPIO5,            False), 18:  (NC,               False),
-    19:  (GND,              False), 20:  (NC,               False),
-    21:  (GPIO6,            False), 22:  (NC,               False),
-    23:  (GPIO7,            False), 24:  (NC,               False),
-    25:  (GND,              False), 26:  (GND,              False),
-    27:  (GPIO8,            False), 28:  (GPIO28,           False),
-    29:  (GPIO9,            False), 30:  (GPIO29,           False),
-    31:  (GND,              False), 32:  (GND,              False),
-    33:  (GPIO10,           False), 34:  (GPIO30,           False),
-    35:  (GPIO11,           False), 36:  (GPIO31,           False),
-    37:  (GND,              False), 38:  (GND,              False),
-    39:  ('GPIO0-27 VREF',  False), 40:  ('GPIO0-27 VREF',  False),
+    1:   GND,                    2:   {'': 'EMMC DISABLE N'},
+    3:   PI1_GPIO0,              4:   NC,
+    5:   PI1_GPIO1,              6:   NC,
+    7:   GND,                    8:   NC,
+    9:   PI1_GPIO2,              10:  NC,
+    11:  PI1_GPIO3,              12:  NC,
+    13:  GND,                    14:  NC,
+    15:  PI1_GPIO4,              16:  NC,
+    17:  PI1_GPIO5,              18:  NC,
+    19:  GND,                    20:  NC,
+    21:  PI1_GPIO6,              22:  NC,
+    23:  PI1_GPIO7,              24:  NC,
+    25:  GND,                    26:  GND,
+    27:  PI1_GPIO8,              28:  PI1_GPIO28,
+    29:  PI1_GPIO9,              30:  PI1_GPIO29,
+    31:  GND,                    32:  GND,
+    33:  PI1_GPIO10,             34:  PI1_GPIO30,
+    35:  PI1_GPIO11,             36:  PI1_GPIO31,
+    37:  GND,                    38:  GND,
+    39:  {'': 'GPIO0-27 VREF'},  40:  {'': 'GPIO0-27 VREF'},
     # Gap in SODIMM pins
-    41:  ('GPIO28-45 VREF', False), 42:  ('GPIO28-45 VREF', False),
-    43:  (GND,              False), 44:  (GND,              False),
-    45:  (GPIO12,           False), 46:  (GPIO32,           False),
-    47:  (GPIO13,           False), 48:  (GPIO33,           False),
-    49:  (GND,              False), 50:  (GND,              False),
-    51:  (GPIO14,           False), 52:  (GPIO34,           False),
-    53:  (GPIO15,           False), 54:  (GPIO35,           False),
-    55:  (GND,              False), 56:  (GND,              False),
-    57:  (GPIO16,           False), 58:  (GPIO36,           False),
-    59:  (GPIO17,           False), 60:  (GPIO37,           False),
-    61:  (GND,              False), 62:  (GND,              False),
-    63:  (GPIO18,           False), 64:  (GPIO38,           False),
-    65:  (GPIO19,           False), 66:  (GPIO39,           False),
-    67:  (GND,              False), 68:  (GND,              False),
-    69:  (GPIO20,           False), 70:  (GPIO40,           False),
-    71:  (GPIO21,           False), 72:  (GPIO41,           False),
-    73:  (GND,              False), 74:  (GND,              False),
-    75:  (GPIO22,           False), 76:  (GPIO42,           False),
-    77:  (GPIO23,           False), 78:  (GPIO43,           False),
-    79:  (GND,              False), 80:  (GND,              False),
-    81:  (GPIO24,           False), 82:  (GPIO44,           False),
-    83:  (GPIO25,           False), 84:  (GPIO45,           False),
-    85:  (GND,              False), 86:  (GND,              False),
-    87:  (GPIO26,           False), 88:  ('GPIO46 1V8',     False),
-    89:  (GPIO27,           False), 90:  ('GPIO47 1V8',     False),
-    91:  (GND,              False), 92:  (GND,              False),
-    93:  ('DSI0 DN1',       False), 94:  ('DSI1 DP0',       False),
-    95:  ('DSI0 DP1',       False), 96:  ('DSI1 DN0',       False),
-    97:  (GND,              False), 98:  (GND,              False),
-    99:  ('DSI0 DN0',       False), 100: ('DSI1 CP',        False),
-    101: ('DSI0 DP0',       False), 102: ('DSI1 CN',        False),
-    103: (GND,              False), 104: (GND,              False),
-    105: ('DSI0 CN',        False), 106: ('DSI1 DP3',       False),
-    107: ('DSI0 CP',        False), 108: ('DSI1 DN3',       False),
-    109: (GND,              False), 110: (GND,              False),
-    111: ('HDMI CK N',      False), 112: ('DSI1 DP2',       False),
-    113: ('HDMI CK P',      False), 114: ('DSI1 DN2',       False),
-    115: (GND,              False), 116: (GND,              False),
-    117: ('HDMI D0 N',      False), 118: ('DSI1 DP1',       False),
-    119: ('HDMI D0 P',      False), 120: ('DSI1 DN1',       False),
-    121: (GND,              False), 122: (GND,              False),
-    123: ('HDMI D1 N',      False), 124: (NC,               False),
-    125: ('HDMI D1 P',      False), 126: (NC,               False),
-    127: (GND,              False), 128: (NC,               False),
-    129: ('HDMI D2 N',      False), 130: (NC,               False),
-    131: ('HDMI D2 P',      False), 132: (NC,               False),
-    133: (GND,              False), 134: (GND,              False),
-    135: ('CAM1 DP3',       False), 136: ('CAM0 DP0',       False),
-    137: ('CAM1 DN3',       False), 138: ('CAM0 DN0',       False),
-    139: (GND,              False), 140: (GND,              False),
-    141: ('CAM1 DP2',       False), 142: ('CAM0 CP',        False),
-    143: ('CAM1 DN2',       False), 144: ('CAM0 CN',        False),
-    145: (GND,              False), 146: (GND,              False),
-    147: ('CAM1 CP',        False), 148: ('CAM0 DP1',       False),
-    149: ('CAM1 CN',        False), 150: ('CAM0 DN1',       False),
-    151: (GND,              False), 152: (GND,              False),
-    153: ('CAM1 DP1',       False), 154: (NC,               False),
-    155: ('CAM1 DN1',       False), 156: (NC,               False),
-    157: (GND,              False), 158: (NC,               False),
-    159: ('CAM1 DP0',       False), 160: (NC,               False),
-    161: ('CAM1 DN0',       False), 162: (NC,               False),
-    163: (GND,              False), 164: (GND,              False),
-    165: ('USB DP',         False), 166: ('TVDAC',          False),
-    167: ('USB DM',         False), 168: ('USB OTGID',      False),
-    169: (GND,              False), 170: (GND,              False),
-    171: ('HDMI CEC',       False), 172: ('VC TRST N',      False),
-    173: ('HDMI SDA',       False), 174: ('VC TDI',         False),
-    175: ('HDMI SCL',       False), 176: ('VC TMS',         False),
-    177: ('RUN',            False), 178: ('VC TDO',         False),
-    179: ('VDD CORE',       False), 180: ('VC TCK',         False),
-    181: (GND,              False), 182: (GND,              False),
-    183: (V1_8,             False), 184: (V1_8,             False),
-    185: (V1_8,             False), 186: (V1_8,             False),
-    187: (GND,              False), 188: (GND,              False),
-    189: ('VDAC',           False), 190: ('VDAC',           False),
-    191: (V3_3,             False), 192: (V3_3,             False),
-    193: (V3_3,             False), 194: (V3_3,             False),
-    195: (GND,              False), 196: (GND,              False),
-    197: ('VBAT',           False), 198: ('VBAT',           False),
-    199: ('VBAT',           False), 200: ('VBAT',           False),
+    41:  {'': 'GPIO28-45 VREF'}, 42:  {'': 'GPIO28-45 VREF'},
+    43:  GND,                    44:  GND,
+    45:  PI1_GPIO12,             46:  PI1_GPIO32,
+    47:  PI1_GPIO13,             48:  PI1_GPIO33,
+    49:  GND,                    50:  GND,
+    51:  PI1_GPIO14,             52:  PI1_GPIO34,
+    53:  PI1_GPIO15,             54:  PI1_GPIO35,
+    55:  GND,                    56:  GND,
+    57:  PI1_GPIO16,             58:  PI1_GPIO36,
+    59:  PI1_GPIO17,             60:  PI1_GPIO37,
+    61:  GND,                    62:  GND,
+    63:  PI1_GPIO18,             64:  PI1_GPIO38,
+    65:  PI1_GPIO19,             66:  PI1_GPIO39,
+    67:  GND,                    68:  GND,
+    69:  PI1_GPIO20,             70:  PI1_GPIO40,
+    71:  PI1_GPIO21,             72:  PI1_GPIO41,
+    73:  GND,                    74:  GND,
+    75:  PI1_GPIO22,             76:  PI1_GPIO42,
+    77:  PI1_GPIO23,             78:  PI1_GPIO43,
+    79:  GND,                    80:  GND,
+    81:  PI1_GPIO24,             82:  PI1_GPIO44,
+    83:  PI1_GPIO25,             84:  PI1_GPIO45,
+    85:  GND,                    86:  GND,
+    87:  PI1_GPIO26,             88:  {'': 'GPIO46 1V8'},
+    89:  PI1_GPIO27,             90:  {'': 'GPIO47 1V8'},
+    91:  GND,                    92:  GND,
+    93:  {'': 'DSI0 DN1'},       94:  {'': 'DSI1 DP0'},
+    95:  {'': 'DSI0 DP1'},       96:  {'': 'DSI1 DN0'},
+    97:  GND,                    98:  GND,
+    99:  {'': 'DSI0 DN0'},       100: {'': 'DSI1 CP'},
+    101: {'': 'DSI0 DP0'},       102: {'': 'DSI1 CN'},
+    103: GND,                    104: GND,
+    105: {'': 'DSI0 CN'},        106: {'': 'DSI1 DP3'},
+    107: {'': 'DSI0 CP'},        108: {'': 'DSI1 DN3'},
+    109: GND,                    110: GND,
+    111: {'': 'HDMI CK N'},      112: {'': 'DSI1 DP2'},
+    113: {'': 'HDMI CK P'},      114: {'': 'DSI1 DN2'},
+    115: GND,                    116: GND,
+    117: {'': 'HDMI D0 N'},      118: {'': 'DSI1 DP1'},
+    119: {'': 'HDMI D0 P'},      120: {'': 'DSI1 DN1'},
+    121: GND,                    122: GND,
+    123: {'': 'HDMI D1 N'},      124: NC,
+    125: {'': 'HDMI D1 P'},      126: NC,
+    127: GND,                    128: NC,
+    129: {'': 'HDMI D2 N'},      130: NC,
+    131: {'': 'HDMI D2 P'},      132: NC,
+    133: GND,                    134: GND,
+    135: {'': 'CAM1 DP3'},       136: {'': 'CAM0 DP0'},
+    137: {'': 'CAM1 DN3'},       138: {'': 'CAM0 DN0'},
+    139: GND,                    140: GND,
+    141: {'': 'CAM1 DP2'},       142: {'': 'CAM0 CP'},
+    143: {'': 'CAM1 DN2'},       144: {'': 'CAM0 CN'},
+    145: GND,                    146: GND,
+    147: {'': 'CAM1 CP'},        148: {'': 'CAM0 DP1'},
+    149: {'': 'CAM1 CN'},        150: {'': 'CAM0 DN1'},
+    151: GND,                    152: GND,
+    153: {'': 'CAM1 DP1'},       154: NC,
+    155: {'': 'CAM1 DN1'},       156: NC,
+    157: GND,                    158: NC,
+    159: {'': 'CAM1 DP0'},       160: NC,
+    161: {'': 'CAM1 DN0'},       162: NC,
+    163: GND,                    164: GND,
+    165: {'': 'USB DP'},         166: {'': 'TVDAC'},
+    167: {'': 'USB DM'},         168: {'': 'USB OTGID'},
+    169: GND,                    170: GND,
+    171: {'': 'HDMI CEC'},       172: {'': 'VC TRST N'},
+    173: {'': 'HDMI SDA'},       174: {'': 'VC TDI'},
+    175: {'': 'HDMI SCL'},       176: {'': 'VC TMS'},
+    177: {'': 'RUN'},            178: {'': 'VC TDO'},
+    179: {'': 'VDD CORE'},       180: {'': 'VC TCK'},
+    181: GND,                    182: GND,
+    183: V1_8,                   184: V1_8,
+    185: V1_8,                   186: V1_8,
+    187: GND,                    188: GND,
+    189: {'': 'VDAC'},           190: {'': 'VDAC'},
+    191: V3_3,                   192: V3_3,
+    193: V3_3,                   194: V3_3,
+    195: GND,                    196: GND,
+    197: {'': 'VBAT'},           198: {'': 'VBAT'},
+    199: {'': 'VBAT'},           200: {'': 'VBAT'},
     }
 
 CM3_SODIMM = CM_SODIMM.copy()
 CM3_SODIMM.update({
-    4:  ('NC / SDX VREF',  False),
-    6:  ('NC / SDX VREF',  False),
-    8:  (GND,              False),
-    10: ('NC / SDX CLK',   False),
-    12: ('NC / SDX CMD',   False),
-    14: (GND,              False),
-    16: ('NC / SDX D0',    False),
-    18: ('NC / SDX D1',    False),
-    20: (GND,              False),
-    22: ('NC / SDX D2',    False),
-    24: ('NC / SDX D3',    False),
-    88: ('HDMI HPD N 1V8', False),
-    90: ('EMMC EN N 1V8',  False),
+    4:  {'': 'NC / SDX VREF'},
+    6:  {'': 'NC / SDX VREF'},
+    8:  GND,
+    10: {'': 'NC / SDX CLK'},
+    12: {'': 'NC / SDX CMD'},
+    14: GND,
+    16: {'': 'NC / SDX D0'},
+    18: {'': 'NC / SDX D1'},
+    20: GND,
+    22: {'': 'NC / SDX D2'},
+    24: {'': 'NC / SDX D3'},
+    88: {'': 'HDMI HPD N 1V8'},
+    90: {'': 'EMMC EN N 1V8'},
     })
 
 CM4_J6 = {
-    1: ('1-2 CAM0+DISP0', False), 2: ('1-2 CAM0+DISP0', False),
-    3: ('3-4 CAM0+DISP0', False), 4: ('3-4 CAM0+DISP0', False),
+    1: {'': '1-2 CAM0+DISP0'}, 2: {'': '1-2 CAM0+DISP0'},
+    3: {'': '3-4 CAM0+DISP0'}, 4: {'': '3-4 CAM0+DISP0'},
     }
 
 CM4_J2 = {
-    1:  ('1-2 DISABLE eMMC BOOT', False), 2: ('1-2 DISABLE eMMC BOOT', False),
-    3:  ('3-4 WRITE-PROT EEPROM', False), 4: ('3-4 WRITE-PROT EEPROM', False),
-    5:  ('UNKNOWN', False), 6:  ('UNKNOWN', False),
-    7:  ('UNKNOWN', False), 8:  ('UNKNOWN', False),
-    9:  ('UNKNOWN', False), 10: ('UNKNOWN', False),
-    11: ('UNKNOWN', False), 12: ('UNKNOWN', False),
-    13: ('UNKNOWN', False), 14: ('UNKNOWN', False),
+    1:  {'': '1-2 DISABLE eMMC BOOT'}, 2:  {'': '1-2 DISABLE eMMC BOOT'},
+    3:  {'': '3-4 WRITE-PROT EEPROM'}, 4:  {'': '3-4 WRITE-PROT EEPROM'},
+    5:  {'': 'UNKNOWN'},               6:  {'': 'UNKNOWN'},
+    7:  {'': 'UNKNOWN'},               8:  {'': 'UNKNOWN'},
+    9:  {'': 'UNKNOWN'},               10: {'': 'UNKNOWN'},
+    11: {'': 'UNKNOWN'},               12: {'': 'UNKNOWN'},
+    13: {'': 'UNKNOWN'},               14: {'': 'UNKNOWN'},
     }
 
 # The following data is sourced from a combination of the following locations:

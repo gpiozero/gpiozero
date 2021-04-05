@@ -489,7 +489,7 @@ class MockFactory(PiFactory):
         self.pins.clear()
         self._reservations.clear()
 
-    def pin(self, spec, pin_class=None, **kwargs):
+    def pin(self, name, pin_class=None, **kwargs):
         """
         The pin method for :class:`MockFactory` additionally takes a
         *pin_class* attribute which can be used to override the class'
@@ -500,7 +500,7 @@ class MockFactory(PiFactory):
         """
         if pin_class is None:
             pin_class = self.pin_class
-        for header, info in self.board_info.find_by_spec(spec):
+        for header, info in self.board_info.find_pin(name):
             try:
                 pin = self.pins[info]
             except KeyError:
@@ -510,11 +510,11 @@ class MockFactory(PiFactory):
                 # Ensure the pin class expected supports PWM (or not)
                 if issubclass(pin_class, MockPWMPin) != isinstance(pin, MockPWMPin):
                     raise ValueError(
-                        'pin {info.spec} is already in use as a '
+                        'pin {info.name} is already in use as a '
                         '{pin.__class__.__name__}'.format(info=info, pin=pin))
             return pin
-        raise PinInvalidPin('{spec} is not a valid pin spec'.format(
-            spec=spec))
+        raise PinInvalidPin('{name} is not a valid pin name'.format(
+            name=name))
 
     def _get_spi_class(self, shared, hardware):
         return MockSPIInterfaceShared if shared else MockSPIInterface

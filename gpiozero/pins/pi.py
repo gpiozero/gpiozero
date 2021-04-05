@@ -6,6 +6,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import re
 from threading import RLock
 from types import MethodType
 from weakref import ref, WeakMethod
@@ -22,6 +23,7 @@ from .data import (
     REV2_P1,
     REV2_P5,
     PLUS_J8,
+    PI4_J8,
     PLUS_POE,
     CM_SODIMM,
     CM3_SODIMM,
@@ -249,8 +251,9 @@ class PiBoardInfo(BoardInfo):
                 'CM3':  {'SODIMM': CM3_SODIMM},
                 'CM3+': {'SODIMM': CM3_SODIMM},
                 '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
-                '4B':   {'J8': PLUS_J8, 'POE': PLUS_POE},
-                'CM4':  {'J8': PLUS_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
+                '4B':   {'J8': PI4_J8, 'POE': PLUS_POE},
+                '400+': {'J8': PI4_J8},
+                'CM4':  {'J8': PI4_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
                 }.get(model, {'J8': PLUS_J8})
             board = {
                 'A':      A_BOARD,
@@ -299,8 +302,8 @@ class PiBoardInfo(BoardInfo):
                 name=header, rows=max(header_data) // 2, columns=2,
                 pins=frozendict({
                     number: cls._make_pin(
-                        header, number, row + 1, col + 1, spec, pull_up)
-                    for number, (spec, pull_up) in header_data.items()
+                        header, number, row + 1, col + 1, functions)
+                    for number, functions in header_data.items()
                     for row, col in (divmod(number - 1, 2),)
                 })
             )
@@ -328,19 +331,21 @@ class PiBoardInfo(BoardInfo):
             )
 
     @staticmethod
-    def _make_pin(header, number, row, col, spec, pull_up):
-        is_gpio = spec.startswith('GPIO') and spec[4:].isdigit()
-        pull = 'up' if pull_up else ''
-        phys_spec = '{header}:{number}'.format(header=header, number=number)
-        specs = {spec, phys_spec}
+    def _make_pin(header, number, row, col, interfaces):
+        pull = 'up' if number in (3, 5) and header in ('P1', 'J8') else ''
+        phys_name = '{header}:{number}'.format(header=header, number=number)
+        names = {phys_name}
         if header in ('P1', 'J8', 'SODIMM'):
-            specs.add('BOARD{number}'.format(number=number))
-        if is_gpio:
-            gpio = int(spec[4:])
-            specs.add(gpio)
-            specs.add('BCM{gpio}'.format(gpio=gpio))
+            names.add('BOARD{number}'.format(number=number))
+        try:
+            name = interfaces['gpio']
+            gpio = int(name[4:])
+            names.add(name)
+            names.add(gpio)
+            names.add(str(gpio))
+            names.add('BCM{gpio}'.format(gpio=gpio))
             try:
-                specs.add('WPI{n}'.format(n={
+                names.add('WPI{n}'.format(n={
                     'J8:3':  8,  'J8:5':  9,  'J8:7':  7,  'J8:8':  15,
                     'J8:10': 16, 'J8:11': 0,  'J8:12': 1,  'J8:13': 2,
                     'J8:15': 3,  'J8:16': 4,  'J8:18': 5,  'J8:19': 12,
@@ -356,12 +361,15 @@ class PiBoardInfo(BoardInfo):
                     'P1:31': 22, 'P1:32': 26, 'P1:33': 23, 'P1:35': 24,
                     'P1:36': 27, 'P1:37': 25, 'P1:38': 28, 'P1:40': 29,
                     'P5:3':  17, 'P5:4':  18, 'P5:5':  19, 'P5:6':  20,
-                }[phys_spec]))
+                }[phys_name]))
             except KeyError:
                 pass
+        except KeyError:
+            name = interfaces['']
+            names.add(name)
         return PinInfo(
-            number=number, spec=spec, specs=frozenset(specs), pull=pull,
-            row=row, col=col, is_gpio=is_gpio)
+            number=number, name=name, names=frozenset(names), pull=pull,
+            row=row, col=col, interfaces=frozenset(interfaces))
 
     @property
     def description(self):
@@ -386,16 +394,16 @@ class PiFactory(Factory):
             pin.close()
         self.pins.clear()
 
-    def pin(self, spec):
-        for header, info in self.board_info.find_by_spec(spec):
+    def pin(self, name):
+        for header, info in self.board_info.find_pin(name):
             try:
                 pin = self.pins[info]
             except KeyError:
                 pin = self.pin_class(self, info)
                 self.pins[info] = pin
             return pin
-        raise PinInvalidPin('{spec} is not a valid pin spec'.format(
-            spec=spec))
+        raise PinInvalidPin('{name} is not a valid pin name'.format(
+            name=name))
 
     def _get_revision(self):
         """
@@ -558,11 +566,11 @@ class PiPin(Pin):
     """
     def __init__(self, factory, info):
         super().__init__()
-        if not info.is_gpio:
+        if 'gpio' not in info.interfaces:
             raise PinInvalidPin('{info} is not a GPIO pin'.format(info=info))
         self._factory = factory
         self._info = info
-        self._number = int(info.spec[4:])
+        self._number = int(info.name[4:])
         self._when_changed_lock = RLock()
         self._when_changed = None
 
@@ -574,11 +582,11 @@ class PiPin(Pin):
     def number(self):
         warnings.warn(
             DeprecationWarning(
-                "PiPin.number is deprecated; please use Pin.info.spec instead"))
+                "PiPin.number is deprecated; please use Pin.info.name instead"))
         return self._number
 
     def __repr__(self):
-        return self._info.spec
+        return self._info.name
 
     @property
     def factory(self):

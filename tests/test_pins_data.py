@@ -18,6 +18,7 @@ import gpiozero.pins.data
 import gpiozero.pins.local
 from gpiozero.pins.local import LocalPiFactory
 from gpiozero.pins.style import Style
+from gpiozero.compat import frozendict
 from gpiozero import *
 
 
@@ -251,14 +252,14 @@ def test_pprint_styles():
 
 def test_pprint_missing_pin():
     header = HeaderInfo('FOO', 4, 2, {
-        1: PinInfo(1, '5V',    False, 1, 1),
-        2: PinInfo(2, 'GND',   False, 1, 2),
+        1: PinInfo(1, '5V',    {'5V'}, '', 1, 1, set()),
+        2: PinInfo(2, 'GND',   {'GND'}, '', 1, 2, set()),
         # Pin 3 is deliberately missing
-        4: PinInfo(4, 'GPIO1', False, 2, 2),
-        5: PinInfo(5, 'GPIO2', False, 3, 1),
-        6: PinInfo(6, 'GPIO3', False, 3, 2),
-        7: PinInfo(7, '3V3',   False, 4, 1),
-        8: PinInfo(8, 'GND',   False, 4, 2),
+        4: PinInfo(4, 'GPIO1', {'GPIO1'}, '',   2, 2, {'gpio'}),
+        5: PinInfo(5, 'GPIO2', {'GPIO2'}, 'up', 3, 1, {'gpio'}),
+        6: PinInfo(6, 'GPIO3', {'GPIO3'}, 'up', 3, 2, {'gpio'}),
+        7: PinInfo(7, '3V3',   {'3V3'}, '', 4, 1, set()),
+        8: PinInfo(8, 'GND',   {'GND'}, '', 4, 2, set()),
         })
     with mock.patch('sys.stdout') as stdout:
         stdout.output = []

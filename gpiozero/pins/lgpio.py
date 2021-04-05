@@ -115,24 +115,24 @@ class LGPIOPin(LocalPiPin):
 
     GPIO_EDGES_NAMES = {v: k for (k, v) in GPIO_EDGES.items()}
 
-    def __init__(self, factory, number):
-        super().__init__(factory, number)
+    def __init__(self, factory, info):
+        super().__init__(factory, info)
         self._pwm = None
         self._bounce = None
         self._callback = None
         self._edges = lgpio.BOTH_EDGES
         lgpio.gpio_claim_input(
-            self.factory._handle, self.number, lgpio.SET_BIAS_DISABLE)
+            self.factory._handle, self._number, lgpio.SET_BIAS_DISABLE)
 
     def close(self):
         if self.factory._handle is not None:
             # Closing is really just "resetting" the function of the pin;
             # we let the factory close deal with actually freeing stuff
             lgpio.gpio_claim_input(
-                self.factory._handle, self.number, lgpio.SET_BIAS_DISABLE)
+                self.factory._handle, self._number, lgpio.SET_BIAS_DISABLE)
 
     def _get_function(self):
-        mode = lgpio.gpio_get_mode(self.factory._handle, self.number)
+        mode = lgpio.gpio_get_mode(self.factory._handle, self._number)
         return ['input', 'output'][bool(mode & self.GPIO_IS_OUT)]
 
     def _set_function(self, value):
@@ -143,7 +143,7 @@ class LGPIOPin(LocalPiPin):
             {
                 'input': lgpio.gpio_claim_input,
                 'output': lgpio.gpio_claim_output,
-            }[value](self.factory._handle, self.number)
+            }[value](self.factory._handle, self._number)
         except KeyError:
             raise PinInvalidFunction(
                 'invalid function "{value}" for pin {self!r}'.format(
@@ -153,14 +153,14 @@ class LGPIOPin(LocalPiPin):
         if self._pwm:
             return self._pwm[1] / 100
         else:
-            return bool(lgpio.gpio_read(self.factory._handle, self.number))
+            return bool(lgpio.gpio_read(self.factory._handle, self._number))
 
     def _set_state(self, value):
         if self._pwm:
             freq, duty = self._pwm
             self._pwm = (freq, int(value * 100))
             try:
-                lgpio.tx_pwm(self.factory._handle, self.number, *self._pwm)
+                lgpio.tx_pwm(self.factory._handle, self._number, *self._pwm)
             except lgpio.error:
                 raise PinInvalidState(
                     'invalid state "{value}" for pin {self!r}'.format(
@@ -169,10 +169,10 @@ class LGPIOPin(LocalPiPin):
             raise PinSetInput('cannot set state of pin {self!r}'.format(
                 self=self))
         else:
-            lgpio.gpio_write(self.factory._handle, self.number, bool(value))
+            lgpio.gpio_write(self.factory._handle, self._number, bool(value))
 
     def _get_pull(self):
-        mode = lgpio.gpio_get_mode(self.factory._handle, self.number)
+        mode = lgpio.gpio_get_mode(self.factory._handle, self._number)
         if mode & self.GPIO_IS_BIAS_PULL_UP:
             return 'up'
         elif mode & self.GPIO_IS_BIAS_PULL_DOWN:
@@ -200,8 +200,8 @@ class LGPIOPin(LocalPiPin):
         else:
             # Simply calling gpio_claim_input is insufficient to change the
             # line flags on a pin; it needs to be freed and re-claimed
-            lgpio.gpio_free(self.factory._handle, self.number)
-            lgpio.gpio_claim_input(self.factory._handle, self.number, flags)
+            lgpio.gpio_free(self.factory._handle, self._number)
+            lgpio.gpio_claim_input(self.factory._handle, self._number, flags)
 
     def _get_frequency(self):
         if self._pwm:
@@ -215,14 +215,14 @@ class LGPIOPin(LocalPiPin):
             if self.function != 'output':
                 raise PinPWMFixedValue(
                     'cannot start PWM on pin {self!r}'.format(self=self))
-            lgpio.tx_pwm(self.factory._handle, self.number, value, 0)
+            lgpio.tx_pwm(self.factory._handle, self._number, value, 0)
             self._pwm = (value, 0)
         elif self._pwm and value is not None and value > 0:
             freq, duty = self._pwm
-            lgpio.tx_pwm(self.factory._handle, self.number, value, duty)
+            lgpio.tx_pwm(self.factory._handle, self._number, value, duty)
             self._pwm = (value, duty)
         elif self._pwm and (value is None or value == 0):
-            lgpio.tx_pwm(self.factory._handle, self.number, 0, 0)
+            lgpio.tx_pwm(self.factory._handle, self._number, 0, 0)
             self._pwm = None
 
     def _get_bounce(self):
@@ -234,7 +234,8 @@ class LGPIOPin(LocalPiPin):
         elif value < 0:
             raise PinInvalidBounce('bounce must be 0 or greater')
         value = int(value * 1000000)
-        lgpio.gpio_set_debounce_micros(self.factory._handle, self.number, value)
+        lgpio.gpio_set_debounce_micros(
+            self.factory._handle, self._number, value)
         self._bounce = value
 
     def _get_edges(self):
@@ -253,11 +254,11 @@ class LGPIOPin(LocalPiPin):
 
     def _enable_event_detect(self):
         lgpio.gpio_claim_alert(
-            self.factory._handle, self.number, self._edges,
-            lgpio.gpio_get_mode(self.factory._handle, self.number) &
+            self.factory._handle, self._number, self._edges,
+            lgpio.gpio_get_mode(self.factory._handle, self._number) &
             self.GPIO_LINE_FLAGS_MASK)
         self._callback = lgpio.callback(
-            self.factory._handle, self.number, self._edges,
+            self.factory._handle, self._number, self._edges,
             self._call_when_changed)
 
     def _disable_event_detect(self):
@@ -265,8 +266,8 @@ class LGPIOPin(LocalPiPin):
             self._callback.cancel()
             self._callback = None
         lgpio.gpio_claim_input(
-            self.factory._handle, self.number,
-            lgpio.gpio_get_mode(self.factory._handle, self.number) &
+            self.factory._handle, self._number,
+            lgpio.gpio_get_mode(self.factory._handle, self._number) &
             self.GPIO_LINE_FLAGS_MASK)
 
 
