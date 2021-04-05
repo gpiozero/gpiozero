@@ -646,11 +646,7 @@ def pi_info(revision=None):
     if revision is None:
         if Device.pin_factory is None:
             Device.pin_factory = Device._default_pin_factory()
-        result = Device.pin_factory.board_info
-        if result is None:
-            raise PinUnknownPi('The default pin_factory is not attached to a Pi')
-        else:
-            return result
+        return Device.pin_factory.board_info
     else:
         if isinstance(revision, bytes):
             revision = revision.decode('ascii')

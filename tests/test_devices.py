@@ -63,13 +63,6 @@ def test_device_bad_pin(mock_factory):
     with pytest.raises(PinInvalidPin):
         device = GPIODevice('foo')
 
-def test_device_non_physical(mock_factory):
-    with warnings.catch_warnings(record=True) as w:
-        warnings.resetwarnings()
-        device = GPIODevice('GPIO37')
-        assert len(w) == 1
-        assert w[0].category == PinNonPhysical
-
 def test_device_init(mock_factory):
     pin = mock_factory.pin(2)
     with GPIODevice(2) as device:

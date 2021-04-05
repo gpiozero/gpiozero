@@ -116,14 +116,6 @@ def test_pi_info():
     assert repr(r).startswith('PiBoardInfo(revision=')
     assert 'headers=...' in repr(r)
 
-def test_pi_info_not_a_pi():
-    class NotAPiFactory(LocalPiFactory):
-        def _get_pi_info(self):
-            return None
-    with mock.patch('gpiozero.devices.Device.pin_factory', NotAPiFactory()):
-        with pytest.raises(PinUnknownPi):
-            pi_info()
-
 def test_pi_info_other_types():
     assert pi_info(b'9000f1') == pi_info(0x9000f1)
 
