@@ -9,10 +9,9 @@
 Installing GPIO Zero
 ====================
 
-GPIO Zero is installed by default in the `Raspberry Pi OS`_ desktop image, and
-the `Raspberry Pi Desktop`_ image for PC/Mac, both available from
-`raspberrypi.org`_. Follow these guides to installing on Raspberry Pi OS Lite
-and other operating systems, including for PCs using the :doc:`remote GPIO
+GPIO Zero is installed by default in the `Raspberry Pi OS`_ desktop image,  `Raspberry Pi OS`_ Lite image, and
+the `Raspberry Pi Desktop`_ image for PC/Mac, all available from
+`raspberrypi.org`_. Follow these guides to installing on other operating systems, including for PCs using the :doc:`remote GPIO
 <remote_gpio>` feature.
 
 .. _Raspberry Pi OS: https://www.raspberrypi.org/software/operating-systems/
