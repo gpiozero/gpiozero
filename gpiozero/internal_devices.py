@@ -437,7 +437,6 @@ class LoadAverage(PolledInternalDevice):
         Returns the current load average.
         """
         with io.open(self.load_average_file, 'r') as f:
-            print(repr(f))
             file_columns = f.read().strip().split()
             return float(file_columns[self._load_average_file_column])
 
