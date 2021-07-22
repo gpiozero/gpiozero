@@ -156,3 +156,9 @@ texinfo_documents = []
 #texinfo_domain_indices = True
 #texinfo_show_urls = 'footnote'
 #texinfo_no_detailmenu = False
+
+# -- Options for linkcheck builder ----------------------------------------
+
+linkcheck_retries = 3
+linkcheck_workers = 20
+linkcheck_anchors = True
