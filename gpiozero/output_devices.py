@@ -1238,16 +1238,14 @@ class RGBLED(SourceMixin, Device):
             begin_color = self.value
         else:
             begin_color = start_color
-        lerp = lambda t, fade_in: tuple(
+        lerp = lambda t: tuple(
             (1 - t) * begin + t * end
-            if fade_in else
-            (1 - t) * end + t * begin
             for end, begin in zip(end_color, begin_color)
             )
         sequence = []
         if fade_time > 0:
             sequence += [
-                (lerp(i * (1 / fps) / fade_time, True), 1 / fps)
+                (lerp(i * (1 / fps) / fade_time), 1 / fps)
                 for i in range(int(fps * fade_time))
                 ]
             sequence.append((end_color,0))
