@@ -1209,7 +1209,7 @@ class RGBLED(SourceMixin, Device):
         self._stop_blink()
         self._blink_thread = GPIOThread(
             self._cycle_color_device,
-            (fade_time, start_color, end_color)
+            (cycle_time, start_color, clockwise, n)
         )
         self._blink_thread.start()
         if not background:
@@ -1294,7 +1294,7 @@ class RGBLED(SourceMixin, Device):
                 break
                 
     def _cycle_color_device(
-            self, cycle_time, start_color, clockwise):
+            self, cycle_time, start_color, clockwise, n, fps=25):
         if start_color is None:
             color = Color(self.value)
         else:
