@@ -48,7 +48,7 @@ RGBLED
 ------
 
 .. autoclass:: RGBLED
-    :members: on, off, toggle, blink, pulse, red, green, blue, is_lit, color, value
+    :members: on, off, toggle, blink, pulse, fade_to, red, green, blue, is_lit, color, value
 
 
 Buzzer
