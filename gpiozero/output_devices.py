@@ -558,7 +558,7 @@ class PWMOutputDevice(OutputDevice):
         
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            self._fade_device,
+            self._fade_to_device,
             (fade_time, start_value, end_value)
         )
         self._blink_thread.start()
@@ -601,7 +601,7 @@ class PWMOutputDevice(OutputDevice):
     def _fade_to_device(
             self, fade_time, start_value, end_value, fps=25):
         if start_value is None:
-            begin_value = super().value
+            begin_value = self.value
         else:
             begin_value = start_value
         sequence = []
@@ -609,7 +609,8 @@ class PWMOutputDevice(OutputDevice):
             sequence += [
                 (begin_value + ((end_value - begin_value) * i * (1 / fps) / fade_time) , 1 / fps)
                 for i in range(int(fps * fade_time))
-                )
+            ]
+            sequence.append((end_value,0))
         for value, delay in sequence:
             self._write(value)
             if self._blink_thread.stopping.wait(delay):
@@ -1147,7 +1148,7 @@ class RGBLED(SourceMixin, Device):
             on_color, off_color, n, background
         )
 
-    def fade_to(self, fade_time=1, start_color=None, end_color=(1,1,1), background=True)
+    def fade_to(self, fade_time=1, start_color=None, end_color=(1,1,1), background=True):
         """
         Make the device fade smoothly to a given value.
         
@@ -1171,7 +1172,7 @@ class RGBLED(SourceMixin, Device):
         
         self._stop_blink()
         self._blink_thread = GPIOThread(
-            self._fade_device,
+            self._fade_to_device,
             (fade_time, start_color, end_color)
         )
         self._blink_thread.start()
@@ -1234,21 +1235,22 @@ class RGBLED(SourceMixin, Device):
         # Define a simple lambda to perform linear interpolation between
         # off_color and on_color
         if start_color is None:
-            begin_color = super().value
+            begin_color = self.value
         else:
             begin_color = start_color
         lerp = lambda t, fade_in: tuple(
-            (1 - t) * end + t * begin
-            if fade_in else
             (1 - t) * begin + t * end
+            if fade_in else
+            (1 - t) * end + t * begin
             for end, begin in zip(end_color, begin_color)
             )
         sequence = []
         if fade_time > 0:
             sequence += [
                 (lerp(i * (1 / fps) / fade_time, True), 1 / fps)
-                for i in range(int(fps * fade_in_time))
+                for i in range(int(fps * fade_time))
                 ]
+            sequence.append((end_color,0))
         for l in self._leds:
             l._controller = self
         for value, delay in sequence:
