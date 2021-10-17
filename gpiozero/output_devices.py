@@ -16,7 +16,7 @@
 
 from threading import Lock
 from itertools import repeat, cycle, chain
-from colorzero import Color
+from colorzero import Color, Hue
 from collections import OrderedDict
 from math import log2
 import warnings
@@ -1169,7 +1169,7 @@ class RGBLED(SourceMixin, Device):
             continue fading and return immediately. If :data:`False`, only
             return when the fade is finished.
         """
-        
+
         self._stop_blink()
         self._blink_thread = GPIOThread(
             self._fade_to_device,
@@ -1179,6 +1179,42 @@ class RGBLED(SourceMixin, Device):
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
+
+    def cycle_color(self, cycle_time=10, start_color=None, clockwise=True, n=None, background=True):
+        """
+        Cycle the hue, while keeping saturation and value constant (hsv color model).
+        
+        :param float cycle_time:
+            Time in seconds complete one cycle. Defaults to 10
+
+        :type start_color: tuple or ~colorzero.Color or None
+        :param start:
+            Gives the color at which the fade starts; :data: `None` (the default) 
+            means start at current color
+
+        :param bool clockwise:
+            Gives the direction of the rotation. `True` (the default) means clockwise (Red->Green->Blue->Red)
+
+        :type n: int or None
+        :param n:
+            Number of times to cycle; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue fading and return immediately. If :data:`False`, only
+            return when the cycles are finished. (warning: the default value of
+            *n* will result in this method never returning).
+        """
+
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._cycle_color_device,
+            (fade_time, start_color, end_color)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None            
             
     def _stop_blink(self):
         if self._controller:
@@ -1256,7 +1292,33 @@ class RGBLED(SourceMixin, Device):
                 l._write(v)
             if self._blink_thread.stopping.wait(delay):
                 break
-
+                
+    def _cycle_color_device(
+            self, cycle_time, start_color, clockwise):
+        if start_color is None:
+            color = Color(self.value)
+        else:
+            color = Color(start_color)
+        direction = -1 + 2 * clockwise
+        sequence = []
+        if cycle_time > 0:
+            sequence += [
+                (color + Hue(direction * i / (fps * cycle_time)), 1 / fps)
+                for i in range(int(fps * cycle_time))
+                ]
+            sequence.append((color,0))
+            sequence= (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for l in self._leds:
+            l._controller = self
+        for value, delay in sequence:
+            for l, v in zip(self._leds, value):
+                l._write(v)
+            if self._blink_thread.stopping.wait(delay):
+                break
+       
 
 class Motor(SourceMixin, CompositeDevice):
     """
