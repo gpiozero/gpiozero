@@ -539,7 +539,7 @@ class PWMOutputDevice(OutputDevice):
         """
         Make the device fade smoothly to a given value.
         
-        :param float fade_in_time:
+        :param float fade_time:
             Time in seconds to fade in. Defaults to 1
         
         :type start_value: float or None
@@ -1152,10 +1152,10 @@ class RGBLED(SourceMixin, Device):
         """
         Make the device fade smoothly to a given value.
         
-        :param float fade_in_time:
+        :param float fade_time:
             Time in seconds to fade in. Defaults to 1
         
-        :type atart_color: float or ~colorzero.Color or None
+        :type start_color: float or ~colorzero.Color or None
         :param start:
             Gives the color at which the fade starts; :data: `None` (the default) 
             means start at current value
