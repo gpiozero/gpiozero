@@ -535,6 +535,37 @@ class PWMOutputDevice(OutputDevice):
             on_time, off_time, fade_in_time, fade_out_time, n, background
         )
 
+    def fade_to(self, fade_time=1, start_value=None, end_value=1, background=True)
+        """
+        Make the device fade smoothly to a given value.
+        
+        :param float fade_in_time:
+            Time in seconds to fade in. Defaults to 1
+        
+        :type start_value: float or None
+        :param start:
+            Gives the value at which the fade starts; :data: `None` (the default) 
+            means start at current value
+        
+        :param float end:
+            Gives the value at which the fade should end
+            
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue fading and return immediately. If :data:`False`, only
+            return when the fade is finished.
+        """
+        
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._fade_device,
+            (fade_time, start_value, end_value)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+            
     def _stop_blink(self):
         if self._controller:
             self._controller._stop_blink(self)
@@ -542,7 +573,7 @@ class PWMOutputDevice(OutputDevice):
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
-
+            
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
@@ -566,7 +597,24 @@ class PWMOutputDevice(OutputDevice):
             self._write(value)
             if self._blink_thread.stopping.wait(delay):
                 break
-
+                
+    def _fade_to_device(
+            self, fade_time, start_value, end_value, fps=25):
+        if start_value is None
+            begin_value = super().value
+        else
+            begin_value = start_value
+        sequence = []
+        if fade_time > 0:
+            sequence += [
+                (begin_value + ((end_value - begin_value) * i * (1 / fps) / fade_time) , 1 / fps)
+                for i in range(int(fps * fade_time))
+                )
+        for value, delay in sequence:
+            self._write(value)
+            if self._blink_thread.stopping.wait(delay):
+                break
+         
 
 class TonalBuzzer(SourceMixin, CompositeDevice):
     """
@@ -1099,6 +1147,46 @@ class RGBLED(SourceMixin, Device):
             on_color, off_color, n, background
         )
 
+    def fade_to(self, fade_time=1, start_color=None, end_color=(1,1,1), background=True)
+        """
+        Make the device fade smoothly to a given value.
+        
+        :param float fade_in_time:
+            Time in seconds to fade in. Defaults to 1
+        
+        :type atart_color: float or ~colorzero.Color or None
+        :param start:
+            Gives the color at which the fade starts; :data: `None` (the default) 
+            means start at current value
+        
+        :type end_color: ~colorzero.Color or tuple
+        :param end_color:
+            Gives the color at which the fade should end
+            
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue fading and return immediately. If :data:`False`, only
+            return when the fade is finished.
+        """
+        
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._fade_device,
+            (fade_time, start_color, end_color)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+            
+    def _stop_blink(self):
+        if self._controller:
+            self._controller._stop_blink(self)
+            self._controller = None
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None                
+                
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway
         if self._blink_thread:
@@ -1133,6 +1221,34 @@ class RGBLED(SourceMixin, Device):
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
                 )
+        for l in self._leds:
+            l._controller = self
+        for value, delay in sequence:
+            for l, v in zip(self._leds, value):
+                l._write(v)
+            if self._blink_thread.stopping.wait(delay):
+                break
+                
+    def _fade_to_device(
+            self, fade_time, start_color, end_color, fps=25):
+        # Define a simple lambda to perform linear interpolation between
+        # off_color and on_color
+        if start_color is None
+            begin_color = super().value
+        else
+            begin_color = start_color
+        lerp = lambda t, fade_in: tuple(
+            (1 - t) * end + t * begin
+            if fade_in else
+            (1 - t) * begin + t * end
+            for end, begin in zip(end_color, begin_color)
+            )
+        sequence = []
+        if fade_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_time, True), 1 / fps)
+                for i in range(int(fps * fade_in_time))
+                ]
         for l in self._leds:
             l._controller = self
         for value, delay in sequence:
