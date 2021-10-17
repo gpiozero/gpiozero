@@ -535,7 +535,7 @@ class PWMOutputDevice(OutputDevice):
             on_time, off_time, fade_in_time, fade_out_time, n, background
         )
 
-    def fade_to(self, fade_time=1, start_value=None, end_value=1, background=True)
+    def fade_to(self, fade_time=1, start_value=None, end_value=1, background=True):
         """
         Make the device fade smoothly to a given value.
         
