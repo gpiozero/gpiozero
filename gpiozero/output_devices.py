@@ -600,9 +600,9 @@ class PWMOutputDevice(OutputDevice):
                 
     def _fade_to_device(
             self, fade_time, start_value, end_value, fps=25):
-        if start_value is None
+        if start_value is None:
             begin_value = super().value
-        else
+        else:
             begin_value = start_value
         sequence = []
         if fade_time > 0:
@@ -1233,9 +1233,9 @@ class RGBLED(SourceMixin, Device):
             self, fade_time, start_color, end_color, fps=25):
         # Define a simple lambda to perform linear interpolation between
         # off_color and on_color
-        if start_color is None
+        if start_color is None:
             begin_color = super().value
-        else
+        else:
             begin_color = start_color
         lerp = lambda t, fade_in: tuple(
             (1 - t) * end + t * begin
