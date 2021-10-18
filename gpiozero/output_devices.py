@@ -538,24 +538,24 @@ class PWMOutputDevice(OutputDevice):
     def fade_to(self, fade_time=1, start_value=None, end_value=1, background=True):
         """
         Make the device fade smoothly to a given value.
-        
+
         :param float fade_time:
             Time in seconds to fade in. Defaults to 1
-        
+
         :type start_value: float or None
         :param start:
             Gives the value at which the fade starts; :data: `None` (the default) 
             means start at current value
-        
+
         :param float end:
             Gives the value at which the fade should end
-            
+
         :param bool background:
             If :data:`True` (the default), start a background thread to
             continue fading and return immediately. If :data:`False`, only
             return when the fade is finished.
         """
-        
+
         self._stop_blink()
         self._blink_thread = GPIOThread(
             self._fade_to_device,
@@ -565,7 +565,7 @@ class PWMOutputDevice(OutputDevice):
         if not background:
             self._blink_thread.join()
             self._blink_thread = None
-            
+
     def _stop_blink(self):
         if self._controller:
             self._controller._stop_blink(self)
@@ -573,7 +573,7 @@ class PWMOutputDevice(OutputDevice):
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None
-            
+
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, n, fps=25):
         sequence = []
@@ -597,7 +597,7 @@ class PWMOutputDevice(OutputDevice):
             self._write(value)
             if self._blink_thread.stopping.wait(delay):
                 break
-                
+
     def _fade_to_device(
             self, fade_time, start_value, end_value, fps=25):
         if start_value is None:
@@ -615,7 +615,7 @@ class PWMOutputDevice(OutputDevice):
             self._write(value)
             if self._blink_thread.stopping.wait(delay):
                 break
-         
+
 
 class TonalBuzzer(SourceMixin, CompositeDevice):
     """
@@ -1151,19 +1151,19 @@ class RGBLED(SourceMixin, Device):
     def fade_to(self, fade_time=1, start_color=None, end_color=(1,1,1), background=True):
         """
         Make the device fade smoothly to a given value.
-        
+
         :param float fade_time:
-            Time in seconds to fade in. Defaults to 1
-        
+            Time in seconds to fade in. Defaults to 1.
+
         :type start_color: tuple or ~colorzero.Color or None
         :param start:
             Gives the color at which the fade starts; :data: `None` (the default) 
-            means start at current value
-        
+            means start at current value.
+
         :type end_color: ~colorzero.Color or tuple
         :param end_color:
-            Gives the color at which the fade should end
-            
+            Gives the color at which the fade should end.
+
         :param bool background:
             If :data:`True` (the default), start a background thread to
             continue fading and return immediately. If :data:`False`, only
@@ -1183,17 +1183,17 @@ class RGBLED(SourceMixin, Device):
     def cycle_color(self, cycle_time=10, start_color=None, clockwise=True, n=None, background=True):
         """
         Cycle the hue, while keeping saturation and value constant (hsv color model).
-        
+
         :param float cycle_time:
-            Time in seconds complete one cycle. Defaults to 10
+            Time in seconds to complete one cycle. Defaults to 10
 
         :type start_color: tuple or ~colorzero.Color or None
         :param start:
             Gives the color at which the fade starts; :data: `None` (the default) 
-            means start at current color
+            means start at current color.
 
         :param bool clockwise:
-            Gives the direction of the rotation. `True` (the default) means clockwise (Red->Green->Blue->Red)
+            Gives the direction of the rotation. `True` (the default) means clockwise (Red->Green->Blue->Red).
 
         :type n: int or None
         :param n:
@@ -1201,7 +1201,7 @@ class RGBLED(SourceMixin, Device):
 
         :param bool background:
             If :data:`True` (the default), start a background thread to
-            continue fading and return immediately. If :data:`False`, only
+            continue cycling and return immediately. If :data:`False`, only
             return when the cycles are finished. (warning: the default value of
             *n* will result in this method never returning).
         """
@@ -1215,7 +1215,7 @@ class RGBLED(SourceMixin, Device):
         if not background:
             self._blink_thread.join()
             self._blink_thread = None            
-            
+
     def _stop_blink(self):
         if self._controller:
             self._controller._stop_blink(self)
@@ -1223,7 +1223,7 @@ class RGBLED(SourceMixin, Device):
         if self._blink_thread:
             self._blink_thread.stop()
             self._blink_thread = None                
-                
+
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway
         if self._blink_thread:
@@ -1265,7 +1265,7 @@ class RGBLED(SourceMixin, Device):
                 l._write(v)
             if self._blink_thread.stopping.wait(delay):
                 break
-                
+
     def _fade_to_device(
             self, fade_time, start_color, end_color, fps=25):
         # Define a simple lambda to perform linear interpolation between
@@ -1292,14 +1292,14 @@ class RGBLED(SourceMixin, Device):
                 l._write(v)
             if self._blink_thread.stopping.wait(delay):
                 break
-                
+
     def _cycle_color_device(
             self, cycle_time, start_color, clockwise, n, fps=25):
         if start_color is None:
             color = Color(self.value)
         else:
             color = Color(start_color)
-        direction = -1 + 2 * clockwise
+        direction = 1 if clockwise else -1
         sequence = []
         if cycle_time > 0:
             sequence += [
@@ -1318,7 +1318,7 @@ class RGBLED(SourceMixin, Device):
                 l._write(v)
             if self._blink_thread.stopping.wait(delay):
                 break
-       
+
 
 class Motor(SourceMixin, CompositeDevice):
     """
