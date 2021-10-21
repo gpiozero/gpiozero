@@ -1183,6 +1183,9 @@ class RGBLED(SourceMixin, Device):
     def cycle_color(self, cycle_time=10, start_color=None, clockwise=True, n=None, background=True):
         """
         Cycle the hue, while keeping saturation and value constant (hsv color model).
+        Caution: Only the hue parameter will change. This means, that the luminescence will stay
+        the same, so white will stay white and black will stay black. For best (i.e. most colorful)
+        results, use a pure color as a starting value.
 
         :param float cycle_time:
             Time in seconds to complete one cycle. Defaults to 10
@@ -1193,7 +1196,10 @@ class RGBLED(SourceMixin, Device):
             means start at current color.
 
         :param bool clockwise:
-            Gives the direction of the rotation. `True` (the default) means clockwise (Red->Green->Blue->Red).
+            Gives the direction of the rotation. :data: `True` (the default) means clockwise 
+            in the hsw colorwheel arbraum - – Wikipedia
+https://de.wikipedia.org › wiki › HSV-Farbraum
+Der HSV(Red->Green->Blue->Red).
 
         :type n: int or None
         :param n:
