@@ -1185,7 +1185,7 @@ class RGBLED(SourceMixin, Device):
         Cycle the hue, while keeping saturation and value constant (hsv color model).
         Caution: Only the hue parameter will change. This means, that the luminescence will stay
         the same, so full white (1,1,1) will stay white and black (i.e. off) will stay black. 
-        For best (i.e. most colorful) results, use a pure color (e.g. `(1,0,0) ) as a starting value.
+        For best (i.e. most colorful) results, use a pure color (e.g. `(1,0,0)` ) as a starting value.
 
         :param float cycle_time:
             Time in seconds to complete one cycle. Defaults to 10
