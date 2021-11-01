@@ -1,81 +1,110 @@
 #!/usr/bin/python3
 
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""
+This script generates Graphviz-compatible dot scripts from the class
+definitions of the containing project. Specify the root class to generate with
+the -i (multiple roots can be specified). Specify parts of the hierarchy to
+exclude with -x. Default configurations can be specified in the containing
+project's setup.cfg under [{SETUP_SECTION}]
+"""
+
+from __future__ import annotations
+
 import re
 import sys
-import argparse
+assert sys.version_info >= (3, 6), 'Script requires Python 3.6+'
+import typing as t
 from pathlib import Path
+from configparser import ConfigParser
+from argparse import ArgumentParser, Namespace, FileType
 
 
-ABSTRACT_CLASSES = {
-    'Device',
-    'GPIODevice',
-    'SmoothedInputDevice',
-    'AnalogInputDevice',
-    'MCP3xxx',
-    'MCP3xx2',
-    'MCP30xx',
-    'MCP32xx',
-    'MCP33xx',
-    'SPIDevice',
-    'CompositeDevice',
-    'CompositeOutputDevice',
-    'LEDCollection',
-    'InternalDevice',
-}
-
-OMIT_CLASSES = {
-    'object',
-    'GPIOBase',
-    'GPIOMeta',
-    'frozendict',
-    'WeakMethod',
-    '_EnergenieMaster',
-}
+PROJECT_ROOT = (Path(__file__).parent / '..').resolve()
+SETUP_SECTION = str(Path(__file__).name) + ':settings'
 
 
-def main(args=None):
-    """
-    A simple application for generating GPIO Zero's charts. Specify the root
-    class to generate with -i (multiple roots can be specified). Specify parts
-    of the hierarchy to exclude with -x. Output is in a format suitable for
-    feeding to graphviz's dot application.
-    """
+def main(args: t.List[str] = None):
     if args is None:
         args = sys.argv[1:]
-    my_path = Path(__file__).parent
-    default_path = my_path / '..' / '..' / 'gpiozero'
-    default_path = default_path.resolve()
-    parser = argparse.ArgumentParser(description=main.__doc__)
-    parser.add_argument('-p', '--path', action='append', metavar='PATH',
-                        default=[], help=
-                        "search under PATH for Python source files; can be "
-                        "specified multiple times, defaults to %s" % default_path)
-    parser.add_argument('-i', '--include', action='append', metavar='CLASS',
-                        default=[], help=
-                        "only include classes which have BASE somewhere in "
-                        "their ancestry; can be specified multiple times")
-    parser.add_argument('-x', '--exclude', action='append', metavar='CLASS',
-                        default=[], help=
-                        "exclude any classes which have BASE somewhere in "
-                        "their ancestry; can be specified multiple times")
-    parser.add_argument('-o', '--omit', action='append', metavar='CLASS',
-                        default=[], help="omit the specified class, but not "
-                        "its descendents from the chart; can be specified "
-                        "multiple times")
-    parser.add_argument('output', nargs='?', type=argparse.FileType('w'),
-                        default=sys.stdout, help=
-                        "the file to write the output to; defaults to stdout")
-    args = parser.parse_args(args)
-    if not args.path:
-        args.path = [str(default_path)]
+    config = get_config(args)
 
-    m = make_class_map(set(args.path), OMIT_CLASSES | set(args.omit))
-    if args.include or args.exclude:
-        m = filter_map(m, include_roots=set(args.include), exclude_roots=set(args.exclude))
-    args.output.write(render_map(m, ABSTRACT_CLASSES))
+    m = make_class_map(config.source, config.omit)
+    if config.include or config.exclude:
+        m = filter_map(m, include_roots=config.include,
+                       exclude_roots=config.exclude)
+    config.output.write(render_map(m, config.abstract))
 
 
-def make_class_map(search_paths, omit):
+def get_config(args: t.List[str]) -> Namespace:
+    config = ConfigParser(
+        defaults={
+            'source': '',
+            'include': '',
+            'exclude': '',
+            'abstract': '',
+            'omit': '',
+            'output': '-',
+        },
+        delimiters=('=',), default_section=SETUP_SECTION,
+        empty_lines_in_values=False, interpolation=None,
+        converters={'list': lambda s: s.strip().splitlines()})
+    config.read(PROJECT_ROOT / 'setup.cfg')
+    sect = config[SETUP_SECTION]
+    # Resolve source and output defaults relative to setup.cfg
+    if sect['source']:
+        sect['source'] = '\n'.join(
+            str(PROJECT_ROOT / source)
+            for source in sect.getlist('source')
+        )
+    if sect['output'] and sect['output'] != '-':
+        sect['output'] = str(PROJECT_ROOT / sect['output'])
+
+    parser = ArgumentParser(description=__doc__.format(**globals()))
+    parser.add_argument(
+        '-s', '--source', action='append', metavar='PATH',
+        default=sect.getlist('source'),
+        help="the pattern(s) of files to search for classes; can be specified "
+        "multiple times. Default: %(default)r")
+    parser.add_argument(
+        '-i', '--include', action='append', metavar='CLASS',
+        default=sect.getlist('exclude'),
+        help="only include classes which have BASE somewhere in their "
+        "ancestry; can be specified multiple times. Default: %(default)r")
+    parser.add_argument(
+        '-x', '--exclude', action='append', metavar='CLASS',
+        default=sect.getlist('exclude'),
+        help="exclude any classes which have BASE somewhere in their "
+        "ancestry; can be specified multiple times. Default: %(default)r")
+    parser.add_argument(
+        '-o', '--omit', action='append', metavar='CLASS',
+        default=sect.getlist('omit'),
+        help="omit the specified class, but not its descendents from the "
+        "chart; can be specified multiple times. Default: %(default)r")
+    parser.add_argument(
+        '-a', '--abstract', action='append', metavar='CLASS',
+        default=sect.getlist('abstract'),
+        help="mark the specified class as abstract, rendering it in a "
+        "different color; can be specified multiple times. Default: "
+        "%(default)r")
+    parser.add_argument(
+        'output', nargs='?', type=FileType('w'),
+        default=sect['output'],
+        help="the file to write the output to; defaults to stdout")
+    ns = parser.parse_args(args)
+    ns.abstract = set(ns.abstract)
+    ns.include = set(ns.include)
+    ns.exclude = set(ns.exclude)
+    ns.omit = set(ns.omit)
+    if not ns.source:
+        ns.source = [str(PROJECT_ROOT)]
+    ns.source = set(ns.source)
+    return ns
+
+
+def make_class_map(search_paths: t.List[str], omit: t.Set[str])\
+        -> t.Dict[str, t.Set[str]]:
     """
     Find all Python source files under *search_paths*, extract (via a crude
     regex) all class definitions and return a mapping of class-name to the list
@@ -84,17 +113,20 @@ def make_class_map(search_paths, omit):
     All classes listed in *omit* will be excluded from the result, but not
     their descendents (useful for excluding "object" etc.)
     """
-    def find_classes():
+    def find_classes() -> t.Iterator[t.Tuple[str, t.Set[str]]]:
         class_re = re.compile(
             r'^class\s+(?P<name>\w+)\s*(?:\((?P<bases>.*)\))?:', re.MULTILINE)
         for path in search_paths:
-            for py_file in Path(path).rglob('*.py'):
+            p = Path(path)
+            for py_file in p.parent.glob(p.name):
                 with py_file.open() as f:
                     for match in class_re.finditer(f.read()):
                         if match.group('name') not in omit:
                             yield match.group('name'), {
                                 base.strip()
-                                for base in (match.group('bases') or '').split(',')
+                                for base in (
+                                    match.group('bases') or 'object'
+                                ).split(',')
                                 if base.strip() not in omit
                             }
     return {
@@ -103,20 +135,22 @@ def make_class_map(search_paths, omit):
     }
 
 
-def filter_map(class_map, include_roots, exclude_roots):
+def filter_map(class_map: t.Dict[str, t.Set[str]], include_roots: t.Set[str],
+               exclude_roots: t.Set[str]) -> t.Dict[str, t.Set[str]]:
     """
     Returns *class_map* (which is a mapping such as that returned by
     :func:`make_class_map`), with only those classes which have at least one
     of the *include_roots* in their ancestry, and none of the *exclude_roots*.
     """
-    def has_parent(cls, parent):
+    def has_parent(cls: str, parent: str) -> bool:
         return cls == parent or any(
             has_parent(base, parent) for base in class_map.get(cls, ()))
 
     filtered = {
         name: bases
         for name, bases in class_map.items()
-        if (not include_roots or any(has_parent(name, root) for root in include_roots))
+        if (not include_roots or
+            any(has_parent(name, root) for root in include_roots))
         and not any(has_parent(name, root) for root in exclude_roots)
     }
     pure_bases = {
@@ -129,7 +163,7 @@ def filter_map(class_map, include_roots, exclude_roots):
     return filtered
 
 
-def render_map(class_map, abstract):
+def render_map(class_map: t.Dict[str, t.Set[str]], abstract: t.Set[str]) -> str:
     """
     Renders *class_map* (which is a mapping such as that returned by
     :func:`make_class_map`) to graphviz's dot language.
@@ -138,7 +172,7 @@ def render_map(class_map, abstract):
     to indicate their abstract nature. All classes with names ending "Mixin"
     will be implicitly rendered in a different style.
     """
-    def all_names(class_map):
+    def all_names(class_map: t.Dict[str, t.Set[str]]) -> t.Iterator[str]:
         for name, bases in class_map.items():
             yield name
             for base in bases:
@@ -152,17 +186,17 @@ digraph classes {{
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     {mixin_nodes}
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     {abstract_nodes}
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    {concrete_nodes}
 
+    /* Edges */
     {edges}
 }}
 """
@@ -177,6 +211,12 @@ digraph classes {{
             '{name};'.format(name=name)
             for name in sorted(abstract & set(all_names(class_map)))
         ),
+        concrete_nodes='\n    '.join(
+            '{name};'.format(name=name)
+            for name in sorted(set(all_names(class_map)))
+            if not name.endswith('Mixin')
+            and not name in abstract
+        ),
         edges='\n    '.join(
             '{name}->{base};'.format(name=name, base=base)
             for name, bases in sorted(class_map.items())
@@ -186,4 +226,4 @@ digraph classes {{
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
