@@ -1,9 +1,14 @@
 #!/usr/bin/python3
 
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
-A script for updating the copyright headers on all files project-wide. It
-derives the authorship and copyright years information from the git history
-of the project; hence, this script must be run within a git repository.
+This script updates the copyright headers on all files project-wide. It derives
+the authorship and copyright years information from the git history of the
+project; hence, this script must be run within a git clone of the project's
+repository. Options are available to specify the license text file, the files
+to edit, and files to exclude. Default options can be specified in the
+containing project's setup.cfg under [{SETUP_SECTION}]
 """
 
 from __future__ import annotations
@@ -23,6 +28,8 @@ from pathlib import Path
 from fnmatch import fnmatch
 
 
+PROJECT_ROOT = (Path(__file__).parent / '..').resolve()
+SETUP_SECTION = str(Path(__file__).name) + ':settings'
 SPDX_PREFIX = 'SPDX-License-Identifier:'
 COPYRIGHT_PREFIX = 'Copyright (c)'
 
@@ -54,13 +61,16 @@ def get_config(args: t.List[str]) -> Namespace:
             'spdx_prefix': SPDX_PREFIX,
             'copy_prefix': COPYRIGHT_PREFIX,
         },
-        delimiters=('=',), default_section='copyrights:settings',
+        delimiters=('=',), default_section=SETUP_SECTION,
         empty_lines_in_values=False, interpolation=None,
-        converters={'list': lambda s: s.strip().splitlines() })
-    config.read('setup.cfg')
-    sect = config[config.default_section]
+        converters={'list': lambda s: s.strip().splitlines()})
+    config.read(PROJECT_ROOT / 'setup.cfg')
+    sect = config[SETUP_SECTION]
+    # Resolve license default relative to setup.cfg
+    if sect['license']:
+        sect['license'] = str(PROJECT_ROOT / sect['license'])
 
-    parser = ArgumentParser(description=__doc__)
+    parser = ArgumentParser(description=__doc__.format(**globals()))
     parser.add_argument(
         '-i', '--include', action='append', metavar='GLOB',
         default=sect.getlist('include'),
@@ -129,7 +139,7 @@ class Copyright(t.NamedTuple):
 
 
 def get_copyrights(include: t.Set[str], exclude: t.Set[str])\
-        -> t.Iterator[t.Tuple[Path, t.Container[Copyright]]]:
+        -> t.Iterator[t.Tuple[Path, t.Iterable[Copyright]]]:
     sorted_blame = sorted(
         get_contributions(include, exclude),
         key=lambda c: (c.path, c.author, c.email)
@@ -390,4 +400,4 @@ class AtomicReplaceFile:
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
