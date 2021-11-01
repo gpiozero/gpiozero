@@ -33,6 +33,8 @@ help:
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
+	@echo "  preview    to start a web-server that watches for file changes"
+	@echo "             and re-builds the docs when required"
 	@echo "  json       to make JSON files"
 	@echo "  htmlhelp   to make HTML files and a HTML help project"
 	@echo "  qthelp     to make HTML files and a qthelp project"
@@ -182,6 +184,9 @@ pseudoxml:
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
+preview:
+	../scripts/previewer $(BUILDDIR)/html
+
 images/device_hierarchy.dot: $(PY_SOURCES)
 	../scripts/class_graph \
 		-i Device \
@@ -247,4 +252,4 @@ endif
 %.pdf: %.mscgen
 	mscgen -T eps -o - $< | ps2pdf -dEPSCrop - $@
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html dirhtml singlehtml pickle preview json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext

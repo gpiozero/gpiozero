@@ -1,0 +1,207 @@
+#!/usr/bin/python3
+
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""
+This script builds the HTML documentation of the containing project, and serves
+it from a trivial built-in web-server. It then watches the project source code
+for changes, and rebuilds the documentation as necessary. Options are available
+to specify the build output directory, the build command, and the paths to
+watch for changes. Default options can be specified in the containing project's
+setup.cfg under [{SETUP_SECTION}]
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+assert sys.version_info >= (3, 6), 'Script requires Python 3.6+'
+import time
+import shlex
+import socket
+import traceback
+import typing as t
+import subprocess as sp
+import multiprocessing as mp
+from pathlib import Path
+from functools import partial
+from configparser import ConfigParser
+from argparse import ArgumentParser, Namespace
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+
+
+PROJECT_ROOT = Path(__file__).parent / '..'
+SETUP_SECTION = str(Path(__file__).name) + ':settings'
+
+
+def main(args: t.List[str] = None):
+    if args is None:
+        args = sys.argv[1:]
+    config = get_config(args)
+
+    queue: mp.Queue = mp.Queue()
+    builder_proc = mp.Process(target=builder, args=(config, queue), daemon=True)
+    server_proc = mp.Process(target=server, args=(config, queue), daemon=True)
+    builder_proc.start()
+    server_proc.start()
+    exc, value, tb = queue.get()
+    server_proc.terminate()
+    builder_proc.terminate()
+    traceback.print_exception(exc, value, tb)
+
+
+def get_config(args: t.List[str]) -> Namespace:
+    config = ConfigParser(
+        defaults={
+            'command': 'make doc',
+            'html': 'build/html',
+            'watch': '',
+            'ignore': '\n'.join(['*.swp', '*.bak', '*~', '.*']),
+            'bind': '0.0.0.0',
+            'port': '8000',
+        },
+        delimiters=('=',), default_section=SETUP_SECTION,
+        empty_lines_in_values=False, interpolation=None,
+        converters={'list': lambda s: s.strip().splitlines()})
+    config.read(PROJECT_ROOT / 'setup.cfg')
+    sect = config[SETUP_SECTION]
+    # Resolve html and watch defaults relative to setup.cfg
+    if sect['html']:
+        sect['html'] = str(PROJECT_ROOT / sect['html'])
+    if sect['watch']:
+        sect['watch'] = '\n'.join(
+            str(PROJECT_ROOT / watch)
+            for watch in sect.getlist('watch')
+        )
+
+    parser = ArgumentParser(description=__doc__.format(**globals()))
+    parser.add_argument(
+        'html', default=sect['html'], type=Path, nargs='?',
+        help="The base directory (relative to the project's root) which you "
+        "wish to server over HTTP. Default: %(default)s")
+    parser.add_argument(
+        '-c', '--command', default=sect['command'],
+        help="The command to run (relative to the project root) to regenerate "
+        "the HTML documentation. Default: %(default)s")
+    parser.add_argument(
+        '-w', '--watch', action='append', default=sect.getlist('watch'),
+        help="Can be specified multiple times to append to the list of source "
+        "patterns (relative to the project's root) to watch for changes. "
+        "Default: %(default)s")
+    parser.add_argument(
+        '-i', '--ignore', action='append', default=sect.getlist('ignore'),
+        help="Can be specified multiple times to append to the list of "
+        "patterns to ignore. Default: %(default)s")
+    parser.add_argument(
+        '--bind', metavar='ADDR', default=sect['bind'],
+        help="The address to listen on. Default: %(default)s")
+    parser.add_argument(
+        '--port', metavar='PORT', default=sect['port'],
+        help="The port to listen on. Default: %(default)s")
+    ns = parser.parse_args(args)
+    ns.command = shlex.split(ns.command)
+    if not ns.watch:
+        parser.error('You must specify at least one --watch')
+    return ns
+
+
+class DevRequestHandler(SimpleHTTPRequestHandler):
+    server_version = 'DocsPreview/1.0'
+    protocol_version = 'HTTP/1.0'
+
+
+class DevServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+    base_path = None
+
+
+def get_best_family(host: t.Union[str, None], port: t.Union[str, int, None])\
+        -> t.Tuple[
+            socket.AddressFamily,
+            t.Union[t.Tuple[str, int], t.Tuple[str, int, int, int]]
+        ]:
+    infos = socket.getaddrinfo(
+        host, port,
+        type=socket.SOCK_STREAM,
+        flags=socket.AI_PASSIVE)
+    for family, type, proto, canonname, sockaddr in infos:
+        return family, sockaddr
+
+
+def server(config: Namespace, queue: mp.Queue = None):
+    try:
+        DevServer.address_family, addr = get_best_family(config.bind, config.port)
+        handler = partial(DevRequestHandler, directory=str(config.html))
+        with DevServer(addr[:2], handler) as httpd:
+            host, port = httpd.socket.getsockname()[:2]
+            hostname = socket.gethostname()
+            print(f'Serving {config.html} HTTP on {host} port {port}')
+            print(f'http://{hostname}:{port}/ ...')
+            # XXX Wait for queue message to indicate time to start?
+            httpd.serve_forever()
+    except:
+        if queue is not None:
+            queue.put(sys.exc_info())
+        raise
+
+
+def get_stats(config: Namespace) -> t.Dict[Path, os.stat_result]:
+    return {
+        path: path.stat()
+        for watch_pattern in config.watch
+        for path in Path('.').glob(watch_pattern)
+        if not any(path.match(ignore_pattern)
+                   for ignore_pattern in config.ignore)
+    }
+
+
+def get_changes(old_stats: t.Dict[Path, os.stat_result],
+                new_stats: t.Dict[Path, os.stat_result])\
+        -> t.Tuple[t.Set[Path], t.Set[Path], t.Set[Path]]:
+    # Yes, this is crude and could be more efficient but it's fast enough on a
+    # Pi so it'll be fast enough on anything else
+    return (
+        new_stats.keys() - old_stats.keys(), # new
+        old_stats.keys() - new_stats.keys(), # deleted
+        {                                    # modified
+            filepath
+            for filepath in old_stats.keys() & new_stats.keys()
+            if new_stats[filepath].st_mtime > old_stats[filepath].st_mtime
+        }
+    )
+
+
+def rebuild(config: Namespace) -> t.Dict[Path, os.stat_result]:
+    print('Rebuilding...')
+    sp.run(config.command, cwd=PROJECT_ROOT)
+    return get_stats(config)
+
+
+def builder(config: Namespace, queue: mp.Queue = None):
+    try:
+        old_stats = rebuild(config)
+        print('Watching for changes in:')
+        print('\n'.join(config.watch))
+        # XXX Add some message to the queue to indicate first build done and
+        # webserver can start? And maybe launch webbrowser too?
+        while True:
+            new_stats = get_stats(config)
+            created, deleted, modified = get_changes(old_stats, new_stats)
+            if created or deleted or modified:
+                for filepath in created:
+                    print(f'New file, {filepath}')
+                for filepath in deleted:
+                    print(f'Deleted file, {filepath}')
+                for filepath in modified:
+                    print(f'Changed detected in {filepath}')
+                old_stats = rebuild(config)
+            else:
+                time.sleep(0.5)  # make sure we're not a busy loop
+    except:
+        if queue is not None:
+            queue.put(sys.exc_info())
+        raise
+
+
+if __name__ == '__main__':
+    sys.exit(main())

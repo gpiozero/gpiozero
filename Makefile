@@ -56,6 +56,9 @@ doc: $(DOC_SOURCES)
 	$(MAKE) -C docs epub
 	$(MAKE) -C docs latexpdf
 
+preview:
+	$(MAKE) -C docs preview
+
 source: $(DIST_TAR) $(DIST_ZIP)
 
 wheel: $(DIST_WHEEL)
