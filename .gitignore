@@ -1,23 +1,18 @@
+# Python stuff
 *.py[cdo]
 
 # Editor detritus
 *.vim
 *.swp
 tags
-.idea
 
 # Packaging detritus
 *.egg
 *.egg-info
+*.pyc
+*.whl
 dist
 build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
 
 # Unit test / coverage reports
 coverage
@@ -25,3 +20,4 @@ coverage
 .tox
 .cache
 .pytest_cache
+.mypy_cache
