@@ -1015,6 +1015,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 0xe:  '3A+',
                 0x10: 'CM3+',
                 0x11: '4B',
+                0x12: 'Zero2W',
                 0x13: '400',
                 0x14: 'CM4',
                 }.get(revcode_type, '???')
@@ -1066,6 +1067,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 '4B':     '2020Q2' if memory == 8192 else '2019Q2',
                 'CM4':    '2020Q4',
                 '400':    '2020Q4',
+                'Zero2W': '2021Q4',
                 }.get(model, 'Unknown')
             storage = {
                 'A':    'SD',
@@ -1080,6 +1082,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 'A+':     1,
                 'Zero':   1,
                 'Zero W': 1,
+                'Zero2W': 1,
                 'B':      2,
                 'CM':     1,
                 'CM3':    1,
@@ -1097,6 +1100,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 'A+':     0,
                 'Zero':   0,
                 'Zero W': 0,
+                'Zero2W': 0,
                 'CM':     0,
                 'CM3':    0,
                 '3A+':    0,
@@ -1115,6 +1119,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             wifi = {
                 '3B':     True,
                 'Zero W': True,
+                'Zero2W': True,
                 '3B+':    True,
                 '3A+':    True,
                 '4B':     True,
@@ -1124,6 +1129,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             bluetooth = {
                 '3B':     True,
                 'Zero W': True,
+                'Zero2W': True,
                 '3B+':    True,
                 '3A+':    True,
                 '4B':     True,
@@ -1133,6 +1139,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             csi = {
                 'Zero':   0 if pcb_revision == '1.0' else 1,
                 'Zero W': 1,
+                'Zero2W': 1,
                 'CM':     2,
                 'CM3':    2,
                 'CM3+':   2,
@@ -1142,6 +1149,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             dsi = {
                 'Zero':   0,
                 'Zero W': 0,
+                'Zero2W': 0,
                 'CM':     2,
                 'CM3':    2,
                 'CM3+':   2,
@@ -1165,6 +1173,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 'CM3+':   CM3PLUS_BOARD,
                 'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
                 'Zero W': ZERO13_BOARD,
+                'Zero2W': ZERO13_BOARD,
                 '3A+':    A3PLUS_BOARD,
                 '3B+':    B3PLUS_BOARD,
                 '4B':     B4_BOARD,
