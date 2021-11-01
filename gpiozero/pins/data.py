@@ -999,11 +999,10 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
             # u        - Unused
             # W        - Warranty bit (0=intact, 1=voided by overclocking)
             # F        - New flag (1=valid new-style revision, 0=old-style)
-            # MMM      - Memory size (0=256, 1=512, 2=1024)
-            # CCCC     - Manufacturer (0=Sony, 1=Egoman, 2=Embest, 3=Sony Japan, 4=Embest, 5=Stadium)
-            # PPPP     - Processor (0=2835, 1=2836, 2=2837, 3=2711)
-            # TTTTTTTT - Type (0=A, 1=B, 2=A+, 3=B+, 4=2B, 5=Alpha (??), 6=CM,
-            #                  8=3B, 9=Zero, 10=CM3, 12=Zero W, 13=3B+, 14=3A+)
+            # MMM      - Memory size (see memory dict below)
+            # CCCC     - Manufacturer (see manufacturer dict below)
+            # PPPP     - Processor (see soc dict below)
+            # TTTTTTTT - Type (see model dict below)
             # RRRR     - Revision (0, 1, 2, etc.)
             revcode_memory       = (revision & 0x700000) >> 20
             revcode_manufacturer = (revision & 0xf0000)  >> 16
@@ -1137,7 +1136,7 @@ class PiBoardInfo(namedtuple('PiBoardInfo', (
                 'CM4':    True,
                 }.get(model, False)
             csi = {
-                'Zero':   0 if pcb_revision == '1.0' else 1,
+                'Zero':   0 if pcb_revision == '1.2' else 1,
                 'CM':     2,
                 'CM3':    2,
                 'CM3+':   2,
