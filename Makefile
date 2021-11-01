@@ -30,6 +30,7 @@ SUBDIRS:=
 DIST_WHEEL=dist/$(WHEEL_NAME)-$(VER)-py3-none-any.whl
 DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
+MAN_PAGES=man/pinout.1
 
 
 # Default target
@@ -55,6 +56,7 @@ doc: $(DOC_SOURCES)
 	$(MAKE) -C docs html
 	$(MAKE) -C docs epub
 	$(MAKE) -C docs latexpdf
+	$(MAKE) $(MAN_PAGES)
 
 preview:
 	$(MAKE) -C docs preview
@@ -90,6 +92,11 @@ tags: $(PY_SOURCES)
 
 $(SUBDIRS):
 	$(MAKE) -C $@
+
+$(MAN_PAGES): $(DOC_SOURCES)
+	$(MAKE) -C docs man
+	mkdir -p man/
+	cp build/man/*.[0-9] man/
 
 $(DIST_TAR): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py sdist --formats gztar
