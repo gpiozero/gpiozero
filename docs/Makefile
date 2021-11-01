@@ -162,8 +162,8 @@ images/internal_device_hierarchy.dot: $(PY_SOURCES)
 %.svg: %.dot
 	dot -T svg -o $@ $<
 
-%.png: %.gpi common.gp
-	gnuplot -e "set term pngcairo size 640,480" $< > $@
+%.png: %.gpi
+	gnuplot -e "set term pngcairo transparent size 400,400" $< > $@
 
 ifeq ($(INKSCAPE_VER),0)
 %.png: %.svg
@@ -179,8 +179,8 @@ else
 	inkscape --export-type pdf -o $@ $<
 endif
 
-%.pdf: %.gpi common.gp
-	gnuplot -e "set term pdfcairo size 10cm,7.5cm" $< > $@
+%.pdf: %.gpi
+	gnuplot -e "set term pdfcairo size 5cm,5cm" $< > $@
 
 %.pdf: %.mscgen
 	mscgen -T eps -o - $< | ps2pdf -dEPSCrop - $@
