@@ -75,20 +75,26 @@ develop:
 	@# These have to be done separately to avoid a cockup...
 	$(PIP) install -U setuptools
 	$(PIP) install -U pip
+	$(PIP) install -U twine
+	$(PIP) install -U tox
 	$(PIP) install -e .[doc,test]
 
 test:
 	$(PYTEST)
 
 clean:
-	rm -fr dist/ build/ .pytest_cache/ .mypy_cache/ $(WHEEL_NAME).egg-info/ tags .coverage
+	rm -fr dist/ build/ man/ .pytest_cache/ .mypy_cache/ $(WHEEL_NAME).egg-info/ tags .coverage
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
 	find $(CURDIR) -name "*.pyc" -delete
+	find $(CURDIR) -name "__pycache__" -delete
 
 tags: $(PY_SOURCES)
-	ctags -R --exclude="build/*" --exclude="docs/*" --languages="Python"
+	ctags -R --languages="Python" $(PY_SOURCES)
+
+lint: $(PY_SOURCES)
+	pylint $(WHEEL_NAME)
 
 $(SUBDIRS):
 	$(MAKE) -C $@
