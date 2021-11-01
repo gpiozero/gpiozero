@@ -183,13 +183,13 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 images/device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph \
+	../scripts/class_graph \
 		-i Device \
 		-i SharedMixin \
 		-x SPI -x SPISoftwareBus > $@
 
 images/composite_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph \
+	../scripts/class_graph \
 		-i CompositeDevice \
 		-i Energenie \
 		-i LedBord \
@@ -199,10 +199,10 @@ images/composite_device_hierarchy.dot: $(PY_SOURCES)
 		-o SourceMixin > $@
 
 images/spi_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i SPIDevice > $@
+	../scripts/class_graph -i SPIDevice > $@
 
 images/output_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph \
+	../scripts/class_graph \
 		-i OutputDevice \
 		-i RGBLED \
 		-i Servo \
@@ -213,10 +213,10 @@ images/output_device_hierarchy.dot: $(PY_SOURCES)
 		-x SPI -o SourceMixin > $@
 
 images/input_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i InputDevice -o EventsMixin -o HoldMixin > $@
+	../scripts/class_graph -i InputDevice -o EventsMixin -o HoldMixin > $@
 
 images/internal_device_hierarchy.dot: $(PY_SOURCES)
-	./images/class_graph -i InternalDevice -o EventsMixin > $@
+	../scripts/class_graph -i InternalDevice -o EventsMixin > $@
 
 %.svg: %.mscgen
 	mscgen -T svg -o $@ $<
