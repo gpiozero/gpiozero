@@ -6,7 +6,7 @@
 # Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
 # Copyright (c) 2019 tuftii <pi@raspberrypi>
-# Copyright (c) 2019 Yisrael Dov Lebow 🐻 <lebow@lebowtech.com>
+# Copyright (c) 2019 Yisrael Dov Lebow Ã°ÂÂÂ» <lebow@lebowtech.com>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
 # Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
@@ -1133,11 +1133,13 @@ class RGBLED(SourceMixin, Device):
         """
         
         sequence = []
+        colors.append(colors[0])
         for i in range(len(colors)-1):
             g = colors[i].gradient(colors[i+1], steps)
             for c in g:
                 r,g,b = c.rgb
                 sequence.append(((r,g,b),1/fps))
+
 
         self._stop_blink()
         self._blink_thread = GPIOThread(
