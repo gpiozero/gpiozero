@@ -6,7 +6,7 @@
 # Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
 # Copyright (c) 2019 tuftii <pi@raspberrypi>
-# Copyright (c) 2019 Yisrael Dov Lebow Ã°ÂÂÂ» <lebow@lebowtech.com>
+# Copyright (c) 2019 Yisrael Dov Lebow ÃÂ°ÃÂÃÂÃÂ» <lebow@lebowtech.com>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
 # Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
@@ -1115,7 +1115,7 @@ class RGBLED(SourceMixin, Device):
 
         :type n: int or None
         :param steps:
-            Number of steps to fade from one color to the next
+            Number of steps to fade from one color to the next. `fps` steps are processed per second.
 
         :type n: int or None
         :param fps:
