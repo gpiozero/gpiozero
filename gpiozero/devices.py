@@ -237,6 +237,11 @@ class Device(ValuesMixin, GPIOBase):
     pin_factory = None  # instance of a Factory sub-class
 
     def __init__(self, *, pin_factory=None):
+
+        cls_name = 'MockFactory'
+        module = __import__('gpiozero.pins.mock', fromlist=(cls_name,))
+        pin_factory = getattr(module, cls_name)()
+
         if pin_factory is None:
             if Device.pin_factory is None:
                 Device.pin_factory = Device._default_pin_factory()
