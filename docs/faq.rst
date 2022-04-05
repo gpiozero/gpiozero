@@ -80,7 +80,7 @@ depending on your use case.
         else:
             print("Not pressed")
 
-* :meth:`~gpiozero.Button.wait_for_press()` as a method which blocks the code from
+* :meth:`~gpiozero.Button.wait_for_press()` is a method which blocks the code from
   continuing until the button is pressed. Also see
   :meth:`~gpiozero.Button.wait_for_release()`::
 
