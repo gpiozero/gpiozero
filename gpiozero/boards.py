@@ -212,7 +212,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
             *(
                 Button(pin, pull_up=pull_up, active_state=active_state,
                        bounce_time=bounce_time, hold_time=hold_time,
-                       hold_repeat=hold_repeat)
+                       hold_repeat=hold_repeat, pin_factory=pin_factory)
                 for pin in pins
             ),
             _order=_order,
@@ -220,7 +220,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
             **{
                 name: Button(pin, pull_up=pull_up, active_state=active_state,
                              bounce_time=bounce_time, hold_time=hold_time,
-                             hold_repeat=hold_repeat)
+                             hold_repeat=hold_repeat, pin_factory=pin_factory)
                 for name, pin in named_pins.items()
             }
         )
@@ -2127,7 +2127,7 @@ class Robot(SourceMixin, CompositeDevice):
                         "Passing a tuple as the left parameter of the Robot "
                         "constructor is deprecated; please pass a Motor or "
                         "PhaseEnableMotor instance instead"))
-                left = Motor(*left)
+                left = Motor(*left, pin_factory=pin_factory)
             else:
                 raise GPIOPinMissing('left must be a Motor or PhaseEnableMotor')
         if not isinstance(right, (Motor, PhaseEnableMotor)):
@@ -2137,7 +2137,7 @@ class Robot(SourceMixin, CompositeDevice):
                         "Passing a tuple as the right parameter of the Robot "
                         "constructor is deprecated; please pass a Motor or "
                         "PhaseEnableMotor instance instead"))
-                right = Motor(*right)
+                right = Motor(*right, pin_factory=pin_factory)
             else:
                 raise GPIOPinMissing('right must be a Motor or PhaseEnableMotor')
         super().__init__(left_motor=left, right_motor=right,
@@ -2290,8 +2290,8 @@ class RyanteckRobot(Robot):
 
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=Motor('BOARD11', 'BOARD12', pwm=pwm),
-            right=Motor('BOARD15', 'BOARD16', pwm=pwm),
+            left=Motor('BOARD11', 'BOARD12', pwm=pwm, pin_factory=pin_factory),
+            right=Motor('BOARD15', 'BOARD16', pwm=pwm, pin_factory=pin_factory),
             pin_factory=pin_factory)
 
 
@@ -2324,8 +2324,8 @@ class CamJamKitRobot(Robot):
     """
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=Motor('BOARD21', 'BOARD19', pwm=pwm),
-            right=Motor('BOARD26', 'BOARD24', pwm=pwm),
+            left=Motor('BOARD21', 'BOARD19', pwm=pwm, pin_factory=pin_factory),
+            right=Motor('BOARD26', 'BOARD24', pwm=pwm, pin_factory=pin_factory),
             pin_factory=pin_factory)
 
 
@@ -2358,8 +2358,8 @@ class PololuDRV8835Robot(Robot):
     """
     def __init__(self, *, pwm=True, pin_factory=None):
         super().__init__(
-            left=PhaseEnableMotor('BOARD29', 'BOARD32', pwm=pwm),
-            right=PhaseEnableMotor('BOARD31', 'BOARD33', pwm=pwm),
+            left=PhaseEnableMotor('BOARD29', 'BOARD32', pwm=pwm, pin_factory=pin_factory),
+            right=PhaseEnableMotor('BOARD31', 'BOARD33', pwm=pwm, pin_factory=pin_factory),
             pin_factory=pin_factory)
 
 
