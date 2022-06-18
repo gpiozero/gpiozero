@@ -1203,7 +1203,7 @@ class Motor(SourceMixin, CompositeDevice):
                 initial_value=True,
                 pin_factory=pin_factory
             )
-        super().__init__(_order=devices.keys(), **devices)
+        super().__init__(_order=devices.keys(), pin_factory=pin_factory, **devices)
 
     @property
     def value(self):
