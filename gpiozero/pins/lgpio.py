@@ -33,6 +33,11 @@ from ..exc import (
     DeviceClosed
 )
 
+# lgpio 0.2 has changed these to new names
+if hasattr(lgpio, "SET_PULL_NONE"):
+    lgpio.SET_BIAS_DISABLE = lgpio.SET_PULL_NONE
+    lgpio.SET_BIAS_PULL_DOWN = lgpio.SET_PULL_DOWN
+    lgpio.SET_BIAS_PULL_UP = lgpio.SET_PULL_UP
 
 class LGPIOFactory(LocalPiFactory):
     """
