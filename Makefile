@@ -1,12 +1,12 @@
 # vim: set noet sw=4 ts=4 fileencoding=utf-8:
 
 # External utilities
-PYTHON=python3
-PIP=pip
-PYTEST=pytest
-TWINE=twine
-PYFLAGS=
-DEST_DIR=/
+PYTHON ?= python3
+PIP ?= pip
+PYTEST ?= pytest
+TWINE ?= twine
+PYFLAGS ?=
+DEST_DIR ?= /
 
 # Calculate the base names of the distribution, the location of all source,
 # documentation, packaging, icon, and executable script files
@@ -71,7 +71,7 @@ tar: $(DIST_TAR)
 
 dist: $(DIST_WHEEL) $(DIST_TAR) $(DIST_ZIP)
 
-develop: 
+develop:
 	@# These have to be done separately to avoid a cockup...
 	$(PIP) install -U setuptools
 	$(PIP) install -U pip
@@ -83,7 +83,7 @@ test:
 	$(PYTEST)
 
 clean:
-	rm -fr dist/ build/ man/ .pytest_cache/ .mypy_cache/ $(WHEEL_NAME).egg-info/ tags .coverage
+	rm -fr dist/ build/ man/ .pytest_cache/ .mypy_cache/ $(WHEEL_NAME).egg-info/ tags .coverage*
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
