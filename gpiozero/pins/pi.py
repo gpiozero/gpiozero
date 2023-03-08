@@ -23,7 +23,9 @@ from ..exc import (
     PinNonPhysical,
     SPIBadArgs,
     SPISoftwareFallback,
-    )
+    I2CBadArgs,
+    I2CSoftwareFallback,
+)
 
 
 SPI_HARDWARE_PINS = {
@@ -53,6 +55,34 @@ def spi_port_device(clock_pin, mosi_pin, miso_pin, select_pin):
             device = pins['select'].index(select_pin)
             return (port, device)
     raise SPIBadArgs('invalid pin selection for hardware SPI')
+
+
+I2C_HARDWARE_PINS = {
+    0: {
+        'data':  0,
+        'clock':   1,
+    },
+    1: {
+        'data':  2,
+        'clock':   3,
+    },
+}
+
+
+def i2c_port(data_pin, clock_pin):
+    """
+    Convert a mapping of pin definitions, which must contain 'data_pin' and
+    'clock_pin', to a hardware I2C port. Raises
+    :exc:`~gpiozero.I2CBadArgs` if the pins do not represent a valid hardware
+    I2C device.
+    """
+    for port, pins in I2C_HARDWARE_PINS.items():
+        if all((
+                data_pin  == pins['data'],
+                clock_pin  == pins['clock'],
+                )):
+            return port
+    raise I2CBadArgs('invalid pin selection for hardware I2C')
 
 
 class PiFactory(Factory):
@@ -215,6 +245,102 @@ class PiFactory(Factory):
         :class:`SharedMixin` to permit sharing instances between components,
         while *hardware* indicates whether the returned class uses the kernel's
         SPI device(s) rather than a bit-banged software implementation.
+        """
+        raise NotImplementedError
+
+    def i2c(self, **i2c_args):
+        """
+        Returns an I2C interface, for the specified I2C *port*, or for the
+        specified pins (*data_pin* and *clock_pin*). Additionally, the *device*
+        address must be specified. Only one of the schemes can be used;
+        attempting to mix *port* with pin numbers will raise
+        :exc:`~gpiozero.I2CBadArgs`.
+        """
+        i2c_args, kwargs = self._extract_i2c_args(**i2c_args)
+        shared = bool(kwargs.pop('shared', False))
+        if kwargs:
+            raise I2CBadArgs(
+                'unrecognized keyword argument {arg}'.format(
+                    arg=kwargs.popitem()[0]))
+        try:
+            return self._get_i2c_class(shared, hardware=True)(
+                pin_factory=self, **i2c_args)
+        except Exception as e:
+            warnings.warn(
+                I2CSoftwareFallback(
+                    'failed to initialize hardware I2C, falling back to '
+                    'software (error was: {e!s})'.format(e=e)))
+        return self._get_i2c_class(shared, hardware=False)(
+            pin_factory=self, **i2c_args)
+    
+    def _extract_i2c_args(self, **kwargs):
+        """
+        Given a set of keyword arguments, splits it into those relevant to I2C
+        implementations and all the rest. I2C arguments are augmented with
+        defaults and converted into the pin format (from the port format) if
+        necessary.
+
+        The *device* keyword specifying the device address has no default and
+        must by specified.
+
+        Returns a tuple of ``(i2c_args, other_args)``.
+        """
+        try:
+            device = kwargs.pop("device")
+        except KeyError:
+            raise I2CBadArgs(
+                'device address is not specified as the *device* keyword'
+            )
+        dev_defaults = {
+            'port': 1,
+            }
+        default_hw = I2C_HARDWARE_PINS[dev_defaults['port']]
+        pin_defaults = {
+            'data_pin':  default_hw['data'],
+            'clock_pin':  default_hw['clock'],
+            }
+        i2c_args = {
+            key: value for (key, value) in kwargs.items()
+            if key in pin_defaults or key in dev_defaults
+            }
+        kwargs = {
+            key: value for (key, value) in kwargs.items()
+            if key not in i2c_args
+            }
+        if not i2c_args:
+            i2c_args = pin_defaults
+        elif set(i2c_args) <= set(pin_defaults):
+            i2c_args = {
+                key: None if i2c_args.get(key, default) is None else
+                    self.pi_info.to_gpio(i2c_args.get(key, default))
+                for key, default in pin_defaults.items()
+                }
+        elif set(i2c_args) <= set(dev_defaults):
+            try:
+                selected_hw = I2C_HARDWARE_PINS[i2c_args['port']]
+            except KeyError:
+                raise I2CBadArgs(
+                    'port {i2c_args[port]} is not a valid I2C port'.format(
+                        i2c_args=i2c_args))
+            i2c_args = {
+                "data_pin": selected_hw["data"],
+                "clock_pin": selected_hw["clock"]
+                }
+        else:
+            raise I2CBadArgs(
+                'you must either specify port, or data_pin and clock_pin; '
+                'combinations of the two schemes (e.g. port and clock_pin) '
+                'are not permitted')
+        return i2c_args | {"device": device}, kwargs
+
+    def _get_i2c_class(self, shared, hardware):
+        """
+        Returns a sub-class of the :class:`I2C` which can be constructed with
+        *data_pin* and *clock_pin* arguments. The
+        *shared* argument dictates whether the returned class uses the
+        :class:`SharedMixin` to permit sharing instances between components,
+        while *hardware* indicates whether the returned class uses the kernel's
+        I2C device(s) rather than a bit-banged software implementation.
         """
         raise NotImplementedError
 

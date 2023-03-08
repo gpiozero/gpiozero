@@ -16,8 +16,8 @@ import os
 
 import pigpio
 
-from . import SPI
-from .pi import PiPin, PiFactory, spi_port_device
+from . import SPI, I2C
+from .pi import PiPin, PiFactory, spi_port_device, i2c_port
 from ..mixins import SharedMixin
 from ..exc import (
     PinInvalidFunction,
@@ -96,6 +96,7 @@ class PiGPIOFactory(PiFactory):
         self._host = host
         self._port = port
         self._spis = []
+        self._i2cs = []
 
     def close(self):
         super().close()
@@ -105,6 +106,8 @@ class PiGPIOFactory(PiFactory):
         if self.connection:
             while self._spis:
                 self._spis[0].close()
+            while self._i2cs:
+                self._i2cs[0].close()
             self.connection.stop()
             self._connection = None
 
@@ -142,6 +145,21 @@ class PiGPIOFactory(PiFactory):
     def spi(self, **spi_args):
         intf = super().spi(**spi_args)
         self._spis.append(intf)
+        return intf
+
+    def _get_i2c_class(self, shared, hardware):
+        if (shared, hardware) != (False, True):
+            raise NotImplementedError
+        return {
+            (False, True):  PiGPIOHardwareI2C,
+            # (True,  True):  PiGPIOHardwareI2CShared,
+            # (False, False): PiGPIOSoftwareI2C,
+            # (True,  False): PiGPIOSoftwareI2CShared,
+            }[shared, hardware]
+    
+    def i2c(self, **i2c_args):
+        intf = super().i2c(**i2c_args)
+        self._i2cs.append(intf)
         return intf
 
     def ticks(self):
@@ -608,3 +626,70 @@ class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
         return (pin_factory.host, clock_pin, select_pin)
+
+
+class PiGPIOHardwareI2C(I2C):
+    """
+    Hardware I2C implementation for the `pigpio`_ library. Uses the ``i2c_*``
+    functions from the pigpio API.
+
+    .. _pigpio: http://abyz.me.uk/rpi/pigpio/
+    """
+    def __init__(self, data_pin, clock_pin, device, pin_factory):
+        port = i2c_port(data_pin, clock_pin)
+        self._port = port
+        self._device = device
+        self._handle = None
+        super().__init__(pin_factory=pin_factory)
+        to_reserve = {data_pin, clock_pin}
+        self.pin_factory.reserve_pins(self, *to_reserve)
+        self._handle = self.pin_factory.connection.i2c_open(port, device, 0)
+
+    def _conflicts_with(self, other):
+        return not (
+            isinstance(other, PiGPIOHardwareI2C) and
+            (self.pin_factory.host, self._port, self._device) !=
+            (other.pin_factory.host, other._port, other._device)
+            )
+
+    def close(self):
+        try:
+            self.pin_factory._i2cs.remove(self)
+        except (ReferenceError, ValueError):
+            # If the factory has died already or we're not present in its
+            # internal list, ignore the error
+            pass
+        if not self.closed:
+            self.pin_factory.connection.i2c_close(self._handle)
+        self._handle = None
+        self.pin_factory.release_all(self)
+        super().close()
+
+    @property
+    def closed(self):
+        return self._handle is None or self.pin_factory.connection is None
+
+    def __repr__(self):
+        try:
+            self._check_open()
+            return (
+                'I2C(port={self._port:d}, '
+                'device={self._device:d})'.format(self=self))
+        except DeviceClosed:
+            return 'I2C(closed)'
+
+    def read_byte(self, register):
+        self._check_open()
+        return self.pin_factory.connection.i2c_read_byte_data(self._handle, register)
+    
+    def read_word(self, register):
+        self._check_open()
+        return self.pin_factory.connection.i2c_read_word_data(self._handle, register)
+    
+    def write_byte(self, register, data):
+        self._check_open()
+        return self.pin_factory.connection.i2c_write_byte_data(self._handle, register, data)
+    
+    def write_word(self, register, data):
+        self._check_open()
+        return self.pin_factory.connection.i2c_write_word_data(self._handle, register, data)

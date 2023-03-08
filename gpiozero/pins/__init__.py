@@ -769,3 +769,43 @@ class SPI(Device):
         limit the rate would simply slow them down to the point of being
         useless).
         """)
+
+
+class I2C(Device):
+    """
+    Abstract interface for `Inter-Integrated Circuit`_ (I2C)
+    implementations. Descendents *may* override the following methods, if applicable:
+
+    * :meth:`read_byte`
+    * :meth:`write_byte`
+    * :meth:`read_word`
+    * :meth:`write_word`
+    """
+
+    def read_byte(self, register):
+        """
+        Read 8 bits of data from the I2C device at the register with the address
+        *register*, returning them as a byte.
+        """
+        raise NotImplementedError
+
+    def write_byte(self, register, data):
+        """
+        Write *data* with a length of 8 bits to the I2C device at the register
+        with the address *register*.
+        """
+        raise NotImplementedError
+
+    def read_word(self, register):
+        """
+        Read 16 bits of data from the I2C device at the register with the address
+        *register*, returning them as two bytes.
+        """
+        raise NotImplementedError
+
+    def write_word(self, register, data):
+        """
+        Write *data* with a length of 16 bits to the I2C device at the register
+        with the address *register*.
+        """
+        raise NotImplementedError
