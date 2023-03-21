@@ -79,6 +79,12 @@ class SPIFixedRate(SPIError, AttributeError):
 class SPIInvalidWordSize(SPIError, ValueError):
     "Error raised when an invalid (out of range) number of bits per word is specified"
 
+class I2CError(GPIOZeroError):
+    "Base class for errors related to the I2C implementation"
+
+class I2CBadArgs(I2CError, ValueError):
+    "Error raised when invalid arguments are given while constructing :class:`I2CDevice`"
+
 class GPIODeviceError(GPIOZeroError):
     "Base class for errors specific to the GPIODevice hierarchy"
 
@@ -165,6 +171,12 @@ class SPIWarning(GPIOZeroWarning):
 
 class SPISoftwareFallback(SPIWarning):
     "Warning raised when falling back to the SPI software implementation"
+
+class I2CWarning(GPIOZeroWarning):
+    "Base class for warnings related to the I2C implementation"
+
+class I2CSoftwareFallback(I2CWarning):
+    "Warning raised when falling back to the I2C software implementation"
 
 class PWMWarning(GPIOZeroWarning):
     "Base class for PWM warnings"

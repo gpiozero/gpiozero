@@ -70,6 +70,10 @@ from .spi_devices import (
     MCP3302,
     MCP3304,
 )
+from .i2c_devices import (
+    I2CDevice,
+    INA219
+)
 from .output_devices import (
     OutputDevice,
     DigitalOutputDevice,
