@@ -2081,6 +2081,23 @@ class TrafficpHat(TrafficLights):
         )
 
 
+def PhaseEnableRobot(left=None, right=None, pwm=True, pin_factory=None, *args):
+    """
+    Deprecated alias of :class:`Robot`. The :class:`Robot` class can now be
+    constructed directly with :class:`Motor` or :class:`PhaseEnableMotor`
+    classes.
+    """
+    warnings.warn(
+        DeprecationWarning(
+            "PhaseEnableRobot is deprecated; please construct Robot directly "
+            "with PhaseEnableMotor instances"))
+    return Robot(
+        PhaseEnableMotor(*left),
+        PhaseEnableMotor(*right),
+        pwm=pwm, pin_factory=pin_factory,
+        *args)
+
+
 class Robot(SourceMixin, CompositeDevice):
     """
     Extends :class:`CompositeDevice` to represent a generic dual-motor robot.

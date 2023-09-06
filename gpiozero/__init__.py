@@ -112,6 +112,7 @@ from .boards import (
     RyanteckRobot,
     CamJamKitRobot,
     PololuDRV8835Robot,
+    PhaseEnableRobot,
     Energenie,
     PumpkinPi,
     JamHat,
