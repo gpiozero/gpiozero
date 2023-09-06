@@ -102,6 +102,10 @@ def get_config(args: t.List[str]) -> Namespace:
     ns.command = shlex.split(ns.command)
     if not ns.watch:
         parser.error('You must specify at least one --watch')
+    ns.watch = [
+        str(Path(watch).relative_to(Path.cwd()))
+        for watch in ns.watch
+    ]
     return ns
 
 
