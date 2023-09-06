@@ -14,7 +14,7 @@ from functools import reduce
 from collections.abc import Mapping
 
 
-# Copied from the MIT-licensed https://github.com/slezica/python-frozendict
+# Derived from the MIT-licensed https://github.com/slezica/python-frozendict
 class frozendict(Mapping):
     def __init__(self, *args, **kwargs):
         self._dict = dict(*args, **kwargs)
@@ -22,6 +22,9 @@ class frozendict(Mapping):
 
     def __getitem__(self, key):
         return self._dict[key]
+
+    def __contains__(self, key):
+        return key in self._dict
 
     def copy(self, **add_or_replace):
         return frozendict(self, **add_or_replace)
@@ -33,10 +36,9 @@ class frozendict(Mapping):
         return len(self._dict)
 
     def __repr__(self):
-        return '<frozendict {self._dict!r}>'.format(self=self)
+        return f'<{self.__class__.__name__} {self._dict!r}>'
 
     def __hash__(self):
         if self._hash is None:
-            hashes = map(hash, self.items())
-            self._hash = reduce(operator.xor, hashes, 0)
+            self._hash = reduce(operator.xor, map(hash, self.items()), 0)
         return self._hash
