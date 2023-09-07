@@ -238,12 +238,32 @@ class Device(ValuesMixin, GPIOBase):
 
     def __init__(self, *, pin_factory=None):
         if pin_factory is None:
-            if Device.pin_factory is None:
-                Device.pin_factory = Device._default_pin_factory()
+            Device.ensure_pin_factory()
             self.pin_factory = Device.pin_factory
         else:
             self.pin_factory = pin_factory
         super().__init__()
+
+    @staticmethod
+    def ensure_pin_factory():
+        """
+        Ensures that :attr:`Device.pin_factory` is set appropriately.
+
+        This is called implicitly upon construction of any device, but there
+        are some circumstances where you may need to call it manually.
+        Specifically, when you wish to retrieve board information without
+        constructing any devices, e.g.::
+
+            Device.ensure_pin_factory()
+            info = Device.pin_factory.board_info
+
+        If :attr:`Device.pin_factory` is not :data:`None`, this function does
+        nothing. Otherwise it will attempt to locate and initialize a default
+        pin factory. This may raise a number of different exceptions including
+        :exc:`ImportError` if no valid pin driver can be imported.
+        """
+        if Device.pin_factory is None:
+            Device.pin_factory = Device._default_pin_factory()
 
     @staticmethod
     def _default_pin_factory():

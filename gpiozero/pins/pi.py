@@ -83,6 +83,28 @@ class PiBoardInfo(BoardInfo):
 
     @classmethod
     def from_revision(cls, revision):
+        """
+        Construct a :class:`PiBoardInfo` instance from the specified Raspberry
+        Pi board *revision* which must be specified as an :class:`int`
+        (typically in hexi-decimal format).
+
+        For example, from an old-style revision code for the model B+::
+
+            >>> from gpiozero.pins.pi import PiBoardInfo
+            >>> PiBoardInfo.from_revision(0x0010)
+            PiBoardInfo(revision='0010', model='B+', pcb_revision='1.2',
+            released='2014Q3', soc='BCM2835', manufacturer='Sony', memory=512,
+            storage='MicroSD', usb=4, usb3=0, ethernet=1, eth_speed=100,
+            wifi=False, bluetooth=False, csi=1, dsi=1, headers=..., board=...)
+
+        Or from a new-style revision code for the Pi Zero 2W::
+
+            >>> PiBoardInfo.from_revision(0x902120)
+            PiBoardInfo(revision='902120', model='Zero2W', pcb_revision='1.0',
+            released='2021Q4', soc='BCM2837', manufacturer='Sony', memory=512,
+            storage='MicroSD', usb=1, usb3=0, ethernet=0, eth_speed=0,
+            wifi=True, bluetooth=True, csi=1, dsi=0, headers=..., board=...)
+        """
         if revision & 0x800000:
             # New-style revision, parse information from bit-pattern:
             #
@@ -643,13 +665,27 @@ class PiPin(Pin):
 
 def pi_info(revision=None):
     """
-    Returns a :class:`PiBoardInfo` instance containing information about a
-    *revision* of the Raspberry Pi.
+    Deprecated function for retrieving information about a *revision* of the
+    Raspberry Pi. If you wish to retrieve information about the board that your
+    script is running on, please query the :attr:`Factory.board_info` property
+    like so::
+
+        >>> from gpiozero import Device
+        >>> Device.ensure_pin_factory()
+        >>> Device.pin_factory.board_info
+        PiBoardInfo(revision='a02082', model='3B', pcb_revision='1.2',
+        released='2016Q1', soc='BCM2837', manufacturer='Sony', memory=1024,
+        storage='MicroSD', usb=4, usb3=0, ethernet=1, eth_speed=100, wifi=True,
+        bluetooth=True, csi=1, dsi=1, headers=..., board=...)
+
+    To obtain information for a specific Raspberry Pi board revision, use the
+    :meth:`PiBoardInfo.from_revision` constructor.
 
     :param str revision:
         The revision of the Pi to return information about. If this is omitted
-        or :data:`None` (the default), then the library will attempt to determine
-        the model of Pi it is running on and return information about that.
+        or :data:`None` (the default), then the library will attempt to
+        determine the model of Pi it is running on and return information about
+        that.
     """
     if revision is None:
         if Device.pin_factory is None:
