@@ -1012,7 +1012,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
             style('reset')
             ))
 
-    def _format_row(self, row, style):
+    def _format_row(self, row, style, rev=False):
+        step = -1 if rev else 1
         if row > self.rows:
             raise ValueError(
                 'invalid row {row} for header {self.name}'.format(
@@ -1020,29 +1021,39 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         start_pin = (row - 1) * self.columns + 1
         return ''.join(
             self._format_pin(pin, style)
-            for n in range(start_pin, start_pin + self.columns)
+            for n in range(start_pin, start_pin + self.columns)[::step]
             for pin in (self.pins.get(n),)
             )
 
-    def _format_col(self, col, style):
+    def _format_col(self, col, style, rev=False):
+        step = -1 if rev else 1
         if col > self.columns:
             raise ValueError(
                 'invalid col {col} for header {self.name}'.format(
                     col=col, self=self))
         return ''.join(
             self._format_pin(pin, style)
-            for n in range(col, self.rows * self.columns + 1, self.columns)
+            for n in range(col, self.rows * self.columns + 1, self.columns)[::step]
             for pin in (self.pins.get(n),)
             )
 
     def __format__(self, format_spec):
         style, content = Style.from_style_content(format_spec)
+        content = set(content.split())
+        try:
+            content.remove('rev')
+            rev = True
+        except KeyError:
+            rev = False
+        if len(content) != 1:
+            raise ValueError('Invalid format specifier')
+        content = content.pop()
         if content == 'full':
             return self._format_full(style)
         elif content.startswith('row') and content[3:].isdigit():
-            return self._format_row(int(content[3:]), style)
+            return self._format_row(int(content[3:]), style, rev=rev)
         elif content.startswith('col') and content[3:].isdigit():
-            return self._format_col(int(content[3:]), style)
+            return self._format_col(int(content[3:]), style, rev=rev)
         else:
             raise ValueError('Invalid format specifier')
 
