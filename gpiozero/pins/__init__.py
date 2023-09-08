@@ -1007,7 +1007,9 @@ class HeaderInfo(namedtuple('HeaderInfo', (
             (
                 ' ' if pin is None else
                 self._pin_style(pin, style) +
-                ('1' if pin.number == 1 else 'o')
+                ('1' if pin.number == 1 else
+                 '2' if pin.number == 2 and self.rows == self.columns else
+                 'o')
                 ),
             style('reset')
             ))
