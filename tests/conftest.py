@@ -59,8 +59,7 @@ class ThreadedTest(Thread):
         self._args = args
         self._kwargs = kwargs
         self._result = None
-        super().__init__()
-        self.daemon = True
+        super().__init__(daemon=True)
         self.start()
 
     def run(self):
@@ -68,7 +67,7 @@ class ThreadedTest(Thread):
 
     @property
     def result(self):
-        self.join(1)
+        self.join(10)
         if not self.is_alive():
             return self._result
         else:

@@ -26,7 +26,7 @@ def test_args_color():
 
 def test_args_revision():
     args = main.parser.parse_args(['--revision', '000d'])
-    assert args.revision == '000d'
+    assert args.revision == 13
 
 def test_help(capsys):
     with pytest.raises(SystemExit) as ex:

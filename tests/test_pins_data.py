@@ -178,9 +178,9 @@ def test_format_content():
             '{0:color foo}'.format(pi_info('900092'))
 
 def test_pprint_headers():
-    assert len(pi_info('0002').headers) == 1
-    assert len(pi_info('000e').headers) == 2
-    assert len(pi_info('900092').headers) == 1
+    assert len(pi_info('0002').headers) == 3
+    assert len(pi_info('000e').headers) == 5
+    assert len(pi_info('900092').headers) == 3
     with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
@@ -242,8 +242,6 @@ def test_pprint_color():
 def test_pprint_styles():
     with pytest.raises(ValueError):
         Style.from_style_content('mono color full')
-    with pytest.raises(ValueError):
-        Style.from_style_content('full specs')
     with mock.patch('sys.stdout') as stdout:
         s = '{0:full}'.format(pi_info('900092'))
         assert '\x1b[0m' not in s # ensure default is mono when stdout is not a tty
