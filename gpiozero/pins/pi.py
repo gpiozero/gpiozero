@@ -119,6 +119,7 @@ class PiBoardInfo(BoardInfo):
                 0x12: 'Zero2W',
                 0x13: '400',
                 0x14: 'CM4',
+                0x17: '5B',
                 }.get(revcode_type, '???')
             if model in ('A', 'B'):
                 pcb_revision = {
@@ -133,6 +134,7 @@ class PiBoardInfo(BoardInfo):
                 1: 'BCM2836',
                 2: 'BCM2837',
                 3: 'BCM2711',
+                4: 'BCM2712',
                 }.get(revcode_processor, 'Unknown')
             manufacturer = {
                 0: 'Sony',
@@ -149,6 +151,7 @@ class PiBoardInfo(BoardInfo):
                 3: 2048,
                 4: 4096,
                 5: 8192,
+                6: 16384,
                 }.get(revcode_memory, None)
             released = {
                 'A':      '2013Q1',
@@ -168,6 +171,7 @@ class PiBoardInfo(BoardInfo):
                 'CM4':    '2020Q4',
                 '400':    '2020Q4',
                 'Zero2W': '2021Q4',
+                '5B':     '2023Q4',
                 }.get(model, 'Unknown')
             storage = {
                 'A':    'SD',
@@ -194,6 +198,7 @@ class PiBoardInfo(BoardInfo):
             usb3 = {
                 '4B':     2,
                 '400':    2,
+                '5B':     2,
                 }.get(model, 0)
             ethernet = {
                 'A':      0,
@@ -215,6 +220,7 @@ class PiBoardInfo(BoardInfo):
                 '4B':     1000,
                 '400':    1000,
                 'CM4':    1000,
+                '5B':     1000,
                 }.get(model, 0)
             bluetooth = wifi = {
                 '3B':     True,
@@ -225,6 +231,7 @@ class PiBoardInfo(BoardInfo):
                 '4B':     True,
                 '400':    True,
                 'CM4':    True,
+                '5B':     True,
                 }.get(model, False)
             csi = {
                 'Zero':   0 if pcb_revision == '1.2' else 1,
@@ -233,11 +240,13 @@ class PiBoardInfo(BoardInfo):
                 'CM3+':   2,
                 '400':    0,
                 'CM4':    2,
+                '5B':     2,
                 }.get(model, 1)
             dsi = {
                 'Zero':   0,
                 'Zero W': 0,
                 'Zero2W': 0,
+                '5B':     2,
                 }.get(model, csi)
             headers = {
                 'A':      {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
@@ -253,6 +262,7 @@ class PiBoardInfo(BoardInfo):
                 '4B':     {'J8': data.PI4_J8, 'J2': data.PI4_J2, 'J14': data.PI4_J14},
                 '400':    {'J8': data.PI4_J8},
                 'CM4':    {'J8': data.PI4_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9},
+                '5B':     {'J8': data.PI4_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
                 }.get(model, {'J8': data.PLUS_J8})
             board = {
                 'A':      data.A_BOARD,
@@ -269,6 +279,7 @@ class PiBoardInfo(BoardInfo):
                 '4B':     data.B4_BOARD,
                 'CM4':    data.CM4_BOARD,
                 '400':    data.P400_BOARD,
+                '5B':     data.B5_BOARD,
                 }.get(model, data.BPLUS_BOARD)
         else:
             # Old-style revision, use the lookup table
