@@ -18,6 +18,7 @@ except ImportError:
     SpiDev = None
 
 from . import Factory, Pin, BoardInfo, HeaderInfo, PinInfo, data
+from .data import SPI_HARDWARE_PINS
 from ..compat import frozendict
 from ..devices import Device
 from ..exc import (
