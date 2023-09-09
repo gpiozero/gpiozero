@@ -13,7 +13,7 @@ import os
 import atexit
 import weakref
 import warnings
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 from itertools import chain
 from types import FunctionType
 from importlib.metadata import entry_points
@@ -275,12 +275,12 @@ class Device(ValuesMixin, GPIOBase):
         #
         # NOTE: If the built-in pin factories are expanded, the dict must be
         # updated along with the entry-points in setup.py.
-        default_factories = OrderedDict((
-            ('lgpio',   'gpiozero.pins.lgpio:LGPIOFactory'),
-            ('rpigpio', 'gpiozero.pins.rpigpio:RPiGPIOFactory'),
-            ('pigpio',  'gpiozero.pins.pigpio:PiGPIOFactory'),
-            ('native',  'gpiozero.pins.native:NativeFactory'),
-        ))
+        default_factories = {
+            'lgpio':   'gpiozero.pins.lgpio:LGPIOFactory',
+            'rpigpio': 'gpiozero.pins.rpigpio:RPiGPIOFactory',
+            'pigpio':  'gpiozero.pins.pigpio:PiGPIOFactory',
+            'native':  'gpiozero.pins.native:NativeFactory',
+        }
         name = os.environ.get('GPIOZERO_PIN_FACTORY')
         if name is None:
             # If no factory is explicitly specified, try various names in
