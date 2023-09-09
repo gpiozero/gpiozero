@@ -16,7 +16,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-
 from .pins import (
     Factory,
     Pin,

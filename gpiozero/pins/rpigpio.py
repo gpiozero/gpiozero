@@ -18,7 +18,7 @@ from ..exc import (
     PinInvalidState,
     PinInvalidBounce,
     PinPWMFixedValue,
-    )
+)
 
 
 class RPiGPIOFactory(LocalPiFactory):

@@ -10,11 +10,11 @@
 
 import inspect
 import weakref
+import warnings
 from functools import wraps, partial
 from threading import Event
 from collections import deque
 from statistics import median
-import warnings
 
 from .threads import GPIOThread
 from .exc import (

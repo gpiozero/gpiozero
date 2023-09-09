@@ -28,7 +28,7 @@ from ..exc import (
     PinUnknownPi,
     SPIBadArgs,
     SPISoftwareFallback,
-    )
+)
 
 
 def spi_port_device(clock_pin, mosi_pin, miso_pin, select_pin):

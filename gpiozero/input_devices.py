@@ -19,8 +19,13 @@ from threading import Event, Lock
 from itertools import tee
 from statistics import median, mean
 
-from .exc import InputDeviceError, DeviceClosed, DistanceSensorNoEcho, \
-    PinInvalidState, PWMSoftwareFallback
+from .exc import (
+    InputDeviceError,
+    DeviceClosed,
+    DistanceSensorNoEcho,
+    PinInvalidState,
+    PWMSoftwareFallback,
+)
 from .devices import GPIODevice, CompositeDevice
 from .mixins import GPIOQueue, EventsMixin, HoldMixin, event
 try:

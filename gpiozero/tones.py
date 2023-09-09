@@ -153,6 +153,8 @@ class Tone(float):
         represented as "A4". One semi-tone above this would be "A#4" or
         alternatively "Bb4". Unicode representations of sharp and flat are also
         accepted.
+
+        .. _concert A: https://en.wikipedia.org/wiki/Concert_pitch
         """
         if isinstance(note, bytes):
             note = note.decode('ascii')

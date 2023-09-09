@@ -11,9 +11,9 @@
 
 import os
 import io
+import warnings
 import subprocess
 from datetime import datetime, time
-import warnings
 
 from .devices import Device
 from .mixins import EventsMixin, event

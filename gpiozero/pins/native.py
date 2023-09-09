@@ -26,7 +26,7 @@ from ..exc import (
     PinInvalidFunction,
     PinFixedPull,
     PinSetInput,
-    )
+)
 
 
 def dt_resolve_alias(alias, root=Path('/proc/device-tree')):

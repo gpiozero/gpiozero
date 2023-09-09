@@ -13,13 +13,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-
+import warnings
 from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
 from collections import OrderedDict
 from math import log2
-import warnings
 
 from .exc import (
     OutputDeviceBadValue,

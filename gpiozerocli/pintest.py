@@ -9,10 +9,6 @@ from gpiozero import Device
 from gpiozero.pins.pi import PiBoardInfo
 
 
-def is_gpio(s):
-    return s.startswith('GPIO') and s[4:].isdigit()
-
-
 class PintestTool(CliTool):
     """
     A utility for testing the GPIO pins on a Raspberry Pi, inspired by pigpio's
