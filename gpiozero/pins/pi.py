@@ -17,36 +17,7 @@ try:
 except ImportError:
     SpiDev = None
 
-from . import Factory, Pin, BoardInfo, HeaderInfo, PinInfo
-from .data import (
-    REV1_P1,
-    REV2_P1,
-    REV2_P5,
-    PLUS_J8,
-    PI4_J8,
-    PLUS_POE,
-    CM_SODIMM,
-    CM3_SODIMM,
-    CM4_J2,
-    CM4_J6,
-    A_BOARD,
-    REV1_BOARD,
-    REV2_BOARD,
-    APLUS_BOARD,
-    BPLUS_BOARD,
-    CM_BOARD,
-    CM3PLUS_BOARD,
-    ZERO12_BOARD,
-    ZERO13_BOARD,
-    ZERO2_BOARD,
-    A3PLUS_BOARD,
-    B3PLUS_BOARD,
-    B4_BOARD,
-    CM4_BOARD,
-    P400_BOARD,
-    PI_REVISIONS,
-    SPI_HARDWARE_PINS,
-    )
+from . import Factory, Pin, BoardInfo, HeaderInfo, PinInfo, data
 from ..compat import frozendict
 from ..devices import Device
 from ..exc import (
@@ -267,32 +238,36 @@ class PiBoardInfo(BoardInfo):
                 'Zero2W': 0,
                 }.get(model, csi)
             headers = {
-                'A':    {'P1': REV2_P1, 'P5': REV2_P5},
-                'B':    {'P1': REV1_P1} if pcb_revision == '1.0' else {'P1': REV2_P1, 'P5': REV2_P5},
-                'CM':   {'SODIMM': CM_SODIMM},
-                'CM3':  {'SODIMM': CM3_SODIMM},
-                'CM3+': {'SODIMM': CM3_SODIMM},
-                '3B+':  {'J8': PLUS_J8, 'POE': PLUS_POE},
-                '4B':   {'J8': PI4_J8, 'POE': PLUS_POE},
-                '400+': {'J8': PI4_J8},
-                'CM4':  {'J8': PI4_J8, 'J2': CM4_J2, 'J6': CM4_J6, 'POE': PLUS_POE},
-                }.get(model, {'J8': PLUS_J8})
+                'A':      {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
+                'B':      {'P1': data.REV1_P1, 'P2': data.PI1_P2, 'P3': data.PI1_P3} if pcb_revision == '1.0' else
+                          {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
+                'CM':     {'SODIMM': data.CM_SODIMM},
+                'CM3':    {'SODIMM': data.CM3_SODIMM},
+                'CM3+':   {'SODIMM': data.CM3_SODIMM},
+                'Zero':   {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN, 'TV': data.ZERO_TV},
+                'Zero W': {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN, 'TV': data.ZERO_TV},
+                '3A+':    {'J8': data.PLUS_J8, 'RUN': data.PLUS_RUN},
+                '3B+':    {'J8': data.PLUS_J8, 'RUN': data.PLUS_RUN, 'POE': data.PLUS_POE},
+                '4B':     {'J8': data.PI4_J8, 'J2': data.PI4_J2, 'J14': data.PI4_J14},
+                '400':    {'J8': data.PI4_J8},
+                'CM4':    {'J8': data.PI4_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9},
+                }.get(model, {'J8': data.PLUS_J8})
             board = {
-                'A':      A_BOARD,
-                'B':      REV1_BOARD if pcb_revision == '1.0' else REV2_BOARD,
-                'A+':     APLUS_BOARD,
-                'CM':     CM_BOARD,
-                'CM3':    CM_BOARD,
-                'CM3+':   CM3PLUS_BOARD,
-                'Zero':   ZERO12_BOARD if pcb_revision == '1.2' else ZERO13_BOARD,
-                'Zero W': ZERO13_BOARD,
-                'Zero2W': ZERO2_BOARD,
-                '3A+':    A3PLUS_BOARD,
-                '3B+':    B3PLUS_BOARD,
-                '4B':     B4_BOARD,
-                'CM4':    CM4_BOARD,
-                '400':    P400_BOARD,
-                }.get(model, BPLUS_BOARD)
+                'A':      data.A_BOARD,
+                'B':      data.REV1_BOARD if pcb_revision == '1.0' else data.REV2_BOARD,
+                'A+':     data.APLUS_BOARD,
+                'CM':     data.CM_BOARD,
+                'CM3':    data.CM_BOARD,
+                'CM3+':   data.CM3PLUS_BOARD,
+                'Zero':   data.ZERO12_BOARD if pcb_revision == '1.2' else data.ZERO13_BOARD,
+                'Zero W': data.ZERO13_BOARD,
+                'Zero2W': data.ZERO2_BOARD,
+                '3A+':    data.A3PLUS_BOARD,
+                '3B+':    data.B3PLUS_BOARD,
+                '4B':     data.B4_BOARD,
+                'CM4':    data.CM4_BOARD,
+                '400':    data.P400_BOARD,
+                }.get(model, data.BPLUS_BOARD)
         else:
             # Old-style revision, use the lookup table
             try:
@@ -312,7 +287,7 @@ class PiBoardInfo(BoardInfo):
                     dsi,
                     headers,
                     board,
-                    ) = PI_REVISIONS[revision]
+                    ) = data.PI_REVISIONS[revision]
                 usb3 = 0
                 eth_speed = ethernet * 100
             except KeyError:
@@ -321,7 +296,7 @@ class PiBoardInfo(BoardInfo):
                         revision=revision))
         headers = frozendict({
             header: HeaderInfo(
-                name=header, rows=max(header_data) // 2, columns=2,
+                name=header, rows=rows, columns=columns,
                 pins=frozendict({
                     number: cls._make_pin(
                         header, number, row + 1, col + 1, functions)
@@ -329,7 +304,7 @@ class PiBoardInfo(BoardInfo):
                     for row, col in (divmod(number - 1, 2),)
                 })
             )
-            for header, header_data in headers.items()
+            for header, (rows, columns, header_data) in headers.items()
         })
         return cls(
             '{revision:04x}'.format(revision=revision),

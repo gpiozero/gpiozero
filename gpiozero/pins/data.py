@@ -13,48 +13,48 @@
 
 REV1_BOARD = """\
 {style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
-{style:white on green}|                                |{style:reset}
-{style:white on green}|                {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
-{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
-{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
-{style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
-{style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
-{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
-{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}{P2:{style} row8}{style:white on green} {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}{P2:{style} row7}{P3:{style} row7}{style:white on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|                     {P2:{style} row6}{P3:{style} row6}{style:white on green}         |{style:reset}
+{style:white on green}|               {style:on black}+---+{style:on green} {P2:{style} row5}{P3:{style} row5}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|D{style:on green}          {style:on black}|SoC|{style:on green} {P2:{style} row4}{P3:{style} row4}{style:on green}        {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|S{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green} {P2:{style} row3}{P3:{style} row3}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|I{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}        {P2:{style} row2}{P3:{style} row2}{style:white on green} P3      |{style:reset}
+{style:white on green}|   {style:on black}|0{style:on green}             P2 {P2:{style} row1}{P3:{style} row1}{style:white on green}    {style:black on white}+======{style:reset}
+{style:white on green}|                        {style:on black}C|{style:on green} {style:black on white}|   Net{style:reset}
+{style:white on green}|                        {style:on black}S|{style:on green} {style:black on white}+======{style:reset}
+{style:black on white}=pwr{style:white on green}             {style:black on white}|HDMI|{style:white on green}  {style:on black}I|{style:on green}      |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}--{style:on black}0|{style:on green}------+{style:reset}"""
 
 REV2_BOARD = """\
 {style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
-{style:white on green}|    {P5:{style} col1}{style:white on green}                        |{style:reset}
-{style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
-{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
-{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:black on white}+======{style:reset}
-{style:white on green}|                        {style:on black}|S|{style:black on white}|   Net{style:reset}
-{style:white on green}|                        {style:on black}|I|{style:black on white}+======{style:reset}
-{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
-{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}{P2:{style} row8}{style:white on green} {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}{P2:{style} row7}{P3:{style} row7}{style:white on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|    {P5:{style} col1}{style:white on green}             {P2:{style} row6}{P3:{style} row6}{style:white on green}         |{style:reset}
+{style:white on green}| P5 {P5:{style} col2}{style:white on green}       {style:on black}+---+{style:on green} {P2:{style} row5}{P3:{style} row5}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|D{style:on green}          {style:on black}|SoC|{style:on green} {P2:{style} row4}{P3:{style} row4}{style:on green}        {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|S{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green} {P2:{style} row3}{P3:{style} row3}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|I{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}        {P2:{style} row2}{P3:{style} row2}{style:white on green} P3      |{style:reset}
+{style:white on green}|   {style:on black}|0{style:on green}             P2 {P2:{style} row1}{P3:{style} row1}{style:white on green}    {style:black on white}+======{style:reset}
+{style:white on green}|                        {style:on black}C|{style:on green} {style:black on white}|   Net{style:reset}
+{style:white on green}|            {P6:{style} row2}{style:white on green}           {style:on black}S|{style:on green} {style:black on white}+======{style:reset}
+{style:black on white}=pwr{style:white on green}      P6 {P6:{style} row1}{style:white on green}   {style:black on white}|HDMI|{style:white on green}  {style:on black}I|{style:on green}      |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}--{style:on black}0|{style:on green}------+{style:reset}"""
 
 A_BOARD = """\
 {style:white on green}+------------------{style:black on white}| |{style:white on green}--{style:on cyan}| |{style:on green}------+{style:reset}
-{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}  {style:on cyan}|A|{style:on green}      |{style:reset}
-{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}  {style:on cyan}+-+{style:on green}      |{style:reset}
-{style:white on green}|    {P5:{style} col1}{style:white on green}                        |{style:reset}
-{style:white on green}| P5 {P5:{style} col2}{style:white on green}        {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|                {style:on black}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
-{style:white on green}|   {style:on black}|D|{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green}          {style:black on white}+===={style:reset}
-{style:white on green}|   {style:on black}|S|{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}                  |{style:reset}
-{style:white on green}|   {style:on black}|I|{style:on green}                  {style:on black}|C|{style:on green}     |{style:reset}
-{style:white on green}|                        {style:on black}|S|{style:on green}     |{style:reset}
-{style:white on green}|                        {style:on black}|I|{style:on green}     |{style:reset}
-{style:black on white}=pwr{style:on green}             {style:on white}|HDMI|{style:white on green}          |{style:reset}
-{style:white on green}+----------------{style:black on white}|    |{style:white on green}----------+{style:reset}"""
+{style:white on green}| {P1:{style} col2}{style:white on green} P1 {style:black on yellow}|C|{style:white on green}{P2:{style} row8}{style:white on green} {style:on cyan}|A|{style:on green}      |{style:reset}
+{style:white on green}| {P1:{style} col1}{style:white on green}    {style:black on yellow}+-+{style:white on green}{P2:{style} row7}{P3:{style} row7}{style:white on cyan}+-+{style:on green}      |{style:reset}
+{style:white on green}|    {P5:{style} col1}{style:white on green}             {P2:{style} row6}{P3:{style} row6}{style:white on green}         |{style:reset}
+{style:white on green}| P5 {P5:{style} col2}{style:white on green}       {style:on black}+---+{style:on green} {P2:{style} row5}{P3:{style} row5}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|D{style:on green}          {style:on black}|SoC|{style:on green} {P2:{style} row4}{P3:{style} row4}{style:on green}        {style:black on white}| USB{style:reset}
+{style:white on green}|   {style:on black}|S{style:on green} {style:bold}Pi Model{style:normal} {style:on black}+---+{style:on green} {P2:{style} row3}{P3:{style} row3}{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|   {style:on black}|I{style:on green} {style:bold}{model:3s}V{pcb_revision:3s}{style:normal}        {P2:{style} row2}{P3:{style} row2}{style:white on green} P3      |{style:reset}
+{style:white on green}|   {style:on black}|0{style:on green}             P2 {P2:{style} row1}{P3:{style} row1}{style:white on green}         |{style:reset}
+{style:white on green}|                        {style:on black}C|{style:on green}      |{style:reset}
+{style:white on green}|            {P6:{style} row2}{style:white on green}           {style:on black}S|{style:on green}      |{style:reset}
+{style:black on white}=pwr{style:white on green}      P6 {P6:{style} row1}{style:white on green}   {style:black on white}|HDMI|{style:white on green}  {style:on black}I|{style:on green}      |{style:reset}
+{style:white on green}+----------------{style:black on white}|    |{style:white on green}--{style:on black}0|{style:on green}------+{style:reset}"""
 
 BPLUS_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
@@ -62,44 +62,44 @@ BPLUS_BOARD = """\
 {style:white on green}| {J8:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
 {style:white on green}|                             {style:black on white}+===={style:reset}
 {style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}         |{style:reset}
-{style:white on green}|      {style:on black}+----+{style:on green}                 {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}                 {style:black on white}| USB{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}                 {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}  {style:on black}+----+{style:on green}                    |{style:reset}
-{style:white on green}|                   {style:on black}|C|{style:on green}     {style:black on white}+======{style:reset}
-{style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+{style:white on green}| {style:on black}|D{style:on green}      {style:on black}+---+{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|{style:black on white}S{style:white on green}      {style:on black}|SoC|{style:on green}               {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|{style:black on white}I{style:white on green}      {style:on black}+---+{style:on green}               {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|0{style:on green}               {style:on black}C|{style:on green}            |{style:reset}
+{style:white on green}|                  {style:black on white}S{style:white on black}|{style:on green}       {style:black on white}+======{style:reset}
+{style:white on green}|                  {style:black on white}I{style:white on black}|{style:on green} {style:on black}|A|{style:on green}   {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}      {style:black on white}|HDMI|{style:white on green}  {style:on black}0|{style:on green} {style:on black}|u|{style:on green}   {style:black on white}+======{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}------{style:black on white}|    |{style:white on green}-----{style:on black}|x|{style:on green}--------'{style:reset}"""
 
 B3PLUS_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
-{style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
-{style:white on green}| {J8:{style} col1}{style:white on green}  PoE   {style:black on white}| USB{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                   {POE:{style} row1}{style:on green}   {style:black on white}+===={style:reset}
-{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {POE:{style} row2}{style:on green}      |{style:reset}
-{style:white on green}|        {style:black on white},----.{style:on green}               {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}               {style:black on white}| USB{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}               {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}                  |{style:reset}
-{style:white on green}|                   {style:on black}|C|{style:on green}     {style:black on white}+======{style:reset}
-{style:white on green}|                   {style:on black}|S|{style:on green}     {style:black on white}|   Net{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green}  {style:black on white}+======{style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+{style:white on green}| {J8:{style} col2}{style:white on green} J8 PoE {style:black on white}+===={style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}   {POE:{style} row1}{style:on green}   {style:black on white}| USB{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {POE:{style} row2}{style:on green}   {style:black on white}+===={style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}         |{style:reset}
+{style:white on green}| {style:on black}|D{style:on green}     {style:black on white},---.{style:on green}           {RUN:{style} col1}{style:on green}   {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|{style:black on white}S{style:white on green}     {style:black on white}|SoC|{style:white on green}            RUN {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|{style:black on white}I{style:white on green}     {style:black on white}`---'{style:on green}                {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|0{style:on green}               {style:on black}C|{style:on green}            |{style:reset}
+{style:white on green}|                  {style:black on white}S{style:white on black}|{style:on green}       {style:black on white}+======{style:reset}
+{style:white on green}|                  {style:black on white}I{style:white on black}|{style:on green} {style:on black}|A|{style:on green}   {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}      {style:black on white}|HDMI|{style:white on green}  {style:on black}0|{style:on green} {style:on black}|u|{style:on green}   {style:black on white}+======{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}------{style:black on white}|    |{style:white on green}-----{style:on black}|x|{style:on green}--------'{style:reset}"""
 
 B4_BOARD = """\
 {style:white on green},--------------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8   {style:black on white}+======{style:reset}
-{style:white on green}| {J8:{style} col1}{style:white on green}  PoE {style:black on white}|   Net{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                   {POE:{style} row1}{style:on green} {style:black on white}+======{style:reset}
-{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {POE:{style} row2}{style:normal white on green}      |{style:reset}
-{style:white on green}|        {style:black on white},----.{style:on green} {style:white on black}+---+{style:on green}         {style:blue on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green} {style:white on black}|RAM|{style:on green}         {style:blue on white}|USB3{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green} {style:white on black}|   |{style:on green}         {style:blue on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green} {style:white on black}+---+{style:on green}            |{style:reset}
-{style:white on green}|                   {style:on black}|C|{style:on green}       {style:black on white}+===={style:reset}
-{style:white on green}|                   {style:on black}|S|{style:on green}       {style:black on white}|USB2{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|hd|{style:white on green}   {style:black on white}|hd|{style:white on green} {style:on black}|I||A|{style:on green}    {style:black on white}+===={style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|m0|{style:white on green}---{style:black on white}|m1|{style:white on green}----{style:on black}|V|{style:on green}-------'{style:reset}"""
+{style:white on green}| {J8:{style} col1}{style:white on green}  J14 {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {J14:{style} row1}{style:on green} {style:black on white}+======{style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} {J14:{style} row2}{style:normal white on green}      |{style:reset}
+{style:white on green}| {style:on black}|D{style:on green}     {style:black on white},---.{style:on green} {style:white on black}+---+{style:on green}          {style:blue on white}+===={style:reset}
+{style:white on green}| {style:on black}|{style:black on white}S{style:white on green}     {style:black on white}|SoC|{style:on green} {style:white on black}|RAM|{style:on green}          {style:blue on white}|USB3{style:reset}
+{style:white on green}| {style:on black}|{style:black on white}I{style:white on green}     {style:black on white}`---'{style:on green} {style:white on black}+---+{style:on green}          {style:blue on white}+===={style:reset}
+{style:white on green}| {style:on black}|0{style:on green}                {style:on black}C|{style:white on green}           |{style:reset}
+{style:white on green}| {J2:{style} rev col1}{style:white on green} J2            {style:black on white}S{style:white on black}|{style:on green}        {style:black on white}+===={style:reset}
+{style:white on green}|                   {style:black on white}I{style:white on black}|{style:on green} {style:white on black}|A|{style:white on green}    {style:black on white}|USB2{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|hd|{style:white on green}   {style:black on white}|hd|{style:white on green} {style:on black}0|{style:on green} {style:on black}|u|{style:on green}    {style:black on white}+===={style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|m0|{style:white on green}---{style:black on white}|m1|{style:white on green}----{style:on black}|x|{style:on green}-------'{style:reset}"""
 
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
@@ -107,55 +107,55 @@ APLUS_BOARD = """\
 {style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
 {style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
-{style:white on green}|      {style:on black}+----+{style:on green}           {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}  {style:on black}|SoC |{style:on green}           {style:black on white}| USB{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}  {style:on black}|    |{style:on green}           {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}  {style:on black}+----+{style:on green}              |{style:reset}
-{style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
-{style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-'{style:reset}"""
+{style:white on green}| {style:on black}|D{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|S{style:on green}      {style:on black}|SoC|{style:on green}         {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|I{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|0{style:on green}               {style:on black}C|{style:on green}      |{style:reset}
+{style:white on green}|                  {style:on black}S|{style:on green}      |{style:reset}
+{style:white on green}|                  {style:on black}I|{style:on green} {style:on black}|A|{style:on green}  |{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}      {style:black on white}|HDMI|{style:white on green}  {style:on black}0|{style:on green} {style:on black}|u|{style:on green}  |{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}------{style:black on white}|    |{style:white on green}-----{style:on black}|x|{style:on green}--'{style:reset}"""
 
 A3PLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
-{style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
-{style:white on green}| {style:black on white} Wi {style:white on green}                     |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}  RUN|{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green}                   {RUN:{style} col1}{style:white on green}|{style:reset}
 {style:white on green}| {style:black on white} Fi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
-{style:white on green}|        {style:black on white},----.{style:on green}         {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|D|{style:on green}    {style:black on white}|SoC |{style:on green}         {style:black on white}| USB{style:reset}
-{style:white on green}| {style:on black}|S|{style:on green}    {style:black on white}|    |{style:on green}         {style:black on white}+===={style:reset}
-{style:white on green}| {style:on black}|I|{style:on green}    {style:black on white}`----'{style:white on green}            |{style:reset}
-{style:white on green}|                   {style:on black}|C|{style:on green}    |{style:reset}
-{style:white on green}|                   {style:on black}|S|{style:on green}    |{style:reset}
-{style:white on green}| {style:black on white}pwr{style:white on green}        {style:black on white}|HDMI|{style:white on green} {style:on black}|I||A|{style:on green} |{style:reset}
-{style:white on green}`-{style:black on white}| |{style:white on green}--------{style:black on white}|    |{style:white on green}----{style:on black}|V|{style:on green}-'{style:reset}"""
+{style:white on green}| {style:on black}|D{style:on green}     {style:black on white},---.{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|{style:black on white}S{style:white on green}     {style:black on white}|SoC|{style:on green}          {style:black on white}| USB{style:reset}
+{style:white on green}| {style:on black}|{style:black on white}I{style:white on green}     {style:black on white}`---'{style:on green}          {style:black on white}+===={style:reset}
+{style:white on green}| {style:on black}|0{style:on green}               {style:on black}C|{style:on green}      |{style:reset}
+{style:white on green}|                  {style:black on white}S{style:white on black}|{style:on green}      |{style:reset}
+{style:white on green}|                  {style:black on white}I{style:white on black}|{style:on green} {style:on black}|A|{style:on green}  |{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}      {style:black on white}|HDMI|{style:white on green}  {style:on black}0|{style:on green} {style:on black}|u|{style:on green}  |{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}------{style:black on white}|    |{style:white on green}-----{style:on black}|x|{style:on green}--'{style:reset}"""
 
 ZERO12_BOARD = """\
 {style:white on green},--{J8:{style} col2}{style:white on green}---.{style:reset}
-{style:white on green}|  {J8:{style} col1}{style:white on green}J8 |{style:reset}
-{style:black on white}---+{style:white on green}                      |{style:reset}
-{style:black on white} sd|{style:white on green}      {style:white on black}+---+{style:white on green}  {style:bold}Pi{model:6s}{style:normal} |{style:reset}
-{style:black on white}---+{style:white on green}      {style:white on black}|SoC|{style:white on green}  {style:bold}V{pcb_revision:3s}{style:normal}     |{style:reset}
+{style:white on green}|  {J8:{style} col1}{style:white on green} J8|{style:reset}
+{style:black on white}---+{style:white on green} {style:bold}Pi{model:6s}{style:normal}    RUN {RUN:{style} rev col1}{style:white on green}   |{style:reset}
+{style:black on white} sd|{style:white on green} {style:bold}V{pcb_revision:3s}{style:normal} {style:white on black}+---+{style:white on green}   TV {TV:{style} col1}{style:white on green}   |{style:reset}
+{style:black on white}---+{style:white on green}      {style:white on black}|SoC|{style:white on green}           |{style:reset}
 {style:white on green}| {style:black on white}hdmi{style:white on green}    {style:white on black}+---+{style:white on green}   {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`-{style:black on white}|  |{style:white on green}------------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
 ZERO13_BOARD = """\
 {style:white on green},--{J8:{style} col2}{style:white on green}---.{style:reset}
-{style:white on green}|  {J8:{style} col1}{style:white on green}J8 |{style:reset}
-{style:black on white}---+{style:white on green}                     {style:black on white}|c{style:reset}
-{style:black on white} sd|{style:white on green}      {style:white on black}+---+{style:white on green} {style:bold}Pi{model:6s} {style:normal black on white}|s{style:reset}
-{style:black on white}---+{style:white on green}      {style:white on black}|SoC|{style:white on green} {style:bold}V{pcb_revision:3s}{style:normal}     {style:black on white}|i{style:reset}
+{style:white on green}|  {J8:{style} col1}{style:white on green} J8|{style:reset}
+{style:black on white}---+{style:white on green} {style:bold}Pi{model:6s}{style:normal}    RUN {RUN:{style} rev col1}{style:white on green}   {style:black on white}c{style:white on black}|{style:reset}
+{style:black on white} sd|{style:white on green} {style:bold}V{pcb_revision:3s}{style:normal} {style:white on black}+---+{style:white on green}   TV {TV:{style} col1}{style:white on green}   {style:black on white}s{style:white on black}|{style:reset}
+{style:black on white}---+{style:white on green}      {style:white on black}|SoC|{style:white on green}           {style:black on white}i{style:white on black}|{style:reset}
 {style:white on green}| {style:black on white}hdmi{style:white on green}    {style:white on black}+---+{style:white on green}   {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`-{style:black on white}|  |{style:white on green}------------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}"""
 
 ZERO2_BOARD = """\
 {style:white on green},--{J8:{style} col2}{style:white on green}---.{style:reset}
-{style:white on green}|  {J8:{style} col1}{style:white on green}J8 |{style:reset}
-{style:black on white}---+{style:white on green}     {style:normal on black}+----+{style:on green} {style:bold}Pi{model:6s} {style:normal black on white}|c{style:reset}
-{style:black on white} sd|{style:white on green}     {style:white on black}|SoC |{style:white on green} {style:black on white} Wi {style:bold white on green}V{pcb_revision:3s} {style:normal black on white}|s{style:reset}
-{style:black on white}---+{style:white on green}     {style:white on black}|    |{style:white on green} {style:black on white} Fi {style:on green}     {style:on white}|i{style:reset}
-{style:white on green}| {style:black on white}hdmi{style:white on green}   {style:white on black}+----+{style:white on green}   {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
+{style:white on green}|  {J8:{style} col1}{style:white on green} J8|{style:reset}
+{style:black on white}---+{style:white on green}     {style:normal on black}+---+{style:on green}  {style:bold}Pi{model:6s}  {style:normal black on white}c{style:white on black}|{style:reset}
+{style:black on white} sd|{style:white on green}     {style:white on black}|SoC|{style:white on green}  {style:black on white} Wi {style:bold white on green}V{pcb_revision:3s}  {style:normal black on white}s{style:white on black}|{style:reset}
+{style:black on white}---+{style:white on green}     {style:white on black}+---+{style:white on green}  {style:black on white} Fi {style:on green}      {style:on white}i{style:white on black}|{style:reset}
+{style:white on green}| {style:black on white}hdmi{style:white on green}            {style:black on white}usb{style:on green} {style:black on white}pwr{style:white on green} |{style:reset}
 {style:white on green}`-{style:black on white}|  |{style:white on green}------------{style:black on white}| |{style:white on green}-{style:black on white}| |{style:white on green}-'{style:reset}
 """
 
@@ -179,22 +179,22 @@ CM3PLUS_BOARD = """\
 
 CM4_BOARD = """\
 {style:white on green},--{style:black on white}csi1{style:white on green}---{style:black on white}dsi0{style:white on green}---{style:black on white}dsi1{style:white on green}-----------{style:bold},-------------.{style:normal}-----------.{style:reset}
-{style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}  J2{J2:{style} col2}{style:bold white on green}|{style:yellow}O           O{style:white}|{style:normal}           |{style:reset}
-{style:white on green}{style:black on white}c|{style:white on green} {style:bold yellow}O  {style:white}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}       {style:bold yellow}O{style:normal white}   |{style:reset}
+{style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green} J2 {J2:{style} col2}{style:bold white on green}|             |{style:normal}{J3:{style} rev col1}{style:white on green}        |{style:reset}
+{style:white on green}{style:black on white}c|{style:white on green}    {style:bold}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}J3         |{style:reset}
 {style:white on green}{style:black on white}s|{style:white on green}    {style:bold}IO Board{style:normal}                  {style:bold}|       {style:normal black on white} Fi {style:white on green}  {style:bold}|{style:normal}           |{style:reset}
-{style:white on green}{style:black on white}i|{style:white on green}           J6{J6:{style} col2}{style:bold white on green}               |         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
+{style:white on green}{style:black on white}i|{style:white on green}          J6 {J6:{style} col2}{style:bold white on green}               |         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
 {style:white on green}| J8           {J6:{style} col1}{style:bold white on green}               |  {style:normal black on white},----.{style:on green} {style:white on black}|eM|{style:bold on green}|  {style:normal white on black}}}-{{{style:on green}      |{style:reset}
-{style:white on green}|{style:bold yellow}O{J8:{style} col2}{style:white on green}   {style:bold yellow}O{style:white}      |  {style:normal black on white}|SoC |{style:on green} {style:white on black}|MC|{style:bold on green}|  {style:normal white on black}|C|{style:on green}      |{style:reset}
-{style:white on green}| {J8:{style} col1}{style:white on green}   PoE    {style:bold}|  {style:normal black on white}|    |{style:on green} {style:white on black}+--+{style:bold on green}|  {style:normal white on black}|I|{style:on green}      |{style:reset}
-{style:white on green}| {style:black on white},---.{style:white on green}                  {POE:{style} row1}{style:bold white on green}     |  {style:normal black on white}`----'{style:white on green}     {style:bold}|  {style:normal white on black}|e|{style:on green}      |{style:reset}
-{style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                  {POE:{style} row2}{style:bold white on green}     |  {style:normal white on black}+----+{style:on green}     {style:bold}|{style:normal}           |{style:reset}
-{style:white on green}| {style:black on white}) + |{style:white on green}                         {style:bold}|{style:yellow}O {style:normal white on black}|RAM |{style:on green}    {style:bold yellow}O{style:white}|{style:normal}           |{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green}          {style:bold}|  {style:normal black on white}|SoC |{style:on green} {style:white on black}|MC|{style:bold on green}|  {style:normal white on black}|C|{style:on green}      |{style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}   J9     {style:bold}|  {style:normal black on white}|    |{style:on green} {style:white on black}+--+{style:bold on green}|  {style:normal white on black}|I|{style:on green}      |{style:reset}
+{style:white on green}| {style:black on white},---.{style:white on green}                  {J9:{style} row1}{style:bold white on green}     |  {style:normal black on white}`----'{style:white on green}     {style:bold}|  {style:normal white on black}|e|{style:on green}      |{style:reset}
+{style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                  {J9:{style} row2}{style:bold white on green}     |  {style:normal white on black}+----+{style:on green}     {style:bold}|{style:normal}           |{style:reset}
+{style:white on green}| {style:black on white}) + |{style:white on green}                         {style:bold}|  {style:normal white on black}|RAM |{style:bold white on green}     |{style:normal}           |{style:reset}
 {style:white on green}|{style:black on white}( ={style:on green}O{style:on white} |{style:white on green}                         {style:bold}`--{style:normal white on black}+----+{style:bold on green}-----'{style:normal}           |{style:reset}
 {style:white on green}| {style:black on white}`---'{style:white on green}                                                   |{style:reset}
+{style:white on green}|   {J1:{style} rev col1}{style:white on green} J1                                                |{style:reset}
 {style:white on green}|                                                         |{style:reset}
-{style:white on green}|                                                         |{style:reset}
-{style:white on green}|  {style:bold yellow}O                       {style:normal black on white}|Net |{style:on green} {style:black on white}|USB|{style:on green}     {style:black on white}|uSD|{style:white on green}     {style:bold yellow}O{style:normal white on black}|p|{style:on green}|{style:reset}
-{style:white on green}|{style:bold yellow}O   {style:normal black on white}|HDMI|{style:on green}   {style:black on white}|HDMI|{style:white on green}     {style:bold yellow}O {style:normal black on white}|    |{style:on green} {style:black on white}| 2 |{style:on green} {style:black on white}usb{style:white on green} {style:black on white}|   |{style:white on green}      {style:on black}|w|{style:on green}|{style:reset}
+{style:white on green}|                          {style:black on white}|Net |{style:on green} {style:black on white}|USB|{style:on green}     {style:black on white}|uSD|{style:white on green}      {style:on black}|p|{style:on green}|{style:reset}
+{style:white on green}|    {style:black on white}|HDMI|{style:on green}   {style:black on white}|HDMI|{style:white on green}       {style:black on white}|    |{style:on green} {style:black on white}| 2 |{style:on green} {style:black on white}usb{style:white on green} {style:black on white}|   |{style:white on green}      {style:on black}|w|{style:on green}|{style:reset}
 {style:white on green}`----{style:black on white}| 0  |{style:white on green}---{style:black on white}| 1  |{style:white on green}-------{style:black on white}|    |{style:white on green}-{style:black on white}|   |{style:white on green}-{style:black on white}| |{style:white on green}------------{style:white on black}|r|{style:on green}'{style:reset}"""
 
 P400_BOARD = """\
@@ -371,7 +371,7 @@ PI4_GPIO57 = gpiof('GPIO57')
 del gpiof
 del re
 
-REV1_P1 = {
+REV1_P1 = (13, 2, {
     1:  V3_3,       2:  V5,
     3:  PI1_GPIO0,  4:  V5,
     5:  PI1_GPIO1,  6:  GND,
@@ -385,9 +385,9 @@ REV1_P1 = {
     21: PI1_GPIO9,  22: PI1_GPIO25,
     23: PI1_GPIO11, 24: PI1_GPIO8,
     25: GND,        26: PI1_GPIO7,
-}
+})
 
-REV2_P1 = {
+REV2_P1 = (13, 2, {
     1:  V3_3,       2:  V5,
     3:  PI1_GPIO2,  4:  V5,
     5:  PI1_GPIO3,  6:  GND,
@@ -401,16 +401,42 @@ REV2_P1 = {
     21: PI1_GPIO9,  22: PI1_GPIO25,
     23: PI1_GPIO11, 24: PI1_GPIO8,
     25: GND,        26: PI1_GPIO7,
-}
+})
 
-REV2_P5 = {
+REV2_P5 = (4, 2, {
     1:  V5,         2: V3_3,
     3:  PI1_GPIO28, 4: PI1_GPIO29,
     5:  PI1_GPIO30, 6: PI1_GPIO31,
     7:  GND,        8: GND,
-}
+})
 
-PLUS_J8 = {
+PI1_P2 = (8, 1, {
+    1: {'': 'GPU JTAG'},
+    2: {'': 'GPU JTAG'},
+    3: {'': 'GPU JTAG'},
+    4: {'': 'GPU JTAG'},
+    5: {'': 'GPU JTAG'},
+    6: {'': 'GPU JTAG'},
+    7: {'': 'GPU JTAG'},
+    8: {'': 'GPU JTAG'},
+})
+
+PI1_P3 = (7, 1, {
+    1: {'': 'LAN JTAG'},
+    2: {'': 'LAN JTAG'},
+    3: {'': 'LAN JTAG'},
+    4: {'': 'LAN JTAG'},
+    5: {'': 'LAN JTAG'},
+    6: {'': 'LAN JTAG'},
+    7: {'': 'LAN JTAG'},
+})
+
+REV2_P6 = (2, 1, {
+    1: {'': 'RUN'},
+    2: GND,
+})
+
+PLUS_J8 = (20, 2, {
     1:  V3_3,       2:  V5,
     3:  PI1_GPIO2,  4:  V5,
     5:  PI1_GPIO3,  6:  GND,
@@ -431,9 +457,26 @@ PLUS_J8 = {
     35: PI1_GPIO19, 36: PI1_GPIO16,
     37: PI1_GPIO26, 38: PI1_GPIO20,
     39: GND,        40: PI1_GPIO21,
-}
+})
 
-PI4_J8 = {
+PLUS_POE = (2, 2, {
+    1: {'': 'TR01 TAP'}, 2: {'': 'TR00 TAP'},
+    3: {'': 'TR03 TAP'}, 4: {'': 'TR02 TAP'},
+})
+
+PLUS_RUN = (2, 1, {
+    1: {'': 'POWER ENABLE'},
+    2: {'': 'RUN'},
+})
+
+ZERO_RUN = REV2_P6
+
+ZERO_TV = (2, 1, {
+    1: {'': 'COMPOSITE'},
+    2: GND,
+})
+
+PI4_J8 = (20, 2, {
     1:  V3_3,       2:  V5,
     3:  PI4_GPIO2,  4:  V5,
     5:  PI4_GPIO3,  6:  GND,
@@ -454,14 +497,17 @@ PI4_J8 = {
     35: PI4_GPIO19, 36: PI4_GPIO16,
     37: PI4_GPIO26, 38: PI4_GPIO20,
     39: GND,        40: PI4_GPIO21,
-}
+})
 
-PLUS_POE = {
-    1: {'': 'TR01'}, 2: {'': 'TR00'},
-    3: {'': 'TR03'}, 4: {'': 'TR02'},
-}
+PI4_J2 = (3, 1, {
+    1: {'': 'GLOBAL ENABLE'},
+    2: GND,
+    3: {'': 'RUN'},
+})
 
-CM_SODIMM = {
+PI4_J14 = PLUS_POE
+
+CM_SODIMM = (100, 2, {
     1:   GND,                    2:   {'': 'EMMC DISABLE N'},
     3:   PI1_GPIO0,              4:   NC,
     5:   PI1_GPIO1,              6:   NC,
@@ -563,10 +609,10 @@ CM_SODIMM = {
     195: GND,                    196: GND,
     197: {'': 'VBAT'},           198: {'': 'VBAT'},
     199: {'': 'VBAT'},           200: {'': 'VBAT'},
-    }
+})
 
-CM3_SODIMM = CM_SODIMM.copy()
-CM3_SODIMM.update({
+CM3_SODIMM = (CM_SODIMM[0], CM_SODIMM[1], CM_SODIMM[2].copy())
+CM3_SODIMM[-1].update({
     4:  {'': 'NC / SDX VREF'},
     6:  {'': 'NC / SDX VREF'},
     8:  GND,
@@ -580,22 +626,31 @@ CM3_SODIMM.update({
     24: {'': 'NC / SDX D3'},
     88: {'': 'HDMI HPD N 1V8'},
     90: {'': 'EMMC EN N 1V8'},
-    })
+})
 
-CM4_J6 = {
+CM4_J6 = (2, 2, {
     1: {'': '1-2 CAM0+DISP0'}, 2: {'': '1-2 CAM0+DISP0'},
     3: {'': '3-4 CAM0+DISP0'}, 4: {'': '3-4 CAM0+DISP0'},
-    }
+})
 
-CM4_J2 = {
+CM4_J2 = (7, 2, {
     1:  {'': '1-2 DISABLE eMMC BOOT'}, 2:  {'': '1-2 DISABLE eMMC BOOT'},
     3:  {'': '3-4 WRITE-PROT EEPROM'}, 4:  {'': '3-4 WRITE-PROT EEPROM'},
-    5:  {'': 'UNKNOWN'},               6:  {'': 'UNKNOWN'},
-    7:  {'': 'UNKNOWN'},               8:  {'': 'UNKNOWN'},
-    9:  {'': 'UNKNOWN'},               10: {'': 'UNKNOWN'},
-    11: {'': 'UNKNOWN'},               12: {'': 'UNKNOWN'},
-    13: {'': 'UNKNOWN'},               14: {'': 'UNKNOWN'},
-    }
+    5:  {'': 'AIN0 MXL7704'},          6:  {'': 'AIN1 MXL7704'},
+    7:  GND,                           8:  {'': 'SYNC_IN'},
+    9:  {'': 'SYNC OUT'},              10: GND,
+    11: {'': 'TV OUT'},                12: GND,
+    13: {'': '13-14 WAKE'},            14: {'': '13-14 WAKE'},
+})
+
+CM4_J1 = PI4_J2
+CM4_J9 = PLUS_POE
+
+CM4_J3 = (3, 1, {
+    1: {'': 'WL DISABLE'},
+    2: GND,
+    3: {'': 'BT DISABLE'},
+})
 
 # The following data is sourced from a combination of the following locations:
 #
@@ -606,23 +661,23 @@ CM4_J2 = {
 
 PI_REVISIONS = {
     # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                         board
-    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},                REV1_BOARD,   ),
-    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1},                REV1_BOARD,   ),
-    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
-    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
-    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, A_BOARD,      ),
-    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P5': REV2_P5}, REV2_BOARD,   ),
-    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                BPLUS_BOARD,  ),
-    0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
-    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                APLUS_BOARD,  ),
-    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                BPLUS_BOARD,  ),
-    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},          CM_BOARD,     ),
-    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                APLUS_BOARD,  ),
+    0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1, 'P2': PI1_P2, 'P3': PI1_P3},                               REV1_BOARD,   ),
+    0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1, 'P2': PI1_P2, 'P3': PI1_P3},                               REV1_BOARD,   ),
+    0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0x5:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0x6:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0x7:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Egoman',    256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, A_BOARD,      ),
+    0x8:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Sony',      256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, A_BOARD,      ),
+    0x9:      ('A',    '2.0', '2013Q1', 'BCM2835', 'Qisda',     256,  'SD',      1,  0,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, A_BOARD,      ),
+    0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           BPLUS_BOARD,  ),
+    0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
+    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           BPLUS_BOARD,  ),
+    0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
     }
 
 SPI_HARDWARE_PINS = {
