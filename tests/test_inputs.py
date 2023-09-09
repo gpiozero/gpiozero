@@ -84,12 +84,12 @@ def test_input_is_active_high_externally_pulled_down(mock_factory):
 def test_input_invalid_pull_up(mock_factory):
     with pytest.raises(PinInvalidState) as exc:
         InputDevice(4, pull_up=None)
-    assert str(exc.value) == 'Pin 4 is defined as floating, but "active_state" is not defined'
+    assert str(exc.value) == 'Pin GPIO4 is defined as floating, but "active_state" is not defined'
 
 def test_input_invalid_active_state(mock_factory):
     with pytest.raises(PinInvalidState) as exc:
         InputDevice(4, active_state=True)
-    assert str(exc.value) == 'Pin 4 is not floating, but "active_state" is not None'
+    assert str(exc.value) == 'Pin GPIO4 is not floating, but "active_state" is not None'
 
 def test_input_event_activated(mock_factory):
     event = Event()
@@ -269,6 +269,7 @@ def test_input_light_sensor(mock_factory):
 
 @pytest.mark.skipif(hasattr(sys, 'pypy_version_info'),
                     reason='timing is too random on pypy')
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_input_distance_sensor(mock_factory):
     echo_pin = mock_factory.pin(4)
     trig_pin = mock_factory.pin(5, pin_class=MockTriggerPin,

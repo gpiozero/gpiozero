@@ -304,7 +304,11 @@ class Device(ValuesMixin, GPIOBase):
             # entry-point. Try with name verbatim first. If that fails, attempt
             # with the lower-cased name (this ensures compatibility names work
             # but we're still case insensitive for all factories)
-            group = entry_points()['gpiozero_pin_factories']
+            with warnings.catch_warnings():
+                # The dict interface of entry_points is deprecated ... already
+                # and this deprecation is for us to worry about, not our users
+                warnings.simplefilter('ignore', category=DeprecationWarning)
+                group = entry_points()['gpiozero_pin_factories']
             try:
                 return group[name].load()()
             except KeyError:

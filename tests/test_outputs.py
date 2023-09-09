@@ -1275,6 +1275,7 @@ def test_phaseenable_motor_reverse_nonpwm(mock_factory):
         assert motor.value == -1
         assert p.state == 1 and e.state == 1
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
     with Servo(1) as servo:
@@ -1282,6 +1283,7 @@ def test_servo_pins(mock_factory, pwm):
         assert servo.pwm_device.pin is p
         assert isinstance(servo.pwm_device, PWMOutputDevice)
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_bad_value(mock_factory, pwm):
     p = mock_factory.pin(1)
     with pytest.raises(ValueError):
@@ -1296,6 +1298,7 @@ def test_servo_pins_nonpwm(mock_factory):
     with pytest.raises(PinPWMUnsupported):
         Servo(1)
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_close(mock_factory, pwm):
     p = mock_factory.pin(2)
     with Servo(2) as servo:
@@ -1305,6 +1308,7 @@ def test_servo_close(mock_factory, pwm):
         servo.close()
         assert servo.closed
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_pulse_width(mock_factory, pwm):
     p = mock_factory.pin(2)
     with Servo(2, min_pulse_width=5/10000, max_pulse_width=25/10000) as servo:
@@ -1321,6 +1325,7 @@ def test_servo_pulse_width(mock_factory, pwm):
         servo.value = None
         assert servo.pulse_width is None
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_initial_values(mock_factory, pwm):
     p = mock_factory.pin(2)
     with Servo(2) as servo:
@@ -1341,6 +1346,7 @@ def test_servo_initial_values(mock_factory, pwm):
         assert not servo.is_active
         assert servo.value is None
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_servo_values(mock_factory, pwm):
     p = mock_factory.pin(1)
     with Servo(1) as servo:
@@ -1375,12 +1381,14 @@ def test_angular_servo_bad_value(mock_factory, pwm):
     with pytest.raises(ValueError):
         AngularServo(1, min_angle=95)
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_angular_servo_range(mock_factory, pwm):
     with AngularServo(1, initial_angle=15, min_angle=0, max_angle=90) as servo:
         assert repr(servo).startswith('<gpiozero.AngularServo object')
         assert servo.min_angle == 0
         assert servo.max_angle == 90
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_angular_servo_initial_angles(mock_factory, pwm):
     with AngularServo(1) as servo:
         assert servo.angle == 0
@@ -1396,6 +1404,7 @@ def test_angular_servo_initial_angles(mock_factory, pwm):
     with AngularServo(1, initial_angle=None) as servo:
         assert servo.angle is None
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_angular_servo_angles(mock_factory, pwm):
     with AngularServo(1) as servo:
         servo.angle = 0
@@ -1484,6 +1493,7 @@ def test_tonalbuzzer_init(mock_factory, pwm):
     with TonalBuzzer(2, octaves=2, initial_value=1) as tb:
         assert isclose(tb.pwm_device.frequency, 1760)
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.AmbiguousTone')
 def test_tonalbuzzer_play(mock_factory, pwm):
     with TonalBuzzer(2) as tb:
         tb.play(60)

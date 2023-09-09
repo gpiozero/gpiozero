@@ -201,6 +201,7 @@ def test_composite_device_read_only(mock_factory):
         with pytest.raises(AttributeError):
             device.foo = 1
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PWMSoftwareFallback')
 def test_shutdown(mock_factory):
     from gpiozero.devices import _shutdown
     ds = DistanceSensor(17, 19)

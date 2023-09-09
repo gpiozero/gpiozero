@@ -9,6 +9,7 @@
 
 import os
 import errno
+import warnings
 from time import time, sleep
 from math import isclose
 from unittest import mock
@@ -36,11 +37,14 @@ local_only = pytest.mark.skipif(
     reason="Test cannot run with non-local pin factories")
 
 
-@pytest.fixture(
-    scope='module',
-    params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
-def pin_factory_name(request):
-    return request.param
+with warnings.catch_warnings():
+    # The dict interface of entry_points is deprecated ... already
+    warnings.simplefilter('ignore', category=DeprecationWarning)
+    @pytest.fixture(
+        scope='module',
+        params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
+    def pin_factory_name(request):
+        return request.param
 
 
 @pytest.fixture()
@@ -239,6 +243,7 @@ def test_explicit_factory(no_default_factory, pin_factory):
         assert device.pin.number == TEST_PIN
 
 
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_envvar_factory(no_default_factory, pin_factory_name):
     os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
     assert Device.pin_factory is None

@@ -17,6 +17,7 @@ from unittest import mock
 import gpiozero.pins.data
 import gpiozero.pins.local
 from gpiozero.pins.local import LocalPiFactory
+from gpiozero.pins.pi import PiBoardInfo
 from gpiozero.pins.style import Style
 from gpiozero.compat import frozendict
 from gpiozero import *
@@ -37,7 +38,7 @@ def test_pi_revision():
                 IOError(errno.ENOENT, 'File not found'),
                 ['lots of irrelevant', 'lines', 'followed by', 'Revision: 0002', 'Serial:  xxxxxxxxxxx']
             ]
-            assert pi_info().revision == '0002'
+            assert Device.pin_factory.board_info.revision == '0002'
             # LocalPiFactory caches the revision (because realistically it
             # isn't going to change at runtime); we need to wipe it here though
             Device.pin_factory._info = None
@@ -45,7 +46,7 @@ def test_pi_revision():
                 IOError(errno.ENOENT, 'File not found'),
                 ['Revision: a21042']
             ]
-            assert pi_info().revision == 'a21042'
+            assert Device.pin_factory.board_info.revision == 'a21042'
             # Check over-volting result (some argument over whether this is 7
             # or 8 character result; make sure both work)
             Device.pin_factory._info = None
@@ -53,13 +54,13 @@ def test_pi_revision():
                 IOError(errno.ENOENT, 'File not found'),
                 ['Revision: 1000003']
             ]
-            assert pi_info().revision == '0003'
+            assert Device.pin_factory.board_info.revision == '0003'
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = [
                 IOError(errno.ENOENT, 'File not found'),
                 ['Revision: 100003']
             ]
-            assert pi_info().revision == '0003'
+            assert Device.pin_factory.board_info.revision == '0003'
             # Check we complain loudly if we can't access linux,revision
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = [
@@ -70,13 +71,13 @@ def test_pi_revision():
                 ['Revision: 100003']
             ]
             with pytest.raises(IOError):
-                pi_info()
+                Device.pin_factory.board_info
             # Check that parsing /proc/device-tree/system/linux,revision also
             # works properly
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = None
             m.return_value.__enter__.return_value = io.BytesIO(b'\x00\xa2\x20\xd3')
-            assert pi_info().revision == 'a220d3'
+            assert Device.pin_factory.board_info.revision == 'a220d3'
             # Check that if everything's a bust we raise PinUnknownPi
             with pytest.raises(PinUnknownPi):
                 Device.pin_factory._info = None
@@ -85,10 +86,11 @@ def test_pi_revision():
                     IOError(errno.ENOENT, 'File not found'),
                     ['nothing', 'relevant']
                 ]
-                pi_info()
+                Device.pin_factory.board_info
             with pytest.raises(PinUnknownPi):
-                pi_info('0fff')
+                PiBoardInfo.from_revision(0xfff)
 
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pi_info():
     r = pi_info('900011')
     assert r.model == 'B'
@@ -117,15 +119,33 @@ def test_pi_info():
     assert repr(r).startswith('PiBoardInfo(revision=')
     assert 'headers=...' in repr(r)
 
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pi_info_other_types():
     assert pi_info(b'9000f1') == pi_info(0x9000f1)
 
+def test_find_pin():
+    board_info = PiBoardInfo.from_revision(0xa21041)
+    assert {('J8', 1), ('J8', 17)} == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('3V3')
+    }
+    assert {('J8', 3)} == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('GPIO2')
+    }
+    assert set() == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('GPIO47')
+    }
+
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_physical_pins():
     # Assert physical pins for some well-known Pi's; a21041 is a Pi2B
     assert pi_info('a21041').physical_pins('3V3') == {('J8', 1), ('J8', 17)}
     assert pi_info('a21041').physical_pins('GPIO2') == {('J8', 3)}
     assert pi_info('a21041').physical_pins('GPIO47') == set()
 
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_physical_pin():
     with pytest.raises(PinMultiplePins):
         assert pi_info('a21041').physical_pin('GND')
@@ -133,10 +153,20 @@ def test_physical_pin():
     with pytest.raises(PinNoPins):
         assert pi_info('a21041').physical_pin('GPIO47')
 
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pulled_up():
     assert pi_info('a21041').pulled_up('GPIO2')
     assert not pi_info('a21041').pulled_up('GPIO4')
     assert not pi_info('a21041').pulled_up('GPIO47')
+
+def test_pull():
+    board_info = PiBoardInfo.from_revision(0xa21041)
+    for header, pin in board_info.find_pin('GPIO2'):
+        assert pin.pull == 'up'
+    for header, pin in board_info.find_pin('GPIO4'):
+        assert pin.pull == ''
+    for header, pin in board_info.find_pin('GPIO47'):
+        assert pin.pull == ''
 
 def test_pprint_content():
     with mock.patch('sys.stdout') as stdout:
@@ -271,11 +301,11 @@ def test_pprint_missing_pin():
                 assert '({i:d})'.format(i=i)
 
 def test_pprint_rows_cols():
-    assert '{0:row1}'.format(pi_info('900092').headers['J8']) == '1o'
-    assert '{0:row2}'.format(pi_info('900092').headers['J8']) == 'oo'
-    assert '{0:col1}'.format(pi_info('0002').headers['P1']) == '1oooooooooooo'
-    assert '{0:col2}'.format(pi_info('0002').headers['P1']) == 'ooooooooooooo'
+    assert '{0:row1}'.format(PiBoardInfo.from_revision(0x900092).headers['J8']) == '1o'
+    assert '{0:row2}'.format(PiBoardInfo.from_revision(0x900092).headers['J8']) == 'oo'
+    assert '{0:col1}'.format(PiBoardInfo.from_revision(0x0002).headers['P1']) == '1oooooooooooo'
+    assert '{0:col2}'.format(PiBoardInfo.from_revision(0x0002).headers['P1']) == 'ooooooooooooo'
     with pytest.raises(ValueError):
-        '{0:row16}'.format(pi_info('0002').headers['P1'])
+        '{0:row16}'.format(PiBoardInfo.from_revision(0x0002).headers['P1'])
     with pytest.raises(ValueError):
-        '{0:col3}'.format(pi_info('0002').headers['P1'])
+        '{0:col3}'.format(PiBoardInfo.from_revision(0x0002).headers['P1'])
