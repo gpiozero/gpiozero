@@ -267,15 +267,16 @@ class Device(ValuesMixin, GPIOBase):
 
     @staticmethod
     def _default_pin_factory():
-        # We prefer RPi.GPIO here as it supports PWM, and all Pi revisions.  If
-        # no third-party libraries are available, however, we fall back to a
-        # pure Python implementation which supports platforms like PyPy
+        # We prefer lgpio here as it supports PWM, and all Pi revisions without
+        # banging on registers directly.  If no third-party libraries are
+        # available, however, we fall back to a pure Python implementation
+        # which supports platforms like PyPy
         #
         # NOTE: If the built-in pin factories are expanded, the dict must be
         # updated along with the entry-points in setup.py.
         default_factories = OrderedDict((
-            ('rpigpio', 'gpiozero.pins.rpigpio:RPiGPIOFactory'),
             ('lgpio',   'gpiozero.pins.lgpio:LGPIOFactory'),
+            ('rpigpio', 'gpiozero.pins.rpigpio:RPiGPIOFactory'),
             ('pigpio',  'gpiozero.pins.pigpio:PiGPIOFactory'),
             ('native',  'gpiozero.pins.native:NativeFactory'),
         ))

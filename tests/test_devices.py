@@ -36,8 +36,8 @@ def test_default_pin_factory_order():
                 device = GPIODevice(2)
             assert len(ws) == 4
             assert all(w.category == PinFactoryFallback for w in ws)
-            assert ws[0].message.args[0].startswith('Falling back from rpigpio:')
-            assert ws[1].message.args[0].startswith('Falling back from lgpio:')
+            assert ws[0].message.args[0].startswith('Falling back from lgpio:')
+            assert ws[1].message.args[0].startswith('Falling back from rpigpio:')
             assert ws[2].message.args[0].startswith('Falling back from pigpio:')
             assert ws[3].message.args[0].startswith('Falling back from native:')
 
