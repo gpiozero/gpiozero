@@ -19,7 +19,7 @@ from gpiozero.pins.mock import *
 def test_mock_pin_init(mock_factory):
     with pytest.raises(ValueError):
         Device.pin_factory.pin(60)
-    assert Device.pin_factory.pin(2).number == 2
+    assert Device.pin_factory.pin(2).info.name == 'GPIO2'
 
 
 def test_mock_pin_defaults(mock_factory):
@@ -43,16 +43,16 @@ def test_mock_pin_open_close(mock_factory):
 
 def test_mock_pin_init_twice_same_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(pin1.number)
+    pin2 = Device.pin_factory.pin(pin1.info.name)
     assert pin1 is pin2
 
 
 def test_mock_pin_init_twice_different_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2)
-    pin2 = Device.pin_factory.pin(pin1.number+1)
+    pin2 = Device.pin_factory.pin(3)
     assert pin1 != pin2
-    assert pin1.number == 2
-    assert pin2.number == pin1.number+1
+    assert pin1.info.name == 'GPIO2'
+    assert pin2.info.name == 'GPIO3'
 
 
 def test_mock_pwm_pin_defaults(mock_factory):
@@ -76,26 +76,26 @@ def test_mock_pwm_pin_open_close(mock_factory):
 
 def test_mock_pwm_pin_init_twice_same_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPWMPin)
-    pin2 = Device.pin_factory.pin(pin1.number, pin_class=MockPWMPin)
+    pin2 = Device.pin_factory.pin(pin1.info.name, pin_class=MockPWMPin)
     assert pin1 is pin2
 
 
 def test_mock_pwm_pin_init_twice_different_pin(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPWMPin)
-    pin2 = Device.pin_factory.pin(pin1.number + 1, pin_class=MockPWMPin)
+    pin2 = Device.pin_factory.pin(3, pin_class=MockPWMPin)
     assert pin1 != pin2
-    assert pin1.number == 2
-    assert pin2.number == pin1.number+1
+    assert pin1.info.name == 'GPIO2'
+    assert pin2.info.name == 'GPIO3'
 
 
 def test_mock_pin_init_twice_different_modes(mock_factory):
     pin1 = Device.pin_factory.pin(2, pin_class=MockPin)
-    pin2 = Device.pin_factory.pin(pin1.number + 1, pin_class=MockPWMPin)
+    pin2 = Device.pin_factory.pin(3, pin_class=MockPWMPin)
     assert pin1 != pin2
     with pytest.raises(ValueError):
-        Device.pin_factory.pin(pin1.number, pin_class=MockPWMPin)
+        Device.pin_factory.pin(pin1.info.name, pin_class=MockPWMPin)
     with pytest.raises(ValueError):
-        Device.pin_factory.pin(pin2.number, pin_class=MockPin)
+        Device.pin_factory.pin(pin2.info.name, pin_class=MockPin)
 
 
 def test_mock_pin_frequency_unsupported(mock_factory):

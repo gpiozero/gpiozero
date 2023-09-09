@@ -53,7 +53,7 @@ class SPISoftware(SPI):
     def _conflicts_with(self, other):
         return not (
             isinstance(other, SoftwareSPI) and
-            (self._select.pin.number != other._select.pin.number)
+            (self._select.pin.info.name != other._select.pin.info.name)
             )
 
     def close(self):
@@ -73,10 +73,10 @@ class SPISoftware(SPI):
         try:
             self._check_open()
             return (
-                'SPI(clock_pin={self._bus.clock.pin.number}, '
-                'mosi_pin={self._bus.mosi.pin.number}, '
-                'miso_pin={self._bus.miso.pin.number}, '
-                'select_pin={self._select.pin.number})'.format(self=self))
+                'SPI(clock_pin={self._bus.clock.pin.info.name!r}, '
+                'mosi_pin={self._bus.mosi.pin.info.name!r}, '
+                'miso_pin={self._bus.miso.pin.info.name!r}, '
+                'select_pin={self._select.pin.info.name!r})'.format(self=self))
         except DeviceClosed:
             return 'SPI(closed)'
 

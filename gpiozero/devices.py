@@ -578,7 +578,7 @@ class GPIODevice(Device):
     def close(self):
         super().close()
         if getattr(self, '_pin', None) is not None:
-            self.pin_factory.release_pins(self, self._pin.number)
+            self.pin_factory.release_pins(self, self._pin.info.name)
             self._pin.close()
         self._pin = None
 

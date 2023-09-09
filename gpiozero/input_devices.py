@@ -83,13 +83,13 @@ class InputDevice(GPIODevice):
         if pull_up is None:
             if active_state is None:
                 raise PinInvalidState(
-                    'Pin {self.pin.number} is defined as floating, but '
+                    'Pin {self.pin.info.name} is defined as floating, but '
                     '"active_state" is not defined'.format(self=self))
             self._active_state = bool(active_state)
         else:
             if active_state is not None:
                 raise PinInvalidState(
-                    'Pin {self.pin.number} is not floating, but '
+                    'Pin {self.pin.info.name} is not floating, but '
                     '"active_state" is not None'.format(self=self))
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state

@@ -1548,9 +1548,9 @@ def test_pibrella_pins(mock_factory, pwm):
     with Pibrella() as pb:
         with LED(pb.outputs.e) as led:
             assert isinstance(led, LED)
-            assert led.pin.number == 22
+            assert led.pin.info.name == 'GPIO22'
         with Button(pb.inputs.a) as btn:
-            assert btn.pin.number == 9
+            assert btn.pin.info.name == 'GPIO9'
 
 def test_led_char_display_init(mock_factory):
     pins = [mock_factory.pin(i) for i in range(28)]

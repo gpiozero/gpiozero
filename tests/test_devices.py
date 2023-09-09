@@ -152,8 +152,8 @@ def test_composite_device_sequence(mock_factory):
     with CompositeDevice(InputDevice(4), InputDevice(5)) as device:
         assert repr(device).startswith('<gpiozero.CompositeDevice object')
         assert len(device) == 2
-        assert device[0].pin.number == 4
-        assert device[1].pin.number == 5
+        assert device[0].pin.info.name == 'GPIO4'
+        assert device[1].pin.info.name == 'GPIO5'
         assert device.namedtuple._fields == ('device_0', 'device_1')
 
 def test_composite_device_values(mock_factory):
