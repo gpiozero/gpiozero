@@ -15,7 +15,7 @@ def change_hue():
     led.color = Color(h=hue, s=1, v=1)
 
 def show_color():
-    print('Hue {led.color.hue.deg:.1f}° = {led.color.html}'.format(led=led))
+    print(f'Hue {led.color.hue.deg:.1f}° = {led.color.html}')
 
 def stop_script():
     print('Exiting')

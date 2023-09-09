@@ -55,8 +55,7 @@ class CliTool:
             # Output anything else nicely formatted on stderr and exit code 1
             if int(os.environ.get('DEBUG', '0')):
                 raise
-            self.parser.exit(1, '{prog}: error: {message}\n'.format(
-                prog=self.parser.prog, message=e))
+            self.parser.exit(1, f'{self.parser.prog}: error: {e}\n')
 
     def main(self, args):
         raise NotImplementedError

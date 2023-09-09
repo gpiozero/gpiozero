@@ -4,14 +4,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-str = type('')
-
 import io
 from collections import Counter
 from itertools import zip_longest
@@ -88,8 +80,8 @@ def load_segment_font(filename_or_obj, width, height, pins):
     }
     rows = [row for index, row in rows]
     if len(rows) % height:
-        raise ValueError('number of definition lines is not divisible by '
-                         '{height}'.format(height=height))
+        raise ValueError(
+            f'number of definition lines is not divisible by {height}')
 
     # Strip out blank columns then transpose back to rows, and make sure
     # everything is the right "shape"
@@ -103,9 +95,8 @@ def load_segment_font(filename_or_obj, width, height, pins):
     for row_index, row in enumerate(rows):
         if len(row) % width:
             raise ValueError(
-                'length of definitions starting on line {line} is not '
-                'divisible by {width}'.format(
-                    line=line_numbers[row_index], width=width))
+                f'length of definitions starting on line '
+                f'{line_numbers[row_index]} is not divisible by {width}')
 
     # Split rows up into character definitions. After this, chars will be a
     # list of strings each with width x height characters. The first character
@@ -127,8 +118,7 @@ def load_segment_font(filename_or_obj, width, height, pins):
     counts = Counter(char[0] for char in chars)
     for char, count in counts.most_common():
         if count > 1:
-            raise ValueError(
-                'multiple definitions for {char!r}'.format(char=char))
+            raise ValueError(f'multiple definitions for {char!r}')
 
     return {
         char[0]: tuple(int(char[pos] == on) for pos, on in pins)

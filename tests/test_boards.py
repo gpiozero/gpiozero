@@ -1608,8 +1608,7 @@ def test_led_char_display_font(mock_factory):
         }
         char.font = font
         assert char.value == 0
-        assert repr(char.font) == """LEDCharFont({
-    0: (1, 1, 1, 1, 1, 1, 0),
+        assert repr(char.font) == """LEDCharFont({   0: (1, 1, 1, 1, 1, 1, 0),
     1: (0, 1, 1, 0, 0, 0, 0),
     2: (1, 1, 0, 1, 1, 0, 1),
     3: (1, 1, 1, 1, 0, 0, 1),
@@ -1618,8 +1617,7 @@ def test_led_char_display_font(mock_factory):
     6: (1, 0, 1, 1, 1, 1, 1),
     7: (1, 1, 1, 0, 0, 0, 0),
     8: (1, 1, 1, 1, 1, 1, 1),
-    9: (1, 1, 1, 1, 0, 1, 1),
-})"""
+    9: (1, 1, 1, 1, 0, 1, 1)})"""
 
 def test_led_multichar_display_init(mock_factory):
     pins = [mock_factory.pin(i) for i in range(10, 22)]

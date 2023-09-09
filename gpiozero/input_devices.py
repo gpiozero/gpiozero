@@ -88,14 +88,14 @@ class InputDevice(GPIODevice):
         if pull_up is None:
             if active_state is None:
                 raise PinInvalidState(
-                    'Pin {self.pin.info.name} is defined as floating, but '
-                    '"active_state" is not defined'.format(self=self))
+                    f'Pin {self.pin.info.name} is defined as floating, but '
+                    f'"active_state" is not defined')
             self._active_state = bool(active_state)
         else:
             if active_state is not None:
                 raise PinInvalidState(
-                    'Pin {self.pin.info.name} is not floating, but '
-                    '"active_state" is not None'.format(self=self))
+                    f'Pin {self.pin.info.name} is not floating, but '
+                    f'"active_state" is not None')
             self._active_state = False if pull_up else True
         self._inactive_state = not self._active_state
 
@@ -114,9 +114,9 @@ class InputDevice(GPIODevice):
     def __repr__(self):
         try:
             return (
-                "<gpiozero.{self.__class__.__name__} object on pin "
-                "{self.pin!r}, pull_up={self.pull_up}, "
-                "is_active={self.is_active}>".format(self=self))
+                f"<gpiozero.{self.__class__.__name__} object on pin "
+                f"{self.pin!r}, pull_up={self.pull_up}, "
+                f"is_active={self.is_active}>")
         except:
             return super().__repr__()
 
@@ -288,8 +288,8 @@ class SmoothedInputDevice(EventsMixin, InputDevice):
                 return super().__repr__()
             else:
                 return (
-                    "<gpiozero.{self.__class__.__name__} object on pin "
-                    "{self.pin!r}, pull_up={self.pull_up}>".format(self=self))
+                    f"<gpiozero.{self.__class__.__name__} object on pin "
+                    f"{self.pin!r}, pull_up={self.pull_up}>")
 
     @property
     def queue_len(self):
@@ -1159,8 +1159,8 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         try:
             self._check_open()
             return (
-                "<gpiozero.{self.__class__.__name__} object on pins "
-                "{self.a.pin!r} and {self.b.pin!r}>".format(self=self))
+                f"<gpiozero.{self.__class__.__name__} object on pins "
+                f"{self.a.pin!r} and {self.b.pin!r}>")
         except DeviceClosed:
             return super().__repr__()
 

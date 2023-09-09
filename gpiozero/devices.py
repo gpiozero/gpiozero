@@ -120,8 +120,7 @@ class GPIOBase(metaclass=GPIOMeta):
         # repeating the "source" and "values" property code in myriad places
         if hasattr(self, '__attrs__') and name not in self.__attrs__:
             raise AttributeError(
-                "'{self.__class__.__name__}' object has no attribute "
-                "'{name}'".format(self=self, name=name))
+                f"'{self.__class__.__name__}' object has no attribute '{name}'")
         return super().__setattr__(name, value)
 
     def __del__(self):
@@ -206,8 +205,7 @@ class GPIOBase(metaclass=GPIOMeta):
     def _check_open(self):
         if self.closed:
             raise DeviceClosed(
-                '{self.__class__.__name__} is closed or uninitialized'.format(
-                    self=self))
+                f"{self.__class__.__name__} is closed or uninitialized")
 
     def __enter__(self):
         return self
@@ -294,9 +292,7 @@ class Device(ValuesMixin, GPIOBase):
                     return pin_factory
                 except Exception as e:
                     warnings.warn(
-                        PinFactoryFallback(
-                            'Falling back from {name}: {e!s}'.format(
-                                name=name, e=e)))
+                        PinFactoryFallback(f'Falling back from {name}: {e!s}'))
             raise BadPinFactory('Unable to load any default pin factory!')
         else:
             # Use importlib's entry_points to try and find the specified
@@ -319,11 +315,9 @@ class Device(ValuesMixin, GPIOBase):
     def __repr__(self):
         try:
             self._check_open()
-            return "<gpiozero.{self.__class__.__name__} object>".format(
-                self=self)
+            return f"<gpiozero.{self.__class__.__name__} object>"
         except DeviceClosed:
-            return "<gpiozero.{self.__class__.__name__} object closed>".format(
-                self=self)
+            return f"<gpiozero.{self.__class__.__name__} object closed>"
 
     def _conflicts_with(self, other):
         """
@@ -419,21 +413,18 @@ class CompositeDevice(Device):
             else:
                 for missing_name in set(kwargs.keys()) - set(self._order):
                     raise CompositeDeviceBadOrder(
-                        '{missing_name} missing from _order'.format(
-                            missing_name=missing_name))
+                        f'{missing_name} missing from _order')
             self._order = tuple(self._order)
             for name in set(self._order) & set(dir(self)):
-                raise CompositeDeviceBadName(
-                    '{name} is a reserved name'.format(name=name))
+                raise CompositeDeviceBadName(f'{name} is a reserved name')
             for dev in chain(args, kwargs.values()):
                 if not isinstance(dev, Device):
                     raise CompositeDeviceBadDevice(
-                        "{dev} doesn't inherit from Device".format(dev=dev))
+                        f"{dev} doesn't inherit from Device")
             self._named = frozendict(kwargs)
             self._namedtuple = namedtuple(
-                '{self.__class__.__name__}Value'.format(self=self), chain(
-                    ('device_{i}'.format(i=i)
-                     for i in range(len(args))), self._order))
+                f'{self.__class__.__name__}Value',
+                chain((f'device_{i}' for i in range(len(args))), self._order))
         except:
             for dev in chain(args, kwargs.values()):
                 if isinstance(dev, Device):
@@ -449,34 +440,32 @@ class CompositeDevice(Device):
         try:
             return self._named[name]
         except KeyError:
-            raise AttributeError("no such attribute {name}".format(name=name))
+            raise AttributeError(f"no such attribute {name}")
 
     def __setattr__(self, name, value):
         # make named components read-only properties
         if name in self._named:
-            raise AttributeError("can't set attribute {name}".format(name=name))
+            raise AttributeError(f"can't set attribute {name}")
         return super().__setattr__(name, value)
 
     def __repr__(self):
         try:
             self._check_open()
             named = len(self._named)
+            names = ', '.join(self._order)
             unnamed = len(self) - len(self._named)
             if named > 0 and unnamed > 0:
-                template = (
-                    "<gpiozero.{self.__class__.__name__} object containing "
-                    "{count} devices: {names} and {unnamed} unnamed>")
+                return (
+                    f"<gpiozero.{self.__class__.__name__} object containing "
+                    f"{len(self)} devices: {names} and {unnamed} unnamed>")
             elif named > 0:
-                template = (
-                    "<gpiozero.{self.__class__.__name__} object containing "
-                    "{count} devices: {names}>")
+                return (
+                    f"<gpiozero.{self.__class__.__name__} object containing "
+                    f"{len(self)} devices: {names}>")
             else:
-                template = (
-                    "<gpiozero.{self.__class__.__name__} object containing "
-                    "{count} unnamed devices>")
-            return template.format(
-                self=self, count=len(self), names=', '.join(self._order),
-                unnamed=len(self) - len(self._named))
+                return (
+                    f"<gpiozero.{self.__class__.__name__} object containing "
+                    f"{len(self)} unnamed devices>")
         except DeviceClosed:
             return super().__repr__()
 
@@ -610,13 +599,10 @@ class GPIODevice(Device):
     def __repr__(self):
         try:
             return (
-                "<gpiozero.{self.__class__.__name__} object on pin "
-                "{self.pin!r}, is_active={self.is_active}>".format(
-                    self=self))
+                f"<gpiozero.{self.__class__.__name__} object on pin "
+                f"{self.pin!r}, is_active={self.is_active}>")
         except DeviceClosed:
-            return (
-                "<gpiozero.{self.__class__.__name__} object closed>".format(
-                    self=self))
+            return f"<gpiozero.{self.__class__.__name__} object closed>"
 
 
 def _devices_shutdown():

@@ -43,13 +43,9 @@ class InternalDevice(EventsMixin, Device):
     def __repr__(self):
         try:
             self._check_open()
-            return (
-                "<gpiozero.{self.__class__.__name__} object>".format(
-                    self=self))
+            return f"<gpiozero.{self.__class__.__name__} object>"
         except DeviceClosed:
-            return (
-                "<gpiozero.{self.__class__.__name__} object closed>".format(
-                    self=self))
+            return f"<gpiozero.{self.__class__.__name__} object closed>"
 
 
 class PolledInternalDevice(InternalDevice):
@@ -156,8 +152,7 @@ class PingServer(PolledInternalDevice):
     def __repr__(self):
         try:
             self._check_open()
-            return '<gpiozero.PingServer object host="{self.host}">'.format(
-                self=self)
+            return f'<gpiozero.PingServer object host="{self.host}">'
         except DeviceClosed:
             return super().__repr__()
 
@@ -231,7 +226,7 @@ class CPUTemperature(PolledInternalDevice):
         # bar graph is a bit more "lively"
         cpu = CPUTemperature(min_temp=50, max_temp=90)
 
-        print('Initial temperature: {}C'.format(cpu.temperature))
+        print(f'Initial temperature: {cpu.temperature}C')
 
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
         graph.source = cpu
@@ -288,8 +283,8 @@ class CPUTemperature(PolledInternalDevice):
         try:
             self._check_open()
             return (
-                '<gpiozero.{self.__class__.__name__} object '
-                'temperature={self.temperature:.2f}>'.format(self=self))
+                f'<gpiozero.{self.__class__.__name__} object '
+                f'temperature={self.temperature:.2f}>')
         except DeviceClosed:
             return super().__repr__()
 
@@ -426,8 +421,8 @@ class LoadAverage(PolledInternalDevice):
         try:
             self._check_open()
             return (
-                '<gpiozero.{self.__class__.__name__} object '
-                'load average={self.load_average:.2f}>'.format(self=self))
+                f'<gpiozero.{self.__class__.__name__} object '
+                f'load average={self.load_average:.2f}>')
         except DeviceClosed:
             return super().__repr__()
 
@@ -552,9 +547,9 @@ class TimeOfDay(PolledInternalDevice):
         try:
             self._check_open()
             return (
-                '<gpiozero.{self.__class__.__name__} object active between '
-                '{self.start_time} and {self.end_time} {tz}>'.format(
-                    self=self, tz=('local', 'UTC')[self.utc]))
+                f'<gpiozero.{self.__class__.__name__} object active between '
+                f'{self.start_time} and {self.end_time} '
+                f'{("local", "UTC")[self.utc]}>')
         except DeviceClosed:
             return super().__repr__()
 
@@ -644,7 +639,7 @@ class DiskUsage(PolledInternalDevice):
 
         disk = DiskUsage()
 
-        print('Current disk usage: {}%'.format(disk.usage))
+        print(f'Current disk usage: {disk.usage}%')
 
         graph = LEDBarGraph(5, 6, 13, 19, 25, pwm=True)
         graph.source = disk
@@ -684,8 +679,8 @@ class DiskUsage(PolledInternalDevice):
         try:
             self._check_open()
             return (
-                '<gpiozero.{self.__class__.__name__} object '
-                'usage={self.usage:.2f}>'.format(self=self))
+                f'<gpiozero.{self.__class__.__name__} object '
+                f'usage={self.usage:.2f}>')
         except DeviceClosed:
             return super().__repr__()
 

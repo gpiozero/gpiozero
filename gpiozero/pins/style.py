@@ -1,8 +1,14 @@
 # vim: set fileencoding=utf-8:
 #
+# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+#
+# Copyright (c) 2016-2021 Dave Jones <dave@waveform.org.uk>
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
 import os
 import sys
+
 
 # ANSI color codes, for the pretty printers (nothing comprehensive, just enough
 # for our purposes)

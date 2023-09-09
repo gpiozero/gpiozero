@@ -86,8 +86,7 @@ class Factory:
                     reserver = reserver_ref()
                     if reserver is not None and requester._conflicts_with(reserver):
                         raise GPIOPinInUse(
-                            'pin {pin.name} is already in use by '
-                            '{reserver!r}'.format(pin=pin, reserver=reserver))
+                            f'pin {pin.name} is already in use by {reserver!r}')
                 self._reservations[pin].append(ref(requester))
 
     def release_pins(self, reserver, *names):
@@ -318,8 +317,7 @@ class Pin:
         raise NotImplementedError
 
     def _set_state(self, value):
-        raise PinSetInput(  # pragma: no cover
-            "Cannot set the state of pin {self!r}".format(self=self))
+        raise PinSetInput(f"Cannot set the state of pin {self!r}")  # pragma: no cover
 
     state = property(
         lambda self: self._get_state(),
@@ -352,7 +350,7 @@ class Pin:
 
     def _set_pull(self, value):
         raise PinFixedPull(  # pragma: no cover
-            "Cannot change pull-up on pin {self!r}".format(self=self))
+            f"Cannot change pull-up on pin {self!r}")
 
     pull = property(
         lambda self: self._get_pull(),
@@ -374,7 +372,7 @@ class Pin:
     def _set_frequency(self, value):
         if value is not None:
             raise PinPWMUnsupported(  # pragma: no cover
-                "PWM is not supported on pin {self!r}".format(self=self))
+                f"PWM is not supported on pin {self!r}")
 
     frequency = property(
         lambda self: self._get_frequency(),
@@ -395,8 +393,7 @@ class Pin:
     def _set_bounce(self, value):
         if value is not None:  # pragma: no cover
             raise PinEdgeDetectUnsupported(
-                "Edge detection is not supported on pin {self!r}".format(
-                    self=self))
+                f"Edge detection is not supported on pin {self!r}")
 
     bounce = property(
         lambda self: self._get_bounce(),
@@ -437,7 +434,7 @@ class Pin:
 
     def _set_edges(self, value):
         raise PinEdgeDetectUnsupported(  # pragma: no cover
-            "Edge detection is not supported on pin {self!r}".format(self=self))
+            f"Edge detection is not supported on pin {self!r}")
 
     edges = property(
         lambda self: self._get_edges(),
@@ -467,7 +464,7 @@ class Pin:
 
     def _set_when_changed(self, value):
         raise PinEdgeDetectUnsupported(  # pragma: no cover
-            "Edge detection is not supported on pin {self!r}".format(self=self))
+            f"Edge detection is not supported on pin {self!r}")
 
     when_changed = property(
         lambda self: self._get_when_changed(),
@@ -654,7 +651,7 @@ class SPI(Device):
 
     def _set_clock_mode(self, value):
         raise SPIFixedClockMode(  # pragma: no cover
-            "clock_mode cannot be changed on {self!r}".format(self=self))
+            f"clock_mode cannot be changed on {self!r}")
 
     clock_mode = property(
         lambda self: self._get_clock_mode(),
@@ -685,7 +682,7 @@ class SPI(Device):
 
     def _set_lsb_first(self, value):
         raise SPIFixedBitOrder(  # pragma: no cover
-            "lsb_first cannot be changed on {self!r}".format(self=self))
+            f"lsb_first cannot be changed on {self!r}")
 
     lsb_first = property(
         lambda self: self._get_lsb_first(),
@@ -738,7 +735,7 @@ class SPI(Device):
 
     def _set_select_high(self, value):
         raise SPIFixedSelect(  # pragma: no cover
-            "select_high cannot be changed on {self!r}".format(self=self))
+            f"select_high cannot be changed on {self!r}")
 
     select_high = property(
         lambda self: self._get_select_high(),
@@ -784,7 +781,7 @@ class SPI(Device):
 
     def _set_bits_per_word(self, value):
         raise SPIFixedWordSize(  # pragma: no cover
-            "bits_per_word cannot be changed on {self!r}".format(self=self))
+            f"bits_per_word cannot be changed on {self!r}")
 
     bits_per_word = property(
         lambda self: self._get_bits_per_word(),
@@ -802,7 +799,7 @@ class SPI(Device):
 
     def _set_rate(self, value):
         raise SPIFixedRate(  # pragma: no cover
-            "rate cannot be changed on {self!r}".format(self=self))
+            f"rate cannot be changed on {self!r}")
 
     rate = property(
         lambda self: self._get_rate(),
@@ -919,19 +916,25 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         from gpiozero.pins.native import NativeFactory
 
         factory = NativeFactory()
-        print('{0}'.format(factory.board_info.headers['J8']))
-        print('{0:full}'.format(factory.board_info.headers['J8']))
-        print('{0:col2}'.format(factory.board_info.headers['P1']))
-        print('{0:row1}'.format(factory.board_info.headers['P1']))
+        j8 = factory.board_info.headers['J8']
+        print(f'{j8}')
+        print(f'{j8:full}')
+        p1 = factory.board_info.headers['P1']
+        print(f'{p1:col2}')
+        print(f'{p1:row1}')
 
     "color" and "mono" can be prefixed to format specifications to force the
     use of `ANSI color codes`_. If neither is specified, ANSI codes will only
-    be used if stdout is detected to be a tty::
+    be used if stdout is detected to be a tty. "rev" can be added to output the
+    row or column in reverse order::
 
         # force use of ANSI codes
-        print('{0:color row2}'.format(factory.board_info.headers['J8']))
+        j8 = factory.board_info.headers['J8']
+        print(f'{j8:color row2}')
         # force plain ASCII
-        print('{0:mono row2}'.format(factory.board_info.headers['P1']))
+        print(f'{j8:mono row2}')
+        # output in reverse order
+        print(f'{j8:color rev row1}')
 
     The following attributes are defined:
 
@@ -982,7 +985,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
                     pin = self.pins[pin]
                     cells = [
                         Cell(pin.name, '><'[col % 2], self._pin_style(pin, style)),
-                        Cell('({pin.number})'.format(pin=pin), '><'[col % 2], ''),
+                        Cell(f'({pin.number})', '><'[col % 2], ''),
                         ]
                     if col % 2:
                         cells = reversed(cells)
@@ -994,8 +997,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         col_lens = [max(len(cell.content) for cell in col) for col in cols]
         lines = [
             ' '.join(
-                '{cell.style}{cell.content:{cell.align}{width}s}{style:reset}'.format(
-                    cell=cell, width=width, style=style)
+                f'{cell.style}{cell.content:{cell.align}{width}s}{style:reset}'
                 for cell, width, align in zip(line, col_lens, cycle('><')))
             for line in lines
             ]
@@ -1017,9 +1019,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     def _format_row(self, row, style, rev=False):
         step = -1 if rev else 1
         if row > self.rows:
-            raise ValueError(
-                'invalid row {row} for header {self.name}'.format(
-                    row=row, self=self))
+            raise ValueError(f'invalid row {row} for header {self.name}')
         start_pin = (row - 1) * self.columns + 1
         return ''.join(
             self._format_pin(pin, style)
@@ -1030,9 +1030,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     def _format_col(self, col, style, rev=False):
         step = -1 if rev else 1
         if col > self.columns:
-            raise ValueError(
-                'invalid col {col} for header {self.name}'.format(
-                    col=col, self=self))
+            raise ValueError(f'invalid col {col} for header {self.name}')
         return ''.join(
             self._format_pin(pin, style)
             for n in range(col, self.rows * self.columns + 1, self.columns)[::step]
@@ -1068,7 +1066,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         can be set to :data:`True` or :data:`False` to force color or
         monochrome output.
         """
-        print('{0:{style} full}'.format(self, style=Style(color)))
+        style = Style(color)
+        print(f'{self:{style} full}')
 
 
 class BoardInfo(namedtuple('BoardInfo', (
@@ -1101,20 +1100,20 @@ class BoardInfo(namedtuple('BoardInfo', (
         from gpiozero.pins.native import NativeFactory
 
         factory = NativeFactory()
-        print('{0}'.format(factory.board_info))
-        print('{0:full}'.format(factory.board_info))
-        print('{0:board}'.format(factory.board_info))
-        print('{0:specs}'.format(factory.board_info))
-        print('{0:headers}'.format(factory.board_info))
+        print(f'{factory.board_info}'
+        print(f'{factory.board_info:full}'
+        print(f'{factory.board_info:board}'
+        print(f'{factory.board_info:specs}'
+        print(f'{factory.board_info:headers}'
 
     "color" and "mono" can be prefixed to format specifications to force the
     use of `ANSI color codes`_. If neither is specified, ANSI codes will only
     be used if stdout is detected to be a tty::
 
         # force use of ANSI codes
-        print('{0:color board}'.format(factory.board_info))
+        print(f'{factory.board_info:color board}')
         # force plain ASCII
-        print('{0:mono board}'.format(factory.board_info))
+        print(f'{factory.board_info:mono board}')
 
     .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -1231,7 +1230,7 @@ class BoardInfo(namedtuple('BoardInfo', (
             from gpiozero.pins.native import NativeFactory
 
             factory = NativeFactory()
-            print('{0:headers}'.format(factory.board_info))
+            print(f'{factory.board_info:headers}')
 
     .. attribute:: board
 
@@ -1243,7 +1242,7 @@ class BoardInfo(namedtuple('BoardInfo', (
             from gpiozero.pins.native import NativeFactory
 
             factory = NativeFactory()
-            print('{0:board}'.format(factory.board_info))
+            print(f'{factory.board_info:board}')
 
     .. autoattribute:: description
 
@@ -1304,14 +1303,11 @@ class BoardInfo(namedtuple('BoardInfo', (
                 "BoardInfo.find_pin instead"))
         result = self.physical_pins(function)
         if len(result) > 1:
-            raise PinMultiplePins(
-                'multiple pins can be used for {function}'.format(
-                    function=function))
+            raise PinMultiplePins(f'multiple pins can be used for {function}')
         elif result:
             return result.pop()
         else:
-            raise PinNoPins('no pins can be used for {function}'.format(
-                function=function))
+            raise PinNoPins(f'no pins can be used for {function}')
 
     def pulled_up(self, function):
         """
@@ -1355,32 +1351,27 @@ class BoardInfo(namedtuple('BoardInfo', (
                 # somewhere?
                 return int(pin.name[4:])
             else:
-                raise PinInvalidPin('{spec} is not a GPIO pin'.format(
-                    spec=spec))
-        raise PinInvalidPin('{spec} is not a valid pin spec'.format(
-            spec=spec))
+                raise PinInvalidPin(f'{spec} is not a GPIO pin')
+        raise PinInvalidPin(f'{spec} is not a valid pin spec')
 
     def __repr__(self):
-        return '{cls}({fields})'.format(
-            cls=self.__class__.__name__,
-            fields=', '.join(
-                (
-                    '{name}=...' if name in ('headers', 'board') else
-                    '{name}={value!r}').format(name=name, value=value)
-                for name, value in zip(self._fields, self)
-                )
-            )
+        fields=', '.join(
+            f'{name}=...' if name in ('headers', 'board') else
+            f'{name}={value!r}'
+            for name, value in zip(self._fields, self)
+        )
+        return f'{self.__class__.__name__}({fields})'
 
     def __format__(self, format_spec):
         style, content = Style.from_style_content(format_spec)
         if content == 'full':
-            return dedent("""\
+            return dedent(f"""\
                 {self:{style} specs}
 
                 {self:{style} board}
 
                 {self:{style} headers}"""
-                ).format(self=self, style=style)
+            )
         elif content == 'board':
             kw = self._asdict()
             kw.update({
@@ -1390,10 +1381,10 @@ class BoardInfo(namedtuple('BoardInfo', (
             return self.board.format(style=style, **kw)
         elif content == 'specs':
             if self.memory < 1024:
-                memory = '{self.memory}MB'.format(self=self)
+                memory = f'{self.memory}MB'
             else:
-                memory = '{mem}GB'.format(mem=int(self.memory / 1024))
-            return dedent("""\
+                memory = f'{int(self.memory / 1024)}GB'
+            return dedent(f"""\
                 {style:bold}Description        {style:reset}: {self.description}
                 {style:bold}Revision           {style:reset}: {self.revision}
                 {style:bold}SoC                {style:reset}: {self.soc}
@@ -1405,15 +1396,15 @@ class BoardInfo(namedtuple('BoardInfo', (
                 {style:bold}Bluetooth          {style:reset}: {self.bluetooth}
                 {style:bold}Camera ports (CSI) {style:reset}: {self.csi}
                 {style:bold}Display ports (DSI){style:reset}: {self.dsi}"""
-                ).format(self=self, style=style, memory=memory)
+            )
         elif content == 'headers':
             return '\n\n'.join(
-                dedent("""\
-                {style:bold}{header.name}{style:reset}:
-                {header:{style} full}"""
-                ).format(header=header, style=style)
-                for header in self.headers.values()
+                dedent(f"""\
+                    {style:bold}{header.name}{style:reset}:
+                    {header:{style} full}"""
                 )
+                for header in self.headers.values()
+            )
         else:
             raise ValueError('Invalid format specifier')
 
@@ -1426,7 +1417,8 @@ class BoardInfo(namedtuple('BoardInfo', (
         can be set to :data:`True` or :data:`False` to force color or monochrome
         output.
         """
-        print('{0:{style} full}'.format(self, style=Style(color)))
+        style=Style(color)
+        print(f'{self:{style} full}')
 
     @property
     def description(self):
@@ -1434,4 +1426,4 @@ class BoardInfo(namedtuple('BoardInfo', (
         A string containing a textual description of the board typically
         containing the :attr:`model`, for example "Raspberry Pi 3B"
         """
-        return '{self.model} rev {self.pcb_revision}'.format(self=self)
+        return f'{self.model} rev {self.pcb_revision}'

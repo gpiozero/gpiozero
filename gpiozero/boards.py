@@ -24,6 +24,7 @@ from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
 from collections.abc import MutableMapping
 from importlib import resources
+from pprint import pformat
 
 from .exc import (
     DeviceClosed,
@@ -781,18 +782,14 @@ class LEDCharFont(MutableMapping):
     """
     def __init__(self, font):
         super().__init__()
-        self._map = OrderedDict([
-            (char, tuple(int(bool(pin)) for pin in pins))
+        self._map = {
+            char: tuple(int(bool(pin)) for pin in pins)
             for char, pins in font.items()
-        ])
+        }
         self._refresh_rmap()
 
     def __repr__(self):
-        return '{self.__class__.__name__}({{\n{content}\n}})'.format(
-            self=self, content='\n'.join(
-                '    {key!r}: {value!r},'.format(key=key, value=value)
-                for key, value in sorted(self.items())
-            ))
+        return f'{self.__class__.__name__}({pformat(self._map, indent=4)})'
 
     def _refresh_rmap(self):
         # The reverse mapping is pre-calculated for speed of lookup. Given that
@@ -1313,7 +1310,7 @@ class PiHutXmasTree(LEDBoard):
         pins = (4, 15, 13, 21, 25, 8, 5, 10, 16, 17, 27, 26,
                 24, 9, 12, 6, 20, 19, 14, 18, 11, 7, 23, 22)
         for i, pin in enumerate(pins):
-            pins_dict['led{:d}'.format(i + 1)] = pin
+            pins_dict[f'led{i + 1:d}'] = pin
         super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=pins_dict.keys(),
@@ -1524,8 +1521,8 @@ class TrafficLights(LEDBoard):
             devices['amber'] = amber
         devices['green'] = green
         if not all(p is not None for p in devices.values()):
-            raise GPIOPinMissing('{keys} pins must be provided'.format(
-                keys=', '.join(devices.keys())))
+            raise GPIOPinMissing(
+                f'{", ".join(devices.keys())} pins must be provided')
         super().__init__(
             pwm=pwm, initial_value=initial_value,
             _order=devices.keys(), pin_factory=pin_factory,
@@ -1633,8 +1630,8 @@ class PiStop(TrafficLights):
             pin_factory=None):
         gpios = self.LOCATIONS.get(location, None)
         if gpios is None:
-            raise ValueError('location must be one of: {locations}'.format(
-                locations=', '.join(sorted(self.LOCATIONS.keys()))))
+            locations = ', '.join(sorted(self.LOCATIONS.keys()))
+            raise ValueError(f'location must be one of: {locations}')
         super().__init__(
             *gpios, pwm=pwm, initial_value=initial_value,
             pin_factory=pin_factory)
@@ -1711,11 +1708,11 @@ class StatusZero(LEDBoard):
         if len(labels) == 0:
             labels = self.default_labels
         elif len(labels) > len(pins):
-            raise ValueError("StatusZero doesn't support more than {count} "
-                             "labels".format(count=len(pins)))
+            raise ValueError(
+                f"StatusZero doesn't support more than {len(pins)} labels")
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
-            raise ValueError("Duplicate label {dup}".format(dup=dup))
+            raise ValueError(f"Duplicate label {dup}")
         super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: LEDBoard(
@@ -1814,7 +1811,7 @@ class StatusBoard(CompositeOutputDevice):
             raise ValueError("StatusBoard doesn't support more than five labels")
         dup, count = Counter(labels).most_common(1)[0]
         if count > 1:
-            raise ValueError("Duplicate label {dup}".format(dup=dup))
+            raise ValueError(f"Duplicate label {dup}")
         super().__init__(
             _order=labels, pin_factory=pin_factory, **{
                 label: CompositeOutputDevice(
@@ -2474,9 +2471,7 @@ class Energenie(SourceMixin, Device):
     def __repr__(self):
         try:
             self._check_open()
-            return (
-                "<gpiozero.Energenie object on socket "
-                "{self._socket}>".format(self=self))
+            return f"<gpiozero.Energenie object on socket {self._socket}>"
         except DeviceClosed:
             return "<gpiozero.Energenie object closed>"
 
