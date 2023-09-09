@@ -23,6 +23,7 @@ from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
 from collections.abc import MutableMapping
+from importlib import resources
 
 from .exc import (
     DeviceClosed,
@@ -950,16 +951,12 @@ class LEDCharDisplay(LEDCollection):
                     'Cannot use LEDCollection in LEDCharDisplay')
 
         if font is None:
-            if len(pins) in (7, 14):
-                # Only import pkg_resources here as merely importing it is
-                # slooooow!
-                from pkg_resources import resource_stream
-                font = {
-                    7: lambda: load_font_7seg(
-                        resource_stream(__name__, 'fonts/7seg.txt')),
-                    14: lambda: load_font_14seg(
-                        resource_stream(__name__, 'fonts/14seg.txt')),
-                }[len(pins)]()
+            if len(pins) == 7:
+                with resources.files('gpiozero.fonts').joinpath('7seg.txt').open() as f:
+                    font = load_font_7seg(f)
+            elif len(pins) == 14:
+                with resources.files('gpiozero.fonts').joinpath('14seg.txt').open() as f:
+                    font = load_font_14seg(f)
             else:
                 # Construct a default dict containing a definition for " "
                 font = {" ": (0,) * len(pins)}

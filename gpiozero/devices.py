@@ -16,6 +16,7 @@ import warnings
 from collections import namedtuple, OrderedDict
 from itertools import chain
 from types import FunctionType
+from importlib.metadata import entry_points
 
 from .threads import _threads_shutdown
 from .mixins import (
@@ -283,8 +284,7 @@ class Device(ValuesMixin, GPIOBase):
         name = os.environ.get('GPIOZERO_PIN_FACTORY')
         if name is None:
             # If no factory is explicitly specified, try various names in
-            # "preferred" order. For speed, we select from the dictionary above
-            # rather than importing pkg_resources and using load_entry_point
+            # "preferred" order
             for name, entry_point in default_factories.items():
                 try:
                     mod_name, cls_name = entry_point.split(':', 1)
@@ -299,26 +299,19 @@ class Device(ValuesMixin, GPIOBase):
                             'Falling back from {name}: {e!s}'.format(
                                 name=name, e=e)))
             raise BadPinFactory('Unable to load any default pin factory!')
-        elif name in default_factories:
-            # As above, this is a fast-path optimization to avoid loading
-            # pkg_resources (which it turns out was 80% of gpiozero's import
-            # time!)
-            mod_name, cls_name = default_factories[name].split(':', 1)
-            module = __import__(mod_name, fromlist=(cls_name,))
-            return getattr(module, cls_name)()
         else:
-            # Slow path: load pkg_resources and try and find the specified
-            # entry-point. Try with the name verbatim first. If that fails,
-            # attempt with the lower-cased name (this ensures compatibility
-            # names work but we're still case insensitive for all factories)
-            import pkg_resources
-            group = 'gpiozero_pin_factories'
-            for factory in pkg_resources.iter_entry_points(group, name):
-                return factory.load()()
-            for factory in pkg_resources.iter_entry_points(group, name.lower()):
-                return factory.load()()
-            raise BadPinFactory('Unable to find pin factory "{name}"'.format(
-                name=name))
+            # Use importlib's entry_points to try and find the specified
+            # entry-point. Try with name verbatim first. If that fails, attempt
+            # with the lower-cased name (this ensures compatibility names work
+            # but we're still case insensitive for all factories)
+            group = entry_points()['gpiozero_pin_factories']
+            try:
+                return group[name].load()()
+            except KeyError:
+                try:
+                    return group[name.lower()].load()()
+                except KeyError:
+                    raise BadPinFactory(f'Unable to find pin factory {name!r}')
 
     def __repr__(self):
         try:

@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 
-from pkg_resources import require
+from importlib.metadata import version
 
 
 class CliTool:
@@ -22,7 +22,7 @@ class CliTool:
         self.parser.add_argument(
             '--version',
             action='version',
-            version=require('gpiozero')[0].version)
+            version=version('gpiozero'))
 
     def get_formatter(self):
         return self.parser._get_formatter()

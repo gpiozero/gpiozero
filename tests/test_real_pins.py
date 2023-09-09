@@ -12,9 +12,9 @@ import errno
 from time import time, sleep
 from math import isclose
 from unittest import mock
+from importlib.metadata import entry_points
 
 import pytest
-import pkg_resources
 
 from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
@@ -38,12 +38,7 @@ local_only = pytest.mark.skipif(
 
 @pytest.fixture(
     scope='module',
-    params=[
-        name
-        for name in pkg_resources.\
-            get_distribution('gpiozero').\
-            get_entry_map('gpiozero_pin_factories').keys()
-    ])
+    params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
 def pin_factory_name(request):
     return request.param
 
@@ -51,8 +46,7 @@ def pin_factory_name(request):
 @pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
-        factory = pkg_resources.load_entry_point(
-            'gpiozero', 'gpiozero_pin_factories', pin_factory_name)()
+        factory = entry_points()['gpiozero_pin_factories'][name].load()()
     except Exception as e:
         pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
             pin_factory_name=pin_factory_name, e=e))
@@ -255,9 +249,8 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             pin_factory_name=pin_factory_name, e=e))
     else:
         try:
-            group = 'gpiozero_pin_factories'
-            for factory in pkg_resources.iter_entry_points(group, pin_factory_name):
-                factory_class = factory.load()
+            group = entry_points()['gpiozero_pin_factories']
+            factory_class = group[pin_factory_name].load()
             assert isinstance(Device.pin_factory, factory_class)
             assert device.pin_factory is Device.pin_factory
             assert device.pin.number == TEST_PIN

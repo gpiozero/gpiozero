@@ -12,8 +12,7 @@ from collections import namedtuple
 from time import time, sleep, monotonic
 from threading import Thread, Event
 from math import isclose
-
-import pkg_resources
+from importlib.metadata import entry_points
 
 from ..exc import (
     PinPWMUnsupported,
@@ -467,10 +466,8 @@ class MockFactory(PiFactory):
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
-            dist = pkg_resources.get_distribution('gpiozero')
-            group = 'gpiozero_mock_pin_classes'
-            pin_class = pkg_resources.load_entry_point(
-                dist, group, pin_class.lower())
+            group = entry_points()['gpiozero_mock_pin_classes']
+            pin_class = group[pin_class.lower()].load()
         if not issubclass(pin_class, MockPin):
             raise ValueError(
                 'invalid mock pin_class: {pin_class!r}'.format(
