@@ -1375,9 +1375,9 @@ class BoardInfo(namedtuple('BoardInfo', (
         style, content = Style.from_style_content(format_spec)
         if content == 'full':
             return dedent("""\
-                {self:{style} board}
-
                 {self:{style} specs}
+
+                {self:{style} board}
 
                 {self:{style} headers}"""
                 ).format(self=self, style=style)
@@ -1412,7 +1412,7 @@ class BoardInfo(namedtuple('BoardInfo', (
                 {style:bold}{header.name}{style:reset}:
                 {header:{style} full}"""
                 ).format(header=header, style=style)
-                for header in sorted(self.headers.values(), key=attrgetter('name'))
+                for header in self.headers.values()
                 )
         else:
             raise ValueError('Invalid format specifier')
