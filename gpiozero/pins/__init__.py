@@ -1365,13 +1365,11 @@ class BoardInfo(namedtuple('BoardInfo', (
     def __format__(self, format_spec):
         style, content = Style.from_style_content(format_spec)
         if content == 'full':
-            return dedent(f"""\
-                {self:{style} specs}
-
-                {self:{style} board}
-
-                {self:{style} headers}"""
-            )
+            return '\n\n'.join((
+                f'{self:{style} specs}',
+                f'{self:{style} board}',
+                f'{self:{style} headers}',
+            ))
         elif content == 'board':
             kw = self._asdict()
             kw.update({
@@ -1399,10 +1397,8 @@ class BoardInfo(namedtuple('BoardInfo', (
             )
         elif content == 'headers':
             return '\n\n'.join(
-                dedent(f"""\
-                    {style:bold}{header.name}{style:reset}:
-                    {header:{style} full}"""
-                )
+                f'{style:bold}{header.name}{style:reset}:\n'
+                f'{header:{style} full}'
                 for header in self.headers.values()
             )
         else:
