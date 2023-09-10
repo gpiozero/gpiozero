@@ -50,7 +50,10 @@ with warnings.catch_warnings():
 @pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
-        factory = entry_points()['gpiozero_pin_factories'][name].load()()
+        with warnings.catch_warnings():
+            # The dict interface of entry_points is deprecated ... already
+            warnings.simplefilter('ignore', category=DeprecationWarning)
+            factory = entry_points()['gpiozero_pin_factories'][name].load()()
     except Exception as e:
         pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
             pin_factory_name=pin_factory_name, e=e))
@@ -289,6 +292,7 @@ def test_bad_factory(no_default_factory):
         GPIODevice(TEST_PIN)
 
 
+@pytest.mark.filterwarnings('ignore::gpiozero.exc.PinFactoryFallback')
 def test_default_factory(no_default_factory):
     assert Device.pin_factory is None
     os.environ.pop('GPIOZERO_PIN_FACTORY', None)

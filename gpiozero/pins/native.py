@@ -53,7 +53,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     of the device-tree, mapped to the CPU's address space. For example:
 
         >>> reg = dt_peripheral_reg(dt_resolve_alias('gpio'))
-        >>> '{reg.start:#x}..{reg.stop:#x}'.format(reg=reg)
+        >>> f'{reg.start:#x}..{reg.stop:#x}'
         '0xfe200000..0xfe2000b4'
         >>> hex(dt_peripheral_reg(dt_resolve_alias('ethernet0')).start)
         '0xfd580000'
@@ -71,8 +71,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
     # contains one integer for each specified *length*, which is the number of
     # 32-bit device-tree cells that make up that value.
     def _reader(*lengths):
-        structs = [struct.Struct('>{cells}L'.format(cells=cells))
-                   for cells in lengths]
+        structs = [struct.Struct(f'>{cells}L') for cells in lengths]
         offsets = [sum(s.size for s in structs[:i])
                    for i in range(len(structs))]
         buf_len = sum(s.size for s in structs)
@@ -83,8 +82,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
                 if not buf:
                     break
                 elif len(buf) < buf_len:
-                    raise IOError('failed to read {buf_len} bytes'.format(
-                        buf_len=buf_len))
+                    raise IOError(f'failed to read {buf_len} bytes')
                 row = ()
                 for offset, s in zip(offsets, structs):
                     cells = s.unpack_from(buf, offset)
@@ -221,13 +219,13 @@ class GPIOFS:
         return os.path.join(self.GPIO_PATH, name)
 
     def path_value(self, pin):
-        return self.path('gpio{pin:d}/value'.format(pin=pin))
+        return self.path(f'gpio{pin:d}/value')
 
     def path_dir(self, pin):
-        return self.path('gpio{pin:d}/direction'.format(pin=pin))
+        return self.path(f'gpio{pin:d}/direction')
 
     def path_edge(self, pin):
-        return self.path('gpio{pin:d}/edge'.format(pin=pin))
+        return self.path(f'gpio{pin:d}/edge')
 
     def exported(self, pin):
         return pin in self._exports
@@ -270,8 +268,7 @@ class GPIOFS:
                         else:
                             raise
                 if result is None:
-                    raise RuntimeError(
-                        'failed to export pin {pin:d}'.format(pin=pin))
+                    raise RuntimeError(f'failed to export pin {pin:d}')
             return result
 
     def unexport(self, pin):
@@ -476,21 +473,19 @@ class NativePin(LocalPiPin):
             value = self.GPIO_FUNCTIONS[value]
         except KeyError:
             raise PinInvalidFunction(
-                'invalid function "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+                f'invalid function "{value}" for pin {self!r}')
         self.factory.mem[self._func_offset] = (
             self.factory.mem[self._func_offset]
             & ~(7 << self._func_shift)
             | (value << self._func_shift)
-            )
+        )
 
     def _get_state(self):
         return bool(self.factory.mem[self._level_offset] & (1 << self._level_shift))
 
     def _set_state(self, value):
         if self.function == 'input':
-            raise PinSetInput(
-                'cannot set state of pin {self!r}'.format(self=self))
+            raise PinSetInput(f'cannot set state of pin {self!r}')
         if value:
             self.factory.mem[self._set_offset] = 1 << self._set_shift
         else:
@@ -529,8 +524,7 @@ class NativePin(LocalPiPin):
                 pass
             elif e.errno == errno.EINVAL:
                 raise PinInvalidEdges(
-                    'invalid edge specification "{value}" for pin '
-                    '{self!r}'.format(self=self, value=value))
+                    f'invalid edge specification "{value}" for pin {self!r}')
             else:
                 raise
 
@@ -566,17 +560,14 @@ class Native2835Pin(NativePin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull(
-                'cannot set pull on non-input pin {self!r}'.format(self=self))
+            raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
         if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
-            raise PinFixedPull(
-                '{self!r} has a physical pull-up resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a physical pull-up resistor')
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull(
-                'invalid pull direction "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+                f'invalid pull direction "{value}" for pin {self!r}')
         self.factory.mem[self.factory.mem.GPPUD_OFFSET] = value
         sleep(0.000000214)
         self.factory.mem[self._pull_offset] = 1 << self._pull_shift
@@ -610,19 +601,16 @@ class Native2711Pin(NativePin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull(
-                'cannot set pull on non-input pin {self!r}'.format(self=self))
+            raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
         if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
-            raise PinFixedPull(
-                '{self!r} has a physical pull-up resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a physical pull-up resistor')
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
             raise PinInvalidPull(
-                'invalid pull direction "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+                f'invalid pull direction "{value}" for pin {self!r}')
         self.factory.mem[self._pull_offset] = (
             self.factory.mem[self._pull_offset]
             & ~(3 << self._pull_shift)
             | (value << self._pull_shift)
-            )
+        )

@@ -67,8 +67,7 @@ class MockPin(PiPin):
 
     def _set_state(self, value):
         if self._function == 'input':
-            raise PinSetInput('cannot set state of pin {self!r}'.format(
-                self=self))
+            raise PinSetInput(f'cannot set state of pin {self!r}')
         assert self._function == 'output'
         assert 0 <= value <= 1
         self._change_state(bool(value))
@@ -94,11 +93,9 @@ class MockPin(PiPin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull(
-                'cannot set pull on non-input pin {self!r}'.format(self=self))
+            raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
         if self.info.pull and value != self.info.pull:
-            raise PinFixedPull(
-                '{self!r} has a fixed pull resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a fixed pull resistor')
         if value not in ('floating', 'up', 'down'):
             raise PinInvalidPull('pull must be floating, up, or down')
         self._pull = value
@@ -268,8 +265,7 @@ class MockPWMPin(MockPin):
 
     def _set_state(self, value):
         if self._function == 'input':
-            raise PinSetInput(
-                'cannot set state of pin {self!r}'.format(self=self))
+            raise PinSetInput(f'cannot set state of pin {self!r}')
         assert self._function == 'output'
         assert 0 <= value <= 1
         self._change_state(float(value))
@@ -469,9 +465,7 @@ class MockFactory(PiFactory):
             group = entry_points()['gpiozero_mock_pin_classes']
             pin_class = group[pin_class.lower()].load()
         if not issubclass(pin_class, MockPin):
-            raise ValueError(
-                'invalid mock pin_class: {pin_class!r}'.format(
-                    pin_class=pin_class))
+            raise ValueError(f'invalid mock pin_class: {pin_class!r}')
         self.pin_class = pin_class
 
     def _get_revision(self):
@@ -507,11 +501,10 @@ class MockFactory(PiFactory):
                 # Ensure the pin class expected supports PWM (or not)
                 if issubclass(pin_class, MockPWMPin) != isinstance(pin, MockPWMPin):
                     raise ValueError(
-                        'pin {info.name} is already in use as a '
-                        '{pin.__class__.__name__}'.format(info=info, pin=pin))
+                        f'pin {info.name} is already in use as a '
+                        f'{pin.__class__.__name__}')
             return pin
-        raise PinInvalidPin('{name} is not a valid pin name'.format(
-            name=name))
+        raise PinInvalidPin(f'{name} is not a valid pin name')
 
     def _get_spi_class(self, shared, hardware):
         return MockSPIInterfaceShared if shared else MockSPIInterface

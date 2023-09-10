@@ -50,8 +50,6 @@ class GPIOThread(Thread):
             assert timeout is not None
             # timeout can't be None here because if it was, then join()
             # wouldn't return until the thread was dead
-            raise ZombieThread(
-                "Thread failed to die within {timeout} seconds".format(
-                    timeout=timeout))
+            raise ZombieThread(f"Thread failed to die within {timeout} seconds")
         else:
             _THREADS.discard(self)

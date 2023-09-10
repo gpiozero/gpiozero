@@ -29,7 +29,7 @@ def test_pi_revision():
         # and read /proc/device-tree/system/linux,revision and /proc/cpuinfo
         # (MockPin simply parrots the 3B's data); LocalPiFactory is used as we
         # can definitely instantiate it (strictly speaking it's abstract but
-        # we're only interested in the pi_info stuff)
+        # we're only interested in the BoardInfo stuff)
         with mock.patch('io.open') as m:
             m.return_value.__enter__.side_effect = [
                 # Pretend /proc/device-tree/system/linux,revision doesn't
@@ -141,23 +141,26 @@ def test_find_pin():
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_physical_pins():
     # Assert physical pins for some well-known Pi's; a21041 is a Pi2B
-    assert pi_info('a21041').physical_pins('3V3') == {('J8', 1), ('J8', 17)}
-    assert pi_info('a21041').physical_pins('GPIO2') == {('J8', 3)}
-    assert pi_info('a21041').physical_pins('GPIO47') == set()
+    board_info = PiBoardInfo.from_revision(0xa21041)
+    assert board_info.physical_pins('3V3') == {('J8', 1), ('J8', 17)}
+    assert board_info.physical_pins('GPIO2') == {('J8', 3)}
+    assert board_info.physical_pins('GPIO47') == set()
 
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_physical_pin():
+    board_info = PiBoardInfo.from_revision(0xa21041)
     with pytest.raises(PinMultiplePins):
-        assert pi_info('a21041').physical_pin('GND')
-    assert pi_info('a21041').physical_pin('GPIO3') == ('J8', 5)
+        assert board_info.physical_pin('GND')
+    assert board_info.physical_pin('GPIO3') == ('J8', 5)
     with pytest.raises(PinNoPins):
-        assert pi_info('a21041').physical_pin('GPIO47')
+        assert board_info.physical_pin('GPIO47')
 
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pulled_up():
-    assert pi_info('a21041').pulled_up('GPIO2')
-    assert not pi_info('a21041').pulled_up('GPIO4')
-    assert not pi_info('a21041').pulled_up('GPIO47')
+    board_info = PiBoardInfo.from_revision(0xa21041)
+    assert board_info.pulled_up('GPIO2')
+    assert not board_info.pulled_up('GPIO4')
+    assert not board_info.pulled_up('GPIO47')
 
 def test_pull():
     board_info = PiBoardInfo.from_revision(0xa21041)
@@ -168,117 +171,101 @@ def test_pull():
     for header, pin in board_info.find_pin('GPIO47'):
         assert pin.pull == ''
 
-def test_pprint_content():
-    with mock.patch('sys.stdout') as stdout:
-        stdout.output = []
-        stdout.write = lambda buf: stdout.output.append(buf)
-        pi_info('900092').pprint(color=False)
-        s = ''.join(stdout.output)
-        assert ('-' + 'o' * 20) in s # first header row
-        assert (' ' + '1' + 'o' * 19) in s # second header row
-        assert 'PiZero' in s
-        assert 'V1.2' in s # PCB revision
-        assert '900092' in s # Pi revision
-        assert 'BCM2835' in s # SOC name
-        stdout.output = []
-        pi_info('0002').pprint(color=False)
-        s = ''.join(stdout.output)
-        assert ('o' * 13 + ' ') in s # first header row
-        assert ('1' + 'o' * 12 + ' ') in s # second header row
-        assert 'Pi Model' in s
-        assert 'B  V1.0' in s # PCB revision
-        assert '0002' in s # Pi revision
-        assert 'BCM2835' in s # SOC name
-        stdout.output = []
-        pi_info('0014').headers['SODIMM'].pprint(color=False)
-        assert len(''.join(stdout.output).splitlines()) == 100
+def test_pprint_content(capsys):
+    PiBoardInfo.from_revision(0x900092).pprint(color=False)
+    cap = capsys.readouterr()
+    assert ('-' + 'o' * 20) in cap.out # first header row
+    assert (' ' + '1' + 'o' * 19) in cap.out # second header row
+    assert 'PiZero' in cap.out
+    assert 'V1.2' in cap.out # PCB revision
+    assert '900092' in cap.out # Pi revision
+    assert 'BCM2835' in cap.out # SoC name
+    PiBoardInfo.from_revision(0x0002).pprint(color=False)
+    cap = capsys.readouterr()
+    assert ('o' * 13 + ' ') in cap.out # first header row
+    assert ('1' + 'o' * 12 + ' ') in cap.out # second header row
+    assert 'Pi Model' in cap.out
+    assert 'B  V1.0' in cap.out # PCB revision
+    assert '0002' in cap.out # Pi revision
+    assert 'BCM2835' in cap.out # SOC name
+    PiBoardInfo.from_revision(0x0014).headers['SODIMM'].pprint(color=False)
+    cap = capsys.readouterr()
+    assert len(cap.out.splitlines()) == 100
 
-def test_format_content():
-    with mock.patch('sys.stdout') as stdout:
-        stdout.output = []
-        stdout.write = lambda buf: stdout.output.append(buf)
-        pi_info('900092').pprint(color=False)
-        s = ''.join(stdout.output)
-        assert '{0:mono}\n'.format(pi_info('900092')) == s
-        stdout.output = []
-        pi_info('900092').pprint(color=True)
-        s = ''.join(stdout.output)
-        assert '{0:color full}\n'.format(pi_info('900092')) == s
-        with pytest.raises(ValueError):
-            '{0:color foo}'.format(pi_info('900092'))
+def test_format_content(capsys):
+    board_info = PiBoardInfo.from_revision(0x900092)
+    board_info.pprint(color=False)
+    cap = capsys.readouterr()
+    assert f'{board_info:mono}\n' == cap.out
+    board_info.pprint(color=True)
+    cap = capsys.readouterr()
+    assert f'{board_info:color full}\n' == cap.out
+    with pytest.raises(ValueError):
+        f'{board_info:color foo}'
 
-def test_pprint_headers():
-    assert len(pi_info('0002').headers) == 3
-    assert len(pi_info('000e').headers) == 5
-    assert len(pi_info('900092').headers) == 3
-    with mock.patch('sys.stdout') as stdout:
-        stdout.output = []
-        stdout.write = lambda buf: stdout.output.append(buf)
-        pi_info('0002').pprint()
-        s = ''.join(stdout.output)
-        assert 'P1:\n' in s
-        assert 'P5:\n' not in s
-        stdout.output = []
-        pi_info('000e').pprint()
-        s = ''.join(stdout.output)
-        assert 'P1:\n' in s
-        assert 'P5:\n' in s
-        stdout.output = []
-        pi_info('900092').pprint()
-        s = ''.join(stdout.output)
-        assert 'J8:\n' in s
-        assert 'P1:\n' not in s
-        assert 'P5:\n' not in s
+def test_pprint_headers(capsys):
+    assert len(PiBoardInfo.from_revision(0x0002).headers) == 3
+    assert len(PiBoardInfo.from_revision(0x000e).headers) == 5
+    assert len(PiBoardInfo.from_revision(0x900092).headers) == 3
+    PiBoardInfo.from_revision(0x0002).pprint()
+    cap = capsys.readouterr()
+    assert 'P1:\n' in cap.out
+    assert 'P5:\n' not in cap.out
+    PiBoardInfo.from_revision(0x000e).pprint()
+    cap = capsys.readouterr()
+    assert 'P1:\n' in cap.out
+    assert 'P5:\n' in cap.out
+    PiBoardInfo.from_revision(0x900092).pprint()
+    cap = capsys.readouterr()
+    assert 'J8:\n' in cap.out
+    assert 'P1:\n' not in cap.out
+    assert 'P5:\n' not in cap.out
 
-def test_format_headers():
-    with mock.patch('sys.stdout') as stdout:
-        stdout.output = []
-        stdout.write = lambda buf: stdout.output.append(buf)
-        info = pi_info('c03131')
-        info.headers['J8'].pprint(color=False)
-        s = ''.join(stdout.output)
-        assert '{0.headers[J8]:mono}\n'.format(info) == s
-        stdout.output = []
-        info.headers['J8'].pprint(color=True)
-        s = ''.join(stdout.output)
-        assert '{0.headers[J8]:color}\n'.format(info) == s
-        with pytest.raises(ValueError):
-            '{0.headers[J8]:mono foo}'.format(info)
+def test_format_headers(capsys):
+    board_info = PiBoardInfo.from_revision(0xc03131)
+    board_info.headers['J8'].pprint(color=False)
+    cap = capsys.readouterr()
+    assert f'{board_info.headers["J8"]:mono}\n' == cap.out
+    board_info.headers['J8'].pprint(color=True)
+    cap = capsys.readouterr()
+    assert f'{board_info.headers["J8"]:color}\n' == cap.out
+    with pytest.raises(ValueError):
+        f'{board_info.headers["J8"]:mono foo}'
 
-def test_pprint_color():
+def test_pprint_color(capsys):
+    board_info = PiBoardInfo.from_revision(0x900092)
+    board_info.pprint(color=False)
+    cap = capsys.readouterr()
+    assert '\x1b[0m' not in cap.out
+    board_info.pprint(color=True)
+    cap = capsys.readouterr()
+    assert '\x1b[0m' in cap.out
+
+def test_pprint_style_detect():
+    board_info = PiBoardInfo.from_revision(0x900092)
     with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
-        pi_info('900092').pprint(color=False)
-        s = ''.join(stdout.output)
-        assert '\x1b[0m' not in s # make sure ANSI reset code isn't in there
-        stdout.output = []
-        pi_info('900092').pprint(color=True)
-        s = ''.join(stdout.output)
-        assert '\x1b[0m' in s # check the ANSI reset code *is* in there (can't guarantee much else!)
-        stdout.output = []
         stdout.fileno.side_effect = IOError('not a real file')
-        pi_info('900092').pprint()
+        board_info.pprint()
         s = ''.join(stdout.output)
         assert '\x1b[0m' not in s # default should output mono
         with mock.patch('os.isatty') as isatty:
             isatty.return_value = True
             stdout.fileno.side_effect = None
+            stdout.fileno.return_value = 1
             stdout.output = []
-            pi_info('900092').pprint()
+            board_info.pprint()
             s = ''.join(stdout.output)
             assert '\x1b[0m' in s # default should now output color
 
-def test_pprint_styles():
+def test_style_parser():
     with pytest.raises(ValueError):
         Style.from_style_content('mono color full')
-    with mock.patch('sys.stdout') as stdout:
-        s = '{0:full}'.format(pi_info('900092'))
-        assert '\x1b[0m' not in s # ensure default is mono when stdout is not a tty
     with pytest.raises(ValueError):
-        '{0:foo on bar}'.format(Style())
+        f'{Style():foo on bar}'
 
-def test_pprint_missing_pin():
+def test_pprint_missing_pin(capsys):
     header = HeaderInfo('FOO', 4, 2, {
         1: PinInfo(1, '5V',    {'5V'}, '', 1, 1, set()),
         2: PinInfo(2, 'GND',   {'GND'}, '', 1, 2, set()),
@@ -289,23 +276,22 @@ def test_pprint_missing_pin():
         7: PinInfo(7, '3V3',   {'3V3'}, '', 4, 1, set()),
         8: PinInfo(8, 'GND',   {'GND'}, '', 4, 2, set()),
         })
-    with mock.patch('sys.stdout') as stdout:
-        stdout.output = []
-        stdout.write = lambda buf: stdout.output.append(buf)
-        s = ''.join(stdout.output)
-        header.pprint()
-        for i in range(1, 9):
-            if i == 3:
-                assert '(3)' not in s
-            else:
-                assert '({i:d})'.format(i=i)
+    header.pprint()
+    cap = capsys.readouterr()
+    for i in range(1, 9):
+        if i == 3:
+            assert '(3)' not in cap.out
+        else:
+            assert f'({i:d})' in cap.out
 
 def test_pprint_rows_cols():
-    assert '{0:row1}'.format(PiBoardInfo.from_revision(0x900092).headers['J8']) == '1o'
-    assert '{0:row2}'.format(PiBoardInfo.from_revision(0x900092).headers['J8']) == 'oo'
-    assert '{0:col1}'.format(PiBoardInfo.from_revision(0x0002).headers['P1']) == '1oooooooooooo'
-    assert '{0:col2}'.format(PiBoardInfo.from_revision(0x0002).headers['P1']) == 'ooooooooooooo'
+    board_info = PiBoardInfo.from_revision(0x900092)
+    assert f'{board_info.headers["J8"]:row1}' == '1o'
+    assert f'{board_info.headers["J8"]:row2}' == 'oo'
+    board_info = PiBoardInfo.from_revision(0x0002)
+    assert f'{board_info.headers["P1"]:col1}' == '1oooooooooooo'
+    assert f'{board_info.headers["P1"]:col2}' == 'ooooooooooooo'
     with pytest.raises(ValueError):
-        '{0:row16}'.format(PiBoardInfo.from_revision(0x0002).headers['P1'])
+        f'{board_info.headers["P1"]:row16}'
     with pytest.raises(ValueError):
-        '{0:col3}'.format(PiBoardInfo.from_revision(0x0002).headers['P1'])
+        f'{board_info.headers["P1"]:col3}'

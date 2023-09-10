@@ -30,4 +30,4 @@ def test_frozendict():
     h = hash(f)
     assert h is not None
     assert hash(f) == h
-    assert repr(f) == "<frozendict {d!r}>".format(d=d)
+    assert repr(f) == f"<frozendict {d!r}>"

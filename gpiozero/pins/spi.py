@@ -73,10 +73,10 @@ class SPISoftware(SPI):
         try:
             self._check_open()
             return (
-                'SPI(clock_pin={self._bus.clock.pin.info.name!r}, '
-                'mosi_pin={self._bus.mosi.pin.info.name!r}, '
-                'miso_pin={self._bus.miso.pin.info.name!r}, '
-                'select_pin={self._select.pin.info.name!r})'.format(self=self))
+                f'SPI(clock_pin={self._bus.clock.pin.info.name!r}, '
+                f'mosi_pin={self._bus.mosi.pin.info.name!r}, '
+                f'miso_pin={self._bus.miso.pin.info.name!r}, '
+                f'select_pin={self._select.pin.info.name!r})')
         except DeviceClosed:
             return 'SPI(closed)'
 
@@ -96,8 +96,7 @@ class SPISoftware(SPI):
 
     def _set_clock_mode(self, value):
         if not (0 <= value < 4):
-            raise SPIInvalidClockMode(
-                "{value} is not a valid clock mode".format(value=value))
+            raise SPIInvalidClockMode(f"{value} is not a valid clock mode")
         with self._bus.lock:
             self._bus.clock.active_high = not (value & 2)
             self._clock_phase = bool(value & 1)

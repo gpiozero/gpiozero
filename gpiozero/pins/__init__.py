@@ -1413,7 +1413,7 @@ class BoardInfo(namedtuple('BoardInfo', (
         can be set to :data:`True` or :data:`False` to force color or monochrome
         output.
         """
-        style=Style(color)
+        style = Style(color)
         print(f'{self:{style} full}')
 
     @property

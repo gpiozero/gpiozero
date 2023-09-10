@@ -90,9 +90,7 @@ class PiGPIOFactory(PiFactory):
         # Annoyingly, pigpio doesn't raise an exception when it fails to make a
         # connection; it returns a valid (but disconnected) pi object
         if self.connection is None:
-            raise IOError(
-                'failed to connect to {host}:{port}'.format(
-                    host=host, port=port))
+            raise IOError(f'failed to connect to {host}:{port}')
         self._host = host
         self._port = port
         self._spis = []
@@ -225,8 +223,7 @@ class PiGPIOPin(PiPin):
                 self._number, self.GPIO_FUNCTIONS[value])
         except KeyError:
             raise PinInvalidFunction(
-                'invalid function "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+                f'invalid function "{value}" for pin {self!r}')
 
     def _get_state(self):
         if self._pwm:
@@ -245,11 +242,9 @@ class PiGPIOPin(PiPin):
                     self.factory.connection.set_PWM_dutycycle(self._number, value)
             except pigpio.error:
                 raise PinInvalidState(
-                    'invalid state "{value}" for pin {self!r}'.format(
-                        self=self))
+                    f'invalid state "{value}" for pin {self!r}')
         elif self.function == 'input':
-            raise PinSetInput(
-                'cannot set state of pin {self!r}'.format(self=self))
+            raise PinSetInput(f'cannot set state of pin {self!r}')
         else:
             # write forces pin to OUTPUT, hence the check above
             self.factory.connection.write(self._number, bool(value))
@@ -259,19 +254,15 @@ class PiGPIOPin(PiPin):
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull(
-                'cannot set pull on non-input pin {self!r}'.format(self=self))
+            raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
         if self.info.pull and value != self.info.pull:
-            raise PinFixedPull(
-                '{self!r} has a fixed pull resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a fixed pull resistor')
         try:
             self.factory.connection.set_pull_up_down(
                 self._number, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
-            raise PinInvalidPull(
-                'invalid pull "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+            raise PinInvalidPull(f'invalid pull "{value}" for pin {self!r}')
 
     def _get_frequency(self):
         if self._pwm:
@@ -281,8 +272,7 @@ class PiGPIOPin(PiPin):
     def _set_frequency(self, value):
         if not self._pwm and value is not None:
             if self.function != 'output':
-                raise PinPWMFixedValue(
-                    'cannot start PWM on pin {self!r}'.format(self=self))
+                raise PinPWMFixedValue(f'cannot start PWM on pin {self!r}')
             # NOTE: the pin's state *must* be set to zero; if it's currently
             # high, starting PWM and setting a 0 duty-cycle *doesn't* bring
             # the pin low; it stays high!
@@ -386,9 +376,7 @@ class PiGPIOHardwareSPI(SPI):
     def __repr__(self):
         try:
             self._check_open()
-            return (
-                'SPI(port={self._port:d}, '
-                'device={self._device:d})'.format(self=self))
+            return f'SPI(port={self._port:d}, device={self._device:d})'
         except DeviceClosed:
             return 'SPI(closed)'
 
@@ -398,8 +386,7 @@ class PiGPIOHardwareSPI(SPI):
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
-            raise SPIInvalidClockMode(
-                "{value} is not a valid SPI clock mode".format(value=value))
+            raise SPIInvalidClockMode(f"{value} is not a valid SPI clock mode")
         self.pin_factory.connection.spi_close(self._handle)
         self._spi_flags = (self._spi_flags & ~0x3) | value
         self._handle = self.pin_factory.connection.spi_open(
@@ -457,9 +444,10 @@ class PiGPIOHardwareSPI(SPI):
         self._check_open()
         count, data = self.pin_factory.connection.spi_xfer(self._handle, data)
         if count < 0:
-            raise IOError('SPI transfer error {count}'.format(count=count))
-        # Convert returned bytearray to list of ints. XXX Not sure how non-byte
-        # sized words (aux intf only) are returned ... padded to 16/32-bits?
+            raise IOError(f'SPI transfer error {count}')
+        # Convert returned bytearray to list of ints.
+        # XXX Not sure how non-byte sized words (aux intf only) are returned
+        # ... padded to 16/32-bits?
         return [int(b) for b in data]
 
 
@@ -525,10 +513,8 @@ class PiGPIOSoftwareSPI(SPI):
         try:
             self._check_open()
             return (
-                'SPI(clock_pin={self._clock_pin}, '
-                'mosi_pin={self._mosi_pin}, '
-                'miso_pin={self._miso_pin}, '
-                'select_pin={self._select_pin})'.format(self=self))
+                f'SPI(clock_pin={self._clock_pin}, mosi_pin={self._mosi_pin}, '
+                f'miso_pin={self._miso_pin}, select_pin={self._select_pin})')
         except DeviceClosed:
             return 'SPI(closed)'
 
@@ -546,8 +532,7 @@ class PiGPIOSoftwareSPI(SPI):
     def _set_clock_mode(self, value):
         self._check_open()
         if not 0 <= value < 4:
-            raise SPIInvalidClockMode(
-                "{value} is not a valid SPI clock mode".format(value=value))
+            raise SPIInvalidClockMode(f"{value} is not a valid SPI clock mode")
         self.pin_factory.connection.bb_spi_close(self._select_pin)
         self._spi_flags = (self._spi_flags & ~0x3) | value
         self.pin_factory.connection.bb_spi_open(
@@ -597,7 +582,7 @@ class PiGPIOSoftwareSPI(SPI):
         count, data = self.pin_factory.connection.bb_spi_xfer(
             self._select_pin, data)
         if count < 0:
-            raise IOError('SPI transfer error {count}'.format(count=count))
+            raise IOError(f'SPI transfer error {count}')
         # Convert returned bytearray to list of ints. bb_spi only supports
         # byte-sized words so no issues here
         return [int(b) for b in data]

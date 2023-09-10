@@ -125,8 +125,7 @@ class PiBoardInfo(BoardInfo):
                     2: '2.0',
                     }.get(revcode_revision, 'Unknown')
             else:
-                pcb_revision = '1.{revcode_revision}'.format(
-                    revcode_revision=revcode_revision)
+                pcb_revision = f'1.{revcode_revision}'
             soc = {
                 0: 'BCM2835',
                 1: 'BCM2836',
@@ -292,9 +291,7 @@ class PiBoardInfo(BoardInfo):
                 usb3 = 0
                 eth_speed = ethernet * 100
             except KeyError:
-                raise PinUnknownPi(
-                    'unknown old-style revision "{revision:x}"'.format(
-                        revision=revision))
+                raise PinUnknownPi(f'unknown old-style revision "{revision:x}"')
         headers = frozendict({
             header: HeaderInfo(
                 name=header, rows=rows, columns=columns,
@@ -308,7 +305,7 @@ class PiBoardInfo(BoardInfo):
             for header, (rows, columns, header_data) in headers.items()
         })
         return cls(
-            '{revision:04x}'.format(revision=revision),
+            f'{revision:04x}',
             model,
             pcb_revision,
             released,
@@ -331,19 +328,19 @@ class PiBoardInfo(BoardInfo):
     @staticmethod
     def _make_pin(header, number, row, col, interfaces):
         pull = 'up' if number in (3, 5) and header in ('P1', 'J8') else ''
-        phys_name = '{header}:{number}'.format(header=header, number=number)
+        phys_name = f'{header}:{number}'
         names = {phys_name}
         if header in ('P1', 'J8', 'SODIMM'):
-            names.add('BOARD{number}'.format(number=number))
+            names.add(f'BOARD{number}')
         try:
             name = interfaces['gpio']
             gpio = int(name[4:])
             names.add(name)
             names.add(gpio)
             names.add(str(gpio))
-            names.add('BCM{gpio}'.format(gpio=gpio))
+            names.add(f'BCM{gpio}')
             try:
-                names.add('WPI{n}'.format(n={
+                wpi_map = {
                     'J8:3':  8,  'J8:5':  9,  'J8:7':  7,  'J8:8':  15,
                     'J8:10': 16, 'J8:11': 0,  'J8:12': 1,  'J8:13': 2,
                     'J8:15': 3,  'J8:16': 4,  'J8:18': 5,  'J8:19': 12,
@@ -359,7 +356,8 @@ class PiBoardInfo(BoardInfo):
                     'P1:31': 22, 'P1:32': 26, 'P1:33': 23, 'P1:35': 24,
                     'P1:36': 27, 'P1:37': 25, 'P1:38': 28, 'P1:40': 29,
                     'P5:3':  17, 'P5:4':  18, 'P5:5':  19, 'P5:6':  20,
-                }[phys_name]))
+                }
+                names.add(f'WPI{wpi_map[phys_name]}')
             except KeyError:
                 pass
         except KeyError:
@@ -371,8 +369,7 @@ class PiBoardInfo(BoardInfo):
 
     @property
     def description(self):
-        return "Raspberry Pi {self.model} rev {self.pcb_revision}".format(
-            self=self)
+        return f"Raspberry Pi {self.model} rev {self.pcb_revision}"
 
 
 class PiFactory(Factory):
@@ -400,8 +397,7 @@ class PiFactory(Factory):
                 pin = self.pin_class(self, info)
                 self.pins[info] = pin
             return pin
-        raise PinInvalidPin('{name} is not a valid pin name'.format(
-            name=name))
+        raise PinInvalidPin(f'{name} is not a valid pin name')
 
     def _get_revision(self):
         """
@@ -438,8 +434,7 @@ class PiFactory(Factory):
         shared = bool(kwargs.pop('shared', False))
         if kwargs:
             raise SPIBadArgs(
-                'unrecognized keyword argument {arg}'.format(
-                    arg=kwargs.popitem()[0]))
+                f'unrecognized keyword argument {kwargs.popitem()[0]}')
         try:
             port, device = spi_port_device(**spi_args)
         except SPIBadArgs:
@@ -452,8 +447,8 @@ class PiFactory(Factory):
             except Exception as e:
                 warnings.warn(
                     SPISoftwareFallback(
-                        'failed to initialize hardware SPI, falling back to '
-                        'software (error was: {e!s})'.format(e=e)))
+                        f'failed to initialize hardware SPI, falling back to '
+                        f'software (error was: {e!s})'))
         return self._get_spi_class(shared, hardware=False)(
             pin_factory=self, **spi_args)
 
@@ -502,14 +497,13 @@ class PiFactory(Factory):
                 selected_hw = SPI_HARDWARE_PINS[spi_args['port']]
             except KeyError:
                 raise SPIBadArgs(
-                    'port {spi_args[port]} is not a valid SPI port'.format(
-                        spi_args=spi_args))
+                    f"port {spi_args['port']} is not a valid SPI port")
             try:
                 selected_hw['select'][spi_args['device']]
             except IndexError:
                 raise SPIBadArgs(
-                    'device must be in the range 0..{count}'.format(
-                        count=len(selected_hw['select'])))
+                    f"device must be in the range 0.."
+                    f"{len(selected_hw['select'])}")
             spi_args = {
                 key: value if key != 'select_pin' else selected_hw['select'][spi_args['device']]
                 for key, value in pin_defaults.items()
@@ -565,7 +559,7 @@ class PiPin(Pin):
     def __init__(self, factory, info):
         super().__init__()
         if 'gpio' not in info.interfaces:
-            raise PinInvalidPin('{info} is not a GPIO pin'.format(info=info))
+            raise PinInvalidPin(f'{info} is not a GPIO pin')
         self._factory = factory
         self._info = info
         self._number = int(info.name[4:])

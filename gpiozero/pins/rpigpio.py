@@ -111,15 +111,12 @@ class RPiGPIOPin(LocalPiPin):
 
     def input_with_pull(self, pull):
         if self.info.pull and pull != self.info.pull:
-            raise PinFixedPull(
-                '{self!r} has a fixed pull resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a fixed pull resistor')
         try:
             GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[pull])
             self._pull = pull
         except KeyError:
-            raise PinInvalidPull(
-                'invalid pull "{pull}" for pin {self!r}'.format(
-                    self=self, pull=pull))
+            raise PinInvalidPull(f'invalid pull "{pull}" for pin {self!r}')
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[GPIO.gpio_function(self._number)]
@@ -132,8 +129,7 @@ class RPiGPIOPin(LocalPiPin):
                        self.GPIO_PULL_UPS[self._pull])
         else:
             raise PinInvalidFunction(
-                'invalid function "{value}" for pin {self!r}'.format(
-                    self=self, value=value))
+                f'invalid function "{value}" for pin {self!r}')
 
     def _get_state(self):
         if self._pwm:
@@ -147,37 +143,30 @@ class RPiGPIOPin(LocalPiPin):
                 self._pwm.ChangeDutyCycle(value * 100)
             except ValueError:
                 raise PinInvalidState(
-                    'invalid state "{value}" for pin {self!r}'.format(
-                        self=self, value=value))
+                    f'invalid state "{value}" for pin {self!r}')
             self._duty_cycle = value
         else:
             try:
                 GPIO.output(self._number, value)
             except ValueError:
                 raise PinInvalidState(
-                    'invalid state "{value}" for pin {self!r}'.format(
-                        value=value, self=self))
+                    f'invalid state "{value}" for pin {self!r}')
             except RuntimeError:
-                raise PinSetInput(
-                    'cannot set state of pin {self!r}'.format(self=self))
+                raise PinSetInput(f'cannot set state of pin {self!r}')
 
     def _get_pull(self):
         return self._pull
 
     def _set_pull(self, value):
         if self.function != 'input':
-            raise PinFixedPull(
-                'cannot set pull on non-input pin {self!r}'.format(self=self))
+            raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
         if self.info.pull and value != self.info.pull:
-            raise PinFixedPull(
-                '{self!r} has a fixed pull resistor'.format(self=self))
+            raise PinFixedPull(f'{self!r} has a fixed pull resistor')
         try:
             GPIO.setup(self._number, GPIO.IN, self.GPIO_PULL_UPS[value])
             self._pull = value
         except KeyError:
-            raise PinInvalidPull(
-                'invalid pull "{value}" for pin {self!r}'.format(
-                    value=value, self=self))
+            raise PinInvalidPull(f'invalid pull "{value}" for pin {self!r}')
 
     def _get_frequency(self):
         return self._frequency
@@ -187,8 +176,7 @@ class RPiGPIOPin(LocalPiPin):
             try:
                 self._pwm = GPIO.PWM(self._number, value)
             except RuntimeError:
-                raise PinPWMFixedValue(
-                    'cannot start PWM on pin {self!r}'.format(self=self))
+                raise PinPWMFixedValue(f'cannot start PWM on pin {self!r}')
             self._pwm.start(0)
             self._duty_cycle = 0
             self._frequency = value

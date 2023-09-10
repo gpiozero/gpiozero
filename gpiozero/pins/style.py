@@ -78,12 +78,10 @@ class Style:
                         else:
                             codes.append(40 + self.colors[spec])
                     except KeyError:
-                        raise ValueError(
-                            'invalid format specification "{spec}"'.format(
-                                spec=spec))
+                        raise ValueError(f'invalid format specification "{spec}"')
         if self.color:
-            return '\x1b[{codes}m'.format(
-                codes=';'.join(str(code) for code in codes))
+            codes = ';'.join(str(code) for code in codes)
+            return f'\x1b[{codes}m'
         else:
             return ''
 

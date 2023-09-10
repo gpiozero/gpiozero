@@ -76,12 +76,10 @@ class SPIDevice(Device):
         try:
             self._check_open()
             return (
-                "<gpiozero.{self.__class__.__name__} object using "
-                "{self._spi!r}>".format(self=self))
+                f"<gpiozero.{self.__class__.__name__} object using "
+                f"{self._spi!r}>")
         except DeviceClosed:
-            return (
-                "<gpiozero.{self.__class__.__name__} object "
-                "closed>".format(self=self))
+            return f"<gpiozero.{self.__class__.__name__} object closed>"
 
 
 class AnalogInputDevice(SPIDevice):
