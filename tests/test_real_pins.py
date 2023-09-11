@@ -31,6 +31,13 @@ from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
 # tests rely upon this).
 TEST_PIN = os.environ.get('GPIOZERO_TEST_PIN', 'GPIO22')
 INPUT_PIN = os.environ.get('GPIOZERO_TEST_INPUT_PIN', 'GPIO27')
+
+# The lock path is intended to prevent parallel runs of the "real pins" test
+# suite. For example, if you are testing multiple Python versions under tox,
+# the mocked devices will all happily test in parallel. However, the real pins
+# test must not or you risk one run trying to set a pin to an output while
+# another simultaneously demands it's an input. The path specified here must be
+# visible and accessible to all simultaneous runs.
 TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 
 
@@ -120,7 +127,7 @@ def setup_module(module):
                         'this if the test suite is not currently running\n')
         except FileExistsError:
             print('Waiting for lock before testing real-pins')
-            sleep(0.1)
+            sleep(1)
         else:
             break
 
