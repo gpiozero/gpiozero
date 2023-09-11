@@ -2,8 +2,6 @@
 Backwards Compatibility
 =======================
 
-.. currentmodule:: gpiozero
-
 
 .. currentmodule:: gpiozero
 
@@ -57,7 +55,14 @@ And produces the following output on the console when run:
 
 .. code-block:: text
 
-    XXX COMPLETE ME XXX
+    /home/dave/projects/home/gpiozero/gpio-zero/gpiozero/pins/__init__.py:899:
+    DeprecationWarning: PinInfo.pull_up is deprecated; please use PinInfo.pull
+      warnings.warn(
+    /home/dave/projects/home/gpiozero/gpio-zero/gpiozero/pins/__init__.py:889:
+    DeprecationWarning: PinInfo.function is deprecated; please use PinInfo.name
+      warnings.warn(
+    GPIO2 is pulled up
+    GPIO3 is pulled up
 
 This tells us which pieces of deprecated functionality are being used in our
 script, but it doesn't tell us where in the script they were used. For this,
@@ -81,7 +86,12 @@ Now when we run the script it produces the following:
 
 .. code-block:: pycon
 
-    XXX COMPLETE ME XXX
+    Traceback (most recent call last):
+      File "/home/dave/projects/home/gpiozero/gpio-zero/foo.py", line 9, in <module>
+        if pin.pull_up:
+      File "/home/dave/projects/home/gpiozero/gpio-zero/gpiozero/pins/__init__.py", line 899, in pull_up
+        warnings.warn(
+    DeprecationWarning: PinInfo.pull_up is deprecated; please use PinInfo.pull
 
 This tells us that line 10 of our script is using deprecated functionality, and
 provides a hint of how to fix it. We change line 9 to use the "pull" attribute
@@ -89,7 +99,12 @@ instead. Now we run again, and this time get the following:
 
 .. code-block:: pycon
 
-    XXX COMPLETE ME XXX
+    Traceback (most recent call last):
+      File "/home/dave/projects/home/gpiozero/gpio-zero/foo.py", line 10, in <module>
+        print(pin.function, 'is pulled up')
+      File "/home/dave/projects/home/gpiozero/gpio-zero/gpiozero/pins/__init__.py", line 889, in function
+        warnings.warn(
+    DeprecationWarning: PinInfo.function is deprecated; please use PinInfo.name
 
 Now we can tell line 10 has a problem, and once again the exception tells us
 how to fix it. We continue in this fashion until the script looks like this::
@@ -103,7 +118,7 @@ how to fix it. We continue in this fashion until the script looks like this::
     for header in board.headers.values():
         for pin in header.pins.values():
             if pin.pull == 'up':
-                print(pin.spec, 'is pulled up')
+                print(pin.name, 'is pulled up')
 
 The script now runs to completion, so we can be confident it's no longer using
 any deprecated functionality and will run happily even when this functionality
@@ -191,13 +206,13 @@ However, if you had omitted the keyword you will need to modify your code::
     l = PiLiter(True)  # this will no longer work
 
 
-Robots take Motors, and PhaseEnableRobot is removed
-===================================================
+Robots take Motors, and PhaseEnableRobot is deprecated
+======================================================
 
 The GPIO Zero 1.x API specified that a :class:`Robot` was constructed with two
 tuples that were in turn used to construct two :class:`Motor` instances. The
 2.x API replaces this with simply passing in the :class:`Motor`, or
-:class:`PhaseEnableMotor` instances you wish to use as the left and right
+:func:`PhaseEnableMotor` instances you wish to use as the left and right
 wheels.
 
 If your current code uses pins 4 and 14 for the left wheel, and 17 and 18 for
@@ -213,7 +228,7 @@ This should be changed to the following::
 
     r = Robot(left=Motor(4, 14), right=Motor(17, 18))
 
-Likewise, if you are currently using :class:`PhaseEnableRobot` your code may
+Likewise, if you are currently using :func:`PhaseEnableRobot` your code may
 look like this::
 
     from gpiozero import PhaseEnableRobot
@@ -231,7 +246,7 @@ This change came about because the :class:`Motor` class was also documented as
 having two mandatory parameters (*forward* and *backward*) and several
 keyword-only parameters, including the *enable* pin. However, *enable* was
 treated as a positional argument for the sake of constructing :class:`Robot`
-which was inconsistent. Furthermore, :class:`PhaseEnableRobot` was more or less
+which was inconsistent. Furthermore, :func:`PhaseEnableRobot` was more or less
 a redundant duplicate of :class:`Robot` but was lacking a couple of features
 added to :class:`Robot` later (notable "curved" turning).
 
@@ -242,12 +257,13 @@ and phase-enable motors although there's little sense in doing so.
 
 The former functionality (passing tuples to the :class:`Robot` constructor)
 will remain as deprecated functionality for gpiozero 2.0, but will be removed
-in a future 2.x release.
+in a future 2.x release. :func:`PhaseEnableRobot` remains as a stub function
+which simply returns a :class:`Robot` instance, but this will be removed in a
+future 2.x release.
 
 
 PiBoardInfo, HeaderInfo, PinInfo
 ================================
-
 
 The :class:`PiBoardInfo` class, and the associated :class:`HeaderInfo` and
 :class:`PinInfo` classes have undergone a major re-structuring. This is partly
