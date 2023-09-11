@@ -22,6 +22,7 @@ from .data import SPI_HARDWARE_PINS
 from ..compat import frozendict
 from ..devices import Device
 from ..exc import (
+    GPIOPinInUse,
     PinInvalidPin,
     PinNoPins,
     PinNonPhysical,
@@ -444,6 +445,10 @@ class PiFactory(Factory):
             try:
                 return self._get_spi_class(shared, hardware=True)(
                     pin_factory=self, **spi_args)
+            except GPIOPinInUse:
+                # If a pin is already reserved, don't fallback to software SPI
+                # as it'll just be reserved there too
+                raise
             except Exception as e:
                 warnings.warn(
                     SPISoftwareFallback(
@@ -504,6 +509,7 @@ class PiFactory(Factory):
                 raise SPIBadArgs(
                     f"device must be in the range 0.."
                     f"{len(selected_hw['select'])}")
+            # XXX: This is incorrect; assumes port == dev_defaults['port']
             spi_args = {
                 key: value if key != 'select_pin' else selected_hw['select'][spi_args['device']]
                 for key, value in pin_defaults.items()
