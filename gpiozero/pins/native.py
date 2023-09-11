@@ -463,7 +463,7 @@ class NativePin(LocalPiPin):
         self.frequency = None
         self.when_changed = None
         self.function = 'input'
-        self.pull = 'up' if self.factory.board_info.pulled_up(repr(self)) else 'floating'
+        self.pull = self.info.pull or 'floating'
 
     def _get_function(self):
         return self.GPIO_FUNCTION_NAMES[(self.factory.mem[self._func_offset] >> self._func_shift) & 7]
@@ -561,8 +561,9 @@ class Native2835Pin(NativePin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
-        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
-            raise PinFixedPull(f'{self!r} has a physical pull-up resistor')
+        if self.info.pull not in (value, ''):
+            raise PinFixedPull(
+                f'{self!r} has a physical pull-{self.info.pull} resistor')
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
@@ -602,8 +603,9 @@ class Native2711Pin(NativePin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
-        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
-            raise PinFixedPull(f'{self!r} has a physical pull-up resistor')
+        if self.info.pull not in (value, ''):
+            raise PinFixedPull(
+                f'{self!r} has a physical pull-{self.info.pull} resistor')
         try:
             value = self.GPIO_PULL_UPS[value]
         except KeyError:
