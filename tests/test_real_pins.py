@@ -20,7 +20,7 @@ import pytest
 from gpiozero import *
 from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
 from gpiozero.pins.native import NativeFactory
-from gpiozero.pins.local import LocalPiFactory
+from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
 
 
 # This module assumes you've wired the following GPIO pins together. The pins
@@ -37,6 +37,10 @@ TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 def local_only():
     if not isinstance(Device.pin_factory, LocalPiFactory):
         pytest.skip("Test cannot run with non-local pin factories")
+
+def local_hardware_spi_only(intf):
+    if not isinstance(intf, LocalPiHardwareSPI):
+        pytest.skip("Test assumes LocalPiHardwareSPI descendant")
 
 
 with warnings.catch_warnings():
@@ -369,12 +373,13 @@ def test_spi_hardware_conflict(default_factory):
             LED(11)
 
 
-def test_spi_hardware_same_bus(default_factory):
+def test_spi_hardware_same_port(default_factory):
     with Device.pin_factory.spi(device=0) as intf:
+        local_hardware_spi_only(intf)
         with pytest.raises(GPIOPinInUse):
             Device.pin_factory.spi(device=0)
         with Device.pin_factory.spi(device=1) as another_intf:
-            assert intf._bus is another_intf._bus
+            assert intf._port == another_intf._port
 
 
 def test_spi_hardware_shared_bus(default_factory):
@@ -388,6 +393,7 @@ def test_spi_hardware_read(default_factory):
     with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
         with Device.pin_factory.spi() as intf:
+            local_hardware_spi_only(intf)
             assert intf.read(3) == [0, 1, 2]
             assert intf.read(6) == list(range(6))
 
@@ -397,6 +403,7 @@ def test_spi_hardware_write(default_factory):
     with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
         with Device.pin_factory.spi() as intf:
+            local_hardware_spi_only(intf)
             assert intf.write([0, 1, 2]) == 3
             assert spidev.return_value.xfer2.called_with([0, 1, 2])
             assert intf.write(list(range(6))) == 6
@@ -411,6 +418,7 @@ def test_spi_hardware_modes(default_factory):
         spidev.return_value.cshigh = True
         spidev.return_value.bits_per_word = 8
         with Device.pin_factory.spi() as intf:
+            local_hardware_spi_only(intf)
             assert intf.clock_mode == 0
             assert not intf.clock_polarity
             assert not intf.clock_phase
