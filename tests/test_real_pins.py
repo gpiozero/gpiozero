@@ -321,14 +321,26 @@ def test_default_factory(no_default_factory):
 def test_spi_init(pin_factory):
     with pin_factory.spi() as intf:
         assert isinstance(intf, SPI)
-        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)'
+        assert repr(intf) in (
+            "SPI(clock_pin='GPIO11', mosi_pin='GPIO10', miso_pin='GPIO9', "
+            "select_pin='GPIO8')",
+            "SPI(port=0, device=0)"
+        )
         intf.close()
         assert intf.closed
         assert repr(intf) == 'SPI(closed)'
     with pin_factory.spi(port=0, device=1) as intf:
-        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=7)'
+        assert repr(intf) in (
+            "SPI(clock_pin='GPIO11', mosi_pin='GPIO10', miso_pin='GPIO9', "
+            "select_pin='GPIO7')",
+            "SPI(port=0, device=1)"
+        )
     with pin_factory.spi(clock_pin=11, mosi_pin=10, select_pin=8) as intf:
-        assert repr(intf) == 'SPI(clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)'
+        assert repr(intf) in (
+            "SPI(clock_pin='GPIO11', mosi_pin='GPIO10', miso_pin='GPIO9', "
+            "select_pin='GPIO8')",
+            "SPI(port=0, device=0)"
+        )
     # Ensure we support "partial" SPI where we don't reserve a pin because
     # the device wants it for general IO (see SPI screens which use a pin
     # for data/commands)
