@@ -131,6 +131,14 @@ class LocalPiHardwareSPI(SPI):
         self._bus.open(self._port, self._device)
         self._bus.max_speed_hz = 500000
 
+    def _conflicts_with(self, other):
+        if isinstance(other, LocalPiHardwareSPI):
+            return (
+                (self._port == other._port) and
+                (self._device == other._device))
+        else:
+            return True
+
     def close(self):
         if self._bus is not None:
             self._bus.close()

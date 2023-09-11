@@ -51,10 +51,10 @@ class SPISoftware(SPI):
             raise
 
     def _conflicts_with(self, other):
-        return not (
-            isinstance(other, SoftwareSPI) and
-            (self._select.pin.info.name != other._select.pin.info.name)
-            )
+        if isinstance(other, SoftwareSPI):
+            return self._select.pin.info.name == other._select.pin.info.name
+        else:
+            return True
 
     def close(self):
         if self._select:
