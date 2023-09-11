@@ -25,6 +25,15 @@ from ..exc import (
     DeviceClosed
 )
 
+try:
+    # Patch several constants which changed incompatibly between lg 0.1.6.0
+    # and 0.2.0.0
+    lgpio.SET_PULL_NONE
+except AttributeError:
+    lgpio.SET_PULL_NONE = lgpio.SET_BIAS_DISABLE
+    lgpio.SET_PULL_UP = lgpio.SET_BIAS_PULL_UP
+    lgpio.SET_PULL_DOWN = lgpio.SET_BIAS_PULL_DOWN
+
 
 class LGPIOFactory(LocalPiFactory):
     """
@@ -114,14 +123,14 @@ class LGPIOPin(LocalPiPin):
         self._callback = None
         self._edges = lgpio.BOTH_EDGES
         lgpio.gpio_claim_input(
-            self.factory._handle, self._number, lgpio.SET_BIAS_DISABLE)
+            self.factory._handle, self._number, lgpio.SET_PULL_NONE)
 
     def close(self):
         if self.factory._handle is not None:
             # Closing is really just "resetting" the function of the pin;
             # we let the factory close deal with actually freeing stuff
             lgpio.gpio_claim_input(
-                self.factory._handle, self._number, lgpio.SET_BIAS_DISABLE)
+                self.factory._handle, self._number, lgpio.SET_PULL_NONE)
 
     def _get_function(self):
         mode = lgpio.gpio_get_mode(self.factory._handle, self._number)
@@ -172,13 +181,14 @@ class LGPIOPin(LocalPiPin):
     def _set_pull(self, value):
         if self.function != 'input':
             raise PinFixedPull(f'cannot set pull on non-input pin {self!r}')
-        if value != 'up' and self.factory.board_info.pulled_up(repr(self)):
-            raise PinFixedPull(f'{self!r} has a physical pull-up resistor')
+        if self.info.pull not in (value, ''):
+            raise PinFixedPull(
+                f'{self!r} has a physical pull-{self.info.pull} resistor')
         try:
             flags = {
-                'up': lgpio.SET_BIAS_PULL_UP,
-                'down': lgpio.SET_BIAS_PULL_DOWN,
-                'floating': lgpio.SET_BIAS_DISABLE,
+                'up': lgpio.SET_PULL_UP,
+                'down': lgpio.SET_PULL_DOWN,
+                'floating': lgpio.SET_PULL_NONE,
             }[value]
         except KeyError:
             raise PinInvalidPull(f'invalid pull "{value}" for pin {self!r}')
