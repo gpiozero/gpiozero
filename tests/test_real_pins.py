@@ -26,15 +26,17 @@ from gpiozero.pins.local import LocalPiFactory
 # This module assumes you've wired the following GPIO pins together. The pins
 # can be re-configured via the listed environment variables (useful for when
 # your testing rig requires different pins because the defaults interfere with
-# attached hardware).
-TEST_PIN = int(os.environ.get('GPIOZERO_TEST_PIN', '22'))
-INPUT_PIN = int(os.environ.get('GPIOZERO_TEST_INPUT_PIN', '27'))
+# attached hardware). Please note that the name specified *must* be the primary
+# name of the pin, e.g. GPIO22 rather than an alias like BCM22 or 22 (several
+# tests rely upon this).
+TEST_PIN = os.environ.get('GPIOZERO_TEST_PIN', 'GPIO22')
+INPUT_PIN = os.environ.get('GPIOZERO_TEST_INPUT_PIN', 'GPIO27')
 TEST_LOCK = os.environ.get('GPIOZERO_TEST_LOCK', '/tmp/real_pins_lock')
 
 
-local_only = pytest.mark.skipif(
-    not isinstance(Device.pin_factory, LocalPiFactory),
-    reason="Test cannot run with non-local pin factories")
+def local_only():
+    if not isinstance(Device.pin_factory, LocalPiFactory):
+        pytest.skip("Test cannot run with non-local pin factories")
 
 
 with warnings.catch_warnings():
@@ -53,7 +55,13 @@ def pin_factory(request, pin_factory_name):
         with warnings.catch_warnings():
             # The dict interface of entry_points is deprecated ... already
             warnings.simplefilter('ignore', category=DeprecationWarning)
-            factory = entry_points()['gpiozero_pin_factories'][name].load()()
+            eps = entry_points()['gpiozero_pin_factories']
+        for ep in eps:
+            if ep.name == pin_factory_name:
+                factory = ep.load()()
+                break
+        else:
+            assert False, 'internal error'
     except Exception as e:
         pytest.skip("skipped factory {pin_factory_name}: {e!s}".format(
             pin_factory_name=pin_factory_name, e=e))
@@ -110,10 +118,10 @@ def teardown_module(module):
     os.unlink(TEST_LOCK)
 
 
-def test_pin_numbers(pins):
+def test_pin_names(pins):
     test_pin, input_pin = pins
-    assert test_pin.number == TEST_PIN
-    assert input_pin.number == INPUT_PIN
+    assert test_pin.info.name == TEST_PIN
+    assert input_pin.info.name == INPUT_PIN
 
 
 def test_function_bad(pins):
@@ -161,17 +169,13 @@ def test_pull_bad(pins):
 
 
 def test_pull_down_warning(pin_factory):
-    if pin_factory.pi_info.pulled_up('GPIO2'):
-        pin = pin_factory.pin(2)
-        try:
-            with pytest.raises(PinFixedPull):
-                pin.pull = 'down'
-            with pytest.raises(PinFixedPull):
-                pin.input_with_pull('down')
-        finally:
-            pin.close()
-    else:
-        pytest.skip("GPIO2 isn't pulled up on this pi")
+    with pin_factory.pin('GPIO2') as pin:
+        if pin.info.pull != 'up':
+            pytest.skip("GPIO2 isn't pulled up on this pi")
+        with pytest.raises(PinFixedPull):
+            pin.pull = 'down'
+        with pytest.raises(PinFixedPull):
+            pin.input_with_pull('down')
 
 
 def test_input_with_pull(pins):
@@ -243,7 +247,7 @@ def test_explicit_factory(no_default_factory, pin_factory):
     with GPIODevice(TEST_PIN, pin_factory=pin_factory) as device:
         assert Device.pin_factory is None
         assert device.pin_factory is pin_factory
-        assert device.pin.number == TEST_PIN
+        assert device.pin.info.name == TEST_PIN
 
 
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
@@ -258,10 +262,15 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
     else:
         try:
             group = entry_points()['gpiozero_pin_factories']
-            factory_class = group[pin_factory_name].load()
+            for ep in group:
+                if ep.name == pin_factory_name:
+                    factory_class = ep.load()
+                    break
+            else:
+                assert False, 'internal error'
             assert isinstance(Device.pin_factory, factory_class)
             assert device.pin_factory is Device.pin_factory
-            assert device.pin.number == TEST_PIN
+            assert device.pin.info.name == TEST_PIN
         finally:
             device.close()
             Device.pin_factory.close()
@@ -278,7 +287,7 @@ def test_compatibility_names(no_default_factory):
         try:
             assert isinstance(Device.pin_factory, NativeFactory)
             assert device.pin_factory is Device.pin_factory
-            assert device.pin.number == TEST_PIN
+            assert device.pin.info.name == TEST_PIN
         finally:
             device.close()
             Device.pin_factory.close()
@@ -303,7 +312,7 @@ def test_default_factory(no_default_factory):
     else:
         try:
             assert device.pin_factory is Device.pin_factory
-            assert device.pin.number == TEST_PIN
+            assert device.pin.info.name == TEST_PIN
         finally:
             device.close()
             Device.pin_factory.close()
@@ -362,8 +371,8 @@ def test_spi_hardware_shared_bus(default_factory):
             assert intf is another_intf
 
 
-@local_only
 def test_spi_hardware_read(default_factory):
+    local_only()
     with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
         with Device.pin_factory.spi() as intf:
@@ -371,8 +380,8 @@ def test_spi_hardware_read(default_factory):
             assert intf.read(6) == list(range(6))
 
 
-@local_only
 def test_spi_hardware_write(default_factory):
+    local_only()
     with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.xfer2.side_effect = lambda data: list(range(10))[:len(data)]
         with Device.pin_factory.spi() as intf:
@@ -382,8 +391,8 @@ def test_spi_hardware_write(default_factory):
             assert spidev.return_value.xfer2.called_with(list(range(6)))
 
 
-@local_only
 def test_spi_hardware_modes(default_factory):
+    local_only()
     with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
         spidev.return_value.mode = 0
         spidev.return_value.lsbfirst = False
