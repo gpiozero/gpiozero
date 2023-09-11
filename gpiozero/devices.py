@@ -304,13 +304,13 @@ class Device(ValuesMixin, GPIOBase):
                 # and this deprecation is for us to worry about, not our users
                 warnings.simplefilter('ignore', category=DeprecationWarning)
                 group = entry_points()['gpiozero_pin_factories']
-            try:
-                return group[name].load()()
-            except KeyError:
-                try:
-                    return group[name.lower()].load()()
-                except KeyError:
-                    raise BadPinFactory(f'Unable to find pin factory {name!r}')
+            for ep in group:
+                if ep.name == name:
+                    return ep.load()()
+            for ep in group:
+                if ep.name == name.lower():
+                    return ep.load()()
+            raise BadPinFactory(f'Unable to find pin factory {name!r}')
 
     def __repr__(self):
         try:
