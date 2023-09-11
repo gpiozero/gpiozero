@@ -8,9 +8,15 @@
 pinout
 ======
 
-.. image:: images/pinout_pi3.png
-    :align: center
-    :width: 537px
+A utility for querying GPIO pin-out information.
+
+.. only:: not builder_man
+
+    .. image:: images/pinout_pi3.png
+        :alt: A screenshot of the output from pinout. In a terminal window, a
+              description of the board is shown at the top, followed by a
+              colorful ASCII art rendition of the board, and finally a
+              color-matched list of pins on the GPIO header.
 
 
 Synopsis
@@ -38,20 +44,21 @@ Options
 
 .. option:: -h, --help
 
-    show this help message and exit
+    Show a help message and exit
 
 .. option:: -r REVISION, --revision REVISION
 
-    RPi revision. Default is to autodetect revision of current device
+    Specifies a particular Raspberry Pi board revision code. The default is to
+    autodetect revision of current device by reading :file:`/proc/cpuinfo`
 
 .. option:: -c, --color
 
     Force colored output (by default, the output will include ANSI color codes
-    if run in a color-capable terminal). See also :option:`--monochrome`
+    if run in a color-capable terminal). See also :option:`pinout --monochrome`
 
 .. option:: -m, --monochrome
 
-    Force monochrome output. See also :option:`--color`
+    Force monochrome output. See also :option:`pinout --color`
 
 .. option:: -x, --xyz
 
@@ -71,30 +78,31 @@ For a Raspberry Pi model 3B, this will output something like the following:
 
 .. code-block:: none
 
-    ,--------------------------------.
-    | oooooooooooooooooooo J8     +====
-    | 1ooooooooooooooooooo        | USB
-    |                             +====
-    |      Pi Model 3B V1.1          |
-    |      +----+                 +====
-    | |D|  |SoC |                 | USB
-    | |S|  |    |                 +====
-    | |I|  +----+                    |
-    |                   |C|     +======
-    |                   |S|     |   Net
-    | pwr        |HDMI| |I||A|  +======
-    `-| |--------|    |----|V|-------'
-
+    Description        : Raspberry Pi 3B rev 1.2
     Revision           : a02082
     SoC                : BCM2837
-    RAM                : 1024Mb
+    RAM                : 1GB
     Storage            : MicroSD
-    USB ports          : 4 (excluding power)
-    Ethernet ports     : 1
+    USB ports          : 4 (of which 0 USB3)
+    Ethernet ports     : 1 (100Mbps max. speed)
     Wi-fi              : True
     Bluetooth          : True
     Camera ports (CSI) : 1
     Display ports (DSI): 1
+
+    ,--------------------------------.
+    | oooooooooooooooooooo J8     +====
+    | 1ooooooooooooooooooo        | USB
+    |                             +====
+    |      Pi Model 3B  V1.2         |
+    | |D      +---+               +====
+    | |S      |SoC|               | USB
+    | |I      +---+               +====
+    | |0               C|            |
+    |                  S|       +======
+    |                  I| |A|   |   Net
+    | pwr      |HDMI|  0| |u|   +======
+    `-| |------|    |-----|x|--------'
 
     J8:
        3V3  (1) (2)  5V
@@ -117,6 +125,8 @@ For a Raspberry Pi model 3B, this will output something like the following:
     GPIO19 (35) (36) GPIO16
     GPIO26 (37) (38) GPIO20
        GND (39) (40) GPIO21
+
+    For further information, please refer to https://pinout.xyz/
 
 By default, if stdout is a console that supports color, ANSI codes will be used
 to produce color output. Output can be forced to be :option:`--monochrome`:
@@ -165,35 +175,13 @@ this case you'll almost certainly want to specify the Pi revision manually):
     $ GPIOZERO_PIN_FACTORY=mock pinout -r a22042
 
 
-Environment Variables
----------------------
-
-.. envvar:: GPIOZERO_PIN_FACTORY
-
-    The library to use when communicating with the GPIO pins. Defaults to
-    attempting to load RPi.GPIO, then lgpio, then pigpio, and finally uses a
-    native Python implementation. Valid values include "rpigpio", "lgpio",
-    "pigpio", "native", and "mock". The latter is most useful on non-Pi
-    platforms as it emulates a Raspberry Pi model 3B (by default).
-
-.. envvar:: PIGPIO_ADDR
-
-    The hostname of the Raspberry Pi the pigpio library should attempt to
-    connect to (if the pigpio pin factory is being used). Defaults to
-    ``localhost``.
-
-.. envvar:: PIGPIO_PORT
-
-    The port number the pigpio library should attempt to connect to (if the
-    pigpio pin factory is being used). Defaults to ``8888``.
-
-
 .. only:: builder_man
 
     See Also
     --------
 
-        :manpage:`remote-gpio(7)`
+    :manpage:`pintest(1)`, :manpage:`remote-gpio(7)`,
+    :manpage:`gpiozero-env(7)`
 
 .. _pinout.xyz: https://pinout.xyz/
-.. _revision codes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
+.. _revision codes: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes

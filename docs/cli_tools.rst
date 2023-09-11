@@ -12,15 +12,13 @@ Command-line Tools
 
 The gpiozero package contains a database of information about the various
 revisions of Raspberry Pi. This is queried by the :program:`pinout`
-command-line tool to output details of the GPIO pins available.
+command-line tool to output details of the GPIO pins available. The
+:program:`pintest` tool is also provided to test the operation of GPIO pins on
+the board.
 
-.. note::
+.. toctree::
+   :maxdepth: 1
 
-    Note that only the Python 3 version of the Debian package includes the
-    pinout command line tool, so as not to create a conflict if both versions
-    are installed. If you only installed the ``python-gpiozero`` apt package,
-    the pinout tool will not be available. Instead, you can additionally install
-    the ``python3-gpiozero`` package, or alternatively install gpiozero using
-    pip.
-
-.. include:: cli_pinout.rst
+   cli_pinout
+   cli_pintest
+   cli_env

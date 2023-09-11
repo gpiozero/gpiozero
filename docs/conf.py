@@ -111,6 +111,7 @@ man_pages = [
     ('cli_pinout',  'pinout',      'GPIO Zero pinout tool',       [info['author']], 1),
     ('cli_pintest', 'pintest',     'GPIO Zero pintest tool',      [info['author']], 1),
     ('remote_gpio', 'remote-gpio', 'GPIO Zero remote GPIO guide', [info['author']], 7),
+    ('cli_env',     'gpiozero-env', 'GPIO Zero environment vars', [info['author']], 7),
 ]
 
 man_show_urls = True
