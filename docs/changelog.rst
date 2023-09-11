@@ -19,7 +19,7 @@ Release 2.0 (2023-09-12)
   amount of work on this! (`#799`_ `#896`_)
 * Removed RPIO pin implementation
 * Made :class:`gpiozero.pins.lgpio.LGPIOFactory` the default factory; the
-  former default, :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` is now the
+  former default, :class:`gpiozero.pins.rpigpio.RPiGPIOFactory`, is now the
   second place preference
 * Added :doc:`compat` chapter
 * Added :program:`pintest` utility

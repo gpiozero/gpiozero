@@ -30,7 +30,7 @@ SUBDIRS:=
 DIST_WHEEL=dist/$(WHEEL_NAME)-$(VER)-py3-none-any.whl
 DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
-MAN_PAGES=man/pinout.1
+MAN_PAGES=man/pinout.1 man/pintest.1 man/remote-gpio.7 man/gpiozero-env.7
 
 
 # Default target
