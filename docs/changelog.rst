@@ -12,13 +12,17 @@ Changelog
 
 .. currentmodule:: gpiozero
 
-Release 2.0 (???)
-=================
+Release 2.0 (2023-09-12)
+========================
 
 * Removed Python 2.x support; many thanks to Fangchen Li for a substantial
   amount of work on this! (`#799`_ `#896`_)
 * Removed RPIO pin implementation
+* Made :class:`gpiozero.pins.lgpio.LGPIOFactory` the default factory; the
+  former default, :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` is now the
+  second place preference
 * Added :doc:`compat` chapter
+* Added :program:`pintest` utility
 
 .. _#799: https://github.com/gpiozero/gpiozero/issues/799
 .. _#896: https://github.com/gpiozero/gpiozero/issues/896
