@@ -16,7 +16,7 @@ gpiotest example script, and wiringPi's pintest utility.
     .. versionadded:: 2.0
         The :program:`pintest` utility.
 
-    .. image:: images/pintest_pi3.png
+    .. image:: images/pintest.png
         :alt: A screenshot of the output from pintest. In a terminal window,
               pintest has prompted the user with the list of GPIOs it intends
               to test and asked for confirmation to proceed. Having received
