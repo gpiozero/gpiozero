@@ -72,7 +72,7 @@ class PinoutTool(CliTool):
             formatter.add_text(
                 "For further information, please refer to "
                 "https://pinout.xyz/")
-            sys.stdout.write('\n')
+            sys.stdout.write('\n\n')
             sys.stdout.write(formatter.format_help())
 
     def output(self, board):
