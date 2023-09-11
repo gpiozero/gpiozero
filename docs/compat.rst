@@ -266,14 +266,13 @@ As a result the following classes, methods, and attributes are deprecated
 
 * :attr:`PinInfo.pull_up` is deprecated in favour of :attr:`PinInfo.pull`.
 
-* :attr:`PinInfo.function` is deprecated in favour of :attr:`PinInfo.spec`.
+* :attr:`PinInfo.function` is deprecated in favour of :attr:`PinInfo.name`.
 
-* :meth:`BoardInfo.physical_pins`, :meth:`BoardInfo.physical_pin`,
-  :meth:`BoardInfo.pulled_up`, and :meth:`BoardInfo.to_gpio` are all
-  deprecated in favour of a combination of the new
-  :meth:`BoardInfo.find_by_spec` and the attributes mentioned above.
+* :meth:`BoardInfo.physical_pins`, :meth:`BoardInfo.physical_pin`, and
+  :meth:`BoardInfo.pulled_up`, are all deprecated in favour of a combination of
+  the new :meth:`BoardInfo.find_pin` and the attributes mentioned above.
 
-* :attr:`PiPin.number` is deprecated in favour of :attr:`Pin.info.spec`.
+* :attr:`PiPin.number` is deprecated in favour of :attr:`Pin.info.name`.
 
 .. _Python documentation: https://docs.python.org/3/
 .. _porting guide: https://docs.python.org/3/howto/pyporting.html

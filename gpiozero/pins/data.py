@@ -682,9 +682,9 @@ PI_REVISIONS = {
 
 SPI_HARDWARE_PINS = {
     0: {
-        'clock':  11,
-        'mosi':   10,
-        'miso':   9,
-        'select': (8, 7),
+        'clock':  'GPIO11',
+        'mosi':   'GPIO10',
+        'miso':   'GPIO9',
+        'select': ('GPIO8', 'GPIO7'),
     },
 }

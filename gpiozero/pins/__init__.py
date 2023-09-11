@@ -121,7 +121,7 @@ class Factory:
         # horribly naughty (with good reason) and makes its _reservations
         # dictionary equivalent to a class-level one.
         self.release_pins(reserver, *(
-            pin.spec for pin in self._reservations))
+            pin.name for pin in self._reservations))
 
     def close(self):
         """
@@ -131,7 +131,7 @@ class Factory:
         """
         pass
 
-    def pin(self, spec):
+    def pin(self, name):
         """
         Creates an instance of a :class:`Pin` descendent representing the
         specified pin.
@@ -1328,31 +1328,24 @@ class BoardInfo(namedtuple('BoardInfo', (
             return pin.pull == 'up'
         return False
 
-    def to_gpio(self, spec):
+    def to_gpio(self, name):
         """
-        Parses a pin *spec*, returning the equivalent GPIO port number or
-        raising a :exc:`ValueError` exception if the spec does not represent a
-        GPIO port.
+        Parses a pin *name*, returning the primary name of the pin (which can
+        be used to construct it), or raising a :exc:`ValueError` exception if
+        the name does not represent a GPIO pin.
 
-        The *spec* may be given in any of the following forms:
+        The *name* may be given in any of the following forms:
 
         * An integer, which will be accepted as a GPIO number
         * 'GPIOn' where n is the GPIO number
         * 'h:n' where h is the header name and n is the physical pin number
         """
-        warnings.warn(
-            DeprecationWarning(
-                "PiBoardInfo.to_gpio is deprecated; please use "
-                "BoardInfo.find_pin and PinInfo.name instead"))
-        for header, pin in self.find_pin(spec):
+        for header, pin in self.find_pin(name):
             if 'gpio' in pin.interfaces:
-                # XXX This assumes GPIO specs are always of the form "GPIOn"
-                # which is *probably* reasonable but should we enforce this
-                # somewhere?
-                return int(pin.name[4:])
+                return pin.name
             else:
-                raise PinInvalidPin(f'{spec} is not a GPIO pin')
-        raise PinInvalidPin(f'{spec} is not a valid pin spec')
+                raise PinInvalidPin(f'{name} is not a GPIO pin')
+        raise PinInvalidPin(f'{name} is not a valid pin name')
 
     def __repr__(self):
         fields=', '.join(
