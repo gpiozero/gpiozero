@@ -88,8 +88,15 @@ def pins(request, pin_factory):
     # each pin then pytest will (correctly) test RPiGPIOPin(22) against
     # NativePin(27) and so on. This isn't supported, so we don't test it
     assert not (
-        {INPUT_PIN, TEST_PIN} & {2, 3, 7, 8, 9, 10, 11}), \
-            'Cannot use SPI (7-11) or I2C (2-3) pins for tests'
+        {INPUT_PIN, TEST_PIN} & {
+            'GPIO2',
+            'GPIO3',
+            'GPIO7',
+            'GPIO8',
+            'GPIO9',
+            'GPIO10',
+            'GPIO11',
+        }), 'Cannot use SPI (7-11) or I2C (2-3) pins for tests'
     input_pin = pin_factory.pin(INPUT_PIN)
     input_pin.function = 'input'
     input_pin.pull = 'down'
