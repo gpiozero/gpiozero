@@ -138,6 +138,7 @@ Contributors
 - `Alex Eames`_
 - `Andrew Scheller`_
 - `Barry Byford`_
+- `Cameron Davidson-Pilon`_
 - `Carl Monk`_
 - `Claire Pollard`_
 - `Clare Macrae`_
@@ -148,7 +149,9 @@ Contributors
 - `Delcio Torres`_
 - `Edward Betts`_
 - `Fatih Sarhan`_
+- `Fangchen Li`_
 - `G.S.`_
+- `gnicki`_
 - `Ian Harcombe`_
 - `Jack Wearden`_
 - `Jeevan M R`_
@@ -164,6 +167,7 @@ Contributors
 - `Phil Howard`_
 - `Philippe Muller`_
 - `Rick Ansell`_
+- `Rimas Misevičius`_
 - `Robert Erdin`_
 - `Russel Winder`_
 - `Ryan Walmsley`_
@@ -181,6 +185,7 @@ See the `contributors page`_ on GitHub for more info.
 .. _Alex Eames: https://github.com/gpiozero/gpiozero/commits?author=raspitv
 .. _Andrew Scheller: https://github.com/gpiozero/gpiozero/commits?author=lurch
 .. _Barry Byford: https://github.com/gpiozero/gpiozero/commits?author=ukBaz
+.. _Cameron Davidson-Pilon: https://github.com/gpiozero/gpiozero/commits?author=CamDavidsonPilon
 .. _Carl Monk: https://github.com/gpiozero/gpiozero/commits?author=ForToffee
 .. _Chris R: https://github.com/gpiozero/gpiozero/commits?author=chrisruk
 .. _Claire Pollard: https://github.com/gpiozero/gpiozero/commits?author=tuftii
@@ -193,7 +198,9 @@ See the `contributors page`_ on GitHub for more info.
 .. _Delcio Torres: https://github.com/gpiozero/gpiozero/commits?author=delciotorres
 .. _Edward Betts: https://github.com/gpiozero/gpiozero/commits?author=edwardbetts
 .. _Fatih Sarhan: https://github.com/gpiozero/gpiozero/commits?author=f9n
+.. _Fangchen Li: https://github.com/gpiozero/gpiozero/commits?author=fangchenli
 .. _G.S.: https://github.com/gpiozero/gpiozero/commits?author=gszy
+.. _gnicki: https://github.com/gpiozero/gpiozero/commits?author=gnicki2000
 .. _Ian Harcombe: https://github.com/gpiozero/gpiozero/commits?author=MrHarcombe
 .. _Jack Wearden: https://github.com/gpiozero/gpiozero/commits?author=NotBobTheBuilder
 .. _Jeevan M R: https://github.com/gpiozero/gpiozero/commits?author=jee1mr
@@ -209,6 +216,7 @@ See the `contributors page`_ on GitHub for more info.
 .. _Phil Howard: https://github.com/gpiozero/gpiozero/commits?author=Gadgetoid
 .. _Philippe Muller: https://github.com/gpiozero/gpiozero/commits?author=pmuller
 .. _Rick Ansell: https://github.com/gpiozero/gpiozero/commits?author=ricksbt
+.. _Rimas Misevičius: https://github.com/gpiozero/gpiozero/commits?author=rmisev
 .. _Robert Erdin: https://github.com/gpiozero/gpiozero/commits?author=roberterdin
 .. _Russel Winder: https://github.com/russel
 .. _Ryan Walmsley: https://github.com/gpiozero/gpiozero/commits?author=ryanteck
