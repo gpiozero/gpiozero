@@ -2,8 +2,8 @@
 gpiozero
 ========
 
-A simple interface to GPIO devices with `Raspberry Pi`_, developed and maintained
-by `Ben Nuttall`_ and `Dave Jones`_.
+A simple interface to GPIO devices with `Raspberry Pi`_, developed and
+maintained by `Ben Nuttall`_ and `Dave Jones`_.
 
 .. _Raspberry Pi: https://www.raspberrypi.org/
 .. _Ben Nuttall: https://github.com/bennuttall
@@ -122,14 +122,6 @@ Forums`_.
 .. _GitHub discussion board: https://github.com/gpiozero/gpiozero/discussions
 .. _Raspberry Pi Stack Exchange: https://raspberrypi.stackexchange.com/
 .. _Raspberry Pi Forums: https://www.raspberrypi.org/forums/
-
-Python 2 support
-================
-
-.. warning::
-
-    GPIO Zero 1.6.x is the last to support Python 2. GPIO Zero 2.x will support
-    Python 3 only.
 
 Contributors
 ============
