@@ -10,22 +10,40 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  test:
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        include:
+          - os: ubuntu-20.04
+            python: 3.9
+            experimental: false
+          - os: ubuntu-20.04
+            python: 3.10
+            experimental: false
+          - os: ubuntu-22.04
+            python: 3.11
+            experimental: false
+          - os: ubuntu-22.04
+            python: 3.12
+            experimental: true
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - name: Install Python ${{ matrix.python }}
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ matrix.python }}
+
+    - name: Checkout GPIO Zero
+      uses: actions/checkout@v4
+
     - name: Install dependencies
       run: |
         make develop
+
     - name: Run tests
       run: |
-        make test
+        pytest -v -k 'not test_real_pins.py'
