@@ -16,17 +16,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-20.04
-            python: 3.9
+            python: "3.9"
             experimental: false
           - os: ubuntu-20.04
-            python: 3.10
+            python: "3.10"
             experimental: false
           - os: ubuntu-22.04
-            python: 3.11
+            python: "3.11"
             experimental: false
-          - os: ubuntu-22.04
-            python: 3.12
-            experimental: true
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
