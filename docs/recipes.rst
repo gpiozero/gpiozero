@@ -390,23 +390,25 @@ Rotary encoder
     but this same circuit will work equally well with this commonly available
     `illuminated rotary encoder`_ instead.
 
-Have a rotary encoder, an RGB LED, and button act as a color picker.
+Have a :class:`RotaryEncoder`, an :class:`RGBLED`, and :class:`Button` act as a
+color picker:
 
 .. literalinclude:: examples/color_picker.py
 
 Servo
 =====
 
-Control a servo between its minimum, mid-point and maximum positions in
-sequence:
+Control a :class:`Servo` between its minimum, mid-point and maximum positions
+in sequence:
 
 .. literalinclude:: examples/servo_1.py
 
-Use a button to control the servo between its minimum and maximum positions:
+Use a button to control the :class:`Servo` between its minimum and maximum
+positions:
 
 .. literalinclude:: examples/servo_2.py
 
-Automate the servo to continuously slowly sweep:
+Automate the :class:`Servo` to continuously slowly sweep:
 
 .. literalinclude:: examples/servo_sweep.py
 
@@ -432,8 +434,8 @@ Make a :class:`Robot` drive around in (roughly) a square:
 
 .. literalinclude:: examples/robot_1.py
 
-Make a robot with a distance sensor that runs away when things get within
-20cm of it:
+Make a :class:`Robot` with a :class:`DistanceSensor` that runs away when things
+get within 20cm of it:
 
 .. literalinclude:: examples/robot_2.py
 
@@ -442,7 +444,7 @@ Button controlled robot
 
 .. image:: images/button_robot_bb.*
 
-Use four GPIO buttons as forward/back/left/right controls for a robot:
+Use four GPIO buttons as forward/back/left/right controls for a :class:`Robot`:
 
 .. literalinclude:: examples/robot_buttons_1.py
 
@@ -451,7 +453,7 @@ Keyboard controlled robot
 
 .. image:: images/robot_bb.*
 
-Use up/down/left/right keys to control a robot:
+Use up/down/left/right keys to control a :class:`Robot`:
 
 .. literalinclude:: examples/robot_keyboard_1.py
 
