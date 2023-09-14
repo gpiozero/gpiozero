@@ -60,7 +60,7 @@ BPLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8     {style:black on white}+===={style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}        {style:black on white}| USB{style:reset}
 {style:white on green}|                             {style:black on white}+===={style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}         |{style:reset}
+{style:white on green}| {RUN:{style} rev col1}{style:white on green} RUN{style:bold}  Pi Model {model:4s}V{pcb_revision:3s}{style:normal}      |{style:reset}
 {style:white on green}| {style:on black}|D{style:on green}      {style:on black}+---+{style:on green}               {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|{style:black on white}S{style:white on green}      {style:on black}|SoC|{style:on green}               {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|{style:black on white}I{style:white on green}      {style:on black}+---+{style:on green}               {style:black on white}+===={style:reset}
