@@ -23,6 +23,7 @@ Release 2.0 (2023-09-12)
   second place preference
 * Added :doc:`compat` chapter
 * Added :program:`pintest` utility
+* Added Raspberry Pi 5 board data
 
 .. _#799: https://github.com/gpiozero/gpiozero/issues/799
 .. _#896: https://github.com/gpiozero/gpiozero/issues/896

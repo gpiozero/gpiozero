@@ -100,6 +100,21 @@ B4_BOARD = """\
 {style:white on green}| {style:black on white}pwr{style:white on green}   {style:black on white}|hd|{style:white on green}   {style:black on white}|hd|{style:white on green} {style:on black}0|{style:on green} {style:on black}|u|{style:on green}    {style:black on white}+===={style:reset}
 {style:white on green}`-{style:black on white}| |{style:white on green}---{style:black on white}|m0|{style:white on green}---{style:black on white}|m1|{style:white on green}----{style:on black}|x|{style:on green}-------'{style:reset}"""
 
+B5_BOARD = """\
+{style:white on green},--------------------------------.{style:reset}
+{style:white on green}| {J8:{style} col2}{style:white on green} J8   {style:black on white}:{style:on green} {style:on white}+===={style:reset}
+{style:white on green}| {J8:{style} col1}{style:white on green}      {style:black on white}:{style:on green} {style:on white}|USB2{style:reset}
+{style:white on green}| {style:black on white} Wi {style:white on green} {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}  fan {style:black on white}+===={style:reset}
+{style:white on green}| {style:black on white} Fi {style:white on green}    {style:on black}+---+{style:on green}      {style:on black}+---+{style:on green}       |{style:reset}
+{style:white on green}|         {style:on black}|RAM|{style:on green}      {style:on black}|RP1|{style:on green}    {style:blue on white}+===={style:reset}
+{style:white on green}|{style:black on yellow}|p{style:white on green}       {style:on black}+---+{style:on green}      {style:on black}+---+{style:on green}    {style:blue on white}|USB3{style:reset}
+{style:white on green}|{style:black on yellow}|{style:on white}c{style:white on green}      {style:black on white}-------{style:white on green}              {style:blue on white}+===={style:reset}
+{style:white on green}|{style:black on yellow}|i{style:white on green}      {style:black on white}  SoC  {style:white on green}    {style:black on yellow}|c|c{style:white on green} J14     |{style:reset}
+{style:bold white on green}({style:normal}        {style:black on white}-------{style:white on green}  J7{style:black on yellow}|{style:on white}s{style:on yellow}|{style:on white}s{style:white on green} {J14:{style} row1}{style:on green} {style:black on white}+======{style:reset}
+{style:white on green}|  J2 bat   uart   {J7:{style} row1}{style:black on yellow}|{style:on white}i{style:on yellow}|{style:on white}i{style:white on green} {J14:{style} row2}{style:on green} {style:black on white}|   Net{style:reset}
+{style:white on green}| {style:black on white}pwr{style:white on green}\\{style:black on white}..|hd|...|hd|{style:white on green}{J7:{style} row2}{style:black on yellow}|1|0{style:white on green}    {style:black on white}+======{style:reset}
+{style:white on green}`-{style:black on white}| |{style:white on green}-{J2:{style} col1}{style:black on white}|m0|{style:white on green}---{style:black on white}|m1|{style:white on green}--------------'{style:reset}"""
+
 APLUS_BOARD = """\
 {style:white on green},--------------------------.{style:reset}
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
@@ -505,6 +520,16 @@ PI4_J2 = (3, 1, {
 })
 
 PI4_J14 = PLUS_POE
+
+PI5_J2 = (2, 1, {
+    1: {'': 'RUN'},
+    2: GND,
+})
+
+PI5_J7 = (2, 1, {
+    1: {'': 'COMPOSITE'},
+    2: GND,
+})
 
 CM_SODIMM = (100, 2, {
     1:   GND,                    2:   {'': 'EMMC DISABLE N'},
