@@ -30,7 +30,7 @@ version = release
 
 # -- General configuration ------------------------------------------------
 
-needs_sphinx = '1.4.0'
+needs_sphinx = '4.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
