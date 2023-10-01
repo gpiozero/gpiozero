@@ -7,7 +7,7 @@ python:
     - method: pip
       path: .
       extra_requirements:
-        - docs
+        - doc
 
 build:
   os: ubuntu-22.04
