@@ -40,6 +40,7 @@ extensions = [
 if on_rtd:
     tags.add('rtd')
 
+root_doc = 'index'
 templates_path = ['_templates']
 exclude_patterns = ['_build']
 highlight_language = 'python3'
