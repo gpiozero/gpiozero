@@ -40,7 +40,7 @@ class InputDevice(GPIODevice):
     Represents a generic GPIO input device.
 
     This class extends :class:`GPIODevice` to add facilities common to GPIO
-    input devices.  The constructor adds the optional *pull_up* parameter to
+    input devices. The constructor adds the optional *pull_up* parameter to
     specify how the pin should be pulled by the internal resistors. The
     :attr:`is_active` property is adjusted accordingly so that :data:`True`
     still means active regardless of the *pull_up* setting.
@@ -65,9 +65,11 @@ class InputDevice(GPIODevice):
         pin is ``HIGH``. If :data:`False`, the input polarity is reversed: when
         the hardware pin state is ``HIGH``, the software pin state is ``LOW``.
         Use this parameter to set the active state of the underlying pin when
-        configuring it as not pulled (when *pull_up* is :data:`None`). When
-        *pull_up* is :data:`True` or :data:`False`, the active state is
-        automatically set to the proper value.
+        configuring it as not pulled (when *pull_up* is :data:`None`) or when
+        you deliberately want to override what is considered the active state.
+        When *pull_up* is :data:`True` or :data:`False` and this parameter is
+        :data:`None`, the active state is by default set to :data:`False` and
+        :data:`True` respectively.
 
     :type pin_factory: Factory or None
     :param pin_factory:
@@ -93,11 +95,8 @@ class InputDevice(GPIODevice):
                     f'"active_state" is not defined')
             self._active_state = bool(active_state)
         else:
-            if active_state is not None:
-                raise PinInvalidState(
-                    f'Pin {self.pin.info.name} is not floating, but '
-                    f'"active_state" is not None')
-            self._active_state = False if pull_up else True
+            self._active_state = not pull_up if active_state is None else bool(active_state)
+
         self._inactive_state = not self._active_state
 
     @property
@@ -357,6 +356,12 @@ class Button(HoldMixin, DigitalInputDevice):
     pin. Alternatively, connect one side of the button to the 3V3 pin, and the
     other to any GPIO pin, then set *pull_up* to :data:`False` in the
     :class:`Button` constructor.
+
+    The defaults are tuned to normally-open buttons and switches (i.e. switch
+    contact shorts when pressed, and is open circuit when released). If you have
+    a normally-closed button (switch contact opens when pressed, but shorts when
+    not pressed), you can additionally adjust *active_state* to the same value
+    as *pull_up*.
 
     The following example will print a line of text when the button is pushed::
 

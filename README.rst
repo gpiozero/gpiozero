@@ -204,6 +204,7 @@ See the `contributors page`_ on GitHub for more info.
 .. _Martchus: https://github.com/gpiozero/gpiozero/commits?author=Martchus
 .. _Martin O'Hanlon: https://github.com/martinohanlon/commits?author=martinohanlon
 .. _Mike Kazantsev: https://github.com/gpiozero/gpiozero/commits?author=mk-fg
+.. _Mischa Krüger: https://github.com/gpiozero/gpiozero/commits?author=Makman2
 .. _Paulo Mateus: https://github.com/gpiozero/gpiozero/commits?author=SrMouraSilva
 .. _Phil Howard: https://github.com/gpiozero/gpiozero/commits?author=Gadgetoid
 .. _Philippe Muller: https://github.com/gpiozero/gpiozero/commits?author=pmuller

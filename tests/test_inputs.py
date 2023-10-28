@@ -86,10 +86,31 @@ def test_input_invalid_pull_up(mock_factory):
         InputDevice(4, pull_up=None)
     assert str(exc.value) == 'Pin GPIO4 is defined as floating, but "active_state" is not defined'
 
-def test_input_invalid_active_state(mock_factory):
-    with pytest.raises(PinInvalidState) as exc:
-        InputDevice(4, active_state=True)
-    assert str(exc.value) == 'Pin GPIO4 is not floating, but "active_state" is not None'
+@pytest.mark.parametrize('pull_up,active_state,active_if_driven_high', [
+    (False, False, False),
+    (False, True, True),
+    (True, False, False),
+    (True, True, True),
+])
+def test_input_pull_up_down_with_non_default_active_state(pull_up, active_state, active_if_driven_high, mock_factory):
+    pin = mock_factory.pin(4)
+    device = InputDevice(4, pull_up=pull_up, active_state=active_state)
+    pin.drive_high()
+    assert device.is_active == active_if_driven_high
+    pin.drive_low()
+    assert device.is_active != active_if_driven_high
+
+@pytest.mark.parametrize('pull_up,active_if_driven_high', [
+    (False, True),
+    (True, False),
+])
+def test_input_pull_up_down_with_default_active_state(pull_up, active_if_driven_high, mock_factory):
+    pin = mock_factory.pin(4)
+    device = InputDevice(4, pull_up=pull_up)
+    pin.drive_high()
+    assert device.is_active == active_if_driven_high
+    pin.drive_low()
+    assert device.is_active != active_if_driven_high
 
 def test_input_event_activated(mock_factory):
     event = Event()
