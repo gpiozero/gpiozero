@@ -99,7 +99,7 @@ Now when we run the script it produces the following:
         warnings.warn(
     DeprecationWarning: PinInfo.pull_up is deprecated; please use PinInfo.pull
 
-This tells us that line 10 of our script is using deprecated functionality, and
+This tells us that line 9 of our script is using deprecated functionality, and
 provides a hint of how to fix it. We change line 9 to use the "pull" attribute
 instead. Now we run again, and this time get the following:
 
