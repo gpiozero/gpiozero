@@ -1,9 +1,12 @@
 # Python stuff
 *.py[cdo]
+.venv
 
 # Editor detritus
 *.vim
 *.swp
+.vscode
+*.code-workspace
 tags
 
 # Packaging detritus
@@ -21,3 +24,6 @@ coverage
 .cache
 .pytest_cache
 .mypy_cache
+
+# Background docs preview
+nohup.out

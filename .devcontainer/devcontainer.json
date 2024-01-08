@@ -1,0 +1,39 @@
+{
+    "name": "gpiozero",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            // PYVERSION 3 (default) will be obtained via apt
+            // Setting specific PYVERSION (not 3) will build from source
+            // "PYVERSION": "3.12",
+            "DEBIAN": "bookworm" // 3.11
+            // "DEBIAN": "bullseye" // 3.9
+            // "DEBIAN": "buster" // 3.7
+        }
+    },
+
+    "forwardPorts": [8000],
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": ".devcontainer/.venv/bin/python3",
+                "python.testing.pytestEnabled": true,
+                "terminal.integrated.defaultProfile.linux": "bash", 
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/usr/bin/bash"
+                    }
+                }
+            }
+        }
+    },
+
+    "postCreateCommand": ".devcontainer/postcreate.sh",
+    "postStartCommand": "nohup bash -c '. .devcontainer/.venv/bin/activate && make preview &'",
+    "postAttachCommand": ". .devcontainer/.venv/bin/activate"
+}

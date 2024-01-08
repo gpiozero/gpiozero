@@ -93,6 +93,16 @@ To remove your installation, destroy the sandbox and the clone:
     $ rmvirtualenv gpiozero
     $ rm -rf ~/gpiozero
 
+If you prefer, there is also a devcontainer and associated Dockerfile which 
+will create a minimal debian installation with the required packages to code 
+and test gpiozero and to build and preview the docs. It is worth checking the 
+section on :ref:`mock-pins` in the :doc:`api_pins` chapter for guidance on 
+working without a Pi. The docs will be built and a previewer started on 
+localhost:8000 when you start the container.
+This environment is provided for those who are used to coding this way, to save 
+you the effort of setting it up yourself. It is not recommended as a starting 
+point.
+
 
 Building the docs
 =================
