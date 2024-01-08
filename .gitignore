@@ -5,6 +5,7 @@
 # Editor detritus
 *.vim
 *.swp
+.vscode
 tags
 
 # Packaging detritus
