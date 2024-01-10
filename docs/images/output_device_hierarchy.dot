@@ -1,0 +1,35 @@
+digraph classes {
+    graph [rankdir=RL];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+
+    CompositeDevice;
+    Device;
+    GPIODevice;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+
+    AngularServo->Servo;
+    Buzzer->DigitalOutputDevice;
+    CompositeDevice->Device;
+    DigitalOutputDevice->OutputDevice;
+    GPIODevice->Device;
+    LED->DigitalOutputDevice;
+    Motor->CompositeDevice;
+    OutputDevice->GPIODevice;
+    PWMLED->PWMOutputDevice;
+    PWMOutputDevice->OutputDevice;
+    PhaseEnableMotor->CompositeDevice;
+    RGBLED->Device;
+    Servo->CompositeDevice;
+    TonalBuzzer->CompositeDevice;
+}

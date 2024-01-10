@@ -35,8 +35,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3 -m pip install -r requirements.txt
+        make develop
 
     - name: Run tests
       run: |
-        pytest
+        pytest -v -k 'not test_real_pins.py'

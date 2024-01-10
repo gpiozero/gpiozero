@@ -1,0 +1,18 @@
+/* vim: set et sw=4 sts=4: */
+
+digraph {
+    graph [rankdir=RL];
+    edge [arrowhead=normal, style=solid];
+
+    /* Devices */
+    node [shape=rect, style=filled, color="#2980b9", fontname=Arial, fontcolor="#ffffff", fontsize=10];
+
+    pwmled [label="PWM LED"]
+
+    /* functions */
+    node [shape=oval, style=filled, color="#9ec6e0", fontcolor="#ffffff"];
+
+    random_values
+
+    random_values -> pwmled;
+}

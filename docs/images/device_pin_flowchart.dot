@@ -1,0 +1,24 @@
+/* vim: set et sw=4 sts=4: */
+
+digraph device_pins {
+    graph [rankdir=TB];
+    node [shape=rect, style=filled, color="#660033", fontname=Arial, fontcolor="#ffffff", fontsize=10];
+    edge [fontname=Arial, fontsize=10];
+
+    constructor [label="LED(pin_spec, ...,\npin_factory=None)"];
+    pin_factory_kwarg [shape=diamond,label="pin_factory\nis None?"];
+    device_pin_factory [shape=diamond,label="Device.pin_factory\nis None?"];
+    set_default_factory [label="Device.pin_factory =\nDevice._default_pin_factory()"];
+    get_default_factory [label="self.pin_factory =\nDevice.pin_factory"];
+    override_factory [label="self.pin_factory =\npin_factory"];
+    factory_pin [label="self.pin =\nself.pin_factory.pin(pin_spec)"];
+
+    constructor->pin_factory_kwarg;
+    pin_factory_kwarg->device_pin_factory [label="yes"];
+    pin_factory_kwarg->override_factory [label="no"];
+    device_pin_factory->set_default_factory [label="yes"];
+    device_pin_factory->get_default_factory [label="no"];
+    set_default_factory->get_default_factory;
+    get_default_factory->factory_pin;
+    override_factory->factory_pin;
+}

@@ -1,0 +1,134 @@
+digraph classes {
+    graph [rankdir=RL];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    EventsMixin;
+    HoldMixin;
+    SharedMixin;
+    SourceMixin;
+    ValuesMixin;
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+
+    AnalogInputDevice;
+    CompositeDevice;
+    CompositeOutputDevice;
+    Device;
+    GPIODevice;
+    InternalDevice;
+    LEDCollection;
+    MCP30xx;
+    MCP32xx;
+    MCP33xx;
+    MCP3xx2;
+    MCP3xxx;
+    SPIDevice;
+    SmoothedInputDevice;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+
+    AnalogInputDevice->SPIDevice;
+    AngularServo->Servo;
+    Button->DigitalInputDevice;
+    Button->HoldMixin;
+    ButtonBoard->CompositeDevice;
+    ButtonBoard->HoldMixin;
+    Buzzer->DigitalOutputDevice;
+    CPUTemperature->PolledInternalDevice;
+    CamJamKitRobot->Robot;
+    CompositeDevice->Device;
+    CompositeOutputDevice->CompositeDevice;
+    CompositeOutputDevice->SourceMixin;
+    Device->ValuesMixin;
+    DigitalInputDevice->EventsMixin;
+    DigitalInputDevice->InputDevice;
+    DigitalOutputDevice->OutputDevice;
+    DiskUsage->PolledInternalDevice;
+    DistanceSensor->SmoothedInputDevice;
+    Energenie->Device;
+    Energenie->SourceMixin;
+    FishDish->CompositeOutputDevice;
+    GPIODevice->Device;
+    HoldMixin->EventsMixin;
+    InputDevice->GPIODevice;
+    InternalDevice->Device;
+    InternalDevice->EventsMixin;
+    JamHat->CompositeOutputDevice;
+    LED->DigitalOutputDevice;
+    LEDBarGraph->LEDCollection;
+    LEDBoard->LEDCollection;
+    LEDCharDisplay->LEDCollection;
+    LEDCollection->CompositeOutputDevice;
+    LEDMultiCharDisplay->CompositeOutputDevice;
+    LedBorg->RGBLED;
+    LightSensor->SmoothedInputDevice;
+    LineSensor->SmoothedInputDevice;
+    LoadAverage->PolledInternalDevice;
+    MCP3001->MCP30xx;
+    MCP3002->MCP30xx;
+    MCP3002->MCP3xx2;
+    MCP3004->MCP30xx;
+    MCP3008->MCP30xx;
+    MCP30xx->MCP3xxx;
+    MCP3201->MCP32xx;
+    MCP3202->MCP32xx;
+    MCP3202->MCP3xx2;
+    MCP3204->MCP32xx;
+    MCP3208->MCP32xx;
+    MCP32xx->MCP3xxx;
+    MCP3301->MCP33xx;
+    MCP3302->MCP33xx;
+    MCP3304->MCP33xx;
+    MCP33xx->MCP3xxx;
+    MCP3xx2->MCP3xxx;
+    MCP3xxx->AnalogInputDevice;
+    MotionSensor->SmoothedInputDevice;
+    Motor->CompositeDevice;
+    Motor->SourceMixin;
+    OutputDevice->GPIODevice;
+    OutputDevice->SourceMixin;
+    PWMLED->PWMOutputDevice;
+    PWMOutputDevice->OutputDevice;
+    PhaseEnableMotor->CompositeDevice;
+    PhaseEnableMotor->SourceMixin;
+    PhaseEnableRobot->CompositeDevice;
+    PhaseEnableRobot->SourceMixin;
+    PiHutXmasTree->LEDBoard;
+    PiLiter->LEDBoard;
+    PiLiterBarGraph->LEDBarGraph;
+    PiStop->TrafficLights;
+    PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
+    PingServer->PolledInternalDevice;
+    PolledInternalDevice->InternalDevice;
+    PololuDRV8835Robot->PhaseEnableRobot;
+    PumpkinPi->LEDBoard;
+    RGBLED->Device;
+    RGBLED->SourceMixin;
+    Robot->CompositeDevice;
+    Robot->SourceMixin;
+    RotaryEncoder->CompositeDevice;
+    RotaryEncoder->EventsMixin;
+    RyanteckRobot->Robot;
+    SPIDevice->Device;
+    Servo->CompositeDevice;
+    Servo->SourceMixin;
+    SmoothedInputDevice->EventsMixin;
+    SmoothedInputDevice->InputDevice;
+    SnowPi->LEDBoard;
+    StatusBoard->CompositeOutputDevice;
+    StatusZero->LEDBoard;
+    TimeOfDay->PolledInternalDevice;
+    TonalBuzzer->CompositeDevice;
+    TonalBuzzer->SourceMixin;
+    TrafficHat->CompositeOutputDevice;
+    TrafficLights->LEDBoard;
+    TrafficLightsBuzzer->CompositeOutputDevice;
+    TrafficpHat->TrafficLights;
+}

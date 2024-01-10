@@ -1,0 +1,9 @@
+/* vim: set et sw=4 sts=4: */
+
+digraph {
+    graph [rankdir=RL];
+    node [shape=rect, style=filled, color="#2980b9", fontname=Arial, fontcolor="#ffffff", fontsize=10];
+    edge [arrowhead=normal, style=solid];
+
+    Button -> LED;
+}

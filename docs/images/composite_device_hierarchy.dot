@@ -1,0 +1,58 @@
+digraph classes {
+    graph [rankdir=RL];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    EventsMixin;
+    HoldMixin;
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+
+    CompositeDevice;
+    CompositeOutputDevice;
+    Device;
+    LEDCollection;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+
+    ButtonBoard->CompositeDevice;
+    ButtonBoard->HoldMixin;
+    CamJamKitRobot->Robot;
+    CompositeDevice->Device;
+    CompositeOutputDevice->CompositeDevice;
+    Energenie->Device;
+    FishDish->CompositeOutputDevice;
+    HoldMixin->EventsMixin;
+    JamHat->CompositeOutputDevice;
+    LEDBarGraph->LEDCollection;
+    LEDBoard->LEDCollection;
+    LEDCharDisplay->LEDCollection;
+    LEDCollection->CompositeOutputDevice;
+    LEDMultiCharDisplay->CompositeOutputDevice;
+    PhaseEnableRobot->CompositeDevice;
+    PiHutXmasTree->LEDBoard;
+    PiLiter->LEDBoard;
+    PiLiterBarGraph->LEDBarGraph;
+    PiStop->TrafficLights;
+    PiTraffic->TrafficLights;
+    Pibrella->CompositeOutputDevice;
+    PololuDRV8835Robot->PhaseEnableRobot;
+    PumpkinPi->LEDBoard;
+    Robot->CompositeDevice;
+    RotaryEncoder->CompositeDevice;
+    RotaryEncoder->EventsMixin;
+    RyanteckRobot->Robot;
+    SnowPi->LEDBoard;
+    StatusBoard->CompositeOutputDevice;
+    StatusZero->LEDBoard;
+    TonalBuzzer->CompositeDevice;
+    TrafficHat->CompositeOutputDevice;
+    TrafficLights->LEDBoard;
+    TrafficLightsBuzzer->CompositeOutputDevice;
+    TrafficpHat->TrafficLights;
+}

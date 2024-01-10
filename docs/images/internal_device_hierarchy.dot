@@ -1,0 +1,27 @@
+digraph classes {
+    graph [rankdir=RL];
+    node [shape=rect, style=filled, fontname=Sans, fontsize=10];
+    edge [];
+
+    /* Mixin classes */
+    node [color="#c69ee0", fontcolor="#000000"]
+
+    
+
+    /* Abstract classes */
+    node [color="#9ec6e0", fontcolor="#000000"]
+
+    Device;
+    InternalDevice;
+
+    /* Concrete classes */
+    node [color="#2980b9", fontcolor="#ffffff"];
+
+    CPUTemperature->PolledInternalDevice;
+    DiskUsage->PolledInternalDevice;
+    InternalDevice->Device;
+    LoadAverage->PolledInternalDevice;
+    PingServer->PolledInternalDevice;
+    PolledInternalDevice->InternalDevice;
+    TimeOfDay->PolledInternalDevice;
+}
