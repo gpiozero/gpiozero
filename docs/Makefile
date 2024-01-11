@@ -118,7 +118,7 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 preview:
-	../scripts/previewer $(BUILDDIR)/html
+	python ../scripts/previewer $(BUILDDIR)/html
 
 images/device_hierarchy.dot: $(PY_SOURCES)
 	../scripts/class_graph \
