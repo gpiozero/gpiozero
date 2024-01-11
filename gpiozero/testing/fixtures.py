@@ -26,6 +26,8 @@ def mock_factory(request):
 
     .. code-block:: python
 
+        from gpiozero.testing import mock_factory
+
         test_mockedpin(mock_factory)
             pin16 = mock_factory.pin(16)
             ...
@@ -47,7 +49,7 @@ def mock_factory(request):
 @pytest.fixture()
 def pwm(request, mock_factory):
     """
-    pytest fixture which extends :function:`mock_factory`. Default
-    `pin_class` is set to `MockPWMPin`
+    pytest fixture which extends :func:`mock_factory`. Default
+    :attr:`pin_class` is set to `MockPWMPin`
     """
     mock_factory.pin_class = MockPWMPin
