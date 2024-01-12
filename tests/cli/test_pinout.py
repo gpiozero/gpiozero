@@ -39,7 +39,7 @@ def test_help(capsys):
     out, err = capsys.readouterr()
     assert 'GPIO pin-out' in out
 
-@pytest.mark.xfail(condition=python_version>3.11, reason='Dict interface to entry_points() deprecated in 3.12', strict=True)
+# @pytest.mark.xfail(condition=python_version>3.11, reason='Dict interface to entry_points() deprecated in 3.12', strict=True)
 def test_execution(capsys, no_default_factory):
     os.environ['GPIOZERO_PIN_FACTORY'] = 'mock'
     assert main([]) == 0

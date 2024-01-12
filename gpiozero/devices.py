@@ -304,7 +304,7 @@ class Device(ValuesMixin, GPIOBase):
                 # The dict interface of entry_points is deprecated ... already
                 # and this deprecation is for us to worry about, not our users
                 warnings.simplefilter('ignore', category=DeprecationWarning)
-                group = entry_points()['gpiozero_pin_factories']
+                group = entry_points(group='gpiozero_pin_factories')
             for ep in group:
                 if ep.name == name:
                     return ep.load()()
