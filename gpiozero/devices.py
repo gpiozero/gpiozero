@@ -16,7 +16,6 @@ import warnings
 from collections import namedtuple
 from itertools import chain
 from types import FunctionType
-from importlib.metadata import entry_points
 
 from .threads import _threads_shutdown
 from .mixins import (
@@ -34,6 +33,8 @@ from .exc import (
     NativePinFactoryFallback,
     PinFactoryFallback,
 )
+
+from .ep import PinFactory_entry_points
 
 from .compat import frozendict
 
@@ -304,11 +305,10 @@ class Device(ValuesMixin, GPIOBase):
                 # The dict interface of entry_points is deprecated ... already
                 # and this deprecation is for us to worry about, not our users
                 warnings.simplefilter('ignore', category=DeprecationWarning)
-                group = entry_points(group='gpiozero_pin_factories')
-            for ep in group:
+            for ep in PinFactory_entry_points:
                 if ep.name == name:
                     return ep.load()()
-            for ep in group:
+            for ep in PinFactory_entry_points:
                 if ep.name == name.lower():
                     return ep.load()()
             raise BadPinFactory(f'Unable to find pin factory {name!r}')
