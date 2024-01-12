@@ -7,13 +7,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import sys
-import pytest
 import warnings
 from threading import Event, Thread
 
-from gpiozero import Device
-from gpiozero.pins.mock import MockFactory, MockPWMPin
-
+# Safe to import * as we are specifically defining __ALL__ in testing/__init__.py
+# This makes fixtures defined in testing available as if they were defined here.
+from gpiozero.testing import *
 
 # NOTE: Work-around for python versions <3.4: in these versions the
 # resetwarnings function in the warnings module doesn't do much (or doesn't do
@@ -24,34 +23,6 @@ from gpiozero.pins.mock import MockFactory, MockPWMPin
 # catch_warnings()
 if sys.version_info[:2] < (3, 4):
     warnings.simplefilter('always')
-
-@pytest.fixture()
-def no_default_factory(request):
-    save_pin_factory = Device.pin_factory
-    Device.pin_factory = None
-    try:
-        yield None
-    finally:
-        Device.pin_factory = save_pin_factory
-
-@pytest.fixture(scope='function')
-def mock_factory(request):
-    save_factory = Device.pin_factory
-    Device.pin_factory = MockFactory()
-    try:
-        yield Device.pin_factory
-        # This reset() may seem redundant given we're re-constructing the
-        # factory for each function that requires it but MockFactory (via
-        # LocalFactory) stores some info at the class level which reset()
-        # clears.
-    finally:
-        if Device.pin_factory is not None:
-            Device.pin_factory.reset()
-        Device.pin_factory = save_factory
-
-@pytest.fixture()
-def pwm(request, mock_factory):
-    mock_factory.pin_class = MockPWMPin
 
 class ThreadedTest(Thread):
     def __init__(self, test_fn, *args, **kwargs):
