@@ -40,3 +40,6 @@ jobs:
     - name: Run tests
       run: |
         pytest -v -k 'not test_real_pins.py'
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
