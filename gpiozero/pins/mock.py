@@ -15,6 +15,8 @@ from threading import Thread, Event
 from math import isclose
 from importlib.metadata import entry_points
 
+from gpiozero.ep import MockPinClass_entry_points
+
 from ..exc import (
     PinPWMUnsupported,
     PinSetInput,
@@ -463,7 +465,7 @@ class MockFactory(PiFactory):
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
-            group = entry_points()['gpiozero_mock_pin_classes']
+            group = MockPinClass_entry_points
             #TODO BUG this fails on python 3.9 with
             # TypeError: tuple indices must be integers or slices, not str
             pin_class = group[pin_class.lower()].load()
