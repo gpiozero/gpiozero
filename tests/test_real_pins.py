@@ -19,6 +19,7 @@ from importlib.metadata import entry_points
 import pytest
 
 from gpiozero import *
+from gpiozero.ep import PinFactory_entry_points
 from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
@@ -56,7 +57,7 @@ with warnings.catch_warnings():
     warnings.simplefilter('ignore', category=DeprecationWarning)
     @pytest.fixture(
         scope='module',
-        params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
+        params=[ep.name for ep in PinFactory_entry_points])
     def pin_factory_name(request):
         return request.param
 
@@ -67,8 +68,7 @@ def pin_factory(request, pin_factory_name):
         with warnings.catch_warnings():
             # The dict interface of entry_points is deprecated ... already
             warnings.simplefilter('ignore', category=DeprecationWarning)
-            eps = entry_points()['gpiozero_pin_factories']
-        for ep in eps:
+        for ep in PinFactory_entry_points:
             if ep.name == pin_factory_name:
                 factory = ep.load()()
                 break
@@ -280,8 +280,7 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             pin_factory_name=pin_factory_name, e=e))
     else:
         try:
-            group = entry_points()['gpiozero_pin_factories']
-            for ep in group:
+            for ep in PinFactory_entry_points:
                 if ep.name == pin_factory_name:
                     factory_class = ep.load()
                     break
