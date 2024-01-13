@@ -301,10 +301,6 @@ class Device(ValuesMixin, GPIOBase):
             # entry-point. Try with name verbatim first. If that fails, attempt
             # with the lower-cased name (this ensures compatibility names work
             # but we're still case insensitive for all factories)
-            with warnings.catch_warnings():
-                # The dict interface of entry_points is deprecated ... already
-                # and this deprecation is for us to worry about, not our users
-                warnings.simplefilter('ignore', category=DeprecationWarning)
             for ep in PinFactory_entry_points:
                 if ep.name == name:
                     return ep.load()()

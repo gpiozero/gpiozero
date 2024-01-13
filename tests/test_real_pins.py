@@ -53,8 +53,6 @@ def local_hardware_spi_only(intf):
 
 
 with warnings.catch_warnings():
-    # The dict interface of entry_points is deprecated ... already
-    warnings.simplefilter('ignore', category=DeprecationWarning)
     @pytest.fixture(
         scope='module',
         params=[ep.name for ep in PinFactory_entry_points])
@@ -65,9 +63,6 @@ with warnings.catch_warnings():
 @pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
-        with warnings.catch_warnings():
-            # The dict interface of entry_points is deprecated ... already
-            warnings.simplefilter('ignore', category=DeprecationWarning)
         for ep in PinFactory_entry_points:
             if ep.name == pin_factory_name:
                 factory = ep.load()()
@@ -268,8 +263,6 @@ def test_explicit_factory(no_default_factory, pin_factory):
         assert device.pin_factory is pin_factory
         assert device.pin.info.name == TEST_PIN
 
-
-@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_envvar_factory(no_default_factory, pin_factory_name):
     os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
     assert Device.pin_factory is None
