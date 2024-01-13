@@ -243,7 +243,7 @@ def test_override_pin_class(no_default_factory):
     pin16 = factory.pin(16)
     assert isinstance(pin16, MockTriggerPin)
 
-def test_override_pin_class(no_default_factory):
+def test_override_pin_class_capitalisation(no_default_factory):
     factory = MockFactory(pin_class='MockTriggerPin')
     pin16 = factory.pin(16)
     assert isinstance(pin16, MockTriggerPin)
