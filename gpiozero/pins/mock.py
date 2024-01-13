@@ -15,8 +15,6 @@ from threading import Thread, Event
 from math import isclose
 from importlib.metadata import entry_points
 
-from gpiozero.ep import MockPinClass_entry_points
-
 from ..exc import (
     PinPWMUnsupported,
     PinSetInput,
@@ -465,7 +463,7 @@ class MockFactory(PiFactory):
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
-            group = MockPinClass_entry_points
+            group = entry_points()['gpiozero_mock_pin_classes']
             pin_class = group[pin_class.lower()].load()
         if not issubclass(pin_class, MockPin):
             raise ValueError(f'invalid mock pin_class: {pin_class!r}')
