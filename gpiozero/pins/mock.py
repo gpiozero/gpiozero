@@ -466,9 +466,18 @@ class MockFactory(PiFactory):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
             group = MockPinClass_entry_points
-            #TODO BUG this fails on python 3.9 with
-            # TypeError: tuple indices must be integers or slices, not str
-            pin_class = group[pin_class.lower()].load()
+            try:
+                pin_class = group[pin_class.lower()].load()
+                # This fails on python 3.9 with
+                # TypeError: tuple indices must be integers or slices, not str
+            except TypeError:
+                # This is mega-hacky but works and is only needed for 3.9 and
+                # this is the only place we access a specific point by name.
+                #
+                # If we will support 3.9 for longer, then it's probably worth
+                # providing a helper function, or some kind of wrapper around
+                # entry_points to make life easier for others coding on top of us.  
+                pin_class = [c for c in group if c.name==pin_class.lower()][0].load()
         if not issubclass(pin_class, MockPin):
             raise ValueError(f'invalid mock pin_class: {pin_class!r}')
         self.pin_class = pin_class
