@@ -592,8 +592,20 @@ class TimeOfDay(PolledInternalDevice):
         midnight), then this returns :data:`1` when the current time is
         greater than :attr:`start_time` or less than :attr:`end_time`.
         """
+        # utcnow() raises a DeprecationWarning from Python 3.12 onwards.
+        #
+        # Doing anything other than filtering this is potentially dangerous
+        # and we really should look to update TimeOfDay to offer a TimeZone aware
+        # interface, raise DeprecationWarnings ourselves for those using the naive
+        # options, and then later remove the naive options as they provide hobby
+        # programmers with a high-potential source of error. Adding a timezone-aware
+        # recipe or two would deifnitely be a good idea when doing this.
+        #
+        # See Issue #1111
         if self.utc:
-            now = datetime.utcnow().time()
+            with warnings.catch_warnings(): #NOT Thread-Safe, but in use elsewhere.
+                warnings.simplefilter(action='ignore', category=DeprecationWarning)
+                now = datetime.utcnow().time()
         else:
             now = datetime.now().time()
         if self.start_time < self.end_time:
