@@ -244,4 +244,8 @@ def test_override_pin_class(no_default_factory):
     pin16 = factory.pin(16)
     assert isinstance(pin16, MockTriggerPin)
 
-#Test incorrect capitalisation
+@pytest.mark.xfail(condition=python_version<3.10, reason='need to fix for 3.9', strict=True)
+def test_override_pin_class(no_default_factory):
+    factory = MockFactory(pin_class='MockTriggerPin')
+    pin16 = factory.pin(16)
+    assert isinstance(pin16, MockTriggerPin)
