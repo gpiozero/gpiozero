@@ -236,3 +236,6 @@ def test_mock_charging_pin(mock_factory):
     pin.function = 'input'
     sleep(0.1)
     assert pin.state == 1
+
+def test_override_pin_class(no_default_factory):
+    factory = MockFactory(pin_class='mocktriggerpin')
