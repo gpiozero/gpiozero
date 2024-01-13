@@ -11,12 +11,13 @@ Provides access to the gpiozero entry points:
 
 from importlib.metadata import entry_points
 
-try: #dict interface deprecated in Python 3.12
-    PinFactory_entry_points = entry_points(group='gpiozero_pin_factories')
-except TypeError: #selectable entrypoints only available from Python 3.10
-    PinFactory_entry_points = entry_points()['gpiozero_pin_factories']
+#prefix _ will stop this being imported via from ep import * if anyone tries
+def _get_entry_points(group): 
+    try: #dict interface deprecated in Python 3.12
+        _entry_points = entry_points(group=group)
+    except TypeError: #selectable entrypoints only available from Python 3.10
+        _entry_points = entry_points()[group]
+    return _entry_points    
 
-try: #dict interface deprecated in Python 3.12
-    MockPinClass_entry_points = entry_points(group='gpiozero_mock_pin_classes')
-except TypeError: #selectable entrypoints only available from Python 3.10
-    MockPinClass_entry_points = entry_points()['gpiozero_mock_pin_classes']
+PinFactory_entry_points = _get_entry_points(group='gpiozero_pin_factories')
+MockPinClass_entry_points = _get_entry_points(group='gpiozero_mock_pin_classes')
