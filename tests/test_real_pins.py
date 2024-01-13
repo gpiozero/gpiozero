@@ -14,7 +14,6 @@ import warnings
 from time import time, sleep
 from math import isclose
 from unittest import mock
-from importlib.metadata import entry_points
 
 import pytest
 
