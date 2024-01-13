@@ -592,7 +592,10 @@ class TimeOfDay(PolledInternalDevice):
         midnight), then this returns :data:`1` when the current time is
         greater than :attr:`start_time` or less than :attr:`end_time`.
         """
-        now = datetime.utcnow().time() if self.utc else datetime.now().time()
+        if self.utc:
+            now = datetime.utcnow().time()
+        else:
+            now = datetime.now().time()
         if self.start_time < self.end_time:
             return int(self.start_time <= now <= self.end_time)
         else:
