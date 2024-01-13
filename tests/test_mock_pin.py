@@ -239,3 +239,6 @@ def test_mock_charging_pin(mock_factory):
 
 def test_override_pin_class(no_default_factory):
     factory = MockFactory(pin_class='mocktriggerpin')
+    #assert pin correctly instatiated
+
+#Test incorrect capitalisation
