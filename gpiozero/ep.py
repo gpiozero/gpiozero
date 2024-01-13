@@ -15,3 +15,8 @@ try: #dict interface deprecated in Python 3.12
     PinFactory_entry_points = entry_points(group='gpiozero_pin_factories')
 except TypeError: #selectable entrypoints only available from Python 3.10
     PinFactory_entry_points = entry_points()['gpiozero_pin_factories']
+
+try: #dict interface deprecated in Python 3.12
+    MockPinClass_entry_points = entry_points(group='gpiozero_mock_pin_classes')
+except TypeError: #selectable entrypoints only available from Python 3.10
+    MockPinClass_entry_points = entry_points()['gpiozero_mock_pin_classes']
