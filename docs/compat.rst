@@ -140,7 +140,7 @@ no longer supported (in practice, this means Python 2.7 is no longer
 supported). If your code is not compatible with Python 3, you should follow the
 `porting guide`_ in the `Python documentation`_.
 
-As of GPIO Zero 2.0, the lowest supported Python version will be 3.5. This base
+Currently, the lowest supported Python version is be 3.9. This base
 version may advance with minor releases, but we will make a reasonable best
 effort not to break compatibility with old Python 3.x versions, and to ensure
 that GPIO Zero can run on the version of Python in Debian oldstable at the

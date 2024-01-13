@@ -11,4 +11,7 @@ Provides access to the gpiozero entry points:
 
 from importlib.metadata import entry_points
 
-PinFactory_entry_points = entry_points(group='gpiozero_pin_factories')
+try: #dict interface deprecated in Python 3.12
+    PinFactory_entry_points = entry_points(group='gpiozero_pin_factories')
+except TypeError: #selectable entrypoints only available from Python 3.10
+    PinFactory_entry_points = entry_points()['gpiozero_pin_factories']
