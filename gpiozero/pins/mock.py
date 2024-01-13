@@ -464,6 +464,8 @@ class MockFactory(PiFactory):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
             group = entry_points()['gpiozero_mock_pin_classes']
+            #TODO BUG this fails on python 3.9 with
+            # TypeError: tuple indices must be integers or slices, not str
             pin_class = group[pin_class.lower()].load()
         if not issubclass(pin_class, MockPin):
             raise ValueError(f'invalid mock pin_class: {pin_class!r}')
