@@ -15,15 +15,19 @@ from posix import statvfs_result
 from subprocess import CalledProcessError
 from threading import Event
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from gpiozero import *
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 
 file_not_found = IOError(errno.ENOENT, 'File not found')
 bad_ping = CalledProcessError(1, 'returned non-zero exit status 1')
 
+utc = timezone.utc
+tz_LA = ZoneInfo('America/Los_Angeles')
+tz_London = ZoneInfo('Europe/London')
 
 def test_polled_event_delay(mock_factory):
     with TimeOfDay(time(7), time(8)) as tod:
@@ -47,6 +51,48 @@ def test_timeofday_bad_init(mock_factory):
         TimeOfDay(7.00, 8.00)
     with pytest.raises(ValueError):
         TimeOfDay(datetime(2019, 1, 24, 19), time(19))  # lurch edge case
+    with pytest.deprecated_call(match='utc=True'):
+        TimeOfDay(time(7), time(8), utc=True)
+    with pytest.raises(ValueError,
+            match = 'start_time and end_time must be a datetime, or time instance'):
+        TimeOfDay('7:00', '8:00', utc=True) # edge case
+
+@pytest.mark.parametrize(
+        'args',[
+            pytest.param(
+                (time(7, tzinfo=utc), time(8)),
+                id="startaware"
+                ),
+            pytest.param(
+                (time(7), time(8,tzinfo=utc)),
+                id='endaware'
+                ),
+            pytest.param(
+                (time(7, tzinfo=tz_LA), time(8)),
+                id='startZoneInfo'
+                ),
+            pytest.param(
+                (time(7), time(8,tzinfo=tz_LA)),
+                id='endZoneInfo'
+                ),
+            ]
+        )
+@pytest.mark.parametrize(
+        'kwargs',[
+            pytest.param(
+                {'utc':True},
+                id="utcTrue"
+                ),
+            pytest.param(
+                {'utc': False},
+                id='utcFalse'
+                ),
+            ]
+        )
+def test_TimeOfDay_timezoneawaremismatch(mock_factory, args, kwargs):
+    errormessage = 'utc must be None if start_time or end_time contain tzinfo'
+    with pytest.raises(ValueError, match=errormessage):
+        TimeOfDay(*args, **kwargs)
 
 def test_timeofday_init(mock_factory):
     TimeOfDay(time(7), time(8), utc=False)
@@ -58,10 +104,48 @@ def test_timeofday_init(mock_factory):
     TimeOfDay(time(6), time(18))
     TimeOfDay(time(18), time(6))
     TimeOfDay(datetime(2019, 1, 24, 19), time(19, 1))  # lurch edge case
+    TimeOfDay(time(8,30), time(18,00), utc=False) # Documented example
 
-def test_timeofday_value(mock_factory):
+
+@pytest.mark.parametrize(
+        ('args', 'kwargs', 'start', 'end', 'aware'),[
+            pytest.param(
+                (datetime(2024,2,1,18,00,tzinfo=tz_LA), datetime(2024,2,1,23,00,tzinfo=tz_LA)),
+                {},
+                time(18,00,tzinfo=tz_LA),
+                time(23,00,tzinfo=tz_LA),
+                True,
+                id="datetime"
+                ),
+            pytest.param(
+                (time(7, tzinfo=tz_LA), time(8)),
+                {},
+                time(7,00,tzinfo=tz_LA),
+                time(8, tzinfo=utc),
+                True,
+                id='mixed-default'
+                ),
+            pytest.param(
+                (time(7, tzinfo=None), time(8, tzinfo=None)),
+                {'utc':False},
+                time(7),
+                time(8),
+                False,
+                id='local-tzinfoexplicityNone'
+                ),
+            ]
+    )
+def test_TimeOfDay_init_timezone(mock_factory, args, kwargs, start, end, aware):
+    with TimeOfDay(*args, **kwargs) as tod:
+        assert tod.start_time == start
+        assert tod.start_time.tzinfo == start.tzinfo
+        assert tod.end_time == end
+        assert tod.end_time.tzinfo == end.tzinfo
+        assert tod.timezone_aware == aware
+
+def test_TimeOfDay_naivelocal(mock_factory):
     with TimeOfDay(time(7), time(8), utc=False) as tod:
-        assert repr(tod).startswith('<gpiozero.TimeOfDay object')
+        assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 local>'
         assert tod.start_time == time(7)
         assert tod.end_time == time(8)
         assert not tod.utc
@@ -74,56 +158,148 @@ def test_timeofday_value(mock_factory):
             assert tod.is_active
             dt.now.return_value = datetime(2018, 1, 2, 8, 1, 0)
             assert not tod.is_active
+            assert all([call.kwargs['tz'] == None for call in dt.mock_calls if call[0]=='now'])
     assert repr(tod) == '<gpiozero.TimeOfDay object closed>'
 
+def test_TimeOfDay_defaultUTC(mock_factory):
     with TimeOfDay(time(1, 30), time(23, 30)) as tod:
-        assert tod.start_time == time(1, 30)
-        assert tod.end_time == time(23, 30)
-        assert tod.utc
+        assert repr(tod) == '<gpiozero.TimeOfDay object active between 01:30:00 [UTC] and 23:30:00 [UTC]>'
+        assert tod.start_time == time(1, 30, tzinfo=utc)
+        assert tod.end_time == time(23, 30, tzinfo=utc)
+        assert not tod.utc
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
-            dt.utcnow.return_value = datetime(2018, 1, 1, 1, 29, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 1, 29, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 1, 30, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 1, 30, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 12, 30, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 12, 30, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 23, 30, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 23, 30, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 23, 31, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 23, 31, 0, tzinfo=utc)
+            assert not tod.is_active
+            assert all([call.kwargs['tz'] == utc for call in dt.mock_calls if call[0]=='now'])
+
+def test_TimeOfDay_naiveutc(mock_factory):
+    with pytest.deprecated_call(match='utc=True'):
+        with TimeOfDay(time(7), time(8), utc=True) as tod:
+            assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 UTC>'
+            assert tod.start_time == time(7, tzinfo=None)
+            assert tod.end_time == time(8, tzinfo=None)
+            assert tod.utc == True
+            with mock.patch('gpiozero.internal_devices.datetime') as dt:
+                dt.utcnow.return_value = datetime(2018, 1, 1, 6, 59, 0)
+                assert not tod.is_active
+                dt.utcnow.return_value = datetime(2018, 1, 1, 7, 0, 0)
+                assert tod.is_active
+                dt.utcnow.return_value = datetime(2018, 1, 2, 8, 0, 0)
+                assert tod.is_active
+                dt.utcnow.return_value = datetime(2018, 1, 2, 8, 1, 0)
+                assert not tod.is_active
+
+def test_TimeOfDay_tzgiven(mock_factory):
+    start = time(7, tzinfo=tz_LA)
+    end = time(8, tzinfo=tz_LA)
+    with TimeOfDay(start, end) as tod:
+        assert tod.timezone_aware == True
+        assert tod.start_time == start
+        assert tod.end_time == end
+        assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 [America/Los_Angeles] and 08:00:00 [America/Los_Angeles]>'
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
+            # No DST
+            dt.now.return_value = datetime(2018, 1, 1, 7, 1, 0, tzinfo=utc) # 2017-12-31 23:01 [LA]
+            assert not tod.is_active
+            dt.now.return_value = datetime(2018, 1, 1, 14, 59, 59, tzinfo=utc) # 2018-01-01 06:59:59 [LA]
+            assert not tod.is_active
+            dt.now.return_value = datetime(2018, 1, 1, 15, 0, 0, tzinfo=utc) # 2018-01-01 07:00 [LA]
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 1, 1, 16, 0, 0, tzinfo=utc) # 2018-01-01 08:00 [LA]
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 1, 1, 16, 1, 0, tzinfo=utc) # 2018-01-01 08:01 [LA]
+            assert not tod.is_active
+            # DST
+            dt.now.return_value = datetime(2018, 8, 1, 7, 1, 0, tzinfo=utc) # 2018-08-01 00:01 [LA]
+            assert not tod.is_active
+            dt.now.return_value = datetime(2018, 8, 1, 13, 59, 59, tzinfo=utc) # 2018-08-01 06:59:59 [LA]
+            assert not tod.is_active
+            dt.now.return_value = datetime(2018, 8, 1, 14, 0, 0, tzinfo=utc) # 2018-08-01 07:00 [LA]
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 8, 1, 15, 0, 0, tzinfo=utc) # 2018-08-01 08:00 [LA]
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 8, 1, 15, 1, 0, tzinfo=utc) # 2018-08-01 08:01 [LA]
+            assert not tod.is_active
+            assert all([call.kwargs['tz'] == utc for call in dt.mock_calls if call[0]=='now'])
+
+def test_TimeOfDay_differentTZ(mock_factory):
+    with TimeOfDay(time(8,30,tzinfo=tz_LA), time(18,00,tzinfo=tz_London)) as tod:
+        assert tod.start_time == time(8,30) # LA not aware without date (DST)
+        assert tod.start_time.tzinfo == tz_LA
+        assert tod.end_time == time(18,00) # London not aware without date (DST)
+        assert tod.end_time.tzinfo == tz_London
+        assert tod.timezone_aware
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
+            # No DST
+            dt.now.return_value = datetime(2024,1,25,16,29, tzinfo=utc)
+            assert not tod.is_active
+            dt.now.return_value = datetime(2024,1,25,16,30, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,1,25,18,00, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,1,25,18,1, tzinfo=utc)
+            assert not tod.is_active
+            # LA DST
+            dt.now.return_value = datetime(2024,3,10,15,29, tzinfo=utc)
+            assert not tod.is_active
+            dt.now.return_value = datetime(2024,3,10,15,30, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,3,10,18,00, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,3,10,18,1, tzinfo=utc)
+            assert not tod.is_active
+            # Both DST
+            dt.now.return_value = datetime(2024,3,31,15,29, tzinfo=utc)
+            assert not tod.is_active
+            dt.now.return_value = datetime(2024,3,31,15,30, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,3,31,17,00, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2024,3,31,17,1, tzinfo=utc)
             assert not tod.is_active
 
+def test_TimeOfDay_activeovermidnight1(mock_factory):
     with TimeOfDay(time(23), time(1)) as tod:
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
-            dt.utcnow.return_value = datetime(2018, 1, 1, 22, 59, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 22, 59, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 23, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 23, 0, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 1, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 1, 0, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 1, 1, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 1, 1, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 3, 12, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 3, 12, 0, 0, tzinfo=utc)
             assert not tod.is_active
 
+def test_TimeOfDay_activeovermidnight2(mock_factory):
     with TimeOfDay(time(6), time(5)) as tod:
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
-            dt.utcnow.return_value = datetime(2018, 1, 1, 5, 30, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 5, 30, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 5, 59, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 5, 59, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 6, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 6, 0, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 18, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 18, 0, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 1, 5, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 5, 0, 0, tzinfo=utc)
             assert tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 5, 1, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 5, 1, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 5, 30, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 5, 30, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 5, 59, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 5, 59, 0, tzinfo=utc)
             assert not tod.is_active
-            dt.utcnow.return_value = datetime(2018, 1, 2, 6, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 2, 6, 0, 0, tzinfo=utc)
             assert tod.is_active
 
 def test_polled_events(mock_factory):
@@ -132,17 +308,17 @@ def test_polled_events(mock_factory):
         activated = Event()
         deactivated = Event()
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
-            dt.utcnow.return_value = datetime(2018, 1, 1, 0, 0, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 0, 0, 0, tzinfo=utc)
             tod._fire_events(tod.pin_factory.ticks(), tod.is_active)
             tod.when_activated = activated.set
             tod.when_deactivated = deactivated.set
             assert not activated.wait(0)
             assert not deactivated.wait(0)
-            dt.utcnow.return_value = datetime(2018, 1, 1, 7, 1, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 7, 1, 0, tzinfo=utc)
             assert activated.wait(1)
             activated.clear()
             assert not deactivated.wait(0)
-            dt.utcnow.return_value = datetime(2018, 1, 1, 8, 1, 0)
+            dt.now.return_value = datetime(2018, 1, 1, 8, 1, 0, tzinfo=utc)
             assert deactivated.wait(1)
             assert not activated.wait(0)
             tod.when_activated = None
