@@ -15,8 +15,6 @@ import pytest
 from gpiozero import *
 from gpiozero.pins.mock import *
 
-from conftest import python_version
-
 def test_mock_pin_init(mock_factory):
     with pytest.raises(ValueError):
         Device.pin_factory.pin(60)

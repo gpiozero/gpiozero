@@ -51,12 +51,12 @@ def local_hardware_spi_only(intf):
         pytest.skip("Test assumes LocalPiHardwareSPI descendant")
 
 
-with warnings.catch_warnings():
-    @pytest.fixture(
-        scope='module',
-        params=[ep.name for ep in PinFactory_entry_points])
-    def pin_factory_name(request):
-        return request.param
+
+@pytest.fixture(
+    scope='module',
+    params=[ep.name for ep in PinFactory_entry_points])
+def pin_factory_name(request):
+    return request.param
 
 
 @pytest.fixture()
