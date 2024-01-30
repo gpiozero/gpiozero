@@ -13,7 +13,8 @@ from collections import namedtuple
 from time import time, sleep, monotonic
 from threading import Thread, Event
 from math import isclose
-from importlib.metadata import entry_points
+
+from gpiozero.ep import MockPinClass_entry_points
 
 from ..exc import (
     PinPWMUnsupported,
@@ -463,8 +464,19 @@ class MockFactory(PiFactory):
         if isinstance(pin_class, bytes):
             pin_class = pin_class.decode('ascii')
         if isinstance(pin_class, str):
-            group = entry_points()['gpiozero_mock_pin_classes']
-            pin_class = group[pin_class.lower()].load()
+            group = MockPinClass_entry_points
+            try:
+                pin_class = group[pin_class.lower()].load()
+                # This fails on python 3.9 with
+                # TypeError: tuple indices must be integers or slices, not str
+            except TypeError:
+                # This is mega-hacky but works and is only needed for 3.9 and
+                # this is the only place we access a specific point by name.
+                #
+                # If we will support 3.9 for longer, then it's probably worth
+                # providing a helper function, or some kind of wrapper around
+                # entry_points to make life easier for others coding on top of us.  
+                pin_class = [c for c in group if c.name==pin_class.lower()][0].load()
         if not issubclass(pin_class, MockPin):
             raise ValueError(f'invalid mock pin_class: {pin_class!r}')
         self.pin_class = pin_class

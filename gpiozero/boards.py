@@ -949,10 +949,20 @@ class LEDCharDisplay(LEDCollection):
 
         if font is None:
             if len(pins) == 7:
-                with resources.files('gpiozero.fonts').joinpath('7seg.txt').open() as f:
+                try:
+                    fontpath = resources.files('gpiozero.fonts').joinpath('7seg.txt')
+                except AttributeError:
+                    import importlib_resources # for python3.7 compatibility
+                    fontpath = importlib_resources.files('gpiozero.fonts').joinpath('7seg.txt')
+                with fontpath.open() as f:
                     font = load_font_7seg(f)
             elif len(pins) == 14:
-                with resources.files('gpiozero.fonts').joinpath('14seg.txt').open() as f:
+                try:
+                    fontpath = resources.files('gpiozero.fonts').joinpath('14seg.txt')
+                except AttributeError:
+                    import importlib_resources # for python3.7 compatibility
+                    fontpath = importlib_resources.files('gpiozero.fonts').joinpath('14seg.txt')
+                with fontpath.open() as f:
                     font = load_font_14seg(f)
             else:
                 # Construct a default dict containing a definition for " "

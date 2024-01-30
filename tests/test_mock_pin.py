@@ -15,7 +15,6 @@ import pytest
 from gpiozero import *
 from gpiozero.pins.mock import *
 
-
 def test_mock_pin_init(mock_factory):
     with pytest.raises(ValueError):
         Device.pin_factory.pin(60)
@@ -236,3 +235,13 @@ def test_mock_charging_pin(mock_factory):
     pin.function = 'input'
     sleep(0.1)
     assert pin.state == 1
+
+def test_override_pin_class(no_default_factory):
+    factory = MockFactory(pin_class='mocktriggerpin')
+    pin16 = factory.pin(16)
+    assert isinstance(pin16, MockTriggerPin)
+
+def test_override_pin_class_capitalisation(no_default_factory):
+    factory = MockFactory(pin_class='MockTriggerPin')
+    pin16 = factory.pin(16)
+    assert isinstance(pin16, MockTriggerPin)

@@ -12,6 +12,12 @@ jobs:
       matrix:
         include:
           - os: ubuntu-20.04
+            python: "3.7"
+            experimental: false
+          - os: ubuntu-20.04
+            python: "3.8"
+            experimental: false
+          - os: ubuntu-20.04
             python: "3.9"
             experimental: false
           - os: ubuntu-20.04
@@ -20,6 +26,10 @@ jobs:
           - os: ubuntu-22.04
             python: "3.11"
             experimental: false
+          - os: ubuntu-22.04
+            python: "3.12"
+            experimental: false
+
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
@@ -35,7 +45,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        make develop
+        pip install -e .[test]
 
     - name: Run tests
       run: |

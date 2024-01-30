@@ -14,11 +14,11 @@ import warnings
 from time import time, sleep
 from math import isclose
 from unittest import mock
-from importlib.metadata import entry_points
 
 import pytest
 
 from gpiozero import *
+from gpiozero.ep import PinFactory_entry_points
 from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
@@ -51,24 +51,18 @@ def local_hardware_spi_only(intf):
         pytest.skip("Test assumes LocalPiHardwareSPI descendant")
 
 
-with warnings.catch_warnings():
-    # The dict interface of entry_points is deprecated ... already
-    warnings.simplefilter('ignore', category=DeprecationWarning)
-    @pytest.fixture(
-        scope='module',
-        params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
-    def pin_factory_name(request):
-        return request.param
+
+@pytest.fixture(
+    scope='module',
+    params=[ep.name for ep in PinFactory_entry_points])
+def pin_factory_name(request):
+    return request.param
 
 
 @pytest.fixture()
 def pin_factory(request, pin_factory_name):
     try:
-        with warnings.catch_warnings():
-            # The dict interface of entry_points is deprecated ... already
-            warnings.simplefilter('ignore', category=DeprecationWarning)
-            eps = entry_points()['gpiozero_pin_factories']
-        for ep in eps:
+        for ep in PinFactory_entry_points:
             if ep.name == pin_factory_name:
                 factory = ep.load()()
                 break
@@ -268,8 +262,6 @@ def test_explicit_factory(no_default_factory, pin_factory):
         assert device.pin_factory is pin_factory
         assert device.pin.info.name == TEST_PIN
 
-
-@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_envvar_factory(no_default_factory, pin_factory_name):
     os.environ['GPIOZERO_PIN_FACTORY'] = pin_factory_name
     assert Device.pin_factory is None
@@ -280,8 +272,7 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             pin_factory_name=pin_factory_name, e=e))
     else:
         try:
-            group = entry_points()['gpiozero_pin_factories']
-            for ep in group:
+            for ep in PinFactory_entry_points:
                 if ep.name == pin_factory_name:
                     factory_class = ep.load()
                     break

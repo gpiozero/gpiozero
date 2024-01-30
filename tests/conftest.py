@@ -25,6 +25,9 @@ from gpiozero.pins.mock import MockFactory, MockPWMPin
 if sys.version_info[:2] < (3, 4):
     warnings.simplefilter('always')
 
+# To allow @pytest.mark.xfail(condition=python_version<3.10) or similar
+python_version = sys.version_info.major + (sys.version_info.minor/100)
+
 @pytest.fixture()
 def no_default_factory(request):
     save_pin_factory = Device.pin_factory

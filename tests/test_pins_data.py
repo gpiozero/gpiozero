@@ -90,7 +90,6 @@ def test_pi_revision():
             with pytest.raises(PinUnknownPi):
                 PiBoardInfo.from_revision(0xfff)
 
-@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pi_info():
     r = pi_info('900011')
     assert r.model == 'B'
@@ -119,7 +118,6 @@ def test_pi_info():
     assert repr(r).startswith('PiBoardInfo(revision=')
     assert 'headers=...' in repr(r)
 
-@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_pi_info_other_types():
     assert pi_info(b'9000f1') == pi_info(0x9000f1)
 

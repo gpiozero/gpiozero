@@ -11,6 +11,13 @@ Backwards Compatibility
 
 .. currentmodule:: gpiozero
 
+We aim to ensure that gpiozero will run on all versions of python included in releases
+of debian which are under full support from debian.org. At the moment this means python3.7
+(debian-buster), 3.9 (bullseye) & 3.11 (bookworm). While we will make a reasonable best
+effort not to break compatibility with older python 3.x versions and to provide support for
+higher versions not bundled in the latest stable debian release, python 3.7 is currently the
+lowest version supported.
+
 GPIO Zero 2.x is a new major version and thus backwards incompatible changes
 can be expected. We have attempted to keep these as minimal as reasonably
 possible while taking advantage of the opportunity to clean up things. This
@@ -139,12 +146,6 @@ By far the biggest and most important change is that the Python 2.x series is
 no longer supported (in practice, this means Python 2.7 is no longer
 supported). If your code is not compatible with Python 3, you should follow the
 `porting guide`_ in the `Python documentation`_.
-
-As of GPIO Zero 2.0, the lowest supported Python version will be 3.5. This base
-version may advance with minor releases, but we will make a reasonable best
-effort not to break compatibility with old Python 3.x versions, and to ensure
-that GPIO Zero can run on the version of Python in Debian oldstable at the
-time of its release.
 
 
 RPIO pin factory removed
