@@ -23,7 +23,7 @@ from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
 from collections.abc import MutableMapping
-from importlib import resources
+from importlib import resources  
 from pprint import pformat
 
 from .exc import (
@@ -51,6 +51,12 @@ from .threads import GPIOThread
 from .devices import Device, CompositeDevice
 from .mixins import SharedMixin, SourceMixin, HoldMixin, event
 from .fonts import load_font_7seg, load_font_14seg
+
+try:  
+    fontslocation = resources.files('gpiozero.fonts')
+except AttributeError:
+    import importlib_resources
+    fontslocation = importlib_resources.files('gpiozero.fonts')
 
 
 def pairwise(it):
@@ -949,19 +955,11 @@ class LEDCharDisplay(LEDCollection):
 
         if font is None:
             if len(pins) == 7:
-                try:
-                    fontpath = resources.files('gpiozero.fonts').joinpath('7seg.txt')
-                except AttributeError:
-                    import importlib_resources # for python3.7 compatibility
-                    fontpath = importlib_resources.files('gpiozero.fonts').joinpath('7seg.txt')
+                fontpath = fontslocation.joinpath('7seg.txt')
                 with fontpath.open() as f:
                     font = load_font_7seg(f)
             elif len(pins) == 14:
-                try:
-                    fontpath = resources.files('gpiozero.fonts').joinpath('14seg.txt')
-                except AttributeError:
-                    import importlib_resources # for python3.7 compatibility
-                    fontpath = importlib_resources.files('gpiozero.fonts').joinpath('14seg.txt')
+                fontpath = fontslocation.joinpath('14seg.txt')
                 with fontpath.open() as f:
                     font = load_font_14seg(f)
             else:

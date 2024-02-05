@@ -1568,6 +1568,17 @@ def test_led_char_display_init(mock_factory):
     with LEDCharDisplay(*range(10, 17), initial_value=None) as char:
         assert char.value == '2'
 
+@pytest.mark.parametrize(
+        ('pins','defaultfont'),
+        [
+            pytest.param(range(4, 11), load_font_7seg('gpiozero/fonts/7seg.txt'), id='7-pin'),
+            pytest.param(range(4, 18), load_font_14seg('gpiozero/fonts/14seg.txt'), id='14-pin'),
+        ]
+)
+def test_led_char_display_default_font(mock_factory, pins, defaultfont):
+    with LEDCharDisplay(*pins) as char:
+        assert char.font == defaultfont
+
 def test_led_char_display_value(mock_factory):
     pins = [mock_factory.pin(i) for i in range(4, 11)]
     dp_pin = mock_factory.pin(11)
