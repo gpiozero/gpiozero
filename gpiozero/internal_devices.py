@@ -522,8 +522,8 @@ class TimeOfDay(PolledInternalDevice):
         officehours = TimeOfDay(time(8,30,tzinfo=tz_LA), time(18,00,tzinfo=tz_London))
 
     If you would like to ignore timezones and use "local time" (whatever time
-    your Pi's internal clock says) then set `utc` to `False`. To
-    switch on during whatever your Pi thinks are local office hours::
+    your Pi's clock says) then set `utc` to `False`. To switch on during whatever
+    your Pi thinks are local office hours::
         
         from gpiozero import TimeOfDay,
         from datetime import time
