@@ -564,7 +564,8 @@ class TimeOfDay(PolledInternalDevice):
     
         utc_deprecation_warning = (
         'Using utc=True is deprecated and scheduled for removal in a future version.'
-        ' Please use tz="UTC" or provide a Timezone-Aware start and end time'
+        ' Start and end times will default to tzinfo=datetime.UTC unless you specify'
+        ' different tzinfo when defining them.'
         )
         if utc:
             warnings.warn(utc_deprecation_warning, DeprecationWarning)
