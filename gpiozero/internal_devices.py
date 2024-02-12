@@ -586,7 +586,7 @@ class TimeOfDay(PolledInternalDevice):
 
     def __repr__(self):
         reprname = f'gpiozero.{self.__class__.__name__} object'
-        if self.aware:
+        if self.timezone_aware:
             reprstart = f'{self.start_time.replace(tzinfo=None)} [{self.start_time.tzinfo}]'
             reprend = f'{self.end_time.replace(tzinfo=None)} [{self.end_time.tzinfo}]'
             reprtz = ''
@@ -607,7 +607,7 @@ class TimeOfDay(PolledInternalDevice):
         if hasattr(value, 'timetz'): 
             value = value.timetz()
         
-        if not self.aware:
+        if not self.timezone_aware:
             try:
                 assert value.tzinfo == None
             except AttributeError:
@@ -621,7 +621,7 @@ class TimeOfDay(PolledInternalDevice):
         # that offers comparison with time but is not a subclass of time.
         # Not relying on time's current implementation that checks for timetuple()
         # as this may change in the future
-        if self.aware:            
+        if self.timezone_aware:            
             try: # We need to be able to replace tzinfo and compare to aware time
                 value.replace(tzinfo=timezone.utc) < time(1, tzinfo=timezone.utc)
             except (AttributeError, TypeError):
@@ -634,7 +634,7 @@ class TimeOfDay(PolledInternalDevice):
                 raise ValueError(
                 'start_time and end_time must be a datetime, or time instance')
             
-        if self.aware and value.tzinfo == None: # Default to UTC
+        if self.timezone_aware and value.tzinfo == None: # Default to UTC
             value = value.replace(tzinfo=timezone.utc)
         return value
 
@@ -663,7 +663,7 @@ class TimeOfDay(PolledInternalDevice):
         return self._utc
     
     @property
-    def aware(self):
+    def timezone_aware(self):
         """
         Whether the comparison will be performed in a timezone-aware manner
         """
@@ -678,7 +678,7 @@ class TimeOfDay(PolledInternalDevice):
         midnight), then this returns :data:`1` when the current time is
         greater than :attr:`start_time` or less than :attr:`end_time`.
         """
-        if self.aware:
+        if self.timezone_aware:
             # Beware - most timezone implementations in zoneinfo are only aware
             # for datetime, not time objects.
             # Think about DST to understand why ...

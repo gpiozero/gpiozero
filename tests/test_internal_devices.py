@@ -141,7 +141,7 @@ def test_TimeOfDay_init_timezone(mock_factory, args, kwargs, start, end, aware):
         assert tod.start_time.tzinfo == start.tzinfo
         assert tod.end_time == end
         assert tod.end_time.tzinfo == end.tzinfo
-        assert tod.aware == aware
+        assert tod.timezone_aware == aware
 
 def test_TimeOfDay_naivelocal(mock_factory):
     with TimeOfDay(time(7), time(8), utc=False) as tod:
@@ -201,7 +201,7 @@ def test_TimeOfDay_tzgiven(mock_factory):
     start = time(7, tzinfo=tz_LA)
     end = time(8, tzinfo=tz_LA)
     with TimeOfDay(start, end) as tod:
-        assert tod.aware == True
+        assert tod.timezone_aware == True
         assert tod.start_time == start
         assert tod.end_time == end
         assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 [America/Los_Angeles] and 08:00:00 [America/Los_Angeles]>'
@@ -236,7 +236,7 @@ def test_TimeOfDay_differentTZ(mock_factory):
         assert tod.start_time.tzinfo == tz_LA
         assert tod.end_time == time(18,00) # London not aware without date (DST)
         assert tod.end_time.tzinfo == tz_London
-        assert tod.aware
+        assert tod.timezone_aware
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
             # No DST
             dt.now.return_value = datetime(2024,1,25,16,29, tzinfo=utc)
