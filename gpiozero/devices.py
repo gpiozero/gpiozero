@@ -16,7 +16,12 @@ import warnings
 from collections import namedtuple
 from itertools import chain
 from types import FunctionType
-from importlib.metadata import entry_points
+
+# NOTE: Remove try when compatibility moves beyond Python 3.10
+try:
+    from importlib_metadata import entry_points
+except ImportError:
+    from importlib.metadata import entry_points
 
 from .threads import _threads_shutdown
 from .mixins import (
@@ -303,8 +308,7 @@ class Device(ValuesMixin, GPIOBase):
             with warnings.catch_warnings():
                 # The dict interface of entry_points is deprecated ... already
                 # and this deprecation is for us to worry about, not our users
-                warnings.simplefilter('ignore', category=DeprecationWarning)
-                group = entry_points()['gpiozero_pin_factories']
+                group = entry_points(group='gpiozero_pin_factories')
             for ep in group:
                 if ep.name == name:
                     return ep.load()()

@@ -14,7 +14,12 @@ import warnings
 from time import time, sleep
 from math import isclose
 from unittest import mock
-from importlib.metadata import entry_points
+
+# NOTE: Remove try when compatibility moves beyond Python 3.10
+try:
+    from importlib_metadata import entry_points
+except ImportError:
+    from importlib.metadata import entry_points
 
 import pytest
 
@@ -52,11 +57,9 @@ def local_hardware_spi_only(intf):
 
 
 with warnings.catch_warnings():
-    # The dict interface of entry_points is deprecated ... already
-    warnings.simplefilter('ignore', category=DeprecationWarning)
     @pytest.fixture(
         scope='module',
-        params=[ep.name for ep in entry_points()['gpiozero_pin_factories']])
+        params=[ep.name for ep in entry_points(group='gpiozero_pin_factories')])
     def pin_factory_name(request):
         return request.param
 
@@ -65,9 +68,7 @@ with warnings.catch_warnings():
 def pin_factory(request, pin_factory_name):
     try:
         with warnings.catch_warnings():
-            # The dict interface of entry_points is deprecated ... already
-            warnings.simplefilter('ignore', category=DeprecationWarning)
-            eps = entry_points()['gpiozero_pin_factories']
+            eps = entry_points(group='gpiozero_pin_factories')
         for ep in eps:
             if ep.name == pin_factory_name:
                 factory = ep.load()()
@@ -280,7 +281,7 @@ def test_envvar_factory(no_default_factory, pin_factory_name):
             pin_factory_name=pin_factory_name, e=e))
     else:
         try:
-            group = entry_points()['gpiozero_pin_factories']
+            group = entry_points(group='gpiozero_pin_factories')
             for ep in group:
                 if ep.name == pin_factory_name:
                     factory_class = ep.load()
