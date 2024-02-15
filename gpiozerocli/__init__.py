@@ -10,7 +10,11 @@ import os
 import sys
 import argparse
 
-from importlib.metadata import version
+# Remove the try clause when 3.7 support is no longer trivial
+try:
+    from importlib_metadata import version
+except ImportError:
+    from importlib.metadata import version
 
 
 class CliTool:

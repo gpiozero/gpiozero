@@ -23,8 +23,13 @@ from itertools import repeat, cycle, chain, tee
 from threading import Lock
 from collections import OrderedDict, Counter, namedtuple
 from collections.abc import MutableMapping
-from importlib import resources
 from pprint import pformat
+
+# Remove the try clause when 3.7 support is no longer trivial
+try:
+    import importlib_resources as resources
+except ImportError:
+    from importlib import resources
 
 from .exc import (
     DeviceClosed,
