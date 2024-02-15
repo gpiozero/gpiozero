@@ -12,6 +12,16 @@ Changelog
 
 .. currentmodule:: gpiozero
 
+
+Release 2.0.1 (2024-02-15)
+==========================
+
+* Fixed Python 3.12 compatibility, and clarify that 3.9 is the lowest supported
+  version in our CI configuration (`#1113`_)
+
+.. _#1113: https://github.com/gpiozero/gpiozero/issues/1113
+
+
 Release 2.0 (2023-09-12)
 ========================
 
