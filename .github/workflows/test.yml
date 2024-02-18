@@ -38,7 +38,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        make develop
+        pip install -e .[test]
 
     - name: Run tests
       run: |
