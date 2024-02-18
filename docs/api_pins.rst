@@ -132,9 +132,9 @@ they are tried by default.
 +---------+-----------------------------------------------+-------------------------------------------+
 | Name    | Factory class                                 | Pin class                                 |
 +=========+===============================================+===========================================+
-| rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
-+---------+-----------------------------------------------+-------------------------------------------+
 | lgpio   | :class:`gpiozero.pins.lgpio.LGPIOFactory`     | :class:`gpiozero.pins.lgpio.LGPIOPin`     |
++---------+-----------------------------------------------+-------------------------------------------+
+| rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
 +---------+-----------------------------------------------+-------------------------------------------+
 | pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   |
 +---------+-----------------------------------------------+-------------------------------------------+
