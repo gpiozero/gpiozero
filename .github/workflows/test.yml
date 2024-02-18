@@ -46,4 +46,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest -v -k 'not test_real_pins.py'
+        pytest -v -k 'not test_real_pins.py' --cov
