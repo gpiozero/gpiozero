@@ -1,5 +1,6 @@
 # Python stuff
 *.py[cdo]
+.venv
 
 # Editor detritus
 *.vim
