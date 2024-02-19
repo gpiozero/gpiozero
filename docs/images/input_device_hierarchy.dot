@@ -5,18 +5,24 @@ digraph classes {
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     GPIODevice;
     SmoothedInputDevice;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    Button;
+    DigitalInputDevice;
+    DistanceSensor;
+    InputDevice;
+    LightSensor;
+    LineSensor;
+    MotionSensor;
 
+    /* Edges */
     Button->DigitalInputDevice;
     DigitalInputDevice->InputDevice;
     DistanceSensor->SmoothedInputDevice;
