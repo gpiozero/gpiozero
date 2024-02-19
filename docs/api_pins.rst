@@ -195,6 +195,13 @@ Like the :envvar:`GPIOZERO_PIN_FACTORY` value, these can be exported from your
 Mock pins
 =========
 
+.. note::
+    While you **can** directly use the :class:`~gpiozero.pins.mock.MockFactory`
+    as detailled below, it is generally both easier and safer to make use of the
+    pre-prepared fixtures such as :func:`~gpiozero.testing.mock_factory`. See 
+    :doc:`api_fixtures` for more details.
+
+
 There's also a :class:`~gpiozero.pins.mock.MockFactory` which generates entirely
 fake pins. This was originally intended for GPIO Zero developers who wish to
 write tests for devices without having to have the physical device wired in to
