@@ -6,10 +6,10 @@
 *.vim
 *.swp
 tags
-# If you wish to contribute and use a different editor, please don't 
-# extend this list, or it will quickly get very long.
-# Instead create a '.gitignore-global' file in your home directory and 
-# run 'git config --global core.excludesfile ~/.gitignore-global'
+# If you wish to contribute and use a different editor, feel free to 
+# extend this list.
+# Alternatively, you can create a '.gitignore-global' file in your home
+# directory and run 'git config --global core.excludesfile ~/.gitignore-global'
 
 # Packaging detritus
 *.egg
