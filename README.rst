@@ -89,18 +89,6 @@ this in the section on `mock pins`_.
 
 .. _mock pins: https://gpiozero.readthedocs.io/en/stable/api_pins.html#mock-pins
 
-rgpio
------
-
-To install support for remote `rgpio` execute following steps:
-1. run `sudo apt-get install rgpiod` to install rgpio daemon (see `rgpiod`_)
-.. _rgpiod: https://abyz.me.uk/lg/rgpiod.html
-2. run `pip install rgpio` to install rgpio python library
-   - if not works (due to lock to install libraries in top-level environment), than run `sudo apt-get install python3-rgpio`
-
-(tested with raspios *bookworm*)
-
-
 Installation
 ============
 
