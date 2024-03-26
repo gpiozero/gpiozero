@@ -57,7 +57,7 @@ def load_segment_font(filename_or_obj, width, height, pins):
         filename_or_obj = filename_or_obj.decode('utf-8')
     opened = isinstance(filename_or_obj, (str, Path))
     if opened:
-        filename_or_obj = io.open(filename_or_obj, 'r')
+        filename_or_obj = open(filename_or_obj)
     try:
         lines = filename_or_obj.read()
         if isinstance(lines, bytes):

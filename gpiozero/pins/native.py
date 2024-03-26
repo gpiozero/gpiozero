@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 #
@@ -83,7 +82,7 @@ def dt_peripheral_reg(node, root=Path('/proc/device-tree')):
                 if not buf:
                     break
                 elif len(buf) < buf_len:
-                    raise IOError(f'failed to read {buf_len} bytes')
+                    raise OSError(f'failed to read {buf_len} bytes')
                 row = ()
                 for offset, s in zip(offsets, structs):
                     cells = s.unpack_from(buf, offset)
@@ -157,7 +156,7 @@ class GPIOMemory:
             try:
                 self.fd = os.open('/dev/mem', os.O_RDWR | os.O_SYNC)
             except OSError:
-                raise IOError(
+                raise OSError(
                     'unable to open /dev/gpiomem or /dev/mem; '
                     'upgrade your kernel or run as root')
             else:
@@ -184,12 +183,12 @@ class GPIOMemory:
     def gpio_base(self, soc):
         try:
             return dt_peripheral_reg(dt_resolve_alias('gpio')).start
-        except IOError:
+        except OSError:
             try:
                 return self.PERI_BASE_OFFSET[soc] + self.GPIO_BASE_OFFSET
             except KeyError:
                 pass
-        raise IOError('unable to determine gpio base')
+        raise OSError('unable to determine gpio base')
 
     def __getitem__(self, index):
         return struct.unpack_from(self.reg_fmt, self.mem, index * 4)[0]
@@ -246,9 +245,9 @@ class GPIOFS:
                         # triggered mode
                         result = os.open(self.path_value(pin),
                                          os.O_RDONLY | os.O_NONBLOCK)
-                    except IOError as e:
+                    except OSError as e:
                         if e.errno == errno.ENOENT:
-                            with io.open(self.path('export'), 'wb') as f:
+                            with open(self.path('export'), 'wb') as f:
                                 f.write(str(pin).encode('ascii'))
                         elif e.errno == errno.EACCES:
                             sleep(i / 100)
@@ -261,9 +260,9 @@ class GPIOFS:
                 # chmod -R may not have reached it yet...
                 for i in range(10):
                     try:
-                        with io.open(self.path_edge(pin), 'w+b'):
+                        with open(self.path_edge(pin), 'w+b'):
                             pass
-                    except IOError as e:
+                    except OSError as e:
                         if e.errno == errno.EACCES:
                             sleep(i / 100)
                         else:
@@ -281,9 +280,9 @@ class GPIOFS:
                 pass
             else:
                 try:
-                    with io.open(self.path('unexport'), 'wb') as f:
+                    with open(self.path('unexport'), 'wb') as f:
                         f.write(str(pin).encode('ascii'))
-                except IOError as e:
+                except OSError as e:
                     if e.errno == errno.EINVAL:
                         # Someone already unexported it; ignore the error
                         pass
@@ -506,9 +505,9 @@ class NativePin(LocalPiPin):
 
     def _get_edges(self):
         try:
-            with io.open(self.factory.fs.path_edge(self._number), 'r') as f:
+            with open(self.factory.fs.path_edge(self._number)) as f:
                 return f.read().strip()
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 return 'none'
             else:
@@ -518,9 +517,9 @@ class NativePin(LocalPiPin):
         if value != 'none':
             self.factory.fs.export(self._number)
         try:
-            with io.open(self.factory.fs.path_edge(self._number), 'w') as f:
+            with open(self.factory.fs.path_edge(self._number), 'w') as f:
                 f.write(value)
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT and value == 'none':
                 pass
             elif e.errno == errno.EINVAL:

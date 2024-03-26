@@ -341,21 +341,21 @@ class LGPIOHardwareSPI(SPI):
         self._check_open()
         count, data = lgpio.spi_read(self._handle, n)
         if count < 0:
-            raise IOError(f'SPI transfer error {count}')
+            raise OSError(f'SPI transfer error {count}')
         return [int(b) for b in data]
 
     def write(self, data):
         self._check_open()
         count = lgpio.spi_write(self._handle, data)
         if count < 0:
-            raise IOError(f'SPI transfer error {count}')
+            raise OSError(f'SPI transfer error {count}')
         return len(data)
 
     def transfer(self, data):
         self._check_open()
         count, data = lgpio.spi_xfer(self._handle, data)
         if count < 0:
-            raise IOError(f'SPI transfer error {count}')
+            raise OSError(f'SPI transfer error {count}')
         return [int(b) for b in data]
 
 
