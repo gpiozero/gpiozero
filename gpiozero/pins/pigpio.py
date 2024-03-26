@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 #
@@ -90,7 +89,7 @@ class PiGPIOFactory(PiFactory):
         # Annoyingly, pigpio doesn't raise an exception when it fails to make a
         # connection; it returns a valid (but disconnected) pi object
         if self.connection is None:
-            raise IOError(f'failed to connect to {host}:{port}')
+            raise OSError(f'failed to connect to {host}:{port}')
         self._host = host
         self._port = port
         self._spis = []
@@ -444,7 +443,7 @@ class PiGPIOHardwareSPI(SPI):
         self._check_open()
         count, data = self.pin_factory.connection.spi_xfer(self._handle, data)
         if count < 0:
-            raise IOError(f'SPI transfer error {count}')
+            raise OSError(f'SPI transfer error {count}')
         # Convert returned bytearray to list of ints.
         # XXX Not sure how non-byte sized words (aux intf only) are returned
         # ... padded to 16/32-bits?
@@ -582,7 +581,7 @@ class PiGPIOSoftwareSPI(SPI):
         count, data = self.pin_factory.connection.bb_spi_xfer(
             self._select_pin, data)
         if count < 0:
-            raise IOError(f'SPI transfer error {count}')
+            raise OSError(f'SPI transfer error {count}')
         # Convert returned bytearray to list of ints. bb_spi only supports
         # byte-sized words so no issues here
         return [int(b) for b in data]
