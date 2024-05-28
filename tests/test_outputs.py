@@ -1141,6 +1141,90 @@ def test_motor_enable_pin(mock_factory, pwm):
         motor.stop()
         assert motor.value == 0
 
+def test_speed_direction_motor_pins(mock_factory, pwm):
+    s = mock_factory.pin(1)
+    f = mock_factory.pin(2)
+    b = mock_factory.pin(3)
+    with SpeedDirectionMotor(1, 2, 3) as motor:
+        assert repr(motor).startswith('<gpiozero.SpeedDirectionMotor object')
+        assert motor.speed_device.pin is s
+        assert isinstance(motor.speed_device, PWMOutputDevice)
+        assert motor.forward_device.pin is f
+        assert isinstance(motor.forward_device, DigitalOutputDevice)
+        assert motor.backward_device.pin is b
+        assert isinstance(motor.backward_device, DigitalOutputDevice)
+
+def test_speed_direction_motor_close(mock_factory, pwm):
+    s = mock_factory.pin(1)
+    f = mock_factory.pin(2)
+    b = mock_factory.pin(3)
+    with SpeedDirectionMotor(1, 2, 3) as motor:
+        motor.close()
+        assert motor.closed
+        assert motor.speed_device.pin is None
+        assert motor.forward_device.pin is None
+        assert motor.backward_device.pin is None
+        motor.close()
+        assert motor.closed
+
+def test_speed_direction_motor_value(mock_factory, pwm):
+    s = mock_factory.pin(1)
+    f = mock_factory.pin(2)
+    b = mock_factory.pin(3)
+    with SpeedDirectionMotor(1, 2, 3) as motor:
+        motor.value = -1
+        assert motor.is_active
+        assert motor.value == -1
+        assert b.state == 1 and f.state == 0 and s.state == 1
+        motor.value = 1
+        assert motor.is_active
+        assert motor.value == 1
+        assert b.state == 0 and f.state == 1 and s.state == 1
+        motor.value = 0.5
+        assert motor.is_active
+        assert motor.value == 0.5
+        assert b.state == 0 and f.state == 1 and s.state == 0.5
+        motor.value = -0.5
+        assert motor.is_active
+        assert motor.value == -0.5
+        assert b.state == 1 and f.state == 0 and s.state == 0.5
+        motor.value = 0
+        assert not motor.is_active
+        assert not motor.value
+        assert b.state == 0 and f.state == 0 and s.state == 0
+
+def test_speed_direction_motor_bad_value(mock_factory, pwm):
+    s = mock_factory.pin(1)
+    f = mock_factory.pin(2)
+    b = mock_factory.pin(3)
+    with SpeedDirectionMotor(1, 2, 3) as motor:
+        with pytest.raises(ValueError):
+            motor.value = -2
+        with pytest.raises(ValueError):
+            motor.value = 2
+        with pytest.raises(ValueError):
+            motor.forward(2)
+        with pytest.raises(ValueError):
+            motor.backward(2)
+
+def test_speed_direction_motor_reverse(mock_factory, pwm):
+    s = mock_factory.pin(1)
+    f = mock_factory.pin(2)
+    b = mock_factory.pin(3)
+    with SpeedDirectionMotor(1, 2, 3) as motor:
+        motor.forward()
+        assert motor.value == 1
+        assert b.state == 0 and f.state == 1 and s.state == 1
+        motor.reverse()
+        assert motor.value == -1
+        assert b.state == 1 and f.state == 0 and s.state == 1
+        motor.backward(0.5)
+        assert motor.value == -0.5
+        assert b.state == 1 and f.state == 0 and s.state == 0.5
+        motor.reverse()
+        assert motor.value == 0.5
+        assert b.state == 0 and f.state == 1 and s.state == 0.5
+
 def test_phaseenable_motor_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
     e = mock_factory.pin(2)
