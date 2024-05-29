@@ -10,7 +10,7 @@
 
 import os
 from collections import namedtuple
-from time import time, sleep, monotonic
+from time import sleep, monotonic
 from threading import Thread, Event
 from math import isclose
 
@@ -31,7 +31,6 @@ from ..exc import (
     )
 from ..devices import Device
 from ..mixins import SharedMixin
-from . import SPI
 from .pi import PiPin, PiFactory
 from .spi import SPISoftware
 

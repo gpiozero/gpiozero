@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import errno
 import warnings
 from time import time, sleep
 from math import isclose
@@ -24,7 +23,7 @@ except ImportError:
 import pytest
 
 from gpiozero import *
-from gpiozero.pins.mock import MockConnectedPin, MockFactory, MockSPIDevice
+from gpiozero.pins.mock import MockConnectedPin, MockFactory
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
 

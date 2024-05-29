@@ -9,7 +9,7 @@
 import sys
 import pytest
 import warnings
-from threading import Event, Thread
+from threading import Thread
 
 from gpiozero import Device
 from gpiozero.pins.mock import MockFactory, MockPWMPin
