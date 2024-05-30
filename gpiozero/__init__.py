@@ -78,7 +78,6 @@ from .output_devices import (
     LED,
     Buzzer,
     Motor,
-    SpeedDirectionMotor,
     PhaseEnableMotor,
     Servo,
     AngularServo,

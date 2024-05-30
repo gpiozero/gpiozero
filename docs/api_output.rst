@@ -72,13 +72,6 @@ Motor
     :members: forward, backward, reverse, stop, is_active, value
 
 
-SpeedDirectionMotor
--------------------
-
-.. autoclass:: SpeedDirectionMotor
-    :members: forward, backward, reverse, stop, is_active, value
-
-
 PhaseEnableMotor
 ----------------
 

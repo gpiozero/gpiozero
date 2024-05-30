@@ -24,6 +24,7 @@ from math import log2
 
 from .exc import (
     OutputDeviceBadValue,
+    OutputDeviceError,
     GPIOPinMissing,
     PWMSoftwareFallback,
     DeviceClosed,
@@ -1185,24 +1186,37 @@ class Motor(SourceMixin, CompositeDevice):
         :class:`DigitalOutputDevice` instances, allowing only direction
         control.
 
+    :param bool enable_is_pwm:
+        If :data:`True`, construct a :class:`PWMOutputDevice` instance for
+        the enable pin, allowing variable speed control using the enable pin
+        and not the motor controller pins. Additionally, if this is
+        specified, *enable* must not be :data:`None` and *pwm* must be
+        :data:`False`. The default is :data:`False`.
+
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
     def __init__(self, forward, backward, *, enable=None, pwm=True,
-                 pin_factory=None):
+                 enable_is_pwm=False, pin_factory=None):
+        if pwm and enable_is_pwm:
+            raise OutputDeviceError("Can't specify both PWM direction and enable pins")
+        if enable_is_pwm and enable is None:
+            raise OutputDeviceError("PWM enable requires a valid enable pin")
         PinClass = PWMOutputDevice if pwm else DigitalOutputDevice
         devices = OrderedDict((
             ('forward_device', PinClass(forward, pin_factory=pin_factory)),
             ('backward_device', PinClass(backward, pin_factory=pin_factory)),
         ))
-        if enable is not None:
+        if enable is not None and not enable_is_pwm:
             devices['enable_device'] = DigitalOutputDevice(
                 enable,
                 initial_value=True,
                 pin_factory=pin_factory
             )
+        elif enable is not None:
+            devices['enable_device'] = PWMOutputDevice(enable, pin_factory=pin_factory)
         super().__init__(_order=devices.keys(), pin_factory=pin_factory, **devices)
 
     @property
@@ -1212,6 +1226,8 @@ class Motor(SourceMixin, CompositeDevice):
         (full speed backward) and 1 (full speed forward), with 0 representing
         stopped.
         """
+        if hasattr(self, "enable_device"):
+            return (self.forward_device.value - self.backward_device.value) * self.enable_device.value
         return self.forward_device.value - self.backward_device.value
 
     @value.setter
@@ -1245,16 +1261,20 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed) if *pwm* was
-            :data:`True` when the class was constructed (and only 0 or 1 if
-            not).
+            0 (stopped) and the default 1 (maximum speed) if *pwm* or *enable_is_pwm*
+            was :data:`True` when the class was constructed (and only 0 or 1 if not).
         """
         if not 0 <= speed <= 1:
             raise ValueError('forward speed must be between 0 and 1')
-        if isinstance(self.forward_device, DigitalOutputDevice):
+        if isinstance(self.forward_device, DigitalOutputDevice) and isinstance(self.enable_device, DigitalOutputDevice):
             if speed not in (0, 1):
                 raise ValueError(
                     'forward speed must be 0 or 1 with non-PWM Motors')
+        if isinstance(self.enable_device, PWMOutputDevice):
+            self.backward_device.off()
+            self.enable_device.value = speed
+            self.forward_device.on()
+            return
         self.backward_device.off()
         self.forward_device.value = speed
 
@@ -1264,16 +1284,20 @@ class Motor(SourceMixin, CompositeDevice):
 
         :param float speed:
             The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed) if *pwm* was
-            :data:`True` when the class was constructed (and only 0 or 1 if
-            not).
+            0 (stopped) and the default 1 (maximum speed) if *pwm* or *enable_is_pwm*
+            was :data:`True` when the class was constructed (and only 0 or 1 if not).
         """
         if not 0 <= speed <= 1:
             raise ValueError('backward speed must be between 0 and 1')
-        if isinstance(self.backward_device, DigitalOutputDevice):
+        if isinstance(self.backward_device, DigitalOutputDevice) and isinstance(self.enable_device, DigitalOutputDevice):
             if speed not in (0, 1):
                 raise ValueError(
                     'backward speed must be 0 or 1 with non-PWM Motors')
+        if isinstance(self.enable_device, PWMOutputDevice):
+            self.forward_device.off()
+            self.enable_device.value = speed
+            self.backward_device.off()
+            return
         self.forward_device.off()
         self.backward_device.value = speed
 
@@ -1291,128 +1315,6 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
-
-class SpeedDirectionMotor(SourceMixin, CompositeDevice):
-    """
-    Extends :class:`CompositeDevice` and represents a generic motor connected
-    to a speed/direction motor driver circuit. This has three GPIO pins: one
-    controls speed using PWM, one is on to go forward and the other is on to
-    go backwards. This is similar to :class:`Motor` but speed control is
-    implemented using a separate pin instead of the bi-directional control
-    pins.
-
-    :type speed: int or str
-    :param speed:
-        The GPIO pin that the speed input of the motor driver chip is connected
-        to. See :ref:`pin-numbering` for valid pin numbers. If this is
-        :data:`None` a :exc:`GPIODeviceError` will be raised.
-
-    :type forward: int or str
-    :param forward:
-        The GPIO pin that the forward input of the motor driver chip is
-        connected to. See :ref:`pin-numbering` for valid pin numbers. If this
-        is :data:`None` a :exc:`GPIODeviceError` will be raised.
-
-    :type backward: int or str
-    :param backward:
-        The GPIO pin that the backward input of the motor driver chip is
-        connected to. See :ref:`pin-numbering` for valid pin numbers. If this
-        is :data:`None` a :exc:`GPIODeviceError` will be raised.
-
-    :type pin_factory: Factory or None
-    :param pin_factory:
-        See :doc:`api_pins` for more information (this is an advanced feature
-        which most users can ignore).
-    """
-    def __init__(self, speed, forward, backward, *, pin_factory=None):
-        super().__init__(
-            speed_device=PWMOutputDevice(speed, pin_factory=pin_factory),
-            forward_device=DigitalOutputDevice(forward, pin_factory=pin_factory),
-            backward_device=DigitalOutputDevice(backward, pin_factory=pin_factory),
-            _order=('speed_device', 'forward_device', 'backward_device'),
-            pin_factory=pin_factory)
-
-    @property
-    def value(self):
-        """
-        Represents the speed of the motor as a floating point value between -1
-        (full speed backward) and 1 (full speed forward), with 0 representing
-        stopped.
-        """
-        if self.forward_device.value and not self.backward_device.value:
-            return self.speed_device.value
-        if self.backward_device.value and not self.forward_device.value:
-            return -self.speed_device.value
-        return 0
-
-    @value.setter
-    def value(self, value):
-        if not -1 <= value <= 1:
-            raise OutputDeviceBadValue("Motor value must be between -1 and 1")
-        if value > 0:
-            try:
-                self.forward(value)
-            except ValueError as e:
-                raise OutputDeviceBadValue(e)
-        elif value < 0:
-            try:
-                self.backward(-value)
-            except ValueError as e:
-                raise OutputDeviceBadValue(e)
-        else:
-            self.stop()
-
-    @property
-    def is_active(self):
-        """
-        Returns :data:`True` if the motor is currently running and
-        :data:`False` otherwise.
-        """
-        return self.value != 0
-
-    def forward(self, speed=1):
-        """
-        Drive the motor forwards.
-
-        :param float speed:
-            The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
-        """
-        if not 0 <= speed <= 1:
-            raise ValueError('forward speed must be between 0 and 1')
-        self.backward_device.off()
-        self.forward_device.on()
-        self.speed_device.value = speed
-
-    def backward(self, speed=1):
-        """
-        Drive the motor backwards.
-
-        :param float speed:
-            The speed at which the motor should turn. Can be any value between
-            0 (stopped) and the default 1 (maximum speed).
-        """
-        if not 0 <= speed <= 1:
-            raise ValueError('backward speed must be between 0 and 1')
-        self.forward_device.off()
-        self.backward_device.on()
-        self.speed_device.value = speed
-
-    def reverse(self):
-        """
-        Reverse the current direction of the motor. If the motor is currently
-        idle this does nothing. Otherwise, the motor's direction will be
-        reversed at the current speed.
-        """
-        self.value = -self.value
-
-    def stop(self):
-        """
-        Stop the motor.
-        """
-        self.forward_device.off()
-        self.backward_device.off()
-        self.speed_device.value = 0
 
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
     """
