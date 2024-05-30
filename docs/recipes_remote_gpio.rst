@@ -40,7 +40,7 @@ Multi-room motion alert
 =======================
 
 Install a Raspberry Pi with a :class:`MotionSensor` in each room of your house,
-and have an class:`LED` indicator showing when there's motion in each room:
+and have an :class:`LED` indicator showing when there's motion in each room:
 
 .. literalinclude:: examples/multi_room_motion_alert.py
 
