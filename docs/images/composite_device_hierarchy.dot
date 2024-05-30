@@ -5,13 +5,11 @@ digraph classes {
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     EventsMixin;
     HoldMixin;
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     CompositeDevice;
     CompositeOutputDevice;
     Device;
@@ -19,7 +17,36 @@ digraph classes {
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    ButtonBoard;
+    CamJamKitRobot;
+    Energenie;
+    FishDish;
+    JamHat;
+    LEDBarGraph;
+    LEDBoard;
+    LEDCharDisplay;
+    LEDMultiCharDisplay;
+    PiHutXmasTree;
+    PiLiter;
+    PiLiterBarGraph;
+    PiStop;
+    PiTraffic;
+    Pibrella;
+    PololuDRV8835Robot;
+    PumpkinPi;
+    Robot;
+    RotaryEncoder;
+    RyanteckRobot;
+    SnowPi;
+    StatusBoard;
+    StatusZero;
+    TonalBuzzer;
+    TrafficHat;
+    TrafficLights;
+    TrafficLightsBuzzer;
+    TrafficpHat;
 
+    /* Edges */
     ButtonBoard->CompositeDevice;
     ButtonBoard->HoldMixin;
     CamJamKitRobot->Robot;
@@ -34,14 +61,13 @@ digraph classes {
     LEDCharDisplay->LEDCollection;
     LEDCollection->CompositeOutputDevice;
     LEDMultiCharDisplay->CompositeOutputDevice;
-    PhaseEnableRobot->CompositeDevice;
     PiHutXmasTree->LEDBoard;
     PiLiter->LEDBoard;
     PiLiterBarGraph->LEDBarGraph;
     PiStop->TrafficLights;
     PiTraffic->TrafficLights;
     Pibrella->CompositeOutputDevice;
-    PololuDRV8835Robot->PhaseEnableRobot;
+    PololuDRV8835Robot->Robot;
     PumpkinPi->LEDBoard;
     Robot->CompositeDevice;
     RotaryEncoder->CompositeDevice;
