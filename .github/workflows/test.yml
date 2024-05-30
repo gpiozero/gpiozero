@@ -3,11 +3,7 @@
 
 name: Python package
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -42,8 +38,13 @@ jobs:
 
     - name: Install dependencies
       run: |
-        make develop
+        pip install -e .[test]
 
     - name: Run tests
       run: |
-        pytest -v -k 'not test_real_pins.py'
+        pytest -v -k 'not test_real_pins.py' --cov
+
+    # This only runs if you have a codecov.io account set up and linked,
+    # otherwise it will fail silently
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
