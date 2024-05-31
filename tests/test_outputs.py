@@ -979,7 +979,7 @@ def test_motor_pins_enable_pwm(mock_factory, pwm):
     s = mock_factory.pin(1)
     f = mock_factory.pin(2)
     b = mock_factory.pin(3)
-    with Motor(f, b, enable=s, pwm=False, enable_is_pwm=True) as motor:
+    with Motor(2, 3, enable=1, pwm=False, enable_is_pwm=True) as motor:
         assert repr(motor).startswith('<gpiozero.Motor object')
         assert motor.enable_device.pin is s
         assert isinstance(motor.enable_device, PWMOutputDevice)
@@ -1012,7 +1012,7 @@ def test_motor_close_enable_pwm(mock_factory, pwm):
     s = mock_factory.pin(1)
     f = mock_factory.pin(2)
     b = mock_factory.pin(3)
-    with Motor(f, b, enable=s, pwm=False, enable_is_pwm=True) as motor:
+    with Motor(2, 3, enable=1, pwm=False, enable_is_pwm=True) as motor:
         motor.close()
         assert motor.closed
         assert motor.enable_device.pin is None
@@ -1067,7 +1067,7 @@ def test_motor_value_enable_pwm(mock_factory, pwm):
     s = mock_factory.pin(1)
     f = mock_factory.pin(2)
     b = mock_factory.pin(3)
-    with Motor(f, b, enable=s, pwm=False, enable_is_pwm=True) as motor:
+    with Motor(2, 3, enable=1, pwm=False, enable_is_pwm=True) as motor:
         motor.value = -1
         assert motor.is_active
         assert motor.value == -1
@@ -1127,7 +1127,7 @@ def test_motor_bad_value_enable_pwm(mock_factory, pwm):
     s = mock_factory.pin(1)
     f = mock_factory.pin(2)
     b = mock_factory.pin(3)
-    with Motor(f, b, enable=s, pwm=False, enable_is_pwm=True) as motor:
+    with Motor(2, 3, enable=1, pwm=False, enable_is_pwm=True) as motor:
         with pytest.raises(ValueError):
             motor.value = -2
         with pytest.raises(ValueError):
@@ -1169,7 +1169,7 @@ def test_motor_reverse_enable_pwm(mock_factory, pwm):
     s = mock_factory.pin(1)
     f = mock_factory.pin(2)
     b = mock_factory.pin(3)
-    with Motor(f, b, enable=s, pwm=False, enable_is_pwm=True) as motor:
+    with Motor(2, 3, enable=1, pwm=False, enable_is_pwm=True) as motor:
         motor.forward()
         assert motor.value == 1
         assert b.state == 0 and f.state == 1 and s.state == 1
@@ -1228,6 +1228,8 @@ def test_motor_enable_pin(mock_factory, pwm):
 def test_motor_bad_init(mock_factory):
     with pytest.raises(OutputDeviceError):
         motor = Motor(1, 2, enable_is_pwm=True)
+    with pytest.raises(OutputDeviceError):
+        motor = Motor(1, 2, pwm=False, enable_is_pwm=True)
 
 def test_phaseenable_motor_pins(mock_factory, pwm):
     p = mock_factory.pin(1)
