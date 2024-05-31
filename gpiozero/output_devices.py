@@ -18,7 +18,7 @@
 import warnings
 from threading import Lock
 from itertools import repeat, cycle, chain
-from colorzero import Color
+from colorzero import Color, Hue
 from collections import OrderedDict
 from math import log2
 
@@ -536,6 +536,37 @@ class PWMOutputDevice(OutputDevice):
             on_time, off_time, fade_in_time, fade_out_time, n, background
         )
 
+    def fade_to(self, fade_time=1, start_value=None, end_value=1, background=True):
+        """
+        Make the device fade smoothly to a given value.
+
+        :param float fade_time:
+            Time in seconds to fade in. Defaults to 1
+
+        :type start_value: float or None
+        :param start:
+            Gives the value at which the fade starts; :data: `None` (the default) 
+            means start at current value
+
+        :param float end:
+            Gives the value at which the fade should end
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue fading and return immediately. If :data:`False`, only
+            return when the fade is finished.
+        """
+
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._fade_to_device,
+            (fade_time, start_value, end_value)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
     def _stop_blink(self):
         if self._controller:
             self._controller._stop_blink(self)
@@ -563,6 +594,24 @@ class PWMOutputDevice(OutputDevice):
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
                 )
+        for value, delay in sequence:
+            self._write(value)
+            if self._blink_thread.stopping.wait(delay):
+                break
+
+    def _fade_to_device(
+            self, fade_time, start_value, end_value, fps=25):
+        if start_value is None:
+            begin_value = self.value
+        else:
+            begin_value = start_value
+        sequence = []
+        if fade_time > 0:
+            sequence += [
+                (begin_value + ((end_value - begin_value) * i * (1 / fps) / fade_time) , 1 / fps)
+                for i in range(int(fps * fade_time))
+            ]
+            sequence.append((end_value,0))
         for value, delay in sequence:
             self._write(value)
             if self._blink_thread.stopping.wait(delay):
@@ -1099,6 +1148,87 @@ class RGBLED(SourceMixin, Device):
             on_color, off_color, n, background
         )
 
+    def fade_to(self, fade_time=1, start_color=None, end_color=(1,1,1), background=True):
+        """
+        Make the device fade smoothly to a given value.
+
+        :param float fade_time:
+            Time in seconds to fade in. Defaults to 1.
+
+        :type start_color: tuple or ~colorzero.Color or None
+        :param start:
+            Gives the color at which the fade starts; :data: `None` (the default) 
+            means start at current value.
+
+        :type end_color: ~colorzero.Color or tuple
+        :param end_color:
+            Gives the color at which the fade should end.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue fading and return immediately. If :data:`False`, only
+            return when the fade is finished.
+        """
+
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._fade_to_device,
+            (fade_time, start_color, end_color)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+    def cycle_color(self, cycle_time=10, start_color=None, clockwise=True, n=None, background=True):
+        """
+        Cycle the hue, while keeping saturation and value constant (hsv color model).
+        Caution: Only the hue parameter will change. This means, that the luminescence will stay
+        the same, so full white `(1,1,1)` will stay white and black (i.e. off) will stay black. 
+        For best (i.e. most colorful) results, use a pure color (e.g. `(1,0,0)` ) as a starting value.
+
+        :param float cycle_time:
+            Time in seconds to complete one cycle. Defaults to 10
+
+        :type start_color: tuple or ~colorzero.Color or None
+        :param start:
+            Gives the color at which the fade starts; :data: `None` (the default) 
+            means start at current color.
+
+        :param bool clockwise:
+            Gives the direction of the rotation. :data: `True` (the default) means clockwise 
+            in the hsv colorwheel (Red->Green->Blue->Red).
+            Further information on HSV: https://en.wikipedia.org/wiki/HSL_and_HSV
+
+        :type n: int or None
+        :param n:
+            Number of times to cycle; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue cycling and return immediately. If :data:`False`, only
+            return when the cycles are finished. (warning: the default value of
+            *n* will result in this method never returning).
+        """
+
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._cycle_color_device,
+            (cycle_time, start_color, clockwise, n)
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None            
+
+    def _stop_blink(self):
+        if self._controller:
+            self._controller._stop_blink(self)
+            self._controller = None
+        if self._blink_thread:
+            self._blink_thread.stop()
+            self._blink_thread = None                
+
     def _stop_blink(self, led=None):
         # If this is called with a single led, we stop all blinking anyway
         if self._blink_thread:
@@ -1130,6 +1260,59 @@ class RGBLED(SourceMixin, Device):
                 ]
         sequence.append((off_color, off_time))
         sequence = (
+                cycle(sequence) if n is None else
+                chain.from_iterable(repeat(sequence, n))
+                )
+        for l in self._leds:
+            l._controller = self
+        for value, delay in sequence:
+            for l, v in zip(self._leds, value):
+                l._write(v)
+            if self._blink_thread.stopping.wait(delay):
+                break
+
+    def _fade_to_device(
+            self, fade_time, start_color, end_color, fps=25):
+        # Define a simple lambda to perform linear interpolation between
+        # off_color and on_color
+        if start_color is None:
+            begin_color = self.value
+        else:
+            begin_color = start_color
+        lerp = lambda t: tuple(
+            (1 - t) * begin + t * end
+            for end, begin in zip(end_color, begin_color)
+            )
+        sequence = []
+        if fade_time > 0:
+            sequence += [
+                (lerp(i * (1 / fps) / fade_time), 1 / fps)
+                for i in range(int(fps * fade_time))
+                ]
+            sequence.append((end_color,0))
+        for l in self._leds:
+            l._controller = self
+        for value, delay in sequence:
+            for l, v in zip(self._leds, value):
+                l._write(v)
+            if self._blink_thread.stopping.wait(delay):
+                break
+
+    def _cycle_color_device(
+            self, cycle_time, start_color, clockwise, n, fps=25):
+        if start_color is None:
+            color = Color(self.value)
+        else:
+            color = Color(start_color)
+        direction = 1 if clockwise else -1
+        sequence = []
+        if cycle_time > 0:
+            sequence += [
+                (color + Hue(direction * i / (fps * cycle_time)), 1 / fps)
+                for i in range(int(fps * cycle_time))
+                ]
+            sequence.append((color,0))
+            sequence= (
                 cycle(sequence) if n is None else
                 chain.from_iterable(repeat(sequence, n))
                 )

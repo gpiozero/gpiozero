@@ -41,14 +41,14 @@ PWMLED
 ------
 
 .. autoclass:: PWMLED
-    :members: on, off, toggle, blink, pulse, pin, is_lit, value
+    :members: on, off, toggle, blink, pulse, fade_to, pin, is_lit, value
 
 
 RGBLED
 ------
 
 .. autoclass:: RGBLED
-    :members: on, off, toggle, blink, pulse, red, green, blue, is_lit, color, value
+    :members: on, off, toggle, blink, pulse, fade_to, cylcle_color, red, green, blue, is_lit, color, value
 
 
 Buzzer
