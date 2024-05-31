@@ -6,13 +6,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import argparse
 import sys
-import warnings
 
 from . import CliTool
 from gpiozero import Device
-from gpiozero.pins.pi import PiBoardInfo
 
 
 class PintestTool(CliTool):

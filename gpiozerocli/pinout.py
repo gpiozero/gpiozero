@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import argparse
 import sys
 import warnings
 import webbrowser

@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import gc
-import sys
 from time import sleep
 from threading import Event
 

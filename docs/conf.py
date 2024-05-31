@@ -8,12 +8,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import sys
 import os
 import configparser
 from pathlib import Path
 from datetime import datetime
-from setuptools.config import read_configuration
+
 
 on_rtd = os.environ.get('READTHEDOCS', '').lower() == 'true'
 config = configparser.ConfigParser()

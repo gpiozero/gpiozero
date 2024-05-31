@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import re
 from threading import RLock
 from types import MethodType
 from weakref import ref, WeakMethod
@@ -25,8 +24,6 @@ from ..devices import Device
 from ..exc import (
     GPIOPinInUse,
     PinInvalidPin,
-    PinNoPins,
-    PinNonPhysical,
     PinUnknownPi,
     SPIBadArgs,
     SPISoftwareFallback,

@@ -1,7 +1,6 @@
 from travispy import TravisPy
 from gpiozero import LED
 from gpiozero.tools import negated
-from time import sleep
 from signal import pause
 
 def build_passed(repo):

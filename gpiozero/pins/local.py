@@ -21,12 +21,10 @@ except ImportError:
     SpiDev = None
 
 from . import SPI
-from .pi import PiFactory, PiPin, SPI_HARDWARE_PINS, spi_port_device
+from .pi import PiFactory, PiPin, spi_port_device
 from .spi import SPISoftware
-from ..devices import Device
 from ..mixins import SharedMixin
-from ..output_devices import OutputDevice
-from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
+from ..exc import DeviceClosed, PinUnknownPi
 
 
 def get_pi_revision():

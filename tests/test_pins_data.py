@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import io
-import re
 import errno
 import pytest
 from unittest import mock
@@ -19,7 +18,6 @@ import gpiozero.pins.local
 from gpiozero.pins.local import LocalPiFactory
 from gpiozero.pins.pi import PiBoardInfo
 from gpiozero.pins.style import Style
-from gpiozero.compat import frozendict
 from gpiozero import *
 
 

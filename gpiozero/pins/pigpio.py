@@ -26,7 +26,6 @@ from ..exc import (
     PinInvalidPull,
     PinInvalidBounce,
     PinInvalidState,
-    SPIBadArgs,
     SPIInvalidClockMode,
     PinPWMFixedValue,
     DeviceClosed

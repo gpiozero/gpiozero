@@ -1,7 +1,6 @@
-import gpiozero
 from gpiozero import TrafficHat
 from gpiozero.pins.pigpio import PiGPIOFactory
-from time import sleep
+
 
 remote_factory = PiGPIOFactory(host='192.168.1.3')
 

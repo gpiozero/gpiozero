@@ -14,7 +14,6 @@ import errno
 from unittest import mock
 
 from gpiozero import *
-from gpiozero.pins.mock import MockFactory
 
 
 file_not_found = IOError(errno.ENOENT, 'File not found')

@@ -14,14 +14,12 @@ from weakref import ref
 from threading import Lock
 from textwrap import dedent
 from itertools import cycle
-from operator import attrgetter
 from collections import defaultdict, namedtuple
 
 from .style import Style
 from ..devices import Device
 from ..exc import (
     PinInvalidPin,
-    PinInvalidFunction,
     PinSetInput,
     PinFixedPull,
     PinUnsupported,
