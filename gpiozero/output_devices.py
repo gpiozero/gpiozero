@@ -1267,12 +1267,14 @@ class Motor(SourceMixin, CompositeDevice):
         """
         if not 0 <= speed <= 1:
             raise ValueError('forward speed must be between 0 and 1')
-        if isinstance(self.forward_device, DigitalOutputDevice) and isinstance(self.enable_device, DigitalOutputDevice):
+        if isinstance(self.forward_device, DigitalOutputDevice) and (
+            not hasattr(self, "enable_device") or isinstance(self.enable_device, DigitalOutputDevice)
+        ):
             if speed not in (0, 1):
                 raise ValueError(
                     'forward speed must be 0 or 1 with non-PWM Motors')
         self.backward_device.off()
-        if isinstance(self.enable_device, PWMOutputDevice):
+        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
             self.enable_device.value = speed
             self.forward_device.on()
         else:
@@ -1289,12 +1291,14 @@ class Motor(SourceMixin, CompositeDevice):
         """
         if not 0 <= speed <= 1:
             raise ValueError('backward speed must be between 0 and 1')
-        if isinstance(self.backward_device, DigitalOutputDevice) and isinstance(self.enable_device, DigitalOutputDevice):
+        if isinstance(self.backward_device, DigitalOutputDevice) and (
+            not hasattr(self, "enable_device") or isinstance(self.enable_device, DigitalOutputDevice)
+        ):
             if speed not in (0, 1):
                 raise ValueError(
                     'backward speed must be 0 or 1 with non-PWM Motors')
         self.forward_device.off()
-        if isinstance(self.enable_device, PWMOutputDevice):
+        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
             self.enable_device.value = speed
             self.backward_device.on()
         else:
@@ -1314,6 +1318,8 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
+        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
+            self.enable_device.off()
 
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
     """
