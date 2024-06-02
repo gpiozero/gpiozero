@@ -20,6 +20,7 @@ from threading import Lock
 from itertools import repeat, cycle, chain
 from colorzero import Color
 from collections import OrderedDict
+from enum import Enum, auto
 from math import log2
 
 from .exc import (
@@ -1198,6 +1199,14 @@ class Motor(SourceMixin, CompositeDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
+
+    class ControlType(Enum):
+        DIGITAL = auto()
+        PWM = auto()
+        DIGITAL_WITH_DIGITAL_ENABLE = auto()
+        PWM_WITH_DIGITAL_ENABLE = auto()
+        DIGITAL_WITH_PWM_ENABLE = auto()
+
     def __init__(self, forward, backward, *, enable=None, pwm=True,
                  enable_is_pwm=False, pin_factory=None):
         if pwm and enable_is_pwm:
@@ -1216,8 +1225,12 @@ class Motor(SourceMixin, CompositeDevice):
                     initial_value=True,
                     pin_factory=pin_factory
                 )
+                self.control_type = self.ControlType.PWM_WITH_DIGITAL_ENABLE if pwm else self.ControlType.DIGITAL_WITH_DIGITAL_ENABLE
             else:
                 devices['enable_device'] = PWMOutputDevice(enable, pin_factory=pin_factory)
+                self.control_type = self.ControlType.DIGITAL_WITH_PWM_ENABLE
+        else:
+            self.control_type = self.ControlType.PWM if pwm else self.ControlType.DIGITAL
         super().__init__(_order=devices.keys(), pin_factory=pin_factory, **devices)
 
     @property
@@ -1227,7 +1240,7 @@ class Motor(SourceMixin, CompositeDevice):
         (full speed backward) and 1 (full speed forward), with 0 representing
         stopped.
         """
-        if hasattr(self, "enable_device"):
+        if self.has_enable:
             return (self.forward_device.value - self.backward_device.value) * self.enable_device.value
         return self.forward_device.value - self.backward_device.value
 
@@ -1249,6 +1262,22 @@ class Motor(SourceMixin, CompositeDevice):
             self.stop()
 
     @property
+    def has_enable(self):
+        """
+        Returns :data:`True` if the motor is controlled using an enable pin,
+        either digital or PWM, and :data:`False` otherwise.
+        """
+        return self.control_type in {self.ControlType.DIGITAL_WITH_PWM_ENABLE, self.ControlType.PWM_WITH_DIGITAL_ENABLE, self.ControlType.DIGITAL_WITH_DIGITAL_ENABLE}
+
+    @property
+    def has_pwm(self):
+        """
+        Returns :data:`True` if the motor is controlled using PWM, either for
+        direction or enable, and :data:`False` otherwise.
+        """
+        return self.control_type in {self.ControlType.PWM, self.ControlType.PWM_WITH_DIGITAL_ENABLE, self.ControlType.DIGITAL_WITH_PWM_ENABLE}
+
+    @property
     def is_active(self):
         """
         Returns :data:`True` if the motor is currently running and
@@ -1267,14 +1296,12 @@ class Motor(SourceMixin, CompositeDevice):
         """
         if not 0 <= speed <= 1:
             raise ValueError('forward speed must be between 0 and 1')
-        if isinstance(self.forward_device, DigitalOutputDevice) and (
-            not hasattr(self, "enable_device") or isinstance(self.enable_device, DigitalOutputDevice)
-        ):
+        if not self.has_pwm:
             if speed not in (0, 1):
                 raise ValueError(
                     'forward speed must be 0 or 1 with non-PWM Motors')
         self.backward_device.off()
-        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
+        if self.control_type == self.ControlType.DIGITAL_WITH_PWM_ENABLE:
             self.enable_device.value = speed
             self.forward_device.on()
         else:
@@ -1291,14 +1318,12 @@ class Motor(SourceMixin, CompositeDevice):
         """
         if not 0 <= speed <= 1:
             raise ValueError('backward speed must be between 0 and 1')
-        if isinstance(self.backward_device, DigitalOutputDevice) and (
-            not hasattr(self, "enable_device") or isinstance(self.enable_device, DigitalOutputDevice)
-        ):
+        if not self.has_pwm:
             if speed not in (0, 1):
                 raise ValueError(
                     'backward speed must be 0 or 1 with non-PWM Motors')
         self.forward_device.off()
-        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
+        if self.control_type == self.ControlType.DIGITAL_WITH_PWM_ENABLE:
             self.enable_device.value = speed
             self.backward_device.on()
         else:
@@ -1318,7 +1343,7 @@ class Motor(SourceMixin, CompositeDevice):
         """
         self.forward_device.off()
         self.backward_device.off()
-        if hasattr(self, "enable_device") and isinstance(self.enable_device, PWMOutputDevice):
+        if self.control_type == self.ControlType.DIGITAL_WITH_PWM_ENABLE:
             self.enable_device.off()
 
 class PhaseEnableMotor(SourceMixin, CompositeDevice):
