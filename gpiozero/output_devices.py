@@ -1207,6 +1207,20 @@ class Motor(SourceMixin, CompositeDevice):
         PWM_WITH_DIGITAL_ENABLE = auto()
         DIGITAL_WITH_PWM_ENABLE = auto()
 
+        @property
+        def has_pwm(self):
+            """
+            Returns :data:`True` if the control type involves PWM.
+            """
+            return "PWM" in self.name
+
+        @property
+        def has_enable(self):
+            """
+            Returns :data:`True` if the control type involves an enable pin.
+            """
+            return "ENABLE" in self.name
+
     def __init__(self, forward, backward, *, enable=None, pwm=True,
                  enable_is_pwm=False, pin_factory=None):
         if pwm and enable_is_pwm:
@@ -1240,7 +1254,7 @@ class Motor(SourceMixin, CompositeDevice):
         (full speed backward) and 1 (full speed forward), with 0 representing
         stopped.
         """
-        if self.has_enable:
+        if self.control_type.has_enable:
             return (self.forward_device.value - self.backward_device.value) * self.enable_device.value
         return self.forward_device.value - self.backward_device.value
 
@@ -1262,22 +1276,6 @@ class Motor(SourceMixin, CompositeDevice):
             self.stop()
 
     @property
-    def has_enable(self):
-        """
-        Returns :data:`True` if the motor is controlled using an enable pin,
-        either digital or PWM, and :data:`False` otherwise.
-        """
-        return self.control_type in {self.ControlType.DIGITAL_WITH_PWM_ENABLE, self.ControlType.PWM_WITH_DIGITAL_ENABLE, self.ControlType.DIGITAL_WITH_DIGITAL_ENABLE}
-
-    @property
-    def has_pwm(self):
-        """
-        Returns :data:`True` if the motor is controlled using PWM, either for
-        direction or enable, and :data:`False` otherwise.
-        """
-        return self.control_type in {self.ControlType.PWM, self.ControlType.PWM_WITH_DIGITAL_ENABLE, self.ControlType.DIGITAL_WITH_PWM_ENABLE}
-
-    @property
     def is_active(self):
         """
         Returns :data:`True` if the motor is currently running and
@@ -1296,7 +1294,7 @@ class Motor(SourceMixin, CompositeDevice):
         """
         if not 0 <= speed <= 1:
             raise ValueError('forward speed must be between 0 and 1')
-        if not self.has_pwm:
+        if not self.control_type.has_pwm:
             if speed not in (0, 1):
                 raise ValueError(
                     'forward speed must be 0 or 1 with non-PWM Motors')
