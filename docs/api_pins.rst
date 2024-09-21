@@ -189,6 +189,7 @@ Like the :envvar:`GPIOZERO_PIN_FACTORY` value, these can be exported from your
 
     Sensible uses of multiple pin factories are given in :doc:`remote_gpio`.
 
+    As of the most recent update, Raspberry Pi 5 is not supported by pigpio. Raspberry Pi 5 is built with a new chip architecture that is incompatible with previous iterations. Follow the conversation here <https://github.com/joan2937/pigpio/issues/589> for updates.
 
 .. _mock-pins:
 
