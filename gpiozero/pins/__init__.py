@@ -272,7 +272,7 @@ class Pin:
             pin.function = 'input'
             pin.pull = pull
 
-        However, descendents may override this order to provide the smallest
+        However, descendents may override this in order to provide the smallest
         possible delay between configuring the pin for input and pulling the
         pin up/down (which can be important for avoiding "blips" in some
         configurations).
