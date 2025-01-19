@@ -12,6 +12,7 @@ from threading import Thread, RLock
 
 from gpiod import (
     request_lines,
+    Chip,
     LineSettings,
 )
 from gpiod.line import (
@@ -28,6 +29,15 @@ from ..exc import (
     PinInvalidPull,
     PinInvalidBounce,
 )
+
+def find_gpiochip():
+    """find the gpiochip with the pinctrl driver (that contains the Pi GPIOs)"""
+    for chipnum in [0, 4]:
+        path = f"/dev/gpiochip{chipnum}"
+        with Chip(path) as chip:
+            if chip.get_info().label.startswith("pinctrl-"):
+                return chipnum
+    raise Exception("cannot find gpiochip for Pi GPIOs")
 
 class GpiodFactory(LocalPiFactory):
     """
@@ -61,7 +71,7 @@ class GpiodFactory(LocalPiFactory):
     def __init__(self, chip=None):
         super().__init__()
         if chip is None:
-            chip = 4 if (self._get_revision() & 0xff0) >> 4 == 0x17 else 0
+            chip = find_gpiochip()
         self._chip = chip
         self._chip_path = f'/dev/gpiochip{chip}'
         self.pin_class = GpiodPin
