@@ -52,6 +52,7 @@ autodoc_member_order = 'groupwise'
 autodoc_mock_imports = [
     'RPi',
     'lgpio',
+    'gpiod',
     'RPIO',
     'pigpio',
     'w1thermsensor',
