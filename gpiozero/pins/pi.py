@@ -252,21 +252,20 @@ class PiBoardInfo(BoardInfo):
                 'A':      {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
                 'B':      {'P1': data.REV1_P1, 'P2': data.PI1_P2, 'P3': data.PI1_P3} if pcb_revision == '1.0' else
                           {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
-                'B+':     {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN},
+                'A+':     {'J8': data.PLUS_J8},
                 'CM':     {'SODIMM': data.CM_SODIMM},
                 'CM3':    {'SODIMM': data.CM3_SODIMM},
                 'CM3+':   {'SODIMM': data.CM3_SODIMM},
                 'Zero':   {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN, 'TV': data.ZERO_TV},
                 'Zero W': {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN, 'TV': data.ZERO_TV},
-                '2B':     {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN},
-                '3B':     {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN},
                 '3A+':    {'J8': data.PLUS_J8, 'RUN': data.PLUS_RUN},
                 '3B+':    {'J8': data.PLUS_J8, 'RUN': data.PLUS_RUN, 'POE': data.PLUS_POE},
                 '4B':     {'J8': data.PI4_J8, 'J2': data.PI4_J2, 'J14': data.PI4_J14},
+                'Zero2W': {'J8': data.PLUS_J8},
                 '400':    {'J8': data.PI4_J8},
                 'CM4':    {'J8': data.PI4_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9},
                 '5B':     {'J8': data.PI4_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
-                }.get(model, {'J8': data.PLUS_J8})
+                }.get(model, {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN})
             board = {
                 'A':      data.A_BOARD,
                 'B':      data.REV1_BOARD if pcb_revision == '1.0' else data.REV2_BOARD,
