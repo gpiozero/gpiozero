@@ -122,6 +122,7 @@ class PiBoardInfo(BoardInfo):
                 0x15: 'CM4S',
                 0x17: '5B',
                 0x18: 'CM5',
+                0x19: '500',
                 0x1a: 'CM5Lite',
                 }.get(revcode_type, '???')
             if model in ('A', 'B'):
@@ -178,6 +179,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      '2025Q1' if memory == 16384 else '2023Q4',
                 'CM5':     '2024Q4',
                 'CM5Lite': '2024Q4',
+                '500':     '2024Q4',
                 }.get(model, 'Unknown')
             storage = {
                 'A':       'SD',
@@ -206,6 +208,7 @@ class PiBoardInfo(BoardInfo):
                 '400':     3,
                 'CM5':     2,
                 'CM5Lite': 2,
+                '500':     3,
                 }.get(model, 4)
             usb3 = {
                 '4B':      2,
@@ -213,6 +216,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      2,
                 'CM5':     2,
                 'CM5Lite': 2,
+                '500':     2,
                 }.get(model, 0)
             ethernet = {
                 'A':      0,
@@ -238,6 +242,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      1000,
                 'CM5':     1000,
                 'CM5Lite': 1000,
+                '500':     1000,
                 }.get(model, 0)
             bluetooth = wifi = {
                 '3B':      True,
@@ -251,6 +256,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      True,
                 'CM5':     True,
                 'CM5Lite': True,
+                '500':     True,
                 }.get(model, False)
             csi = {
                 'Zero':    0 if pcb_revision == '1.2' else 1,
@@ -263,6 +269,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      2,
                 'CM5':     2,
                 'CM5Lite': 2,
+                '500':     0,
                 }.get(model, 1)
             dsi = {
                 'Zero':   0,
@@ -288,6 +295,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      {'J8': data.PI5_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
                 'CM5':     {'J8': data.PI5_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9}, # This is slightly wrong, and will need to be updated when we have a data.CM5_BOARD
                 'CM5Lite': {'J8': data.PI5_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9}, # This is slightly wrong, and will need to be updated when we have a data.CM5_BOARD
+                '500':     {'J8': data.PI5_J8},
                 }.get(model, {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN})
             board = {
                 'A':       data.A_BOARD,
@@ -308,6 +316,7 @@ class PiBoardInfo(BoardInfo):
                 '5B':      data.B5_BOARD,
                 'CM5':     data.CM4_BOARD, # This is slightly wrong, but there isn't a data.CM5_BOARD ascii-art yet
                 'CM5Lite': data.CM4_BOARD, # This is slightly wrong, but there isn't a data.CM5_BOARD ascii-art yet
+                '500':     data.P400_BOARD, # This is slightly wrong, but there isn't a data.P500_BOARD ascii-art yet
                 }.get(model, data.BPLUS_BOARD)
         else:
             # Old-style revision, use the lookup table

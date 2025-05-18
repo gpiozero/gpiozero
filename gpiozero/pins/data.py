@@ -238,6 +238,8 @@ P400_BOARD = """\
 {style:black on white}`------------------------------------------------------------------------'{style:reset}
                                                  Raspberry Pi {style:bold red}{model}{style:reset} Rev {pcb_revision}"""
 
+# TODO: Add a P500_BOARD ascii-art diagram
+
 # Pin maps for various board revisions and headers. Much of the information
 # below is derived from the BCM2835 ARM Peripherals datasheet, but Gadgetoid's
 # superb https://pinout.xyz site was also a great deal of help in filling in
