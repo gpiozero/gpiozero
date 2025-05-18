@@ -252,7 +252,6 @@ class PiBoardInfo(BoardInfo):
                 'A':      {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
                 'B':      {'P1': data.REV1_P1, 'P2': data.PI1_P2, 'P3': data.PI1_P3} if pcb_revision == '1.0' else
                           {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
-                'A+':     {'J8': data.PLUS_J8},
                 'CM':     {'SODIMM': data.CM_SODIMM},
                 'CM3':    {'SODIMM': data.CM3_SODIMM},
                 'CM3+':   {'SODIMM': data.CM3_SODIMM},

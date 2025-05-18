@@ -120,7 +120,7 @@ APLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
+{style:white on green}| {RUN:{style} rev col1}{style:white on green} RUN {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} |{style:reset}
 {style:white on green}| {style:on black}|D{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|S{style:on green}      {style:on black}|SoC|{style:on green}         {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|I{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
@@ -698,10 +698,10 @@ PI_REVISIONS = {
     0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
     0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          BPLUS_BOARD,  ),
     0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
-    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
+    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          APLUS_BOARD,  ),
     0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          BPLUS_BOARD,  ),
     0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
-    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          APLUS_BOARD,  ),
     }
 
 SPI_HARDWARE_PINS = {
