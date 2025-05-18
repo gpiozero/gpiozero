@@ -382,6 +382,8 @@ PI4_GPIO55 = gpiof('GPIO55')
 PI4_GPIO56 = gpiof('GPIO56')
 PI4_GPIO57 = gpiof('GPIO57')
 
+# TODO: The Alt functions on the Pi 5 pins are different to the Pi 4 pins (see the RP1 datasheet), so theoretically we need a load of PI5_GPIO entries (and then update the PI5_J8 header below)
+
 del gpiof
 del re
 
@@ -520,6 +522,8 @@ PI4_J2 = (3, 1, {
 })
 
 PI4_J14 = PLUS_POE
+
+PI5_J8 = PI4_J8 # This is slightly wrong, but see the PI5_GPIO comment above
 
 PI5_J2 = (2, 1, {
     1: {'': 'RUN'},

@@ -173,7 +173,7 @@ class PiBoardInfo(BoardInfo):
                 'CM4S':   '2022Q1',
                 '400':    '2020Q4',
                 'Zero2W': '2021Q4',
-                '5B':     '2023Q4',
+                '5B':     '2025Q1' if memory == 16384 else '2023Q4',
                 }.get(model, 'Unknown')
             storage = {
                 'A':    'SD',
@@ -252,7 +252,6 @@ class PiBoardInfo(BoardInfo):
                 'Zero':   0,
                 'Zero W': 0,
                 'Zero2W': 0,
-                '5B':     2,
                 }.get(model, csi)
             headers = {
                 'A':      {'P1': data.REV2_P1, 'P5': data.REV2_P5, 'P6': data.REV2_P6, 'P2': data.PI1_P2, 'P3': data.PI1_P3},
@@ -270,7 +269,7 @@ class PiBoardInfo(BoardInfo):
                 '400':    {'J8': data.PI4_J8},
                 'CM4':    {'J8': data.PI4_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9},
                 'CM4S':   {'SODIMM': data.CM3_SODIMM},
-                '5B':     {'J8': data.PI4_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
+                '5B':     {'J8': data.PI5_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
                 }.get(model, {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN})
             board = {
                 'A':      data.A_BOARD,
