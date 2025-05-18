@@ -194,7 +194,7 @@ CM3PLUS_BOARD = """\
 CM4_BOARD = """\
 {style:white on green},--{style:black on white}csi1{style:white on green}---{style:black on white}dsi0{style:white on green}---{style:black on white}dsi1{style:white on green}-----------{style:bold},-------------.{style:normal}-----------.{style:reset}
 {style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green} J2 {J2:{style} col2}{style:bold white on green}|             |{style:normal}{J3:{style} rev col1}{style:white on green}        |{style:reset}
-{style:white on green}{style:black on white}c|{style:white on green}    {style:bold}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}J3         |{style:reset}
+{style:white on green}{style:black on white}c|{style:white on green}    {style:bold}Pi {model:7s} Rev {pcb_revision:3s}{style:normal} {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}J3         |{style:reset}
 {style:white on green}{style:black on white}s|{style:white on green}    {style:bold}IO Board{style:normal}                  {style:bold}|       {style:normal black on white} Fi {style:white on green}  {style:bold}|{style:normal}           |{style:reset}
 {style:white on green}{style:black on white}i|{style:white on green}          J6 {J6:{style} col2}{style:bold white on green}               |         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
 {style:white on green}| J8           {J6:{style} col1}{style:bold white on green}               |  {style:normal black on white},----.{style:on green} {style:white on black}|eM|{style:bold on green}|  {style:normal white on black}}}-{{{style:on green}      |{style:reset}
@@ -210,6 +210,8 @@ CM4_BOARD = """\
 {style:white on green}|                          {style:black on white}|Net |{style:on green} {style:black on white}|USB|{style:on green}     {style:black on white}|uSD|{style:white on green}      {style:on black}|p|{style:on green}|{style:reset}
 {style:white on green}|    {style:black on white}|HDMI|{style:on green}   {style:black on white}|HDMI|{style:white on green}       {style:black on white}|    |{style:on green} {style:black on white}| 2 |{style:on green} {style:black on white}usb{style:white on green} {style:black on white}|   |{style:white on green}      {style:on black}|w|{style:on green}|{style:reset}
 {style:white on green}`----{style:black on white}| 0  |{style:white on green}---{style:black on white}| 1  |{style:white on green}-------{style:black on white}|    |{style:white on green}-{style:black on white}|   |{style:white on green}-{style:black on white}| |{style:white on green}------------{style:white on black}|r|{style:on green}'{style:reset}"""
+
+# TODO: Add a CM5_BOARD ascii-art diagram
 
 P400_BOARD = """\
     {style:white on red},------+----+----+----+----+---+--+--+--+--------------------+---.{style:reset}
