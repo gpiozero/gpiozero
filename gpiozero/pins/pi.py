@@ -119,6 +119,7 @@ class PiBoardInfo(BoardInfo):
                 0x12: 'Zero2W',
                 0x13: '400',
                 0x14: 'CM4',
+                0x15: 'CM4S',
                 0x17: '5B',
                 }.get(revcode_type, '???')
             if model in ('A', 'B'):
@@ -169,6 +170,7 @@ class PiBoardInfo(BoardInfo):
                 'CM3+':   '2019Q1',
                 '4B':     '2020Q2' if memory == 8192 else '2019Q2',
                 'CM4':    '2020Q4',
+                'CM4S':   '2022Q1',
                 '400':    '2020Q4',
                 'Zero2W': '2021Q4',
                 '5B':     '2023Q4',
@@ -180,6 +182,7 @@ class PiBoardInfo(BoardInfo):
                 'CM3':  'eMMC / off-board',
                 'CM3+': 'eMMC / off-board',
                 'CM4':  'eMMC / off-board',
+                'CM4S': 'eMMC / off-board',
                 }.get(model, 'MicroSD')
             usb = {
                 'A':      1,
@@ -193,6 +196,7 @@ class PiBoardInfo(BoardInfo):
                 '3A+':    1,
                 'CM3+':   1,
                 'CM4':    2,
+                'CM4S':   1,
                 '400':    3,
                 }.get(model, 4)
             usb3 = {
@@ -210,6 +214,7 @@ class PiBoardInfo(BoardInfo):
                 'CM3':    0,
                 '3A+':    0,
                 'CM3+':   0,
+                'CM4S':   0,
                 }.get(model, 1)
             eth_speed = {
                 'B':      100,
@@ -240,6 +245,7 @@ class PiBoardInfo(BoardInfo):
                 'CM3+':   2,
                 '400':    0,
                 'CM4':    2,
+                'CM4S':   2,
                 '5B':     2,
                 }.get(model, 1)
             dsi = {
@@ -263,6 +269,7 @@ class PiBoardInfo(BoardInfo):
                 'Zero2W': {'J8': data.PLUS_J8},
                 '400':    {'J8': data.PI4_J8},
                 'CM4':    {'J8': data.PI4_J8, 'J1': data.CM4_J1, 'J2': data.CM4_J2, 'J3': data.CM4_J3, 'J6': data.CM4_J6, 'J9': data.CM4_J9},
+                'CM4S':   {'SODIMM': data.CM3_SODIMM},
                 '5B':     {'J8': data.PI4_J8, 'J2': data.PI5_J2, 'J7': data.PI5_J7, 'J14': data.PI4_J14},
                 }.get(model, {'J8': data.PLUS_J8, 'RUN': data.ZERO_RUN})
             board = {
@@ -279,6 +286,7 @@ class PiBoardInfo(BoardInfo):
                 '3B+':    data.B3PLUS_BOARD,
                 '4B':     data.B4_BOARD,
                 'CM4':    data.CM4_BOARD,
+                'CM4S':   data.CM3PLUS_BOARD,
                 '400':    data.P400_BOARD,
                 '5B':     data.B5_BOARD,
                 }.get(model, data.BPLUS_BOARD)
