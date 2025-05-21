@@ -41,8 +41,7 @@ within a virtual Python environment:
 .. code-block:: console
 
     $ sudo apt install lsb-release build-essential git exuberant-ctags \
-        virtualenvwrapper python-virtualenv python3-virtualenv \
-        python-dev python3-dev
+        virtualenvwrapper python3-virtualenv python3-dev
 
 After installing ``virtualenvwrapper`` you'll need to restart your shell before
 commands like :command:`mkvirtualenv` will operate correctly. Once you've
