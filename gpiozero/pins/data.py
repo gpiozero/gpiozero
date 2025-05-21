@@ -681,7 +681,7 @@ CM4_J3 = (3, 1, {
 # http://elinux.org/RPi_HardwareHistory
 # http://elinux.org/RPi_Low-level_peripherals
 # https://git.drogon.net/?p=wiringPi;a=blob;f=wiringPi/wiringPi.c#l807
-# https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes
 
 PI_REVISIONS = {
     # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                         board

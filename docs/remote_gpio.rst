@@ -347,7 +347,7 @@ Continue to:
 .. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
 .. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
 .. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
-.. _Raspberry Pi Desktop x86: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
+.. _Raspberry Pi Desktop x86: https://www.raspberrypi.com/software/raspberry-pi-desktop/
 .. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _follow this guide: https://projects.raspberrypi.org/en/projects/using-pip-on-windows
-.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
+.. _Sense HAT: https://www.raspberrypi.com/products/sense-hat/

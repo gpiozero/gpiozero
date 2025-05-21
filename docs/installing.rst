@@ -12,12 +12,12 @@ Installing GPIO Zero
 
 GPIO Zero is installed by default in the `Raspberry Pi OS`_ desktop image,  `Raspberry Pi OS`_ Lite image, and
 the `Raspberry Pi Desktop`_ image for PC/Mac, all available from
-`raspberrypi.org`_. Follow these guides to installing on other operating systems, including for PCs using the :doc:`remote GPIO
+`raspberrypi.com`_. Follow these guides to installing on other operating systems, including for PCs using the :doc:`remote GPIO
 <remote_gpio>` feature.
 
-.. _Raspberry Pi OS: https://www.raspberrypi.org/software/operating-systems/
-.. _Raspberry Pi Desktop: https://www.raspberrypi.org/software/raspberry-pi-desktop/
-.. _raspberrypi.org: https://www.raspberrypi.org/software/
+.. _Raspberry Pi OS: https://www.raspberrypi.com/software/operating-systems/
+.. _Raspberry Pi Desktop: https://www.raspberrypi.com/software/raspberry-pi-desktop/
+.. _raspberrypi.com: https://www.raspberrypi.com/software/
 
 Raspberry Pi
 ============
@@ -25,8 +25,8 @@ Raspberry Pi
 GPIO Zero is packaged in the apt repositories of Raspberry Pi OS, `Debian`_ and
 `Ubuntu`_. It is also available on `PyPI`_.
 
-.. _Debian: https://packages.debian.org/buster/python3-gpiozero
-.. _Ubuntu: https://packages.ubuntu.com/hirsute/python3-gpiozero
+.. _Debian: https://packages.debian.org/bookworm/python3-gpiozero
+.. _Ubuntu: https://packages.ubuntu.com/noble/python3-gpiozero
 .. _PyPI: https://pypi.org/project/gpiozero/
 
 apt

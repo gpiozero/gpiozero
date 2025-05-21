@@ -82,4 +82,4 @@ Note that in this case, the Sense HAT code must be run locally, and the GPIO
 remotely.
 
 
-.. _Sense HAT: https://www.raspberrypi.org/products/sense-hat/
+.. _Sense HAT: https://www.raspberrypi.com/products/sense-hat/

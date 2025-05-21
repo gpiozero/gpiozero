@@ -5,7 +5,7 @@ gpiozero
 A simple interface to GPIO devices with `Raspberry Pi`_, developed and
 maintained by `Ben Nuttall`_ and `Dave Jones`_.
 
-.. _Raspberry Pi: https://www.raspberrypi.org/
+.. _Raspberry Pi: https://www.raspberrypi.com/
 .. _Ben Nuttall: https://github.com/bennuttall
 .. _Dave Jones: https://github.com/waveform80
 
@@ -93,11 +93,11 @@ Installation
 ============
 
 GPIO Zero is installed by default in the Raspberry Pi OS desktop image,
-available from `raspberrypi.org`_. To install on Raspberry Pi OS Lite or other
+available from `raspberrypi.com`_. To install on Raspberry Pi OS Lite or other
 operating systems, including for PCs using remote GPIO, see the `Installing`_
 chapter.
 
-.. _raspberrypi.org: https://www.raspberrypi.org/software/
+.. _raspberrypi.com: https://www.raspberrypi.com/software/
 .. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
 
 Documentation
@@ -121,7 +121,7 @@ Forums`_.
 .. _issue on GitHub: https://github.com/gpiozero/gpiozero/issues/new
 .. _GitHub discussion board: https://github.com/gpiozero/gpiozero/discussions
 .. _Raspberry Pi Stack Exchange: https://raspberrypi.stackexchange.com/
-.. _Raspberry Pi Forums: https://www.raspberrypi.org/forums/
+.. _Raspberry Pi Forums: https://forums.raspberrypi.com/
 
 Contributors
 ============

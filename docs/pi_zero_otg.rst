@@ -31,7 +31,7 @@ Usage from Windows and Mac OS is not supported at present.
 Raspberry Pi Desktop x86 setup
 ------------------------------
 
-1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.org
+1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.com
 
 2. Write the image to a USB stick or burn to a DVD.
 
@@ -105,7 +105,7 @@ Zero:
 Alternatively, you can set the pin factory in-line, as explained in
 :doc:`remote_gpio`.
 
-Read more on the GPIO expander in blog posts on `raspberrypi.org`_ and
+Read more on the GPIO expander in blog posts on `raspberrypi.com`_ and
 `bennuttall.com`_.
 
 Legacy method - SD card required
@@ -144,10 +144,10 @@ IP address if you know it), for example:
     $ GPIOZERO_PIN_FACTORY=pigpio PIGPIO_ADDR=raspberrypi.local python3 led.py
 
 
-.. _Raspberry Pi Zero: https://www.raspberrypi.org/products/raspberry-pi-zero/
-.. _Pi Zero W: https://www.raspberrypi.org/products/raspberry-pi-zero-w/
-.. _Raspberry Pi Desktop OS: https://www.raspberrypi.org/downloads/raspberry-pi-desktop/
-.. _raspberrypi.org: https://www.raspberrypi.org/blog/gpio-expander/
+.. _Raspberry Pi Zero: https://www.raspberrypi.com/products/raspberry-pi-zero/
+.. _Pi Zero W: https://www.raspberrypi.com/products/raspberry-pi-zero-w/
+.. _Raspberry Pi Desktop OS: https://www.raspberrypi.com/software/raspberry-pi-desktop/
+.. _raspberrypi.com: https://www.raspberrypi.com/news/gpio-expander/
 .. _bennuttall.com: http://bennuttall.com/raspberry-pi-zero-gpio-expander/
 .. _blog.gbaman.info: http://blog.gbaman.info/?p=791
 .. _learn.adafruit.com: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget
