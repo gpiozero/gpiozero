@@ -120,7 +120,7 @@ APLUS_BOARD = """\
 {style:white on green}| {J8:{style} col2}{style:white on green} J8  |{style:reset}
 {style:white on green}| {J8:{style} col1}{style:white on green}     |{style:reset}
 {style:white on green}|                          |{style:reset}
-{style:white on green}|      {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal}   |{style:reset}
+{style:white on green}| {RUN:{style} rev col1}{style:white on green} RUN {style:bold}Pi Model {model:4s}V{pcb_revision:3s}{style:normal} |{style:reset}
 {style:white on green}| {style:on black}|D{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
 {style:white on green}| {style:on black}|S{style:on green}      {style:on black}|SoC|{style:on green}         {style:black on white}| USB{style:reset}
 {style:white on green}| {style:on black}|I{style:on green}      {style:on black}+---+{style:on green}         {style:black on white}+===={style:reset}
@@ -194,7 +194,7 @@ CM3PLUS_BOARD = """\
 CM4_BOARD = """\
 {style:white on green},--{style:black on white}csi1{style:white on green}---{style:black on white}dsi0{style:white on green}---{style:black on white}dsi1{style:white on green}-----------{style:bold},-------------.{style:normal}-----------.{style:reset}
 {style:white on green}|  {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green}   {style:black on white}----{style:white on green} J2 {J2:{style} col2}{style:bold white on green}|             |{style:normal}{J3:{style} rev col1}{style:white on green}        |{style:reset}
-{style:white on green}{style:black on white}c|{style:white on green}    {style:bold}Pi {model:4s} Rev {pcb_revision:3s}{style:normal}    {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}J3         |{style:reset}
+{style:white on green}{style:black on white}c|{style:white on green}    {style:bold}Pi {model:7s} Rev {pcb_revision:3s}{style:normal} {J2:{style} col1}{style:bold white on green}|       {style:normal black on white} Wi {style:white on green}  {style:bold}|{style:normal}J3         |{style:reset}
 {style:white on green}{style:black on white}s|{style:white on green}    {style:bold}IO Board{style:normal}                  {style:bold}|       {style:normal black on white} Fi {style:white on green}  {style:bold}|{style:normal}           |{style:reset}
 {style:white on green}{style:black on white}i|{style:white on green}          J6 {J6:{style} col2}{style:bold white on green}               |         {style:normal white on black}+--+{style:on green}{style:bold}|  {style:normal white on black}|P|{style:on green}      |{style:reset}
 {style:white on green}| J8           {J6:{style} col1}{style:bold white on green}               |  {style:normal black on white},----.{style:on green} {style:white on black}|eM|{style:bold on green}|  {style:normal white on black}}}-{{{style:on green}      |{style:reset}
@@ -210,6 +210,8 @@ CM4_BOARD = """\
 {style:white on green}|                          {style:black on white}|Net |{style:on green} {style:black on white}|USB|{style:on green}     {style:black on white}|uSD|{style:white on green}      {style:on black}|p|{style:on green}|{style:reset}
 {style:white on green}|    {style:black on white}|HDMI|{style:on green}   {style:black on white}|HDMI|{style:white on green}       {style:black on white}|    |{style:on green} {style:black on white}| 2 |{style:on green} {style:black on white}usb{style:white on green} {style:black on white}|   |{style:white on green}      {style:on black}|w|{style:on green}|{style:reset}
 {style:white on green}`----{style:black on white}| 0  |{style:white on green}---{style:black on white}| 1  |{style:white on green}-------{style:black on white}|    |{style:white on green}-{style:black on white}|   |{style:white on green}-{style:black on white}| |{style:white on green}------------{style:white on black}|r|{style:on green}'{style:reset}"""
+
+# TODO: Add a CM5_BOARD ascii-art diagram
 
 P400_BOARD = """\
     {style:white on red},------+----+----+----+----+---+--+--+--+--------------------+---.{style:reset}
@@ -235,6 +237,8 @@ P400_BOARD = """\
 {style:black on white}| |    |   | {style:red}{{}}{style:black} |    |                       |    |    |<{style:red}Hom{style:black}|v{style:red}PgDn{style:black}|>{style:red}End{style:black}| |{style:reset}
 {style:black on white}`------------------------------------------------------------------------'{style:reset}
                                                  Raspberry Pi {style:bold red}{model}{style:reset} Rev {pcb_revision}"""
+
+# TODO: Add a P500_BOARD ascii-art diagram
 
 # Pin maps for various board revisions and headers. Much of the information
 # below is derived from the BCM2835 ARM Peripherals datasheet, but Gadgetoid's
@@ -382,6 +386,8 @@ PI4_GPIO55 = gpiof('GPIO55')
 PI4_GPIO56 = gpiof('GPIO56')
 PI4_GPIO57 = gpiof('GPIO57')
 
+# TODO: The Alt functions on the Pi 5 pins are different to the Pi 4 pins (see the RP1 datasheet), so theoretically we need a load of PI5_GPIO entries (and then update the PI5_J8 header below)
+
 del gpiof
 del re
 
@@ -520,6 +526,8 @@ PI4_J2 = (3, 1, {
 })
 
 PI4_J14 = PLUS_POE
+
+PI5_J8 = PI4_J8 # This is slightly wrong, but see the PI5_GPIO comment above
 
 PI5_J2 = (2, 1, {
     1: {'': 'RUN'},
@@ -684,7 +692,7 @@ CM4_J3 = (3, 1, {
 # https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes
 
 PI_REVISIONS = {
-    # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                         board
+    # rev     model    pcb_rev released soc        manufacturer ram   storage    usb eth wifi   bt     csi dsi headers                                                                    board
     0x2:      ('B',    '1.0', '2012Q1', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1, 'P2': PI1_P2, 'P3': PI1_P3},                               REV1_BOARD,   ),
     0x3:      ('B',    '1.0', '2012Q3', 'BCM2835', 'Egoman',    256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV1_P1, 'P2': PI1_P2, 'P3': PI1_P3},                               REV1_BOARD,   ),
     0x4:      ('B',    '2.0', '2012Q3', 'BCM2835', 'Sony',      256,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
@@ -696,12 +704,12 @@ PI_REVISIONS = {
     0xd:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Egoman',    512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
     0xe:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Sony',      512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
     0xf:      ('B',    '2.0', '2012Q4', 'BCM2835', 'Qisda',     512,  'SD',      2,  1,  False, False, 1,  1,  {'P1': REV2_P1, 'P2': PI1_P2, 'P3': PI1_P3, 'P5': REV2_P5, 'P6': REV2_P6}, REV2_BOARD,   ),
-    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           BPLUS_BOARD,  ),
+    0x10:     ('B+',   '1.2', '2014Q3', 'BCM2835', 'Sony',      512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          BPLUS_BOARD,  ),
     0x11:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Sony',      512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
-    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
-    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           BPLUS_BOARD,  ),
+    0x12:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Sony',      256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          APLUS_BOARD,  ),
+    0x13:     ('B+',   '1.2', '2015Q1', 'BCM2835', 'Egoman',    512,  'MicroSD', 4,  1,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          BPLUS_BOARD,  ),
     0x14:     ('CM',   '1.1', '2014Q2', 'BCM2835', 'Embest',    512,  'eMMC',    1,  0,  False, False, 2,  2,  {'SODIMM': CM_SODIMM},                                                     CM_BOARD,     ),
-    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8},                                                           APLUS_BOARD,  ),
+    0x15:     ('A+',   '1.1', '2014Q4', 'BCM2835', 'Embest',    256,  'MicroSD', 1,  0,  False, False, 1,  1,  {'J8': PLUS_J8, 'RUN': ZERO_RUN},                                          APLUS_BOARD,  ),
     }
 
 SPI_HARDWARE_PINS = {
