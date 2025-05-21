@@ -13,10 +13,11 @@ All utilities provided by GPIO Zero accept the following environment variables:
 .. envvar:: GPIOZERO_PIN_FACTORY
 
     The library to use when communicating with the GPIO pins. Defaults to
-    attempting to load lgpio, then RPi.GPIO, then pigpio, and finally uses a
-    native Python implementation. Valid values include "lgpio", "rpigpio",
-    "pigpio", "native", and "mock". The latter is most useful on non-Pi
-    platforms as it emulates a Raspberry Pi model 3B (by default).
+    attempting to load lgpio, then gpiod, then RPi.GPIO, then pigpio, and
+    finally uses a native Python implementation. Valid values include "lgpio",
+    "gpiod", "rpigpio", "pigpio", "native", and "mock". The latter is most
+    useful on non-Pi platforms as it emulates a Raspberry Pi model 3B (by
+    default).
 
 .. envvar:: PIGPIO_ADDR
 

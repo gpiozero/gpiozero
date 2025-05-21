@@ -55,7 +55,8 @@ class LocalPiFactory(PiFactory):
     Extends :class:`~gpiozero.pins.pi.PiFactory`. Abstract base class
     representing pins attached locally to a Pi. This forms the base class for
     local-only pin interfaces (:class:`~gpiozero.pins.rpigpio.RPiGPIOPin`,
-    :class:`~gpiozero.pins.lgpio.LGPIOPin`, and
+    :class:`~gpiozero.pins.lgpio.LGPIOPin`,
+    :class:`~gpiozero.pins.gpiod.GpiodPin`, and
     :class:`~gpiozero.pins.native.NativePin`).
     """
     pins = {}
