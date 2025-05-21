@@ -5,18 +5,23 @@ digraph classes {
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     Device;
     InternalDevice;
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    CPUTemperature;
+    DiskUsage;
+    LoadAverage;
+    PingServer;
+    PolledInternalDevice;
+    TimeOfDay;
 
+    /* Edges */
     CPUTemperature->PolledInternalDevice;
     DiskUsage->PolledInternalDevice;
     InternalDevice->Device;
