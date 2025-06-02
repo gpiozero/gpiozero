@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 #
@@ -32,12 +31,12 @@ from ..exc import DeviceClosed, PinUnknownPi, SPIInvalidClockMode
 def get_pi_revision():
     revision = None
     try:
-        with io.open('/proc/device-tree/system/linux,revision', 'rb') as f:
+        with open('/proc/device-tree/system/linux,revision', 'rb') as f:
             revision = hex(struct.unpack('>L', f.read(4))[0])[2:]
-    except IOError as e:
+    except OSError as e:
         if e.errno != errno.ENOENT:
             raise e
-        with io.open('/proc/cpuinfo', 'r') as f:
+        with open('/proc/cpuinfo') as f:
             for line in f:
                 if line.startswith('Revision'):
                     revision = line.split(':')[1].strip().lower()
