@@ -63,7 +63,8 @@ class LGPIOFactory(LocalPiFactory):
     """
     def __init__(self, chip=None):
         super().__init__()
-        chip = 4 if (self._get_revision() & 0xff0) >> 4 == 0x17 else 0
+        if chip is None:
+            chip = 4 if (self._get_revision() & 0xff0) >> 4 == 0x17 and os.path.exists('/dev/gpiochip4') else 0
         self._handle = lgpio.gpiochip_open(chip)
         self._chip = chip
         self.pin_class = LGPIOPin
