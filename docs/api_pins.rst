@@ -134,6 +134,8 @@ they are tried by default.
 +=========+===============================================+===========================================+
 | lgpio   | :class:`gpiozero.pins.lgpio.LGPIOFactory`     | :class:`gpiozero.pins.lgpio.LGPIOPin`     |
 +---------+-----------------------------------------------+-------------------------------------------+
+| gpiod   | :class:`gpiozero.pins.gpiod.GpiodFactory`     | :class:`gpiozero.pins.gpiod.GpiodPin`     |
++---------+-----------------------------------------------+-------------------------------------------+
 | rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
 +---------+-----------------------------------------------+-------------------------------------------+
 | pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   |
@@ -332,6 +334,16 @@ lgpio
 .. autoclass:: gpiozero.pins.lgpio.LGPIOFactory
 
 .. autoclass:: gpiozero.pins.lgpio.LGPIOPin
+
+
+gpiod
+=====
+
+.. module:: gpiozero.pins.gpiod
+
+.. autoclass:: gpiozero.pins.gpiod.GpiodFactory
+
+.. autoclass:: gpiozero.pins.gpiod.GpiodPin
 
 
 PiGPIO
