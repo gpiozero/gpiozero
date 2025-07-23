@@ -150,6 +150,9 @@ class LGPIOPin(LocalPiPin):
             raise PinInvalidFunction(
                 f'invalid function "{value}" for pin {self!r}')
 
+    def output_with_state(self, state):
+        lgpio.gpio_claim_output(self.factory._handle, self._number, bool(state))
+
     def _get_state(self):
         if self._pwm:
             return self._pwm[1] / 100
