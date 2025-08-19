@@ -970,7 +970,7 @@ class LEDCharDisplay(LEDCollection):
             pins['dp'] = dp
             order.append('dp')
         super().__init__(
-            pwm=pwm, active_high=active_high, initial_value=None,
+            pwm=pwm, active_high=active_high, initial_value=0 if pwm else None,
             _order=order, pin_factory=pin_factory, **pins)
         if initial_value is not None:
             self.value = initial_value
