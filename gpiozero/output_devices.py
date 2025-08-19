@@ -8,7 +8,7 @@
 # Copyright (c) 2015-2020 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2019 tuftii <3215045+tuftii@users.noreply.github.com>
 # Copyright (c) 2019 tuftii <pi@raspberrypi>
-# Copyright (c) 2019 Yisrael Dov Lebow 🐻 <lebow@lebowtech.com>
+# Copyright (c) 2019 Yisrael Dov Lebow ÃÂ°ÃÂÃÂÃÂ» <lebow@lebowtech.com>
 # Copyright (c) 2019 Kosovan Sofiia <sofiia.kosovan@gmail.com>
 # Copyright (c) 2016-2019 Andrew Scheller <github@loowis.durge.org>
 # Copyright (c) 2016 Ian Harcombe <ian.harcombe@gmail.com>
@@ -1105,6 +1105,69 @@ class RGBLED(SourceMixin, Device):
             self._blink_thread.stop()
             self._blink_thread = None
 
+
+    def cycle(self, colors, steps=125, fps=25, n=None, background=True):
+        """ 
+        Make the device fade from a color of a list to the next color of the list.
+
+        :param list colors
+            List of colorzero colors
+
+        :type n: int or None
+        :param steps:
+            Number of steps to fade from one color to the next. `fps` steps are processed per second.
+
+        :type n: int or None
+        :param fps:
+            Number of times the color is changed per second
+
+        :type n: int or None
+        :param n:
+            Number of times to fade through complete list; :data:`None` (the default) means forever.
+
+        :param bool background:
+            If :data:`True` (the default), start a background thread to
+            continue blinking and return immediately. If :data:`False`, only
+            return when the blink is finished (warning: the default value of
+            *n* will result in this method never returning).
+        """
+        
+        sequence = []
+        colors.append(colors[0])
+        for i in range(len(colors)-1):
+            g = colors[i].gradient(colors[i+1], steps)
+            for c in g:
+                r,g,b = c.rgb
+                sequence.append(((r,g,b),1/fps))
+
+
+        self._stop_blink()
+        self._blink_thread = GPIOThread(
+            self._cycle_device,
+            (
+                sequence, n
+            )
+        )
+        self._blink_thread.start()
+        if not background:
+            self._blink_thread.join()
+            self._blink_thread = None
+
+
+    def _cycle_device(self, values, n):
+        sequence = (
+                cycle(values) if n is None else
+                chain.from_iterable(repeat(values, n))
+                )
+        for l in self._leds:
+            l._controller = self
+        for value, delay in sequence:
+            for l, v in zip(self._leds, value):
+                l._write(v)
+            if self._blink_thread.stopping.wait(delay):
+                break
+
+
     def _blink_device(
             self, on_time, off_time, fade_in_time, fade_out_time, on_color,
             off_color, n, fps=25):
@@ -1129,17 +1192,8 @@ class RGBLED(SourceMixin, Device):
                 for i in range(int(fps * fade_out_time))
                 ]
         sequence.append((off_color, off_time))
-        sequence = (
-                cycle(sequence) if n is None else
-                chain.from_iterable(repeat(sequence, n))
-                )
-        for l in self._leds:
-            l._controller = self
-        for value, delay in sequence:
-            for l, v in zip(self._leds, value):
-                l._write(v)
-            if self._blink_thread.stopping.wait(delay):
-                break
+
+        self._cycle_device(sequence, n)
 
 
 class Motor(SourceMixin, CompositeDevice):
