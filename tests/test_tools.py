@@ -15,7 +15,7 @@ from statistics import mean, median
 from time import time, sleep
 from itertools import islice
 
-from gpiozero import Device, LED, Button, Robot
+from gpiozero import LED, Button
 from gpiozero.tools import *
 
 

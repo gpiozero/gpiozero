@@ -15,13 +15,10 @@ import warnings
 from time import sleep
 from threading import Event
 from functools import partial
-from unittest import mock
 
 from conftest import ThreadedTest
 from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
-from gpiozero.threads import GPIOThread
 from gpiozero import *
-
 
 
 def test_input_initial_values(mock_factory):

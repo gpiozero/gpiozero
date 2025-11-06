@@ -17,7 +17,6 @@
 import warnings
 from time import sleep
 from threading import Event, Lock
-from itertools import tee
 from statistics import median, mean
 
 from .exc import (

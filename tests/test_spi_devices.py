@@ -9,10 +9,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pytest
-from collections import namedtuple
 from math import isclose
 
-from gpiozero.pins.mock import MockSPIDevice, MockPin
+from gpiozero.pins.mock import MockSPIDevice
 from gpiozero import *
 
 
