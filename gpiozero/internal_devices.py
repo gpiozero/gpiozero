@@ -13,7 +13,7 @@ import os
 import io
 import warnings
 import subprocess
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 
 from .devices import Device
 from .mixins import EventsMixin, event
@@ -489,8 +489,11 @@ class TimeOfDay(PolledInternalDevice):
     *start_time* and *end_time* (inclusive) which are :class:`~datetime.time`
     instances.
 
+    Note that *start_time* may be greater than *end_time*, indicating a time
+    period which crosses midnight.
+
     The following example turns on a lamp attached to an :class:`Energenie`
-    plug between 07:00AM and 08:00AM::
+    plug between 07:00AM and 08:00AM UTC::
 
         from gpiozero import TimeOfDay, Energenie
         from datetime import time
@@ -504,8 +507,35 @@ class TimeOfDay(PolledInternalDevice):
 
         pause()
 
-    Note that *start_time* may be greater than *end_time*, indicating a time
-    period which crosses midnight.
+    By default start and end times are timezone-aware UTC times. If you wish to
+    specify the time-zone for the start and/or end time you can do so when 
+    contructing the time, for example to switch on when it is office hours in 
+    both London and Los Angeles::
+
+        from gpiozero import TimeOfDay,
+        from datetime import time,
+        from zoneinfo import ZoneInfo
+
+        tz_LA = ZoneInfo('America/Los_Angeles')
+        tz_London = ZoneInfo('Europe/London')
+
+        officehours = TimeOfDay(time(8,30,tzinfo=tz_LA), time(18,00,tzinfo=tz_London))
+
+    If you would like to ignore timezones and use "local time" (whatever time
+    your Pi's clock says) then set `utc` to `False`. To switch on during whatever
+    your Pi thinks are local office hours::
+        
+        from gpiozero import TimeOfDay,
+        from datetime import time
+
+        officehours = TimeOfDay(time(8,30), time(18,00), utc=False)
+
+    .. note::
+        For backwards compatibility you can also select to use naive UTC times by
+        setting `utc` to `True` - this is no longer recommended,
+        instead you should leave `utc` set to `None` or explicity
+        specify `tzinfo=UTC` (`from datetime import UTC`) - both will give the
+        same result. 
 
     :param ~datetime.time start_time:
         The time from which the device will be considered active.
@@ -514,51 +544,98 @@ class TimeOfDay(PolledInternalDevice):
         The time after which the device will be considered inactive.
 
     :param bool utc:
-        If :data:`True` (the default), a naive UTC time will be used for the
-        comparison rather than a local time-zone reading.
+        If `None` (the default), UTC time will be used for the comparison. 
+        If `False` the local clock time will be use, ignoring the timezone. 
+        (If `True` a naive UTC time will be used - this is not recommended, 
+        see the note above)
 
     :type event_delay: float
     :param event_delay:
-        The number of seconds between file reads (defaults to 10 seconds).
+        The number of seconds between file reads (defaults to 5 seconds).
 
     :type pin_factory: Factory or None
     :param pin_factory:
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, start_time, end_time, *, utc=True, event_delay=5.0,
+
+    def __init__(self, start_time, end_time, *, utc=None, event_delay=5.0,
                  pin_factory=None):
-        self._start_time = None
-        self._end_time = None
-        self._utc = True
+    
+        utc_deprecation_warning = (
+        'Using utc=True is deprecated and scheduled for removal in a future version.'
+        ' Start and end times will default to tzinfo=datetime.UTC unless you specify'
+        ' different tzinfo when defining them.'
+        )
+        if utc:
+            warnings.warn(utc_deprecation_warning, DeprecationWarning)
+
+        self._tzaware = utc is None
+        self._utc = utc
+
         super().__init__(event_delay=event_delay, pin_factory=pin_factory)
         try:
             self._start_time = self._validate_time(start_time)
             self._end_time = self._validate_time(end_time)
             if self.start_time == self.end_time:
                 raise ValueError('end_time cannot equal start_time')
-            self._utc = utc
             self._fire_events(self.pin_factory.ticks(), self.is_active)
         except:
             self.close()
             raise
 
     def __repr__(self):
+        reprname = f'gpiozero.{self.__class__.__name__} object'
+        if self.timezone_aware:
+            reprstart = f'{self.start_time.replace(tzinfo=None)} [{self.start_time.tzinfo}]'
+            reprend = f'{self.end_time.replace(tzinfo=None)} [{self.end_time.tzinfo}]'
+            reprtz = ''
+        else:
+            reprstart = f'{self.start_time}'
+            reprend = f'{self.end_time}'
+            reprtz = f'{(" local", " UTC")[self.utc]}'
         try:
             self._check_open()
-            return (
-                f'<gpiozero.{self.__class__.__name__} object active between '
-                f'{self.start_time} and {self.end_time} '
-                f'{("local", "UTC")[self.utc]}>')
+            return f'<{reprname} active between {reprstart} and {reprend}{reprtz}>'
         except DeviceClosed:
             return super().__repr__()
 
     def _validate_time(self, value):
-        if isinstance(value, datetime):
-            value = value.time()
-        if not isinstance(value, time):
-            raise ValueError(
+        # If we have a datetime or similar we only want the time.
+        # hasattr is faster than try-except if we usually expect try to fail - and
+        # we'll probably be getting a time more often than a datetime
+        if hasattr(value, 'timetz'): 
+            value = value.timetz()
+        
+        if not self.timezone_aware:
+            try:
+                assert value.tzinfo == None
+            except AttributeError:
+                True # Want to include this branch in coverage report
+                pass # pass is excluded from coverage in setup.cfg 
+            except AssertionError:
+                raise ValueError(
+                'utc must be None if start_time or end_time contain tzinfo')
+
+        # Using try-except to cope with cases where someone has used an object
+        # that offers comparison with time but is not a subclass of time.
+        # Not relying on time's current implementation that checks for timetuple()
+        # as this may change in the future
+        if self.timezone_aware:            
+            try: # We need to be able to replace tzinfo and compare to aware time
+                value.replace(tzinfo=timezone.utc) < time(1, tzinfo=timezone.utc)
+            except (AttributeError, TypeError):
+                raise ValueError(
                 'start_time and end_time must be a datetime, or time instance')
+        else:
+            try: # We need to be able to compare to naive time
+                value < time(1)
+            except TypeError:
+                raise ValueError(
+                'start_time and end_time must be a datetime, or time instance')
+            
+        if self.timezone_aware and value.tzinfo == None: # Default to UTC
+            value = value.replace(tzinfo=timezone.utc)
         return value
 
     @property
@@ -578,10 +655,19 @@ class TimeOfDay(PolledInternalDevice):
     @property
     def utc(self):
         """
-        If :data:`True`, use a naive UTC time reading for comparison instead of
-        a local timezone reading.
+        If `None` (the default), UTC time will be used for the comparison. 
+        If `False` the local clock time will be use, ignoring the timezone. 
+        (If `True` a naive UTC time will be used - this is not recommended, 
+        see the note above)
         """
         return self._utc
+    
+    @property
+    def timezone_aware(self):
+        """
+        Whether the comparison will be performed in a timezone-aware manner
+        """
+        return self._tzaware
 
     @property
     def value(self):
@@ -592,11 +678,28 @@ class TimeOfDay(PolledInternalDevice):
         midnight), then this returns :data:`1` when the current time is
         greater than :attr:`start_time` or less than :attr:`end_time`.
         """
-        now = datetime.utcnow().time() if self.utc else datetime.now().time()
-        if self.start_time < self.end_time:
-            return int(self.start_time <= now <= self.end_time)
+        if self.timezone_aware:
+            # Beware - most timezone implementations in zoneinfo are only aware
+            # for datetime, not time objects.
+            # Think about DST to understand why ...
+            # So we need to get the current offset for each timezone right now
+            # and update the tzinfo. Doing it this way means we can keep the
+            # comparison simple and consistent for both aware and naive situations
+            now = datetime.now(tz=timezone.utc)
+            start_offset = now.astimezone(self.start_time.tzinfo).utcoffset()
+            end_offset = now.astimezone(self.end_time.tzinfo).utcoffset()
+            timenow = now.timetz()
+            _start_time = self.start_time.replace(tzinfo=timezone(start_offset))
+            _end_time = self.end_time.replace(tzinfo=timezone(end_offset))
         else:
-            return int(not self.end_time < now < self.start_time)
+            timenow = datetime.utcnow().time() if self.utc else datetime.now(tz=None).time()
+            _start_time = self.start_time
+            _end_time = self.end_time
+
+        if _start_time < _end_time:
+            return int(_start_time <= timenow <= _end_time)
+        else:
+            return int(not _end_time < timenow < _start_time)
 
     when_activated = event(
         """
