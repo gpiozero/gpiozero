@@ -38,6 +38,7 @@ Table of Contents
     api_tones
     api_info
     api_pins
+    api_fixtures
     api_exc
     changelog
     license
