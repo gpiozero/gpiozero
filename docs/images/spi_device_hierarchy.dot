@@ -5,12 +5,10 @@ digraph classes {
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     AnalogInputDevice;
     Device;
     MCP30xx;
@@ -22,7 +20,19 @@ digraph classes {
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    MCP3001;
+    MCP3002;
+    MCP3004;
+    MCP3008;
+    MCP3201;
+    MCP3202;
+    MCP3204;
+    MCP3208;
+    MCP3301;
+    MCP3302;
+    MCP3304;
 
+    /* Edges */
     AnalogInputDevice->SPIDevice;
     MCP3001->MCP30xx;
     MCP3002->MCP30xx;

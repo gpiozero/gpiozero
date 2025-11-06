@@ -5,7 +5,6 @@ digraph classes {
 
     /* Mixin classes */
     node [color="#c69ee0", fontcolor="#000000"]
-
     EventsMixin;
     HoldMixin;
     SharedMixin;
@@ -14,7 +13,6 @@ digraph classes {
 
     /* Abstract classes */
     node [color="#9ec6e0", fontcolor="#000000"]
-
     AnalogInputDevice;
     CompositeDevice;
     CompositeOutputDevice;
@@ -32,7 +30,72 @@ digraph classes {
 
     /* Concrete classes */
     node [color="#2980b9", fontcolor="#ffffff"];
+    AngularServo;
+    Button;
+    ButtonBoard;
+    Buzzer;
+    CPUTemperature;
+    CamJamKitRobot;
+    DigitalInputDevice;
+    DigitalOutputDevice;
+    DiskUsage;
+    DistanceSensor;
+    Energenie;
+    FishDish;
+    InputDevice;
+    JamHat;
+    LED;
+    LEDBarGraph;
+    LEDBoard;
+    LEDCharDisplay;
+    LEDMultiCharDisplay;
+    LedBorg;
+    LightSensor;
+    LineSensor;
+    LoadAverage;
+    MCP3001;
+    MCP3002;
+    MCP3004;
+    MCP3008;
+    MCP3201;
+    MCP3202;
+    MCP3204;
+    MCP3208;
+    MCP3301;
+    MCP3302;
+    MCP3304;
+    MotionSensor;
+    Motor;
+    OutputDevice;
+    PWMLED;
+    PWMOutputDevice;
+    PhaseEnableMotor;
+    PiHutXmasTree;
+    PiLiter;
+    PiLiterBarGraph;
+    PiStop;
+    PiTraffic;
+    Pibrella;
+    PingServer;
+    PolledInternalDevice;
+    PololuDRV8835Robot;
+    PumpkinPi;
+    RGBLED;
+    Robot;
+    RotaryEncoder;
+    RyanteckRobot;
+    Servo;
+    SnowPi;
+    StatusBoard;
+    StatusZero;
+    TimeOfDay;
+    TonalBuzzer;
+    TrafficHat;
+    TrafficLights;
+    TrafficLightsBuzzer;
+    TrafficpHat;
 
+    /* Edges */
     AnalogInputDevice->SPIDevice;
     AngularServo->Servo;
     Button->DigitalInputDevice;
@@ -97,8 +160,6 @@ digraph classes {
     PWMOutputDevice->OutputDevice;
     PhaseEnableMotor->CompositeDevice;
     PhaseEnableMotor->SourceMixin;
-    PhaseEnableRobot->CompositeDevice;
-    PhaseEnableRobot->SourceMixin;
     PiHutXmasTree->LEDBoard;
     PiLiter->LEDBoard;
     PiLiterBarGraph->LEDBarGraph;
@@ -107,7 +168,7 @@ digraph classes {
     Pibrella->CompositeOutputDevice;
     PingServer->PolledInternalDevice;
     PolledInternalDevice->InternalDevice;
-    PololuDRV8835Robot->PhaseEnableRobot;
+    PololuDRV8835Robot->Robot;
     PumpkinPi->LEDBoard;
     RGBLED->Device;
     RGBLED->SourceMixin;

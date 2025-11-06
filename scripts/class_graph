@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -52,12 +52,6 @@ def get_config(args: t.List[str]) -> Namespace:
         converters={'list': lambda s: s.strip().splitlines()})
     config.read(PROJECT_ROOT / 'setup.cfg')
     sect = config[SETUP_SECTION]
-    # Resolve source and output defaults relative to setup.cfg
-    if sect['source']:
-        sect['source'] = '\n'.join(
-            str(PROJECT_ROOT / source)
-            for source in sect.getlist('source')
-        )
     if sect['output'] and sect['output'] != '-':
         sect['output'] = str(PROJECT_ROOT / sect['output'])
 
@@ -117,8 +111,8 @@ def make_class_map(search_paths: t.List[str], omit: t.Set[str])\
         class_re = re.compile(
             r'^class\s+(?P<name>\w+)\s*(?:\((?P<bases>.*)\))?:', re.MULTILINE)
         for path in search_paths:
-            p = Path(path)
-            for py_file in p.parent.glob(p.name):
+            p = Path(PROJECT_ROOT)
+            for py_file in p.glob(path):
                 with py_file.open() as f:
                     for match in class_re.finditer(f.read()):
                         if match.group('name') not in omit:
