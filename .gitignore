@@ -1,10 +1,15 @@
 # Python stuff
 *.py[cdo]
+.venv
 
 # Editor detritus
 *.vim
 *.swp
 tags
+# If you wish to contribute and use a different editor, feel free to 
+# extend this list.
+# Alternatively, you can create a '.gitignore-global' file in your home
+# directory and run 'git config --global core.excludesfile ~/.gitignore-global'
 
 # Packaging detritus
 *.egg
