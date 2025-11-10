@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 #
@@ -6,13 +5,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-str = type('')
+str = str
 
 import warnings
 from fractions import Fraction

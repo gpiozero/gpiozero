@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 #
@@ -37,7 +36,7 @@ class Style:
     def _term_supports_color():
         try:
             stdout_fd = sys.stdout.fileno()
-        except IOError:
+        except OSError:
             return False
         else:
             is_a_tty = os.isatty(stdout_fd)
