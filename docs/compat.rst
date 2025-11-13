@@ -276,9 +276,10 @@ The :class:`PiBoardInfo` class, and the associated :class:`HeaderInfo` and
 :class:`PinInfo` classes have undergone a major re-structuring. This is partly
 because some of the prior terminology was confusing (e.g. the meaning of
 :attr:`PinInfo.function` and :attr:`Pin.function` clashed), and partly because
-with the addition of the "lgpio" factory it's entirely possible to use gpiozero
-on non-Pi boards (although at present the :class:`pins.lgpio.LGPIOFactory` is
-still written assuming it is only ever used on a Pi).
+with the addition of the "lgpio" and "gpiod" factories it's entirely possible
+to use gpiozero on non-Pi boards (although at present the
+:class:`pins.lgpio.LGPIOFactory` and :class:`pins.gpiod.GpiodFactory` are still
+written assuming they are only ever used on a Pi).
 
 As a result the following classes, methods, and attributes are deprecated
 (not yet removed, but will be in a future release within the 2.x series):

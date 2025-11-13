@@ -280,6 +280,7 @@ class Device(ValuesMixin, GPIOBase):
         # updated along with the entry-points in setup.py.
         default_factories = {
             'lgpio':   'gpiozero.pins.lgpio:LGPIOFactory',
+            'gpiod':   'gpiozero.pins.gpiod:GpiodFactory',
             'rpigpio': 'gpiozero.pins.rpigpio:RPiGPIOFactory',
             'pigpio':  'gpiozero.pins.pigpio:PiGPIOFactory',
             'native':  'gpiozero.pins.native:NativeFactory',
