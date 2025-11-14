@@ -13,7 +13,7 @@ import inspect
 import weakref
 import warnings
 from functools import wraps, partial
-from threading import Event
+from threading import Event, Lock
 from collections import deque
 from statistics import median
 
@@ -562,13 +562,15 @@ class GPIOQueue(GPIOThread):
         self.parent = weakref.proxy(parent)
         self.average = average
         self.ignore = ignore
+        self.lock = Lock()
 
     @property
     def value(self):
         if not self.partial:
             self.full.wait()
         try:
-            return self.average(self.queue)
+            with self.lock:
+                return self.average(self.queue)
         except (ZeroDivisionError, ValueError):
             # No data == inactive value
             return 0.0
@@ -578,9 +580,11 @@ class GPIOQueue(GPIOThread):
             while not self.stopping.wait(self.sample_wait):
                 value = self.parent._read()
                 if value not in self.ignore:
-                    self.queue.append(value)
-                if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
-                    self.full.set()
+                    with self.lock:
+                        self.queue.append(value)
+                with self.lock:
+                    if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
+                        self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
                     self.parent._fire_events(self.parent.pin_factory.ticks(), self.parent.is_active)
         except ReferenceError:
