@@ -1324,6 +1324,101 @@ class PiHutXmasTree(LEDBoard):
         )
 
 
+class ModMyPiStar(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for the `ModMyPi Programmable Christmas Tree Star`_:
+    a Christmas tree star with 30 white LEDs.
+
+    The 30 white LEDs can be accessed through the attributes inner and outer.
+    The inner attribute controls the five inner LEDs, while the outer attribute
+    controls the 25 outer LEDs. Alternatively, as with all descendents of
+    :class:`LEDBoard`, you can treat the instance as a sequence of LEDs (the
+    first element is the inner LEDs).
+
+    The ModMyPi star board pins are fixed and therefore there's no need to
+    specify them when constructing this class. The following example turns on
+    all the inner LEDs before turning on the outer LEDs one at a time::
+
+        from gpiozero import ModMyPiStar
+        from time import sleep
+
+        tree = ModMyPiStar()
+
+        for light in tree:
+            light.on()
+            sleep(1)
+
+    The following example turns on the outer LEDs successively and increasingly
+    quickly before flashing the inner LEDs::
+
+        from time import sleep
+        from star import ModMyPiStar
+
+        step = 0.5
+        count = 0
+        star = ModMyPiStar(pwm=True)
+        leds = star.leds
+
+        while True:
+            if(count%26!=0):
+                leds[count%26].on()
+                sleep(step)
+                leds[count%26].off()
+
+            count += 1
+            step = step*0.99
+
+            if(step <= 0.0001):
+                star.inner.blink(on_time=0.5,off_time=0.5,n=5)
+                sleep(5)
+                count = 0
+                step = 2
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
+
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _ModMyPi Programmable Christmas Tree Star: https://thepihut.com/products/raspberry-pi-christmas-tree-star
+
+    .. attribute:: inner
+
+        Returns the :class:`LED` or :class:`PWMLED` representing the five inner
+        white LEDs in the center of the star.
+
+    .. attribute:: outer
+
+        Returns the :class:`LED` or :class:`PWMLED` representing the twenty-five
+        outer white LEDs.
+
+    """
+    def __init__(self, pwm=False, initial_value=False, pin_factory=None):
+        super(ModMyPiStar, self).__init__(
+            outer=LEDBoard(
+                A=8,B=7,C=12,D=21,E=20,F=16,G=26,H=19,I=13,J=6,K=5,L=11,M=9,
+                N=10,O=22,P=27,Q=17,R=4,S=3,T=14,U=23,V=18,W=15,X=24,Y=25,
+                pwm=pwm, initial_value=initial_value,
+                _order=('A','B','C','D','E','F','G','H','I','J','K','L',
+                        'M','N','O','P','Q','R','S','T','U','V','W','X','Y'),
+                pin_factory=pin_factory),
+            inner=2,
+            pwm=pwm, initial_value=initial_value,
+            _order=('inner','outer'),
+            pin_factory=pin_factory
+            )
+
+
 class LedBorg(RGBLED):
     """
     Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board

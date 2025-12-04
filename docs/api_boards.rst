@@ -97,6 +97,13 @@ PiHutXmasTree
     :members:
 
 
+ModMyPiStar
+-----------
+
+.. autoclass:: ModMyPiStar
+    :members:
+
+
 LedBorg
 -------
 
