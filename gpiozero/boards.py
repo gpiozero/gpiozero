@@ -1336,23 +1336,24 @@ class ModMyPiStar(LEDBoard):
     first element is the inner LEDs).
 
     The ModMyPi star board pins are fixed and therefore there's no need to
-    specify them when constructing this class. The following example turns on
-    all the inner LEDs before turning on the outer LEDs one at a time::
+    specify them when constructing this class.
+
+    The following example turns on all the inner and outer LEDs::
 
         from gpiozero import ModMyPiStar
         from time import sleep
 
-        tree = ModMyPiStar()
+        star = ModMyPiStar()
 
-        for light in tree:
+        for light in star:
             light.on()
             sleep(1)
 
     The following example turns on the outer LEDs successively and increasingly
     quickly before flashing the inner LEDs::
 
+        from gpiozero import ModMyPiStar
         from time import sleep
-        from star import ModMyPiStar
 
         step = 0.5
         count = 0
@@ -1366,10 +1367,10 @@ class ModMyPiStar(LEDBoard):
                 leds[count%26].off()
 
             count += 1
-            step = step*0.99
+            step *= 0.99
 
-            if(step <= 0.0001):
-                star.inner.blink(on_time=0.5,off_time=0.5,n=5)
+            if step <= 0.0001:
+                star.inner.blink(on_time=0.5, off_time=0.5, n=5)
                 sleep(5)
                 count = 0
                 step = 2
