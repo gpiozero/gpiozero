@@ -1330,10 +1330,12 @@ class ModMyPiStar(LEDBoard):
     a Christmas tree star with 30 white LEDs.
 
     The 30 white LEDs can be accessed through the attributes inner and outer.
-    The inner attribute controls the five inner LEDs, while the outer attribute
-    controls the 25 outer LEDs. Alternatively, as with all descendents of
-    :class:`LEDBoard`, you can treat the instance as a sequence of LEDs (the
-    first element is the inner LEDs).
+    The inner attribute controls the five inner LEDs as a single group, while
+    the outer attribute controls the 25 outer LEDs. Those 25 LEDs can be controlled
+    individually.
+
+    Alternatively, as with all descendents of :class:`LEDBoard`, you can treat
+    the instance as a sequence of LEDs (the first element is the inner LEDs).
 
     The ModMyPi star board pins are fixed and therefore there's no need to
     specify them when constructing this class.
@@ -1349,8 +1351,9 @@ class ModMyPiStar(LEDBoard):
             light.on()
             sleep(1)
 
-    The following example turns on the outer LEDs successively and increasingly
-    quickly before flashing the inner LEDs::
+    The following example turns on the 25 outer LEDs individually in sequence,
+    at an increasingly rapid pace, before flashing the five inner LEDs, which
+    act as a single group::
 
         from gpiozero import ModMyPiStar
         from time import sleep
