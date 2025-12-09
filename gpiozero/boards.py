@@ -1331,52 +1331,53 @@ class ModMyPiStar(LEDBoard):
 
     The 30 white LEDs can be accessed through the attributes inner and outer.
     The inner attribute controls the five inner LEDs as a single group, while
-    the outer attribute controls the 25 outer LEDs. Those 25 LEDs can be controlled
-    individually.
+    the outer attribute controls the 25 outer LEDs. Those 25 LEDs can also be
+    controlled individually.
 
     Alternatively, as with all descendents of :class:`LEDBoard`, you can treat
-    the instance as a sequence of LEDs (the first element is the inner LEDs).
+    the instance as a sequence of LEDs (the first element is the 5 inner LEDs).
 
     The ModMyPi star board pins are fixed and therefore there's no need to
     specify them when constructing this class.
 
-    The following example turns on all the inner and outer LEDs::
+    The following example first turns on all five inner LEDs. Then it turns on
+    all twenty-five outer LEDs as a group. After that, it turns everything off
+    and repeats this sequence indefinitely::
 
         from gpiozero import ModMyPiStar
         from time import sleep
 
         star = ModMyPiStar()
 
-        for light in star:
-            light.on()
+        while True:
+            for group in star:
+                group.on()
+                sleep(1)
+            star.off()
             sleep(1)
 
     The following example turns on the 25 outer LEDs individually in sequence,
-    at an increasingly rapid pace, before flashing the five inner LEDs, which
-    act as a single group::
+    at an increasingly rapid pace, before flashing the 5 inner LEDs, which act
+    as a single group::
 
         from gpiozero import ModMyPiStar
         from time import sleep
 
-        step = 0.5
-        count = 0
-        star = ModMyPiStar(pwm=True)
-        leds = star.leds
+        step = 1
+        star = ModMyPiStar()
 
         while True:
-            if(count%26!=0):
-                leds[count%26].on()
+            for led in star.outer:
+                led.on()
                 sleep(step)
-                leds[count%26].off()
+                led.off()
 
-            count += 1
-            step *= 0.99
+            step *= 0.1
 
-            if step <= 0.0001:
+            if step <= 0.001:
                 star.inner.blink(on_time=0.5, off_time=0.5, n=5)
                 sleep(5)
-                count = 0
-                step = 2
+                step = 1
 
     :param bool pwm:
         If :data:`True`, construct :class:`PWMLED` instances for each pin. If
@@ -1403,8 +1404,8 @@ class ModMyPiStar(LEDBoard):
 
     .. attribute:: outer
 
-        Returns the :class:`LED` or :class:`PWMLED` representing the twenty-five
-        outer white LEDs.
+        Returns the :class:`LEDBoard` representing the twenty-five outer white
+        LEDs.
 
     """
     def __init__(self, pwm=False, initial_value=False, pin_factory=None):
