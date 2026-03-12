@@ -406,7 +406,7 @@ class Button(HoldMixin, DigitalInputDevice):
         which most users can ignore).
     """
     def __init__(self, pin=None, *, pull_up=True, active_state=None,
-                 bounce_time=None, hold_time=1, hold_repeat=False,
+                 bounce_time=None, hold_time=1.0, hold_repeat=False,
                  pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
@@ -493,7 +493,7 @@ class LineSensor(SmoothedInputDevice):
     .. _CamJam #3 EduKit: http://camjam.me/?page_id=1035
     """
     def __init__(self, pin=None, *, pull_up=False, active_state=None,
-                 queue_len=5, sample_rate=100, threshold=0.5, partial=False,
+                 queue_len=5, sample_rate=100.0, threshold=0.5, partial=False,
                  pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
@@ -582,7 +582,7 @@ class MotionSensor(SmoothedInputDevice):
         which most users can ignore).
     """
     def __init__(self, pin=None, *, pull_up=False, active_state=None,
-                 queue_len=1, sample_rate=10, threshold=0.5, partial=False,
+                 queue_len=1, sample_rate=10.0, threshold=0.5, partial=False,
                  pin_factory=None):
         super().__init__(
             pin, pull_up=pull_up, active_state=active_state,
@@ -820,7 +820,7 @@ class DistanceSensor(SmoothedInputDevice):
     ECHO_LOCK = Lock()
 
     def __init__(self, echo=None, trigger=None, *, queue_len=9,
-                 max_distance=1, threshold_distance=0.3, partial=False,
+                 max_distance=1.0, threshold_distance=0.3, partial=False,
                  pin_factory=None):
         self._trigger = None
         super().__init__(
