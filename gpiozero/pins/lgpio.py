@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import lgpio
+import os
+from pathlib import Path
 
 from . import SPI
 from .pi import spi_port_device
@@ -60,10 +62,40 @@ class LGPIOFactory(LocalPiFactory):
     """
     def __init__(self, chip=None):
         super().__init__()
-        chip = 4 if (self._get_revision() & 0xff0) >> 4 == 0x17 else 0
-        self._handle = lgpio.gpiochip_open(chip)
-        self._chip = chip
+        self._chip, self._handle = self._init_chip(chip)
         self.pin_class = LGPIOPin
+
+    def _init_chip(self, chip):
+        if chip is None:
+            chip_env = os.environ.get('LGPIO_CHIP')
+            if chip_env is not None:
+                chip = int(chip_env)
+        
+        if chip is not None:
+            return chip, lgpio.gpiochip_open(chip)
+        
+        is_pi5 = (self._get_revision() & 0xff0) >> 4 == 0x17
+        if is_pi5:
+            detected_chip = self._find_rp1_chip()
+            if detected_chip is None:
+                raise RuntimeError("Cannot find RP1 gpiochip on Pi 5")
+            return detected_chip, lgpio.gpiochip_open(detected_chip)
+        else:
+            return 0, lgpio.gpiochip_open(0)
+
+    def _find_rp1_chip(self):
+        sys_gpio = Path('/sys/class/gpio')
+        if sys_gpio.exists():
+            for p in sys_gpio.glob('gpiochip*'):
+                label_file = p / 'label'
+                if label_file.exists():
+                    try:
+                        label = label_file.read_text().strip()
+                        if 'rp1' in label.lower():
+                            return int(p.name[len('gpiochip'):])
+                    except IOError:
+                        pass
+        return None
 
     def close(self):
         super().close()
