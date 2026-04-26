@@ -196,6 +196,12 @@ Warnings
 .. autoexception:: DistanceSensorNoEcho
     :show-inheritance:
 
+.. autoexception:: HumidityTemperatureSensorNoResponse
+    :show-inheritance:
+
+.. autoexception:: HumidityTemperatureSensorBadChecksum
+    :show-inheritance:
+
 .. autoexception:: SPIWarning
     :show-inheritance:
 

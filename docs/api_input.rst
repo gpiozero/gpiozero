@@ -70,6 +70,13 @@ RotaryEncoder
     :members: wait_for_rotate, wait_for_rotate_clockwise, wait_for_rotate_counter_clockwise, when_rotated, when_rotated_clockwise, when_rotated_counter_clockwise, steps, value, max_steps, threshold_steps, wrap
 
 
+HumidityTemperatureSensor
+-------------------------
+
+.. autoclass:: HumidityTemperatureSensor
+    :members: temperature, humidity, reading, active_measure, min_temp, max_temp, min_humidity, max_humidity, when_activated, when_deactivated, value, is_active, threshold
+
+
 Base Classes
 ============
 

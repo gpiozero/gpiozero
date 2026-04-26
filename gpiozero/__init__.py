@@ -54,6 +54,7 @@ from .input_devices import (
     LightSensor,
     DistanceSensor,
     RotaryEncoder,
+    HumidityTemperatureSensor,
 )
 from .spi_devices import (
     SPIDevice,

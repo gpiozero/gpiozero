@@ -17,7 +17,7 @@ from threading import Event
 from functools import partial
 
 from conftest import ThreadedTest
-from gpiozero.pins.mock import MockChargingPin, MockTriggerPin
+from gpiozero.pins.mock import MockChargingPin, MockTriggerPin, MockHumidityTemperatureSensorPin, MockHumidityTemperatureSensorPinShortPreamble
 from gpiozero import *
 
 
@@ -497,3 +497,104 @@ def test_input_rotary_encoder_wait(mock_factory):
         assert test_thread.result
         assert not test_thread_cw.result
         assert test_thread_ccw.result
+
+
+def test_dht22_basic_read(mock_factory):
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=25.3, humidity=60.1)
+    with HumidityTemperatureSensor(4) as sensor:
+        assert sensor.active_measure == 'temperature'
+        assert sensor.min_temp == -40.0
+        assert sensor.max_temp == 80.0
+        assert sensor.min_humidity == 0.0
+        assert sensor.max_humidity == 100.0
+        assert pytest.approx(sensor.temperature, abs=0.1) == 25.3
+        assert pytest.approx(sensor.humidity, abs=0.1) == 60.1
+
+def test_dht22_negative_temperature(mock_factory):
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=-10.5, humidity=80.0)
+    with HumidityTemperatureSensor(4) as sensor:
+        assert pytest.approx(sensor.temperature, abs=0.1) == -10.5
+        assert pytest.approx(sensor.humidity, abs=0.1) == 80.0
+
+def test_dht22_reading_namedtuple(mock_factory):
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=22.0, humidity=55.0)
+    with HumidityTemperatureSensor(4) as sensor:
+        r = sensor.reading
+        assert pytest.approx(r.temperature, abs=0.1) == 22.0
+        assert pytest.approx(r.humidity, abs=0.1) == 55.0
+
+def test_dht22_active_measure_humidity(mock_factory):
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=25.0, humidity=80.0)
+    with HumidityTemperatureSensor(4, active_measure='humidity') as sensor:
+        assert sensor.active_measure == 'humidity'
+        # value should normalise humidity: 80.0 / 100.0 = 0.8
+        assert pytest.approx(sensor.value, abs=0.01) == 0.8
+        assert sensor.is_active  # 0.8 >= threshold of 0.8
+
+def test_dht22_active_measure_temperature_value(mock_factory):
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=20.0, humidity=50.0)
+    # min=-40, max=80, so 20°C → (20 - -40) / (80 - -40) = 60/120 = 0.5
+    with HumidityTemperatureSensor(4) as sensor:
+        assert pytest.approx(sensor.value, abs=0.01) == 0.5
+
+def test_dht22_invalid_active_measure(mock_factory):
+    with pytest.raises(ValueError):
+        HumidityTemperatureSensor(4, active_measure='pressure')
+
+def test_dht22_no_response_warning(mock_factory):
+    # Plain MockPin fires no edges, so the sensor times out
+    mock_factory.pin(4)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
+        with HumidityTemperatureSensor(4) as sensor:
+            assert sensor.temperature is None
+        assert any(issubclass(rec.category, HumidityTemperatureSensorNoResponse) for rec in w)
+
+def test_dht22_out_of_range_humidity(mock_factory):
+    # humidity 330.7 % mimics the real-world DHT22 warm-up transient that
+    # passes checksum but carries a physically impossible value
+    mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin,
+                     temperature=25.0, humidity=330.7)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
+        with HumidityTemperatureSensor(4) as sensor:
+            assert sensor.temperature is None
+    assert any(issubclass(rec.category, HumidityTemperatureSensorBadChecksum) for rec in w)
+
+def test_dht22_out_of_range_temperature(mock_factory):
+    mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin,
+                     temperature=95.0, humidity=50.0)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.resetwarnings()
+        with HumidityTemperatureSensor(4) as sensor:
+            assert sensor.temperature is None
+    assert any(issubclass(rec.category, HumidityTemperatureSensorBadChecksum) for rec in w)
+
+def test_dht22_when_activated(mock_factory):
+    activated = Event()
+    deactivated = Event()
+    pin = mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPin, temperature=25.0, humidity=70.0)
+    with HumidityTemperatureSensor(4, active_measure='humidity', threshold=0.8) as sensor:
+        sensor.when_activated = lambda: activated.set()
+        sensor.when_deactivated = lambda: deactivated.set()
+        # Below threshold (70% < 80%) — no activation yet
+        assert not activated.is_set()
+        # Raise humidity above threshold and force a fresh read
+        pin.humidity = 90.0
+        sensor._last_read_tick = None
+        sensor.humidity  # triggers read and _fire_events
+        assert activated.wait(timeout=1), 'when_activated did not fire'
+        # Drop back below threshold
+        pin.humidity = 50.0
+        sensor._last_read_tick = None
+        sensor.humidity
+        assert deactivated.wait(timeout=1), 'when_deactivated did not fire'
+
+def test_dht22_short_preamble(mock_factory):
+    # Verify that a 3-edge preamble (no host-release rising edge) is decoded
+    # correctly and does not produce all-zero readings.
+    mock_factory.pin(4, pin_class=MockHumidityTemperatureSensorPinShortPreamble,
+                     temperature=25.3, humidity=60.1)
+    with HumidityTemperatureSensor(4) as sensor:
+        assert pytest.approx(sensor.temperature, abs=0.1) == 25.3
+        assert pytest.approx(sensor.humidity, abs=0.1) == 60.1

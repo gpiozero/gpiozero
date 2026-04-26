@@ -437,6 +437,83 @@ class MockSPIDevice:
         self.tx_buf.extend(bits)
 
 
+class MockHumidityTemperatureSensorPin(MockPin):
+    """
+    A mock pin that simulates :class:`HumidityTemperatureSensor` responses for
+    testing. When the pin function is switched to ``'input'`` (as the sensor
+    does when issuing a read request), a background thread fires the full
+    84-edge sequence encoding
+    :attr:`temperature` and :attr:`humidity`. Modify those attributes between
+    reads to simulate changing conditions.
+    """
+    def __init__(self, factory, info, temperature=25.0, humidity=60.0):
+        super().__init__(factory, info)
+        self.temperature = temperature
+        self.humidity = humidity
+
+    def _set_function(self, value):
+        super()._set_function(value)
+        if value == 'input':
+            Thread(target=self._simulate_response, daemon=True).start()
+
+    def _encode_bits(self):
+        hum_int = int(self.humidity * 10)
+        temp_val = int(abs(self.temperature) * 10)
+        sign = 0x80 if self.temperature < 0 else 0
+        bytes_ = [
+            (hum_int >> 8) & 0xFF, hum_int & 0xFF,
+            sign | ((temp_val >> 8) & 0xFF), temp_val & 0xFF,
+        ]
+        bytes_.append(sum(bytes_) & 0xFF)
+        bits = []
+        for b in bytes_:
+            for i in range(7, -1, -1):
+                bits.append((b >> i) & 1)
+        return bits
+
+    def _fire_preamble(self, fire):
+        fire(True,  30e-6)   # edge 0: pull-up after host releases (rising)
+        fire(False, 80e-6)   # edge 1: sensor pulls low ~80µs (falling)
+        fire(True,  80e-6)   # edge 2: sensor releases ~80µs (rising)
+        fire(False, 80e-6)   # edge 3: data start, sensor pulls low (falling)
+
+    def _simulate_response(self):
+        sleep(0.001)
+        # Fire edges via synthetic timestamps to avoid OS timer resolution
+        # issues. Bit 0 HIGH = 30µs < 50µs threshold; Bit 1 HIGH = 70µs > threshold.
+        # _when_changed is stored as a WeakMethod/ref; dereference before calling.
+        t = self._factory.ticks()
+
+        def fire(state, dt):
+            nonlocal t
+            t += dt
+            if self._when_changed is not None:
+                method = self._when_changed()
+                if method is not None:
+                    method(t, int(state))
+
+        self._fire_preamble(fire)
+        for bit in self._encode_bits():
+            # rising: ends the 50µs between-bit low period
+            fire(True,  50e-6)
+            # falling: ends the bit HIGH period (30µs = 0, 70µs = 1)
+            fire(False, 70e-6 if bit else 30e-6)
+
+
+class MockHumidityTemperatureSensorPinShortPreamble(MockHumidityTemperatureSensorPin):
+    """
+    Variant of :class:`MockHumidityTemperatureSensorPin` that omits the
+    initial host-release rising edge, producing a 3-edge preamble instead of
+    4. This simulates pin backends that do not fire a callback when the host
+    switches the line from output-low to input.
+    """
+    def _fire_preamble(self, fire):
+        # No edge 0: backend does not report the host line release
+        fire(False, 80e-6)   # edge 0: sensor pulls low ~80µs (falling)
+        fire(True,  80e-6)   # edge 1: sensor releases ~80µs (rising)
+        fire(False, 80e-6)   # edge 2: data start, sensor pulls low (falling)
+
+
 class MockFactory(PiFactory):
     """
     Factory for generating mock pins.

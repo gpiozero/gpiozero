@@ -160,6 +160,12 @@ class GPIOZeroWarning(Warning):
 class DistanceSensorNoEcho(GPIOZeroWarning):
     "Warning raised when the distance sensor sees no echo at all"
 
+class HumidityTemperatureSensorNoResponse(GPIOZeroWarning):
+    "Warning raised when the humidity/temperature sensor does not respond or returns incomplete data"
+
+class HumidityTemperatureSensorBadChecksum(GPIOZeroWarning):
+    "Warning raised when the humidity/temperature sensor returns data with a bad checksum"
+
 class SPIWarning(GPIOZeroWarning):
     "Base class for warnings related to the SPI implementation"
 

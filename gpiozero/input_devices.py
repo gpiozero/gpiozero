@@ -15,6 +15,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import warnings
+from collections import namedtuple
 from time import sleep
 from threading import Event, Lock
 from statistics import median, mean
@@ -23,6 +24,8 @@ from .exc import (
     InputDeviceError,
     DeviceClosed,
     DistanceSensorNoEcho,
+    HumidityTemperatureSensorNoResponse,
+    HumidityTemperatureSensorBadChecksum,
     PinInvalidState,
     PWMSoftwareFallback,
 )
@@ -1368,3 +1371,270 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         beyond their limits.
         """
         return self._wrap
+
+
+class HumidityTemperatureSensor(EventsMixin, GPIODevice):
+    """
+    Represents a DHT22 (AM2302) or compatible temperature and humidity sensor
+    connected to a single GPIO pin.
+
+    The sensor transmits both temperature and humidity in a single read. The
+    :attr:`active_measure` parameter controls which measurement is exposed
+    through the standard :attr:`value`, :attr:`is_active`, and
+    ``when_activated`` / ``when_deactivated`` interface.
+
+    The sensor enforces a minimum interval of 2 seconds between reads; repeated
+    property accesses within that window return the cached result.
+
+    :param int pin: The GPIO pin the sensor's data line is connected to.
+
+    :type active_measure: str
+    :param active_measure:
+        Which measurement drives :attr:`value`, :attr:`is_active`, and the
+        ``when_activated`` / ``when_deactivated`` events. Either
+        ``'temperature'`` (default) or ``'humidity'``.
+
+    :param float min_temp:
+        Lower bound for temperature normalisation (°C). Defaults to -40.
+
+    :param float max_temp:
+        Upper bound for temperature normalisation (°C). Defaults to 80.
+
+    :param float min_humidity:
+        Lower bound for humidity normalisation (%). Defaults to 0.
+
+    :param float max_humidity:
+        Upper bound for humidity normalisation (%). Defaults to 100.
+
+    :param float threshold:
+        Normalised threshold (0–1) for :attr:`when_activated` /
+        :attr:`when_deactivated`. Defaults to 0.8.
+
+    :param float min_interval:
+        Minimum seconds between actual hardware reads; cached values are
+        returned for requests within this window. Must be at least 2.0 (the
+        DHT22 datasheet minimum). Defaults to 3.0.
+
+    :param Factory pin_factory: See :doc:`api_pins` for more information.
+    """
+
+    Reading = namedtuple('Reading', ('temperature', 'humidity'))
+
+    def __init__(self, pin=None, *, active_measure='temperature',
+                 min_temp=-40.0, max_temp=80.0,
+                 min_humidity=0.0, max_humidity=100.0,
+                 threshold=0.8, min_interval=3.0, pin_factory=None):
+        if active_measure not in ('temperature', 'humidity'):
+            raise ValueError("active_measure must be 'temperature' or 'humidity'")
+        if min_interval < 2.0:
+            raise ValueError('min_interval must be at least 2.0 seconds')
+        self._temperature = None
+        self._humidity = None
+        self._last_read_tick = None
+        self._edges = []
+        self._data_ready = Event()
+        self._read_lock = Lock()
+        self._threshold = None
+        super().__init__(pin, pin_factory=pin_factory)
+        self._active_measure = active_measure
+        self.threshold = threshold
+        if min_temp >= max_temp:
+            raise ValueError('min_temp must be less than max_temp')
+        if min_humidity >= max_humidity:
+            raise ValueError('min_humidity must be less than max_humidity')
+        self._min_temp = min_temp
+        self._max_temp = max_temp
+        self._min_humidity = min_humidity
+        self._max_humidity = max_humidity
+        self._min_interval = min_interval
+        self.pin.bounce = None
+        self.pin.edges = 'both'
+        self.pin.when_changed = self._on_edge
+        self.pin.function = 'output'
+        self.pin.state = True  # idle high
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            self._read_sensor()
+        if self._temperature is None:
+            self._fire_events(self.pin_factory.ticks(), False)
+            self._last_read_tick = None  # allow immediate retry on first user access
+
+    def _on_edge(self, ticks, state):
+        self._edges.append((ticks, state))
+        if len(self._edges) >= 83:
+            self._data_ready.set()
+
+    def _read_sensor(self):
+        with self._read_lock:
+            now = self.pin_factory.ticks()
+            if self._last_read_tick is not None:
+                elapsed = self.pin_factory.ticks_diff(now, self._last_read_tick)
+                if elapsed < self._min_interval:
+                    return  # Use cached values
+            # Drive the line low for the start pulse.  Clear edges only after
+            # the host-driven low so that real pin backends (e.g. pigpio) which
+            # fire a callback on output writes don't leave a spurious falling
+            # edge at position 0, which would shift the preamble count and
+            # corrupt the bit parse.
+            self.pin.function = 'output'
+            self.pin.state = False
+            sleep(0.001)
+            self._edges.clear()
+            self._data_ready.clear()
+            self.pin.function = 'input'
+            responded = self._data_ready.wait(0.1)
+            edges = list(self._edges)
+            # Always update _last_read_tick inside the lock so a concurrent
+            # caller that was waiting sees the fresh tick and skips its read.
+            # Also prevents a tight retry loop on a broken sensor.
+            self._last_read_tick = self.pin_factory.ticks()
+
+        if not responded:
+            warnings.warn(HumidityTemperatureSensorNoResponse('sensor did not respond'))
+            return
+        self._parse(edges)
+        self._fire_events(self.pin_factory.ticks(), self.is_active)
+
+    def _parse(self, edges):
+        # Skip the 3-edge response preamble (low ~80µs, high ~80µs, low ~50µs),
+        # then decode 40 bits from the remaining 80 edges (2 per bit).
+        try:
+            data_edges = edges[3:]
+            # data_edges[0] should be a falling edge (the data-start LOW before
+            # bit 0). If it's rising, the preamble was one edge shorter than
+            # expected (backend didn't fire a callback for the host line release),
+            # so shift back by one to re-include the missed edge.
+            if data_edges and data_edges[0][1] != 0:
+                data_edges = edges[2:]
+            if len(data_edges) < 80:
+                warnings.warn(HumidityTemperatureSensorNoResponse('incomplete response from sensor'))
+                return
+            bits = []
+            for i in range(0, 80, 2):
+                high_ticks, _ = data_edges[i + 1]
+                if i + 2 < len(data_edges):
+                    next_ticks, _ = data_edges[i + 2]
+                    bit_high = self.pin_factory.ticks_diff(next_ticks, high_ticks)
+                else:
+                    # Last bit: measure from now; >50 µs means a 1-bit
+                    bit_high = self.pin_factory.ticks_diff(
+                        self.pin_factory.ticks(), high_ticks)
+                bits.append(1 if bit_high > 0.00005 else 0)
+
+            # Parse 5 bytes
+            byte_vals = [
+                sum(bits[i * 8 + j] << (7 - j) for j in range(8))
+                for i in range(5)
+            ]
+            checksum = (byte_vals[0] + byte_vals[1] +
+                        byte_vals[2] + byte_vals[3]) & 0xFF
+            if checksum != byte_vals[4]:
+                warnings.warn(HumidityTemperatureSensorBadChecksum('checksum mismatch; read discarded'))
+                return
+
+            humidity = ((byte_vals[0] << 8) | byte_vals[1]) / 10.0
+            raw_temp = ((byte_vals[2] & 0x7F) << 8) | byte_vals[3]
+            temperature = raw_temp / 10.0
+            if byte_vals[2] & 0x80:
+                temperature = -temperature
+
+            if humidity == 0.0 and temperature == 0.0:
+                warnings.warn(HumidityTemperatureSensorBadChecksum('all-zero payload; read discarded'))
+                return
+
+            if not (0.0 <= humidity <= 100.0) or not (-40.0 <= temperature <= 80.0):
+                warnings.warn(HumidityTemperatureSensorBadChecksum('out-of-range values; read discarded'))
+                return
+
+            self._humidity = humidity
+            self._temperature = temperature
+        except (IndexError, ZeroDivisionError):
+            return
+
+    @property
+    def temperature(self):
+        """The current temperature in degrees Celsius."""
+        self._read_sensor()
+        return self._temperature
+
+    @property
+    def humidity(self):
+        """The current relative humidity as a percentage (0–100)."""
+        self._read_sensor()
+        return self._humidity
+
+    @property
+    def reading(self):
+        """
+        Both measurements as a :func:`~collections.namedtuple`
+        ``(temperature, humidity)``. Either field is :data:`None` until the
+        first successful read.
+        """
+        self._read_sensor()
+        return HumidityTemperatureSensor.Reading(self._temperature, self._humidity)
+
+    @property
+    def active_measure(self):
+        """Which measurement drives :attr:`value`: ``'temperature'`` or ``'humidity'``."""
+        return self._active_measure
+
+    @property
+    def threshold(self):
+        """Normalised threshold (0–1) for :attr:`when_activated` / :attr:`when_deactivated`."""
+        return self._threshold
+
+    @threshold.setter
+    def threshold(self, value):
+        if not (0.0 <= value <= 1.0):
+            raise InputDeviceError('threshold must be between 0 and 1 inclusive')
+        self._threshold = float(value)
+
+    @property
+    def value(self):
+        """
+        The :attr:`active_measure` normalised to 0–1 using the corresponding
+        min/max range. Returns :data:`None` if no reading is available yet.
+        """
+        self._read_sensor()
+        if self._active_measure == 'temperature':
+            if self._temperature is None:
+                return None
+            return (self._temperature - self._min_temp) / (self._max_temp - self._min_temp)
+        else:
+            if self._humidity is None:
+                return None
+            return (self._humidity - self._min_humidity) / (self._max_humidity - self._min_humidity)
+
+    @property
+    def is_active(self):
+        v = self.value
+        return v is not None and v >= self._threshold
+
+    @property
+    def min_temp(self):
+        """Lower bound used to normalise temperature into :attr:`value`."""
+        return self._min_temp
+
+    @property
+    def max_temp(self):
+        """Upper bound used to normalise temperature into :attr:`value`."""
+        return self._max_temp
+
+    @property
+    def min_humidity(self):
+        """Lower bound used to normalise humidity into :attr:`value`."""
+        return self._min_humidity
+
+    @property
+    def max_humidity(self):
+        """Upper bound used to normalise humidity into :attr:`value`."""
+        return self._max_humidity
+
+    def close(self):
+        try:
+            self.pin.when_changed = None
+        except Exception:
+            pass
+        super().close()
+
+
