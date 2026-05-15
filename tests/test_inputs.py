@@ -17,7 +17,7 @@ from threading import Event
 from functools import partial
 
 from conftest import ThreadedTest
-from gpiozero.pins.mock import MockChargingPin, MockTriggerPin, MockHumidityTemperatureSensorPin, MockHumidityTemperatureSensorPinShortPreamble
+from gpiozero.pins.mock import MockChargingPin, MockTriggerPin, MockHumidityTemperatureSensorPin, MockHumidityTemperatureSensorPinShortPreamble, MockLGPIOHumidityTemperatureSensorPin
 from gpiozero import *
 
 
@@ -598,3 +598,14 @@ def test_dht22_short_preamble(mock_factory):
     with HumidityTemperatureSensor(4) as sensor:
         assert pytest.approx(sensor.temperature, abs=0.1) == 25.3
         assert pytest.approx(sensor.humidity, abs=0.1) == 60.1
+
+def test_dht22_lgpio_function_toggle_rearm(mock_factory):
+    # lgpio tears down edge detection on every pin.function change. The
+    # sensor toggles function output<->input on every read, so unless it
+    # re-arms when_changed it never sees the response edge train and times
+    # out with HumidityTemperatureSensorNoResponse.
+    mock_factory.pin(4, pin_class=MockLGPIOHumidityTemperatureSensorPin,
+                     temperature=23.4, humidity=55.6)
+    with HumidityTemperatureSensor(4) as sensor:
+        assert pytest.approx(sensor.temperature, abs=0.1) == 23.4
+        assert pytest.approx(sensor.humidity, abs=0.1) == 55.6

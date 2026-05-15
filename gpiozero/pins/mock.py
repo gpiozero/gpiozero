@@ -450,6 +450,7 @@ class MockHumidityTemperatureSensorPin(MockPin):
         super().__init__(factory, info)
         self.temperature = temperature
         self.humidity = humidity
+        self._alert_armed = True
 
     def _set_function(self, value):
         super()._set_function(value)
@@ -487,7 +488,7 @@ class MockHumidityTemperatureSensorPin(MockPin):
         def fire(state, dt):
             nonlocal t
             t += dt
-            if self._when_changed is not None:
+            if self._alert_armed and self._when_changed is not None:
                 method = self._when_changed()
                 if method is not None:
                     method(t, int(state))
@@ -512,6 +513,27 @@ class MockHumidityTemperatureSensorPinShortPreamble(MockHumidityTemperatureSenso
         fire(False, 80e-6)   # edge 0: sensor pulls low ~80µs (falling)
         fire(True,  80e-6)   # edge 1: sensor releases ~80µs (rising)
         fire(False, 80e-6)   # edge 2: data start, sensor pulls low (falling)
+
+
+class MockLGPIOHumidityTemperatureSensorPin(MockHumidityTemperatureSensorPin):
+    """
+    Variant of :class:`MockHumidityTemperatureSensorPin` that reproduces the
+    behaviour of the lgpio backend: changing the pin function tears down edge
+    detection (lgpio re-claims the line, dropping its alert callback). Edge
+    detection is only restored by an explicit ``_enable_event_detect`` -- i.e.
+    ``when_changed`` must be re-assigned after a function change.
+    """
+    def _set_function(self, value):
+        super()._set_function(value)
+        self._alert_armed = False
+
+    def _enable_event_detect(self):
+        super()._enable_event_detect()
+        self._alert_armed = True
+
+    def _disable_event_detect(self):
+        super()._disable_event_detect()
+        self._alert_armed = False
 
 
 class MockFactory(PiFactory):

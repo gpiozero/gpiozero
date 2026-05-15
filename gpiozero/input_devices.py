@@ -1482,6 +1482,13 @@ class HumidityTemperatureSensor(EventsMixin, GPIODevice):
             self._edges.clear()
             self._data_ready.clear()
             self.pin.function = 'input'
+            # Some pin backends (notably lgpio) tear down edge detection when
+            # the pin function changes: the output->input toggle above drops
+            # the when_changed callback. Re-arm it so the response edge train
+            # is actually delivered to _on_edge. Re-assigning when_changed is
+            # a harmless disable-then-enable on backends that do not need it.
+            self.pin.when_changed = None
+            self.pin.when_changed = self._on_edge
             responded = self._data_ready.wait(0.1)
             edges = list(self._edges)
             # Always update _last_read_tick inside the lock so a concurrent
