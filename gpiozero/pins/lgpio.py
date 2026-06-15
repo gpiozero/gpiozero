@@ -84,18 +84,40 @@ class LGPIOFactory(LocalPiFactory):
             return 0, lgpio.gpiochip_open(0)
 
     def _find_rp1_chip(self):
-        sys_gpio = Path('/sys/class/gpio')
-        if sys_gpio.exists():
-            for p in sys_gpio.glob('gpiochip*'):
-                label_file = p / 'label'
-                if label_file.exists():
-                    try:
-                        label = label_file.read_text().strip()
-                        if 'rp1' in label.lower():
-                            return int(p.name[len('gpiochip'):])
-                    except IOError:
-                        pass
+        # 1. Try modern character device ioctl probe first
+        try:
+            import fcntl
+            import struct
+            import re
+
+            # struct gpiochip_info { char name[32]; char label[32]; __u32 lines; }
+            chip_info_struct = struct.Struct("32s32sI")
+            GPIO_GET_CHIPINFO_IOCTL = 0x8044B401
+
+            for path in sorted(Path('/dev').glob('gpiochip*')):
+                try:
+                    with path.open('rb') as f:
+                        buf = bytearray(68)
+                        fcntl.ioctl(f.fileno(), GPIO_GET_CHIPINFO_IOCTL, buf)
+                        name, label, lines = chip_info_struct.unpack(buf)
+                        label_str = label.rstrip(b'\0').decode('utf-8', errors='ignore').lower()
+                        if 'rp1' in label_str:
+                            match = re.match(r'gpiochip(\d+)', path.name)
+                            if match:
+                                return int(match.group(1))
+                except (IOError, OSError):
+                    pass
+        except (ImportError, Exception):
+            pass
+
+        # 2. Fallback to checking the presence of character devices /dev/gpiochip4 and /dev/gpiochip0
+        if Path('/dev/gpiochip4').exists():
+            return 4
+        elif Path('/dev/gpiochip0').exists():
+            return 0
+
         return None
+
 
     def close(self):
         super().close()

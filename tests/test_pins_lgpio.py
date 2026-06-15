@@ -41,31 +41,92 @@ def test_lgpio_factory_pi5_auto_detect():
     # Mock _get_revision to return Pi 5 revision (0x17 in type bits)
     mock_get_revision = mock.Mock(return_value=0x170)
     
-    # Mock sysfs
-    mock_glob = mock.Mock(return_value=[Path('/sys/class/gpio/gpiochip4')])
-    mock_read_text = mock.Mock(return_value='rp1-gpio\n')
+    # Mock /dev/gpiochip* glob
+    mock_glob = mock.Mock(return_value=[Path('/dev/gpiochip4')])
     
+    # Mock open and ioctl
+    mock_open_file = mock.MagicMock()
+    mock_open_file.__enter__.return_value = mock_open_file
+    mock_open_file.fileno.return_value = 999
+    
+    def side_effect_ioctl(fd, cmd, buf):
+        import struct
+        chip_info_struct = struct.Struct("32s32sI")
+        packed = chip_info_struct.pack(b'gpiochip4', b'pinctrl-rp1', 28)
+        buf[:len(packed)] = packed
+        return 0
+
     with mock.patch('gpiozero.pins.lgpio.LGPIOFactory._get_revision', mock_get_revision), \
-         mock.patch('gpiozero.pins.lgpio.Path.exists', return_value=True), \
          mock.patch('gpiozero.pins.lgpio.Path.glob', mock_glob), \
-         mock.patch('gpiozero.pins.lgpio.Path.read_text', mock_read_text):
+         mock.patch('gpiozero.pins.lgpio.Path.open', return_value=mock_open_file), \
+         mock.patch('fcntl.ioctl', side_effect_ioctl):
         
         factory = LGPIOFactory()
         
     mock_lgpio.gpiochip_open.assert_called_once_with(4)
     assert factory._chip == 4
 
+def test_lgpio_factory_pi5_auto_detect_fallback_to_4():
+    mock_lgpio.reset_mock()
+    mock_lgpio.gpiochip_open.return_value = 123
+    
+    mock_get_revision = mock.Mock(return_value=0x170)
+    
+    # Mock ioctl to fail or raise an error to trigger fallback
+    def side_effect_ioctl(fd, cmd, buf):
+        raise OSError("ioctl not supported")
+
+    # Mock Path('/dev/gpiochip4').exists() to be True
+    def side_effect_exists(self):
+        if str(self) == '/dev/gpiochip4':
+            return True
+        return False
+
+    with mock.patch('gpiozero.pins.lgpio.LGPIOFactory._get_revision', mock_get_revision), \
+         mock.patch('gpiozero.pins.lgpio.Path.glob', return_value=[]), \
+         mock.patch('gpiozero.pins.lgpio.Path.exists', side_effect_exists), \
+         mock.patch('fcntl.ioctl', side_effect_ioctl):
+        
+        factory = LGPIOFactory()
+        
+    mock_lgpio.gpiochip_open.assert_called_once_with(4)
+    assert factory._chip == 4
+
+def test_lgpio_factory_pi5_auto_detect_fallback_to_0():
+    mock_lgpio.reset_mock()
+    mock_lgpio.gpiochip_open.return_value = 123
+    
+    mock_get_revision = mock.Mock(return_value=0x170)
+    
+    # Mock ioctl to fail
+    def side_effect_ioctl(fd, cmd, buf):
+        raise OSError("ioctl not supported")
+
+    # Mock Path('/dev/gpiochip0').exists() to be True, and '/dev/gpiochip4' to be False
+    def side_effect_exists(self):
+        if str(self) == '/dev/gpiochip0':
+            return True
+        return False
+
+    with mock.patch('gpiozero.pins.lgpio.LGPIOFactory._get_revision', mock_get_revision), \
+         mock.patch('gpiozero.pins.lgpio.Path.glob', return_value=[]), \
+         mock.patch('gpiozero.pins.lgpio.Path.exists', side_effect_exists), \
+         mock.patch('fcntl.ioctl', side_effect_ioctl):
+        
+        factory = LGPIOFactory()
+        
+    mock_lgpio.gpiochip_open.assert_called_once_with(0)
+    assert factory._chip == 0
+
 def test_lgpio_factory_pi5_auto_detect_not_found():
     mock_lgpio.reset_mock()
     
     mock_get_revision = mock.Mock(return_value=0x170)
     
-    # Mock sysfs to return no matching chips
-    mock_glob = mock.Mock(return_value=[])
-    
+    # Mock glob to return empty, and exist check to return False
     with mock.patch('gpiozero.pins.lgpio.LGPIOFactory._get_revision', mock_get_revision), \
-         mock.patch('gpiozero.pins.lgpio.Path.exists', return_value=True), \
-         mock.patch('gpiozero.pins.lgpio.Path.glob', mock_glob):
+         mock.patch('gpiozero.pins.lgpio.Path.glob', return_value=[]), \
+         mock.patch('gpiozero.pins.lgpio.Path.exists', return_value=False):
         
         with pytest.raises(RuntimeError, match="Cannot find RP1 gpiochip on Pi 5"):
             factory = LGPIOFactory()
