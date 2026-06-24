@@ -27,13 +27,13 @@ from gpiozero.pins.mock import MockConnectedPin, MockFactory
 from gpiozero.pins.native import NativeFactory
 from gpiozero.pins.local import LocalPiFactory, LocalPiHardwareSPI
 
-
 # This module assumes you've wired the following GPIO pins together. The pins
 # can be re-configured via the listed environment variables (useful for when
 # your testing rig requires different pins because the defaults interfere with
 # attached hardware). Please note that the name specified *must* be the primary
 # name of the pin, e.g. GPIO22 rather than an alias like BCM22 or 22 (several
 # tests rely upon this).
+
 TEST_PIN = os.environ.get('GPIOZERO_TEST_PIN', 'GPIO22')
 INPUT_PIN = os.environ.get('GPIOZERO_TEST_INPUT_PIN', 'GPIO27')
 

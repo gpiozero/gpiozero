@@ -1368,3 +1368,15 @@ class RotaryEncoder(EventsMixin, CompositeDevice):
         beyond their limits.
         """
         return self._wrap
+
+class Potentiometer(SmoothedInputDevice):
+    """
+    Represents a potentiometer or analog input
+    Exposes voltage reading via read() method
+    """
+    def _state_to_value(self, state):
+        return float(state)
+
+    def read(self):
+        """Returns the current voltage in volts (0.0 - 10.0)"""
+        return self.value * 10.0
