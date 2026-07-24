@@ -265,6 +265,18 @@ You can even control pin state changes to simulate device behaviour:
     >>> led.value
     0
 
+.. note::
+
+    Setting :attr:`~SourceMixin.source` starts a background thread which
+    copies values from the source at regular intervals (every
+    :attr:`~SourceMixin.source_delay` seconds, 10ms by default). At the REPL,
+    the delay between typing each line is normally enough for this to happen,
+    but if you copy an example like the one above into a script and run it
+    non-interactively, ``led.value`` may not have caught up with ``btn``'s new
+    state by the time it's read. Add a short :func:`~time.sleep` (longer than
+    :attr:`~SourceMixin.source_delay`) after driving the pin if you need the
+    change to be visible immediately.
+
 Several sub-classes of mock pins exist for emulating various other things
 (pins that do/don't support PWM, pins that are connected together, pins that
 drive high after a delay, etc), for example, you have to use
