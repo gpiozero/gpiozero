@@ -420,7 +420,7 @@ The "zero" is part of a naming convention for "zero-boilerplate" education
 friendly libraries, which started with `Pygame Zero`_, and has been followed by
 `NetworkZero`_, `guizero`_ and more.
 
-These libraries aim to remove barrier to entry and provide a smooth learning
+These libraries aim to remove barriers to entry and provide a smooth learning
 curve for beginners by making it easy to get started and easy to build up to
 more advanced projects.
 

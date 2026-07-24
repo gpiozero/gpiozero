@@ -177,8 +177,7 @@ Robot
 PhaseEnableRobot
 ----------------
 
-.. autoclass:: PhaseEnableRobot
-    :members:
+.. autofunction:: PhaseEnableRobot
 
 
 RyanteckRobot

@@ -123,7 +123,7 @@ configure the boot partition like so:
 2. Create an empty file called :file:`ssh` (no file extension) and save it in
    the boot partition.
 
-3. Edit :file:`cmdline.txt`` and insert ``modules-load=dwc2,g_ether`` after
+3. Edit :file:`cmdline.txt` and insert ``modules-load=dwc2,g_ether`` after
    ``rootwait``.
 
 (See guides on `blog.gbaman.info`_ and `learn.adafruit.com`_ for more detailed

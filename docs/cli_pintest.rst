@@ -106,11 +106,11 @@ Test just the I2C GPIOs without prompting:
 
     $ pintest --pins 2,3 --yes
 
-Exclude the SPI GPIOs from testing:
+Skip the SPI GPIOs from testing:
 
 .. code-block:: console
 
-    $ pintest --exclude GPIO7,GPIO8,GPIO9,GPIO10,GPIO11
+    $ pintest --skip GPIO7,GPIO8,GPIO9,GPIO10,GPIO11
 
 Note that pin numbers can be given in any form accepted by GPIO Zero, e.g. 14,
 GPIO14, or BOARD8.

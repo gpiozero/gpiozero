@@ -245,7 +245,7 @@ You can even control pin state changes to simulate device behaviour:
     >>> btn = Button(16)
     >>> led.source = btn
 
-    # Initailly the button isn't "pressed" so the LED should be off
+    # Initially the button isn't "pressed" so the LED should be off
     >>> led.value
     0
 

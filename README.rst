@@ -45,7 +45,8 @@ together:
     pause()
 
 You can advance to using the declarative paradigm along with provided
-to describe the behaviour of devices and their interactions:
+`source tools`_ to describe the behaviour of devices and their
+interactions:
 
 .. code:: python
 
@@ -64,6 +65,7 @@ to describe the behaviour of devices and their interactions:
 See the chapter on `Source/Values`_ for more information.
 
 .. _Source/Values: https://gpiozero.readthedocs.io/en/stable/source_values.html
+.. _source tools: https://gpiozero.readthedocs.io/en/stable/api_tools.html
 
 The library includes interfaces to many simple everyday components, as well as
 some more complex things like sensors, analogue-to-digital converters, full
@@ -132,11 +134,13 @@ Contributors
 - `Barry Byford`_
 - `Cameron Davidson-Pilon`_
 - `Carl Monk`_
+- `Chris R`_
 - `Claire Pollard`_
 - `Clare Macrae`_
 - `Dan Jackson`_
 - `Daniele Procida`_
 - `damosurfer`_
+- `Dariusz Kowalczyk`_
 - `David Glaude`_
 - `Delcio Torres`_
 - `Edward Betts`_

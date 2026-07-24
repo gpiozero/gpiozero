@@ -139,7 +139,7 @@ Wait for a pull-up button to be pressed in RPi.GPIO::
 
     GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
 
-    GPIO.wait_for_edge(4, GPIO.FALLING):
+    GPIO.wait_for_edge(4, GPIO.FALLING)
     print("button was pressed")
 
 The equivalent in GPIO Zero::
@@ -159,9 +159,9 @@ for a falling edge, we're waiting for a rising edge::
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
 
-    GPIO.setup(4, GPIO.IN, GPIO.PUD_UP)
+    GPIO.setup(4, GPIO.IN, GPIO.PUD_DOWN)
 
-    GPIO.wait_for_edge(4, GPIO.FALLING):
+    GPIO.wait_for_edge(4, GPIO.RISING)
     print("button was pressed")
 
 Again, in GPIO Zero, the only difference is in the initialization::
@@ -257,7 +257,7 @@ PWM (Pulse-width modulation)
 
 Both libraries support software PWM control on any pin. Depending on the pin
 library used, GPIO Zero can also support hardware PWM (using
-:class:`~pins.rpigpio.RPIOPin` or :class:`~pins.rpigpio.PiGPIOPin`).
+:class:`~pins.rpigpio.RPiGPIOPin` or :class:`~pins.pigpio.PiGPIOPin`).
 
 A simple example of using PWM is to control the brightness of an LED.
 
