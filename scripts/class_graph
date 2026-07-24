@@ -12,6 +12,7 @@ project's setup.cfg under [{SETUP_SECTION}]
 
 from __future__ import annotations
 
+import glob
 import re
 import sys
 assert sys.version_info >= (3, 6), 'Script requires Python 3.6+'
@@ -117,8 +118,7 @@ def make_class_map(search_paths: t.List[str], omit: t.Set[str])\
         class_re = re.compile(
             r'^class\s+(?P<name>\w+)\s*(?:\((?P<bases>.*)\))?:', re.MULTILINE)
         for path in search_paths:
-            p = Path(path)
-            for py_file in p.parent.glob(p.name):
+            for py_file in map(Path, glob.glob(path, recursive=True)):
                 with py_file.open() as f:
                     for match in class_re.finditer(f.read()):
                         if match.group('name') not in omit:
