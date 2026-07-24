@@ -10,9 +10,10 @@
 Installing GPIO Zero
 ====================
 
-GPIO Zero is installed by default in the `Raspberry Pi OS`_ desktop image, `Raspberry Pi OS`_ Lite image, and
-the `Raspberry Pi Desktop`_ image for PC/Mac, all available from
-`raspberrypi.com`_. Follow these guides to installing on other operating systems, including for PCs using the :doc:`remote GPIO
+GPIO Zero is installed by default in the `Raspberry Pi OS`_ desktop image,
+`Raspberry Pi OS`_ Lite image, and the `Raspberry Pi Desktop`_ image for PC/Mac,
+all available from `raspberrypi.com`_. Follow these guides to installing on
+other operating systems, including for PCs using the :doc:`remote GPIO
 <remote_gpio>` feature.
 
 .. _Raspberry Pi OS: https://www.raspberrypi.com/software/operating-systems/
@@ -25,9 +26,14 @@ Raspberry Pi
 GPIO Zero is packaged in the apt repositories of Raspberry Pi OS, `Debian`_ and
 `Ubuntu`_. It is also available on `PyPI`_.
 
-.. _Debian: https://packages.debian.org/bookworm/python3-gpiozero
-.. _Ubuntu: https://packages.ubuntu.com/noble/python3-gpiozero
+.. _Debian: https://packages.debian.org/trixie/python3-gpiozero
+.. _Ubuntu: https://packages.ubuntu.com/resolute/python3-gpiozero
 .. _PyPI: https://pypi.org/project/gpiozero/
+
+.. warning::
+
+    The version of GPIO Zero in Debian may fall significantly behind the pip and
+    Raspberry Pi OS versions
 
 apt
 ---
@@ -50,33 +56,73 @@ or Python 2:
 
     pi@raspberrypi:~$ sudo apt install python-gpiozero
 
+Virtual environment
+-------------------
+
+You may need to install GPIO Zero into a virtual environment. The simplest way
+is to create a virtual environment with system packages enabled, so that you can
+access the apt installed libraries without having to install them separately:
+
+.. code-block:: console
+
+    pi@raspberrypi:~$ python3 -m venv gpiozero-env --system-site-packages
+
+Then activate the environment (each time you need to use it):
+
+.. code-block:: console
+
+    pi@raspberrypi:~$ source ./gpiozero-env/bin/activate
+
+Once activated, the terminal prompt will be preceded by the name of the
+environment:
+
+.. code-block:: console
+
+    (gpiozero-env) pi@raspberrypi:~$
+
+You can then type ``python`` to open a Python console or run a Python program,
+and use ``apt`` to install additional libraries from the OS, or ``pip`` to
+install additional libraries from `PyPI <https://pypi.org/>`__.
+
 pip
 ---
 
-If you're using another operating system on your Raspberry Pi, you may need to
-use pip to install GPIO Zero instead. Install pip using `get-pip`_ and then
-type:
+.. note::
+
+    Note that for some time, pip installing gpiozero would not work on the
+    Raspberry Pi 5 due to a bug in the lgpio pin factory. As of July 2026 (the
+    2.0.1.post1 release), this is now fixed.
+
+If you need to install GPIO Zero into a virtual environment without system
+packages enabled, first activate your environment (as above) and install GPIO
+Zero itself with pip:
 
 .. code-block:: console
 
-    pi@raspberrypi:~$ sudo pip3 install gpiozero
+    (gpiozero-env) pi@raspberrypi:~$ pip install gpiozero
 
-or for Python 2:
+You will also need to install a pin library. The default and recommended one is
+lgpio. This may require compilation, so first install ``swig`` and
+``liblgpio-dev``:
 
 .. code-block:: console
 
-    pi@raspberrypi:~$ sudo pip install gpiozero
+    (gpiozero-env) pi@raspberrypi:~$ sudo apt install swig liblgpio-dev -y
 
-To install GPIO Zero in a virtual environment, see the :doc:`development` page.
+Then install lgpio:
 
-.. _get-pip: https://pip.pypa.io/en/stable/installing/
+.. code-block:: console
+
+    (gpiozero-env) pi@raspberrypi:~$ pip install lgpio
+
+See :doc:`api_pins` for more information on pin libraries.
 
 PC/Mac
 ======
 
-In order to use GPIO Zero's remote GPIO feature from a PC or Mac, you'll need
-to install GPIO Zero on that computer using pip. See the :doc:`remote_gpio`
-page for more information.
+You may wish to install GPIO Zero on a PC or Mac for either development
+purposes, using :ref:`mock-pins` or :doc:`remote_gpio`. Simply install GPIO Zero
+with pip, as above. For remote GPIO, you may need the relevant pin library too.
 
 Documentation
 =============
@@ -94,8 +140,8 @@ documentation you have several options:
 You can open the documentation directly by visiting
 file:///usr/share/doc/python-gpiozero-doc/html/index.html in your browser.
 However, be aware that using ``file://`` URLs sometimes breaks certain elements.
-To avoid this, you can view the docs from an ``http://`` style URL by starting
-a trivial HTTP server with Python, like so:
+To avoid this, you can view the docs from an ``http://`` style URL by starting a
+trivial HTTP server with Python, like so:
 
 .. code-block:: console
 

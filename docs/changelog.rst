@@ -13,6 +13,19 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 2.0.1.post1 (2026-07-25)
+================================
+
+* Fixed :class:`~gpiozero.pins.lgpio.LGPIOFactory` defaulting to the wrong GPIO
+  chip on the Raspberry Pi 5, which broke on kernels that renumbered the chip
+  from ``gpiochip4`` to ``gpiochip0`` (`#1166`_)
+* Updated documentation to highlight Pi 5 support for each pin factory, and
+  the lack of Pi 5 support in the remote GPIO feature
+* Removed warning about using pigpio to fix servo jitter
+
+.. _#1166: https://github.com/gpiozero/gpiozero/issues/1166
+
+
 Release 2.0.1 (2024-02-15)
 ==========================
 
@@ -141,8 +154,8 @@ Release 1.5.0 (2019-02-12)
   (thanks to Jeevan M R for the latter). (`#532`_, `#714`_)
 * Added support for `colorzero`_ with :class:`RGBLED` (this adds a new
   dependency). (`#655`_)
-* Added :class:`TonalBuzzer` with :class:`~tones.Tone` API for specifying frequencies
-  raw or via MIDI or musical notes. (`#681`_, `#717`_)
+* Added :class:`TonalBuzzer` with :class:`~tones.Tone` API for specifying
+  frequencies raw or via MIDI or musical notes. (`#681`_, `#717`_)
 * Added :class:`PiHutXmasTree`. (`#502`_)
 * Added :class:`PumpkinPi` and :class:`JamHat` (thanks to Claire Pollard).
   (`#680`_, `#681`_, `#717`_)

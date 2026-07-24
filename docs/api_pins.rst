@@ -83,6 +83,11 @@ importing will work but attempting to create a device will raise
 Changing the pin factory
 ========================
 
+.. note::
+
+    Check the pin factory support for your Pi model. Only lgpio works on the Pi
+    5.
+
 The default pin factory can be replaced by specifying a value for the
 :envvar:`GPIOZERO_PIN_FACTORY` environment variable. For example:
 
@@ -129,17 +134,17 @@ The following values, and the corresponding :class:`Factory` and :class:`Pin`
 classes are listed in the table below. Factories are listed in the order that
 they are tried by default.
 
-+---------+-----------------------------------------------+-------------------------------------------+
-| Name    | Factory class                                 | Pin class                                 |
-+=========+===============================================+===========================================+
-| lgpio   | :class:`gpiozero.pins.lgpio.LGPIOFactory`     | :class:`gpiozero.pins.lgpio.LGPIOPin`     |
-+---------+-----------------------------------------------+-------------------------------------------+
-| rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` |
-+---------+-----------------------------------------------+-------------------------------------------+
-| pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   |
-+---------+-----------------------------------------------+-------------------------------------------+
-| native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   |
-+---------+-----------------------------------------------+-------------------------------------------+
++---------+-----------------------------------------------+-------------------------------------------+------------+
+| Name    | Factory class                                 | Pin class                                 | Pi support |
++=========+===============================================+===========================================+============+
+| lgpio   | :class:`gpiozero.pins.lgpio.LGPIOFactory`     | :class:`gpiozero.pins.lgpio.LGPIOPin`     | All models |
++---------+-----------------------------------------------+-------------------------------------------+------------+
+| rpigpio | :class:`gpiozero.pins.rpigpio.RPiGPIOFactory` | :class:`gpiozero.pins.rpigpio.RPiGPIOPin` | (not Pi 5) |
++---------+-----------------------------------------------+-------------------------------------------+------------+
+| pigpio  | :class:`gpiozero.pins.pigpio.PiGPIOFactory`   | :class:`gpiozero.pins.pigpio.PiGPIOPin`   | (not Pi 5) |
++---------+-----------------------------------------------+-------------------------------------------+------------+
+| native  | :class:`gpiozero.pins.native.NativeFactory`   | :class:`gpiozero.pins.native.NativePin`   | (not Pi 5) |
++---------+-----------------------------------------------+-------------------------------------------+------------+
 
 If you need to change the default pin factory from within a script, either set
 :attr:`Device.pin_factory` to the new factory instance to use::

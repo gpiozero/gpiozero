@@ -9,6 +9,12 @@
 Remote GPIO Recipes
 ===================
 
+.. warning::
+
+    This page dates back to 2017, but the library used to provide remote
+    functionality does not work on either the Raspberry Pi 5 or more recent
+    Debian versions. A replacement may be available in future.
+
 .. currentmodule:: gpiozero
 
 The following recipes demonstrate some of the capabilities of the remote GPIO

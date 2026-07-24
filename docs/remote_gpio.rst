@@ -10,6 +10,12 @@
 Configuring Remote GPIO
 =======================
 
+.. warning::
+
+    This page dates back to 2017, but the library used to provide remote
+    functionality does not work on either the Raspberry Pi 5 or more recent
+    Debian versions. A replacement may be available in future.
+
 .. currentmodule:: gpiozero
 
 GPIO Zero supports a number of different pin implementations (low-level pin
