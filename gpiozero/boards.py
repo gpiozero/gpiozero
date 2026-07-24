@@ -213,7 +213,7 @@ class ButtonBoard(HoldMixin, CompositeDevice):
         in use by something else.
     """
     def __init__(self, *pins, pull_up=True, active_state=None,
-                 bounce_time=None, hold_time=1, hold_repeat=False,
+                 bounce_time=None, hold_time=1.0, hold_repeat=False,
                  _order=None, pin_factory=None, **named_pins):
         super().__init__(
             *(
@@ -496,7 +496,7 @@ class LEDBoard(LEDCollection):
             super().toggle()
 
     def blink(
-            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            self, on_time=1.0, off_time=1.0, fade_in_time=0.0, fade_out_time=0.0,
             n=None, background=True):
         """
         Make all the LEDs turn on and off repeatedly.
@@ -551,7 +551,7 @@ class LEDBoard(LEDCollection):
             with self._blink_lock:
                 self._blink_leds.remove(led)
 
-    def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
+    def pulse(self, fade_in_time=1.0, fade_out_time=1.0, n=None, background=True):
         """
         Make all LEDs fade in and out repeatedly. Note that this method will
         only work if the *pwm* parameter was :data:`True` at construction time.
@@ -2174,7 +2174,7 @@ class Robot(SourceMixin, CompositeDevice):
     def value(self, value):
         self.left_motor.value, self.right_motor.value = value
 
-    def forward(self, speed=1, *, curve_left=0, curve_right=0):
+    def forward(self, speed=1.0, *, curve_left=0.0, curve_right=0.0):
         """
         Drive the robot forward by running both motors forward.
 
@@ -2204,7 +2204,7 @@ class Robot(SourceMixin, CompositeDevice):
         self.left_motor.forward(speed * (1 - curve_left))
         self.right_motor.forward(speed * (1 - curve_right))
 
-    def backward(self, speed=1, *, curve_left=0, curve_right=0):
+    def backward(self, speed=1.0, *, curve_left=0.0, curve_right=0.0):
         """
         Drive the robot backward by running both motors backward.
 
@@ -2234,7 +2234,7 @@ class Robot(SourceMixin, CompositeDevice):
         self.left_motor.backward(speed * (1 - curve_left))
         self.right_motor.backward(speed * (1 - curve_right))
 
-    def left(self, speed=1):
+    def left(self, speed=1.0):
         """
         Make the robot turn left by running the right motor forward and left
         motor backward.
@@ -2246,7 +2246,7 @@ class Robot(SourceMixin, CompositeDevice):
         self.right_motor.forward(speed)
         self.left_motor.backward(speed)
 
-    def right(self, speed=1):
+    def right(self, speed=1.0):
         """
         Make the robot turn right by running the left motor forward and right
         motor backward.
