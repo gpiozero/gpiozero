@@ -245,7 +245,7 @@ value into a boolean:
 Composite devices
 -----------------
 
-The :attr:`~Device.value` of a composite device made up of the nested values of
+The :attr:`~Device.value` of a composite device is made up of the nested values of
 its devices. For example, the value of a :class:`Robot` object is a 2-tuple
 containing its left and right motor values:
 

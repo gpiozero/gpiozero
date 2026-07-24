@@ -113,7 +113,6 @@ Release 1.6.0 (2021-03-14)
 .. _#920: https://github.com/gpiozero/gpiozero/issues/920
 .. _#929: https://github.com/gpiozero/gpiozero/issues/929
 .. _#940: https://github.com/gpiozero/gpiozero/issues/940
-.. _#939: https://github.com/gpiozero/gpiozero/issues/939
 .. _#349: https://github.com/gpiozero/gpiozero/issues/349
 .. _#860: https://github.com/gpiozero/gpiozero/issues/860
 .. _#761: https://github.com/gpiozero/gpiozero/issues/761
