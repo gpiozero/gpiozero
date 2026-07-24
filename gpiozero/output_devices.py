@@ -1452,12 +1452,6 @@ class Servo(SourceMixin, CompositeDevice):
 
         servo.value = 0.5
 
-    .. note::
-
-        To reduce servo jitter, use the pigpio pin driver rather than the default
-        RPi.GPIO driver (pigpio uses DMA sampling for much more precise edge
-        timing). See :ref:`changing-pin-factory` for further information.
-
     :type pin: int or str
     :param pin:
         The GPIO pin that the servo is connected to. See :ref:`pin-numbering`
@@ -1505,11 +1499,11 @@ class Servo(SourceMixin, CompositeDevice):
             pin_factory=pin_factory
         )
 
-        if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
-            warnings.warn(PWMSoftwareFallback(
-                'To reduce servo jitter, use the pigpio pin factory.'
-                'See https://gpiozero.readthedocs.io/en/stable/api_output.html#servo for more info'
-            ))
+        # if PiGPIOFactory is None or not isinstance(self.pin_factory, PiGPIOFactory):
+        #     warnings.warn(PWMSoftwareFallback(
+        #         'To reduce servo jitter, use the pigpio pin factory.'
+        #         'See https://gpiozero.readthedocs.io/en/stable/api_output.html#servo for more info'
+        #     ))
 
         try:
             self.value = initial_value
