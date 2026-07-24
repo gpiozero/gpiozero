@@ -9,11 +9,15 @@
 Pi Zero USB OTG
 ===============
 
+.. warning::
+
+    These instructions date back to 2018 and may be out of date or no longer
+    work on the current Raspberry Pi OS or newer Raspberry Pi models.
+
 The `Raspberry Pi Zero`_ and `Pi Zero W`_ feature a USB OTG port, allowing
 users to configure the device as (amongst other things) an Ethernet device. In
 this mode, it is possible to control the Pi Zero's GPIO pins over USB from
 another computer using the :doc:`remote GPIO <remote_gpio>` feature.
-
 
 GPIO expander method - no SD card required
 ==========================================
@@ -148,6 +152,6 @@ IP address if you know it), for example:
 .. _Pi Zero W: https://www.raspberrypi.com/products/raspberry-pi-zero-w/
 .. _Raspberry Pi Desktop OS: https://www.raspberrypi.com/software/raspberry-pi-desktop/
 .. _raspberrypi.com: https://www.raspberrypi.com/news/gpio-expander/
-.. _bennuttall.com: http://bennuttall.com/raspberry-pi-zero-gpio-expander/
+.. _bennuttall.com: https://bennuttall.com/blog/2017/12/raspberry-pi-zero-gpio-expander/
 .. _blog.gbaman.info: http://blog.gbaman.info/?p=791
 .. _learn.adafruit.com: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget
