@@ -77,13 +77,10 @@ documentation for ideas on how to get started.
 Pin factories
 =============
 
-GPIO Zero builds on a number of underlying pin libraries, including `RPi.GPIO`_
-and `pigpio`_, each with their own benefits. You can select a particular pin
-library to be used, either for the whole script or per-device, according to your
-needs. See the section on `changing the pin factory`_.
+GPIO Zero builds on a number of underlying pin libraries. You can select a
+particular pin library to be used, either for the whole script or per-device,
+according to your needs. See the section on `changing the pin factory`_.
 
-.. _RPi.GPIO: https://pypi.org/project/RPi.GPIO
-.. _pigpio: https://pypi.org/project/pigpio
 .. _changing the pin factory: https://gpiozero.readthedocs.io/en/stable/api_pins.html#changing-the-pin-factory
 
 A "mock pin" interface is also provided for testing purposes. Read more about
@@ -94,10 +91,10 @@ this in the section on `mock pins`_.
 Installation
 ============
 
-GPIO Zero is installed by default in the Raspberry Pi OS desktop image,
+GPIO Zero is installed by default in the Raspberry Pi OS desktop images,
 available from `raspberrypi.com`_. To install on Raspberry Pi OS Lite or other
-operating systems, including for PCs using remote GPIO, see the `Installing`_
-chapter.
+operating systems, including for PCs using remote GPIO or mock pins, see the
+`Installing`_ chapter.
 
 .. _raspberrypi.com: https://www.raspberrypi.com/software/
 .. _Installing: https://gpiozero.readthedocs.io/en/stable/installing.html
