@@ -39,8 +39,9 @@ which means that you initialize one to begin, and provide its pin number, but
 then you never need to use the pin number again, as it's stored by the object.
 
 GPIO Zero was originally just a layer on top of RPi.GPIO, but we later added
-support for various other underlying pin libraries. RPi.GPIO is currently the
-default pin library used. Read more about this in :ref:`changing-pin-factory`.
+support for various other underlying pin libraries. lgpio is currently the
+default pin library used, with RPi.GPIO as the second preference. Read more
+about this in :ref:`changing-pin-factory`.
 
 
 Output devices
@@ -362,9 +363,9 @@ relation to GPIO pins, such as :class:`CPUTemperature`, :class:`TimeOfDay`,
 :class:`PingServer` and :class:`LoadAverage` are also provided.
 
 GPIO Zero features support for multiple pin libraries. The default is to use
-``RPi.GPIO`` to control the pins, but you can choose to use another library,
-such as ``pigpio``, which supports network controlled GPIO. See
-:ref:`changing-pin-factory` and :doc:`remote_gpio` for more information.
+``lgpio`` to control the pins, but you can choose to use another library,
+such as ``RPi.GPIO`` or ``pigpio`` (which supports network controlled GPIO).
+See :ref:`changing-pin-factory` and :doc:`remote_gpio` for more information.
 
 It is possible to run GPIO Zero on your PC, both for remote GPIO and for testing
 purposes, using :ref:`mock-pins`.

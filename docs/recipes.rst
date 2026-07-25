@@ -88,7 +88,7 @@ be reported in the Broadcom (BCM) scheme:
 Throughout this manual we will use the default integer pin numbers, in the
 Broadcom (BCM) layout shown above.
 
-.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+.. _RPi.GPIO: https://pypi.org/project/RPi.GPIO
 .. _wiringPi: https://projects.drogon.net/raspberry-pi/wiringpi/pins/
 
 LED
@@ -471,7 +471,7 @@ suffice:
 .. note::
 
     This recipe uses the third-party ``evdev`` module. Install this library
-    with ``sudo pip3 install evdev`` first. Be aware that ``evdev`` will only
+    with ``pip install evdev`` first. Be aware that ``evdev`` will only
     work with local input devices; this recipe will *not* work over SSH.
 
 Motion sensor robot

@@ -20,15 +20,15 @@ Configuring Remote GPIO
 .. currentmodule:: gpiozero
 
 GPIO Zero supports a number of different pin implementations (low-level pin
-libraries which deal with the GPIO pins directly). By default, the `RPi.GPIO`_
+libraries which deal with the GPIO pins directly). By default, the `lgpio`_
 library is used (assuming it is installed on your system), but you can
 optionally specify one to use. For more information, see the :doc:`api_pins`
 documentation page.
 
-One of the pin libraries supported, `pigpio`_, provides the ability to control
-GPIO pins remotely over the network, which means you can use GPIO Zero to
-control devices connected to a Raspberry Pi on the network. You can do this
-from another Raspberry Pi, or even from a PC.
+One of the pin libraries supported (by older Pi models and operating systems),
+`pigpio`_, provides the ability to control GPIO pins remotely over the network,
+which means you can use GPIO Zero to control devices connected to a Raspberry Pi
+on the network. You can do this from another Raspberry Pi, or even from a PC.
 
 See the :doc:`recipes_remote_gpio` page for examples on how remote pins can be
 used.
@@ -244,9 +244,9 @@ example, one of the following:
 
 If you are running this from a PC (not a Raspberry Pi) with gpiozero and the
 `pigpio`_ Python library installed, this will work with no further
-configuration.  However, if you are running this from a Raspberry Pi, you will
+configuration. However, if you are running this from a Raspberry Pi, you will
 also need to ensure the default pin factory is set to
-:class:`~gpiozero.pins.pigpio.PiGPIOFactory`. If `RPi.GPIO`_ is installed,
+:class:`~gpiozero.pins.pigpio.PiGPIOFactory`. If `lgpio`_ is installed,
 this will be selected as the default pin factory, so either uninstall it, or
 use the :envvar:`GPIOZERO_PIN_FACTORY` environment variable to override it:
 
@@ -351,7 +351,7 @@ Continue to:
 * :doc:`recipes_remote_gpio`
 * :doc:`pi_zero_otg`
 
-.. _RPi.GPIO: https://pypi.python.org/pypi/RPi.GPIO
+.. _lgpio: http://abyz.me.uk/lg/py_lgpio.html
 .. _pigpio: http://abyz.me.uk/rpi/pigpio/python.html
 .. _abyz.me.uk: http://abyz.me.uk/rpi/pigpio/download.html
 .. _Raspberry Pi Desktop x86: https://www.raspberrypi.com/software/raspberry-pi-desktop/

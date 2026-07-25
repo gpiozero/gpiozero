@@ -158,18 +158,18 @@ Why do I get PinFactoryFallback warnings when I import gpiozero?
 ================================================================
 
 You are most likely working in a virtual Python environment and have forgotten
-to install a pin driver library like ``RPi.GPIO``. GPIO Zero relies upon lower
+to install a pin driver library like ``lgpio``. GPIO Zero relies upon lower
 level pin drivers to handle interfacing to the GPIO pins on the Raspberry Pi,
 so you can eliminate the warning simply by installing GPIO Zero's first
-preference:
+preference (see :doc:`installing` for compilation prerequisites):
 
 .. code-block:: console
 
-    $ pip install rpi.gpio
+    $ pip install lgpio
 
 When GPIO Zero is imported it attempts to find a pin driver by importing them
 in a preferred order (detailed in :doc:`api_pins`). If it fails to load its
-first preference (``RPi.GPIO``) it notifies you with a warning, then falls back
+first preference (``lgpio``) it notifies you with a warning, then falls back
 to trying its second preference and so on. Eventually it will fall back all the
 way to the ``native`` implementation. This is a pure Python implementation
 built into GPIO Zero itself. While this will work for most things it's almost
@@ -205,58 +205,18 @@ suppress the warnings you've got a couple of options:
 How can I tell what version of gpiozero I have installed?
 =========================================================
 
-The gpiozero library relies on the setuptools package for installation
-services.  You can use the setuptools :mod:`pkg_resources` API to query which
-version of gpiozero is available in your Python environment like so:
+You can use the :mod:`importlib.metadata` module from the standard library to
+query which version of gpiozero is available in your Python environment:
 
 .. code-block:: pycon
 
-    >>> from pkg_resources import require
-    >>> require('gpiozero')
-    [gpiozero 1.6.2 (/usr/lib/python3/dist-packages)]
-    >>> require('gpiozero')[0].version
-    '1.6.2'
+    >>> from importlib.metadata import version
+    >>> version('gpiozero')
+    '2.0.1.post1'
 
 If you have multiple versions installed (e.g. from :command:`pip` and
-:command:`apt`) they will not show up in the list returned by the
-:meth:`pkg_resources.require` method. However, the first entry in the list will
-be the version that ``import gpiozero`` will import.
-
-If you receive the error "No module named pkg_resources", you need to install
-:command:`pip`. This can be done with the following command in Raspberry Pi OS:
-
-.. code-block:: console
-
-    $ sudo apt install python3-pip
-
-Alternatively, install pip with `get-pip`_.
-
-
-Why do I get "command not found" when running pinout?
-=====================================================
-
-The gpiozero library is available as a Debian package for Python 2 and Python
-3, but the :doc:`cli_pinout` tool cannot be made available by both packages, so
-it's only included with the Python 3 version of the package. To make sure the
-:doc:`cli_pinout` tool is available, the "python3-gpiozero" package must be
-installed:
-
-.. code-block:: console
-
-    $ sudo apt install python3-gpiozero
-
-Alternatively, installing gpiozero using :command:`pip` will install the
-command line tool, regardless of Python version:
-
-.. code-block:: console
-
-    $ sudo pip3 install gpiozero
-
-or:
-
-.. code-block:: console
-
-    $ sudo pip install gpiozero
+:command:`apt`), this will report the version that ``import gpiozero`` will
+actually import, i.e. whichever one is found first on ``sys.path``.
 
 
 The pinout command line tool incorrectly identifies my Raspberry Pi model
@@ -425,7 +385,6 @@ curve for beginners by making it easy to get started and easy to build up to
 more advanced projects.
 
 
-.. _get-pip: https://pip.pypa.io/en/stable/installing/
 .. _GitHub issues: https://github.com/gpiozero/gpiozero/issues
 .. _commits: https://github.com/gpiozero/gpiozero/commits/master
 .. _Pygame Zero: https://pygame-zero.readthedocs.io/en/stable/

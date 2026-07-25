@@ -53,13 +53,13 @@ will come into effect:
     None
     >>> led = LED(2)
     >>> Device.pin_factory
-    <gpiozero.pins.rpigpio.RPiGPIOFactory object at 0xb667ae30>
+    <gpiozero.pins.lgpio.LGPIOFactory object at 0xb667ae30>
     >>> led.pin_factory
-    <gpiozero.pins.rpigpio.RPiGPIOFactory object at 0xb6323530>
+    <gpiozero.pins.lgpio.LGPIOFactory object at 0xb6323530>
 
-As above, on a Raspberry Pi with the RPi.GPIO library installed, (assuming no
+As above, on a Raspberry Pi with the lgpio library installed, (assuming no
 environment variables are set), the default pin factory will be
-:class:`~gpiozero.pins.rpigpio.RPiGPIOFactory`.
+:class:`~gpiozero.pins.lgpio.LGPIOFactory`.
 
 On a PC (with no pin libraries installed and no environment variables set),
 importing will work but attempting to create a device will raise
