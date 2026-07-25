@@ -13,6 +13,12 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Release 2.0.1.post2 (2026-07-25)
+================================
+
+* Corrected several docs pages
+
+
 Release 2.0.1.post1 (2026-07-25)
 ================================
 

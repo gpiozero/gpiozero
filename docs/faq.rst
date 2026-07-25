@@ -1,7 +1,7 @@
 .. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
 ..
 .. Copyright (c) 2017-2026 Ben Nuttall <ben@bennuttall.com>
-.. Copyright (c) 2017-2024 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2017-2021 Dave Jones <dave@waveform.org.uk>
 ..
 .. SPDX-License-Identifier: BSD-3-Clause
 
@@ -212,7 +212,7 @@ query which version of gpiozero is available in your Python environment:
 
     >>> from importlib.metadata import version
     >>> version('gpiozero')
-    '2.0.1.post1'
+    '2.0.1.post2'
 
 If you have multiple versions installed (e.g. from :command:`pip` and
 :command:`apt`), this will report the version that ``import gpiozero`` will
