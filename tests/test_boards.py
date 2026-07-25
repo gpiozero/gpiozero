@@ -847,6 +847,54 @@ def test_pihut_xmas_tree_leds(mock_factory):
         tree.toggle()
         assert sum(tree.value) == 25
 
+def test_modmypi_star(mock_factory):
+    led_pins = (8, 7, 12, 21, 20, 16, 26, 19, 13, 6, 5, 11, 9,
+                10, 22, 27, 17, 4, 3, 14, 23, 18, 15, 24, 25)
+    pins = [mock_factory.pin(n) for n in led_pins]
+    with ModMyPiStar() as star:
+        assert repr(star).startswith('<gpiozero.ModMyPiStar object')
+        assert [led.pin for led in star.outer] == pins
+        assert len(star.outer) == 25
+        assert isinstance(star.inner, LED)
+        assert isinstance(star.outer.led0, LED)
+        assert isinstance(star.outer.led24, LED)
+
+def test_modmypi_star_init(mock_factory):
+    with ModMyPiStar(pwm=False) as star:
+        assert isinstance(star.inner, LED)
+        assert isinstance(star.outer.led0, LED)
+        assert isinstance(star.outer.led24, LED)
+    with ModMyPiStar(initial_value=True) as star:
+        assert star.inner.value
+        assert all(led.value for led in star.outer)
+
+def test_modmypi_star_pwm(mock_factory, pwm):
+    with ModMyPiStar(pwm=True) as star:
+        assert isinstance(star.inner, PWMLED)
+        assert isinstance(star.outer.led0, PWMLED)
+        assert isinstance(star.outer.led24, PWMLED)
+    with ModMyPiStar(pwm=True, initial_value=0.5) as star:
+        assert star.inner.value == 0.5
+        assert all(led.value == 0.5 for led in star.outer)
+
+def test_modmypi_star_leds(mock_factory):
+    with ModMyPiStar() as star:
+        star.inner.on()
+        assert star.inner.value
+        assert not any(led.value for led in star.outer)
+        star.outer.led0.on()
+        assert star.outer.led0.value
+        star.on()
+        assert star.inner.value
+        assert all(led.value for led in star.outer)
+        star.off()
+        assert not star.inner.value
+        assert not any(led.value for led in star.outer)
+
+def test_modmypi_star_positional_args_rejected(mock_factory):
+    with pytest.raises(TypeError):
+        ModMyPiStar(True)
+
 def test_traffic_lights_buzzer(mock_factory):
     red_pin = mock_factory.pin(2)
     amber_pin = mock_factory.pin(3)
