@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
@@ -16,7 +15,7 @@ from unittest import mock
 from gpiozero import *
 
 
-file_not_found = IOError(errno.ENOENT, 'File not found')
+file_not_found = OSError(errno.ENOENT, 'File not found')
 
 
 def test_default_pin_factory_order():

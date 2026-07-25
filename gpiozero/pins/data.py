@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #

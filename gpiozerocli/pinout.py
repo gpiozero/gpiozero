@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
@@ -60,7 +59,7 @@ class PinoutTool(CliTool):
                 except ImportError:
                     sys.stderr.write(self.get_gpiozero_help())
                     return 1
-                except IOError:
+                except OSError:
                     sys.stderr.write('Unrecognized board')
                     return 1
             else:

@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
@@ -10,7 +9,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import io
 import warnings
 import subprocess
 from datetime import datetime, time
@@ -173,7 +171,7 @@ class PingServer(PolledInternalDevice):
         # call gethostbyname in the constructor and ping that instead (good
         # for consistency, but what if the user *expects* the host to change
         # address?)
-        with io.open(os.devnull, 'wb') as devnull:
+        with open(os.devnull, 'wb') as devnull:
             try:
                 subprocess.check_call(
                     ['ping', '-c1', self.host],
@@ -293,7 +291,7 @@ class CPUTemperature(PolledInternalDevice):
         """
         Returns the current CPU temperature in degrees celsius.
         """
-        with io.open(self.sensor_file, 'r') as f:
+        with open(self.sensor_file) as f:
             return float(f.read().strip()) / 1000
 
     @property
@@ -431,7 +429,7 @@ class LoadAverage(PolledInternalDevice):
         """
         Returns the current load average.
         """
-        with io.open(self.load_average_file, 'r') as f:
+        with open(self.load_average_file) as f:
             file_columns = f.read().strip().split()
             return float(file_columns[self._load_average_file_column])
 

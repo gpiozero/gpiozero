@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
@@ -6,14 +5,6 @@
 # Copyright (c) 2019-2021 Dave Jones <dave@waveform.org.uk>
 #
 # SPDX-License-Identifier: BSD-3-Clause
-
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-)
-str = type('')
 
 import warnings
 from fractions import Fraction
