@@ -1098,7 +1098,7 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
                 pin, active_high=active_high, initial_value=None,
                 pin_factory=pin_factory)
             for pin in pins
-        ))
+        ), pin_factory=pin_factory)
         super().__init__(
             plex=plex, char=char, pin_factory=pin_factory)
         self.value = initial_value
