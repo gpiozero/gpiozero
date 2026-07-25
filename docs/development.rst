@@ -2,7 +2,7 @@
 ..
 .. Copyright (c) 2018-2026 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2025 Andrew Scheller <andrew.scheller@raspberrypi.com>
-.. Copyright (c) 2017-2023 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2017-2021 Dave Jones <dave@waveform.org.uk>
 .. Copyright (c) 2018 Steveis <SteveAmor@users.noreply.github.com>
 ..
 .. SPDX-License-Identifier: BSD-3-Clause
