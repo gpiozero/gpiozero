@@ -16,7 +16,7 @@ from gpiozero import *
 from gpiozero.pins.mock import MockFactory
 
 
-file_not_found = IOError(errno.ENOENT, 'File not found')
+file_not_found = OSError(errno.ENOENT, 'File not found')
 
 
 def test_default_pin_factory_order():

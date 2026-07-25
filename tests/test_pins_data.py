@@ -29,12 +29,12 @@ def test_pi_revision():
         # (MockPin simply parrots the 3B's data); LocalPiFactory is used as we
         # can definitely instantiate it (strictly speaking it's abstract but
         # we're only interested in the BoardInfo stuff)
-        with mock.patch('io.open') as m:
+        with mock.patch('gpiozero.pins.local.open') as m:
             m.return_value.__enter__.side_effect = [
                 # Pretend /proc/device-tree/system/linux,revision doesn't
                 # exist, and that /proc/cpuinfo contains the Revision: 0002
                 # after some filler
-                IOError(errno.ENOENT, 'File not found'),
+                OSError(errno.ENOENT, 'File not found'),
                 ['lots of irrelevant', 'lines', 'followed by', 'Revision: 0002', 'Serial:  xxxxxxxxxxx']
             ]
             assert Device.pin_factory.board_info.revision == '0002'
@@ -42,7 +42,7 @@ def test_pi_revision():
             # isn't going to change at runtime); we need to wipe it here though
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = [
-                IOError(errno.ENOENT, 'File not found'),
+                OSError(errno.ENOENT, 'File not found'),
                 ['Revision: a21042']
             ]
             assert Device.pin_factory.board_info.revision == 'a21042'
@@ -50,13 +50,13 @@ def test_pi_revision():
             # or 8 character result; make sure both work)
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = [
-                IOError(errno.ENOENT, 'File not found'),
+                OSError(errno.ENOENT, 'File not found'),
                 ['Revision: 1000003']
             ]
             assert Device.pin_factory.board_info.revision == '0003'
             Device.pin_factory._info = None
             m.return_value.__enter__.side_effect = [
-                IOError(errno.ENOENT, 'File not found'),
+                OSError(errno.ENOENT, 'File not found'),
                 ['Revision: 100003']
             ]
             assert Device.pin_factory.board_info.revision == '0003'
@@ -66,10 +66,10 @@ def test_pi_revision():
                 # Pretend /proc/device-tree/system/linux,revision doesn't
                 # exist, and that /proc/cpuinfo contains the Revision: 0002
                 # after some filler
-                IOError(errno.EACCES, 'Permission denied'),
+                OSError(errno.EACCES, 'Permission denied'),
                 ['Revision: 100003']
             ]
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 Device.pin_factory.board_info
             # Check that parsing /proc/device-tree/system/linux,revision also
             # works properly
@@ -82,7 +82,7 @@ def test_pi_revision():
                 Device.pin_factory._info = None
                 m.return_value.__enter__.return_value = None
                 m.return_value.__enter__.side_effect = [
-                    IOError(errno.ENOENT, 'File not found'),
+                    OSError(errno.ENOENT, 'File not found'),
                     ['nothing', 'relevant']
                 ]
                 Device.pin_factory.board_info
@@ -245,7 +245,7 @@ def test_pprint_style_detect():
     with mock.patch('sys.stdout') as stdout:
         stdout.output = []
         stdout.write = lambda buf: stdout.output.append(buf)
-        stdout.fileno.side_effect = IOError('not a real file')
+        stdout.fileno.side_effect = OSError('not a real file')
         board_info.pprint()
         s = ''.join(stdout.output)
         assert '\x1b[0m' not in s # default should output mono

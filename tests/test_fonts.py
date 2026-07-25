@@ -4,8 +4,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-str = str
-
 import io
 
 import pytest

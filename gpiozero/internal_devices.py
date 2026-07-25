@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import io
 import warnings
 import subprocess
 from datetime import datetime, time

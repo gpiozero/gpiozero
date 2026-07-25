@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import io
 import errno
 import struct
 from collections import defaultdict

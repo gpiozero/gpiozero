@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import io
 import os
 import sys
 import mmap

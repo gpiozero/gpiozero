@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import io
 from collections import Counter
 from itertools import zip_longest
 from pathlib import Path

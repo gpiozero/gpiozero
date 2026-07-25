@@ -20,7 +20,7 @@ import pytest
 from gpiozero import *
 from datetime import datetime, time
 
-file_not_found = IOError(errno.ENOENT, 'File not found')
+file_not_found = OSError(errno.ENOENT, 'File not found')
 bad_ping = CalledProcessError(1, 'returned non-zero exit status 1')
 
 
@@ -187,12 +187,12 @@ def test_pingserver_value(mock_factory):
             assert server.is_active
 
 def test_cputemperature_bad_init(mock_factory):
-    with mock.patch('io.open', mock.mock_open()) as m:
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open()) as m:
         m.side_effect = file_not_found
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             with CPUTemperature('') as temp:
                 temp.value
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             with CPUTemperature('badfile') as temp:
                 temp.value
         m.return_value.__enter__.return_value.readline.return_value = '37000'
@@ -204,7 +204,7 @@ def test_cputemperature_bad_init(mock_factory):
             CPUTemperature(min_temp=20, max_temp=10)
 
 def test_cputemperature(mock_factory):
-    with mock.patch('io.open', mock.mock_open(read_data='37000')) as m:
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open(read_data='37000')) as m:
         with CPUTemperature() as cpu:
             assert repr(cpu).startswith('<gpiozero.CPUTemperature object')
             assert cpu.temperature == 37.0
@@ -222,15 +222,15 @@ def test_cputemperature(mock_factory):
             assert cpu.is_active
 
 def test_loadaverage_bad_init(mock_factory):
-    with mock.patch('io.open', mock.mock_open()) as m:
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open()) as m:
         m.side_effect = file_not_found
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             with LoadAverage('') as load:
                 load.value
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             with LoadAverage('badfile') as load:
                 load.value
-    with mock.patch('io.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
         with pytest.raises(ValueError):
             LoadAverage(min_load_average=1)
         with pytest.raises(ValueError):
@@ -243,7 +243,7 @@ def test_loadaverage_bad_init(mock_factory):
             LoadAverage(minutes=10)
 
 def test_loadaverage(mock_factory):
-    with mock.patch('io.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open(read_data='0.09 0.10 0.09 1/292 20758')):
         with LoadAverage() as la:
             assert repr(la).startswith('<gpiozero.LoadAverage object')
             assert la.min_load_average == 0
@@ -253,7 +253,7 @@ def test_loadaverage(mock_factory):
             assert la.value == 0.1
             assert not la.is_active
         assert repr(la) == '<gpiozero.LoadAverage object closed>'
-    with mock.patch('io.open', mock.mock_open(read_data='1.72 1.40 1.31 3/457 23102')):
+    with mock.patch('gpiozero.internal_devices.open', mock.mock_open(read_data='1.72 1.40 1.31 3/457 23102')):
         with LoadAverage(min_load_average=0.5, max_load_average=2,
                          threshold=1, minutes=5) as la:
             assert la.min_load_average == 0.5

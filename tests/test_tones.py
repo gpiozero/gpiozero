@@ -5,8 +5,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-str = str
-
 import warnings
 from fractions import Fraction
 
