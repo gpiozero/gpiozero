@@ -2,7 +2,7 @@
 ..
 .. Copyright (c) 2017-2026 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2025 Andrew Scheller <lurch@durge.org>
-.. Copyright (c) 2017-2024 Dave Jones <dave@waveform.org.uk>
+.. Copyright (c) 2017-2021 Dave Jones <dave@waveform.org.uk>
 ..
 .. SPDX-License-Identifier: BSD-3-Clause
 
