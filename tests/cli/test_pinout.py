@@ -1,5 +1,6 @@
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
+# Copyright (c) 2026 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2017-2023 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2016 Stewart <stewart@adcock.org.uk>
 #

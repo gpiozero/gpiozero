@@ -1,7 +1,7 @@
 .. GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 ..
+.. Copyright (c) 2017-2026 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2017-2021 Dave Jones <dave@waveform.org.uk>
-.. Copyright (c) 2017-2019 Ben Nuttall <ben@bennuttall.com>
 ..
 .. SPDX-License-Identifier: BSD-3-Clause
 

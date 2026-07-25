@@ -2,9 +2,9 @@
 #
 # GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
+# Copyright (c) 2015-2026 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2015-2024 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2020 Fangchen Li <fangchen.li@outlook.com>
-# Copyright (c) 2015-2019 Ben Nuttall <ben@bennuttall.com>
 # Copyright (c) 2016 Andrew Scheller <github@loowis.durge.org>
 #
 # SPDX-License-Identifier: BSD-3-Clause
