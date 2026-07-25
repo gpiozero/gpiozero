@@ -1632,6 +1632,17 @@ def test_led_multichar_display_init(mock_factory):
         with LEDMultiCharDisplay(char, *range(18, 22), pin_factory=mock_factory) as multichar:
             assert multichar.pin_factory is char.pin_factory
 
+def test_led_multichar_display_plex_pin_factory(mock_factory):
+    # The explicit pin_factory must reach the internal plex device too, not
+    # just its sub-devices (see #1213)
+    from gpiozero.pins.mock import MockFactory
+    other_factory = MockFactory()
+    with LEDCharDisplay(*range(10, 17), dp=17,
+                        pin_factory=other_factory) as char:
+        with LEDMultiCharDisplay(char, *range(18, 22),
+                                 pin_factory=other_factory) as multichar:
+            assert multichar.plex.pin_factory is other_factory
+
 def test_led_multichar_display_plex_delay(mock_factory):
     pins = [mock_factory.pin(i) for i in range(10, 22)]
     with LEDCharDisplay(*range(10, 17), dp=17) as char:
