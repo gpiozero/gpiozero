@@ -300,7 +300,7 @@ or:
 Interested users are invited to read the `GPIO Zero test suite`_ for further
 examples of usage.
 
-.. _`GPIO Zero test suite`: https://github.com/gpiozero/gpiozero/tree/master/tests
+.. _`GPIO Zero test suite`: https://github.com/gpiozero/gpiozero/tree/main/tests
 
 Base classes
 ============

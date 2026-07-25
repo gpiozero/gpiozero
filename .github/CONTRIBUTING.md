@@ -15,7 +15,7 @@ explaining the problem clearly using code examples.
 
 ## Documentation
 
-The documentation source lives in the [docs](https://github.com/gpiozero/gpiozero/tree/master/docs)
+The documentation source lives in the [docs](https://github.com/gpiozero/gpiozero/tree/main/docs)
 folder. Contributions to the documentation are welcome but should be easy to
 read and understand.
 

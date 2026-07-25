@@ -386,7 +386,7 @@ more advanced projects.
 
 
 .. _GitHub issues: https://github.com/gpiozero/gpiozero/issues
-.. _commits: https://github.com/gpiozero/gpiozero/commits/master
+.. _commits: https://github.com/gpiozero/gpiozero/commits/main
 .. _Pygame Zero: https://pygame-zero.readthedocs.io/en/stable/
 .. _NetworkZero: https://networkzero.readthedocs.io/en/latest/
 .. _guizero: https://lawsie.github.io/guizero/

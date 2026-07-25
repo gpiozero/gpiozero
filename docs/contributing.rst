@@ -72,6 +72,6 @@ Since Python 2 is now past its `end-of-life`_, the 1.6.2 release (2021-03-18)
 was the last to support Python 2.
 
 
-.. _docs: https://github.com/gpiozero/gpiozero/tree/master/docs
+.. _docs: https://github.com/gpiozero/gpiozero/tree/main/docs
 .. _issue: https://github.com/gpiozero/gpiozero/issues/new
 .. _end-of-life: http://legacy.python.org/dev/peps/pep-0373/
