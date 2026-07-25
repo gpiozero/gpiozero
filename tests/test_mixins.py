@@ -8,12 +8,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import gc
+import threading
+from itertools import repeat
 from time import sleep
 from threading import Event
+from unittest import mock
 
 import pytest
 
 from gpiozero import *
+from gpiozero.threads import _threads_shutdown
 
 
 def test_source_delay(mock_factory):
@@ -37,6 +41,37 @@ def test_source(mock_factory):
         # Give the output device some time to read the input device state
         sleep(0.1)
         assert out_dev.value == 1
+
+
+def test_close_after_threads_shutdown_is_safe(mock_factory):
+    # Regression test: setting .source then exiting the Python shell could
+    # raise "TypeError: 'NoneType' object is not callable" from inside
+    # __del__.
+    #
+    # gpiozero's atexit handler joins all live GPIOThreads via
+    # _threads_shutdown() *before* interpreter shutdown reaches the point
+    # where calling Thread.join() again becomes unsafe. But a device whose
+    # close() hadn't been called yet (e.g. because __del__ runs later, after
+    # atexit) still holds a reference to that now-already-joined thread. Its
+    # own close() -> source setter -> stop() -> join() must not attempt a
+    # second real join, or it can crash exactly as threading internals are
+    # torn down during shutdown.
+    device = OutputDevice(2)
+    device.source_delay = 0.01
+    device.source = repeat(0)  # a never-ending source, like sin_values()
+    sleep(0.05)  # let the source thread actually start running
+    assert device._source_thread is not None
+    assert device._source_thread.is_alive()
+
+    _threads_shutdown()  # simulates gpiozero's atexit hook running first
+    assert not device._source_thread.is_alive()
+
+    with mock.patch.object(
+            threading.Thread, 'join',
+            side_effect=TypeError("'NoneType' object is not callable")):
+        device.close()  # simulates a later __del__-triggered close()
+
+    assert device.closed
 
 
 def test_active_time(mock_factory):

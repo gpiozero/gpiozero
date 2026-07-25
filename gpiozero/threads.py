@@ -47,11 +47,19 @@ class GPIOThread(Thread):
         self.join(timeout)
 
     def join(self, timeout=None):
-        super().join(timeout)
+        # Only call the real Thread.join() if the thread might still be
+        # running. This makes join() (and hence stop()) safe to call more
+        # than once, including late during interpreter shutdown when a
+        # device's __del__ re-runs close() after atexit's _threads_shutdown()
+        # already joined this thread; by that point calling Thread.join()
+        # again can raise TypeError as CPython tears down threading
+        # internals before running finalizers.
         if self.is_alive():
-            assert timeout is not None
-            # timeout can't be None here because if it was, then join()
-            # wouldn't return until the thread was dead
-            raise ZombieThread(f"Thread failed to die within {timeout} seconds")
-        else:
-            _THREADS.discard(self)
+            super().join(timeout)
+            if self.is_alive():
+                assert timeout is not None
+                # timeout can't be None here because if it was, then join()
+                # wouldn't return until the thread was dead
+                raise ZombieThread(
+                    f"Thread failed to die within {timeout} seconds")
+        _THREADS.discard(self)
