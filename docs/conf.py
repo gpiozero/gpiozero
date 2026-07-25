@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set fileencoding=utf-8:
 #
-# GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+# GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 #
 # Copyright (c) 2015-2023 Dave Jones <dave@waveform.org.uk>
 # Copyright (c) 2016 Thijs Triemstra <info@collab.nl>

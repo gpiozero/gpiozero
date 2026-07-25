@@ -1,4 +1,4 @@
-.. GPIO Zero: a library for controlling the Raspberry Pi's GPIO pins
+.. GPIO Zero: A simple interface to GPIO devices with Raspberry Pi
 ..
 .. Copyright (c) 2018-2026 Ben Nuttall <ben@bennuttall.com>
 .. Copyright (c) 2025 Andrew Scheller <andrew.scheller@raspberrypi.com>
