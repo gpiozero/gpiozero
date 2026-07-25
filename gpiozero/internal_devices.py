@@ -509,11 +509,11 @@ class TimeOfDay(PolledInternalDevice):
 
     By default start and end times are timezone-aware UTC times. If you wish to
     specify the time-zone for the start and/or end time you can do so when
-    contructing the time, for example to switch on when it is office hours in
+    constructing the time, for example to switch on when it is office hours in
     both London and Los Angeles::
 
-        from gpiozero import TimeOfDay,
-        from datetime import time,
+        from gpiozero import TimeOfDay
+        from datetime import time
         from zoneinfo import ZoneInfo
 
         tz_LA = ZoneInfo('America/Los_Angeles')
@@ -525,7 +525,7 @@ class TimeOfDay(PolledInternalDevice):
     your Pi's clock says) then set `utc` to `False`. To switch on during whatever
     your Pi thinks are local office hours::
 
-        from gpiozero import TimeOfDay,
+        from gpiozero import TimeOfDay
         from datetime import time
 
         officehours = TimeOfDay(time(8,30), time(18,00), utc=False)
@@ -533,9 +533,9 @@ class TimeOfDay(PolledInternalDevice):
     .. note::
         For backwards compatibility you can also select to use naive UTC times by
         setting `utc` to `True` - this is no longer recommended,
-        instead you should leave `utc` set to `None` or explicity
-        specify `tzinfo=UTC` (`from datetime import UTC`) - both will give the
-        same result.
+        instead you should leave `utc` set to `None` or explicitly
+        specify `tzinfo=timezone.utc` (`from datetime import timezone`) - both
+        will give the same result.
 
     :param ~datetime.time start_time:
         The time from which the device will be considered active.
@@ -543,9 +543,10 @@ class TimeOfDay(PolledInternalDevice):
     :param ~datetime.time end_time:
         The time after which the device will be considered inactive.
 
-    :param bool utc:
+    :type utc: bool or None
+    :param utc:
         If `None` (the default), UTC time will be used for the comparison.
-        If `False` the local clock time will be use, ignoring the timezone.
+        If `False` the local clock time will be used, ignoring the timezone.
         (If `True` a naive UTC time will be used - this is not recommended,
         see the note above)
 
@@ -564,8 +565,8 @@ class TimeOfDay(PolledInternalDevice):
 
         utc_deprecation_warning = (
         'Using utc=True is deprecated and scheduled for removal in a future version.'
-        ' Start and end times will default to tzinfo=datetime.UTC unless you specify'
-        ' different tzinfo when defining them.'
+        ' Instead, leave utc unset (None); start and end times will then default'
+        ' to tzinfo=timezone.utc unless you give them a different tzinfo.'
         )
         if utc:
             warnings.warn(utc_deprecation_warning, DeprecationWarning)
@@ -607,14 +608,8 @@ class TimeOfDay(PolledInternalDevice):
         if hasattr(value, 'timetz'):
             value = value.timetz()
 
-        if not self.timezone_aware:
-            try:
-                assert value.tzinfo == None
-            except AttributeError:
-                True # Want to include this branch in coverage report
-                pass # pass is excluded from coverage in setup.cfg
-            except AssertionError:
-                raise ValueError(
+        if not self.timezone_aware and getattr(value, 'tzinfo', None) is not None:
+            raise ValueError(
                 'utc must be None if start_time or end_time contain tzinfo')
 
         # Using try-except to cope with cases where someone has used an object
