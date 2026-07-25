@@ -51,8 +51,6 @@ def test_timeofday_bad_init(mock_factory):
         TimeOfDay(7.00, 8.00)
     with pytest.raises(ValueError):
         TimeOfDay(datetime(2019, 1, 24, 19), time(19))  # lurch edge case
-    with pytest.deprecated_call(match='utc=True'):
-        TimeOfDay(time(7), time(8), utc=True)
     with pytest.raises(ValueError,
             match = 'start_time and end_time must be a datetime, or time instance'):
         TimeOfDay('7:00', '8:00', utc=True) # edge case
@@ -163,10 +161,11 @@ def test_TimeOfDay_naivelocal(mock_factory):
 
 def test_TimeOfDay_defaultUTC(mock_factory):
     with TimeOfDay(time(1, 30), time(23, 30)) as tod:
-        assert repr(tod) == '<gpiozero.TimeOfDay object active between 01:30:00 [UTC] and 23:30:00 [UTC]>'
-        assert tod.start_time == time(1, 30, tzinfo=utc)
-        assert tod.end_time == time(23, 30, tzinfo=utc)
-        assert not tod.utc
+        assert repr(tod) == '<gpiozero.TimeOfDay object active between 01:30:00 and 23:30:00 UTC>'
+        assert tod.start_time == time(1, 30)
+        assert tod.end_time == time(23, 30)
+        assert tod.utc
+        assert not tod.timezone_aware
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.now.return_value = datetime(2018, 1, 1, 1, 29, 0, tzinfo=utc)
             assert not tod.is_active
@@ -181,21 +180,21 @@ def test_TimeOfDay_defaultUTC(mock_factory):
             assert all([call.kwargs['tz'] == utc for call in dt.mock_calls if call[0]=='now'])
 
 def test_TimeOfDay_naiveutc(mock_factory):
-    with pytest.deprecated_call(match='utc=True'):
-        with TimeOfDay(time(7), time(8), utc=True) as tod:
-            assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 UTC>'
-            assert tod.start_time == time(7, tzinfo=None)
-            assert tod.end_time == time(8, tzinfo=None)
-            assert tod.utc == True
-            with mock.patch('gpiozero.internal_devices.datetime') as dt:
-                dt.utcnow.return_value = datetime(2018, 1, 1, 6, 59, 0)
-                assert not tod.is_active
-                dt.utcnow.return_value = datetime(2018, 1, 1, 7, 0, 0)
-                assert tod.is_active
-                dt.utcnow.return_value = datetime(2018, 1, 2, 8, 0, 0)
-                assert tod.is_active
-                dt.utcnow.return_value = datetime(2018, 1, 2, 8, 1, 0)
-                assert not tod.is_active
+    with TimeOfDay(time(7), time(8), utc=True) as tod:
+        assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 UTC>'
+        assert tod.start_time == time(7, tzinfo=None)
+        assert tod.end_time == time(8, tzinfo=None)
+        assert tod.utc == True
+        assert not tod.timezone_aware
+        with mock.patch('gpiozero.internal_devices.datetime') as dt:
+            dt.now.return_value = datetime(2018, 1, 1, 6, 59, 0, tzinfo=utc)
+            assert not tod.is_active
+            dt.now.return_value = datetime(2018, 1, 1, 7, 0, 0, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 1, 2, 8, 0, 0, tzinfo=utc)
+            assert tod.is_active
+            dt.now.return_value = datetime(2018, 1, 2, 8, 1, 0, tzinfo=utc)
+            assert not tod.is_active
 
 def test_TimeOfDay_tzgiven(mock_factory):
     start = time(7, tzinfo=tz_LA)
