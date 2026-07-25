@@ -582,9 +582,8 @@ class GPIOQueue(GPIOThread):
                 if value not in self.ignore:
                     with self.lock:
                         self.queue.append(value)
-                with self.lock:
-                    if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
-                        self.full.set()
+                        if not self.full.is_set() and len(self.queue) >= self.queue.maxlen:
+                            self.full.set()
                 if (self.partial or self.full.is_set()) and isinstance(self.parent, EventsMixin):
                     self.parent._fire_events(self.parent.pin_factory.ticks(), self.parent.is_active)
         except ReferenceError:
