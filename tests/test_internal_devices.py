@@ -87,7 +87,7 @@ def test_timeofday_bad_init(mock_factory):
                 ),
             ]
         )
-def test_TimeOfDay_timezoneawaremismatch(mock_factory, args, kwargs):
+def test_timeofday_timezoneawaremismatch(mock_factory, args, kwargs):
     errormessage = 'utc must be None if start_time or end_time contain tzinfo'
     with pytest.raises(ValueError, match=errormessage):
         TimeOfDay(*args, **kwargs)
@@ -133,7 +133,7 @@ def test_timeofday_init(mock_factory):
                 ),
             ]
     )
-def test_TimeOfDay_init_timezone(mock_factory, args, kwargs, start, end, aware):
+def test_timeofday_init_timezone(mock_factory, args, kwargs, start, end, aware):
     with TimeOfDay(*args, **kwargs) as tod:
         assert tod.start_time == start
         assert tod.start_time.tzinfo == start.tzinfo
@@ -141,7 +141,7 @@ def test_TimeOfDay_init_timezone(mock_factory, args, kwargs, start, end, aware):
         assert tod.end_time.tzinfo == end.tzinfo
         assert tod.timezone_aware == aware
 
-def test_TimeOfDay_naivelocal(mock_factory):
+def test_timeofday_naivelocal(mock_factory):
     with TimeOfDay(time(7), time(8), utc=False) as tod:
         assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 local>'
         assert tod.start_time == time(7)
@@ -159,7 +159,7 @@ def test_TimeOfDay_naivelocal(mock_factory):
             assert all([call.kwargs['tz'] == None for call in dt.mock_calls if call[0]=='now'])
     assert repr(tod) == '<gpiozero.TimeOfDay object closed>'
 
-def test_TimeOfDay_defaultUTC(mock_factory):
+def test_timeofday_defaultutc(mock_factory):
     with TimeOfDay(time(1, 30), time(23, 30)) as tod:
         assert repr(tod) == '<gpiozero.TimeOfDay object active between 01:30:00 and 23:30:00 UTC>'
         assert tod.start_time == time(1, 30)
@@ -179,7 +179,7 @@ def test_TimeOfDay_defaultUTC(mock_factory):
             assert not tod.is_active
             assert all([call.kwargs['tz'] == utc for call in dt.mock_calls if call[0]=='now'])
 
-def test_TimeOfDay_naiveutc(mock_factory):
+def test_timeofday_naiveutc(mock_factory):
     with TimeOfDay(time(7), time(8), utc=True) as tod:
         assert repr(tod) == '<gpiozero.TimeOfDay object active between 07:00:00 and 08:00:00 UTC>'
         assert tod.start_time == time(7, tzinfo=None)
@@ -196,7 +196,7 @@ def test_TimeOfDay_naiveutc(mock_factory):
             dt.now.return_value = datetime(2018, 1, 2, 8, 1, 0, tzinfo=utc)
             assert not tod.is_active
 
-def test_TimeOfDay_tzgiven(mock_factory):
+def test_timeofday_tzgiven(mock_factory):
     start = time(7, tzinfo=tz_LA)
     end = time(8, tzinfo=tz_LA)
     with TimeOfDay(start, end) as tod:
@@ -229,7 +229,7 @@ def test_TimeOfDay_tzgiven(mock_factory):
             assert not tod.is_active
             assert all([call.kwargs['tz'] == utc for call in dt.mock_calls if call[0]=='now'])
 
-def test_TimeOfDay_differentTZ(mock_factory):
+def test_timeofday_differenttz(mock_factory):
     with TimeOfDay(time(8,30,tzinfo=tz_LA), time(18,00,tzinfo=tz_London)) as tod:
         assert tod.start_time == time(8,30) # LA not aware without date (DST)
         assert tod.start_time.tzinfo == tz_LA
@@ -265,7 +265,7 @@ def test_TimeOfDay_differentTZ(mock_factory):
             dt.now.return_value = datetime(2024,3,31,17,1, tzinfo=utc)
             assert not tod.is_active
 
-def test_TimeOfDay_activeovermidnight1(mock_factory):
+def test_timeofday_activeovermidnight1(mock_factory):
     with TimeOfDay(time(23), time(1)) as tod:
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.now.return_value = datetime(2018, 1, 1, 22, 59, 0, tzinfo=utc)
@@ -279,7 +279,7 @@ def test_TimeOfDay_activeovermidnight1(mock_factory):
             dt.now.return_value = datetime(2018, 1, 3, 12, 0, 0, tzinfo=utc)
             assert not tod.is_active
 
-def test_TimeOfDay_activeovermidnight2(mock_factory):
+def test_timeofday_activeovermidnight2(mock_factory):
     with TimeOfDay(time(6), time(5)) as tod:
         with mock.patch('gpiozero.internal_devices.datetime') as dt:
             dt.now.return_value = datetime(2018, 1, 1, 5, 30, 0, tzinfo=utc)
