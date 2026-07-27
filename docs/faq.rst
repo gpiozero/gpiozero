@@ -212,7 +212,7 @@ query which version of gpiozero is available in your Python environment:
 
     >>> from importlib.metadata import version
     >>> version('gpiozero')
-    '2.0.1.post2'
+    '2.0.1'
 
 If you have multiple versions installed (e.g. from :command:`pip` and
 :command:`apt`), this will report the version that ``import gpiozero`` will

@@ -91,7 +91,7 @@ pip
 
     Note that for some time, pip installing gpiozero would not work on the
     Raspberry Pi 5 due to a bug in the lgpio pin factory. As of July 2026 (the
-    2.0.1.post1 release), this is now fixed.
+    2.0.1.post3 release), this is now fixed.
 
 If you need to install GPIO Zero into a virtual environment without system
 packages enabled, first activate your environment (as above) and install GPIO
