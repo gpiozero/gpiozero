@@ -102,12 +102,12 @@ Zero itself with pip:
     (gpiozero-env) pi@raspberrypi:~$ pip install gpiozero
 
 You will also need to install a pin library. The default and recommended one is
-lgpio. This may require compilation, so first install ``swig`` and
+lgpio. This may require compilation, so first install ``python3-dev``, ``swig``,
 ``liblgpio-dev``:
 
 .. code-block:: console
 
-    (gpiozero-env) pi@raspberrypi:~$ sudo apt install swig liblgpio-dev -y
+    (gpiozero-env) pi@raspberrypi:~$ sudo apt install python3-dev swig liblgpio-dev -y
 
 Then install lgpio:
 
