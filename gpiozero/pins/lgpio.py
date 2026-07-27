@@ -7,6 +7,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+
 import lgpio
 
 from . import SPI
