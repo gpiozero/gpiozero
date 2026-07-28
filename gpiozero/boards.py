@@ -1324,6 +1324,115 @@ class PiHutXmasTree(LEDBoard):
         )
 
 
+class ModMyPiStar(LEDBoard):
+    """
+    Extends :class:`LEDBoard` for the `ModMyPi Programmable Christmas Tree Star`_:
+    a Christmas tree star with 30 white LEDs.
+
+    The 30 white LEDs can be accessed through the attributes inner and outer.
+    The inner attribute controls the five inner LEDs as a single group, while
+    the outer attribute controls the 25 outer LEDs. Those 25 LEDs can also be
+    controlled individually.
+
+    Alternatively, as with all descendents of :class:`LEDBoard`, you can treat
+    the instance as a sequence of LEDs (the first element is the 5 inner LEDs).
+
+    The ModMyPi star board pins are fixed and therefore there's no need to
+    specify them when constructing this class.
+
+    The following example first turns on all five inner LEDs. Then it turns on
+    all twenty-five outer LEDs as a group. After that, it turns everything off
+    and repeats this sequence indefinitely::
+
+        from gpiozero import ModMyPiStar
+        from time import sleep
+
+        star = ModMyPiStar()
+
+        while True:
+            for group in star:
+                group.on()
+                sleep(1)
+            star.off()
+            sleep(1)
+
+    The following example turns on the 25 outer LEDs individually in sequence,
+    at an increasingly rapid pace, before flashing the 5 inner LEDs, which act
+    as a single group::
+
+        from gpiozero import ModMyPiStar
+        from time import sleep
+
+        step = 1
+        star = ModMyPiStar()
+
+        while True:
+            for led in star.outer:
+                led.on()
+                sleep(step)
+                led.off()
+
+            step *= 0.1
+
+            if step <= 0.001:
+                star.inner.blink(on_time=0.5, off_time=0.5, n=5)
+                sleep(5)
+                step = 1
+
+    :param bool pwm:
+        If :data:`True`, construct :class:`PWMLED` instances for each pin. If
+        :data:`False` (the default), construct regular :class:`LED` instances.
+
+    :type initial_value: bool or None
+    :param initial_value:
+        If :data:`False` (the default), all LEDs will be off initially. If
+        :data:`None`, each device will be left in whatever state the pin is
+        found in when configured for output (warning: this can be on). If
+        :data:`True`, the device will be switched on initially.
+
+    :type pin_factory: Factory or None
+    :param pin_factory:
+        See :doc:`api_pins` for more information (this is an advanced feature
+        which most users can ignore).
+
+    .. _ModMyPi Programmable Christmas Tree Star: https://thepihut.com/products/raspberry-pi-christmas-tree-star
+
+    .. attribute:: inner
+
+        Returns the :class:`LED` or :class:`PWMLED` representing the five inner
+        white LEDs in the center of the star.
+
+    .. attribute:: outer
+
+        A :class:`LEDBoard` representing the twenty-five outer white LEDs. It
+        contains:
+
+        .. attribute:: led0, led1, led2, ...
+
+            Returns the :class:`LED` or :class:`PWMLED` representing one of
+            the outer LEDs. There are actually 25 of these properties named
+            led0, led1, and so on but for the sake of brevity we represent
+            all 25 under this section.
+    """
+    def __init__(self, *, pwm=False, initial_value=False, pin_factory=None):
+        pins = (8, 7, 12, 21, 20, 16, 26, 19, 13, 6, 5, 11, 9,
+                10, 22, 27, 17, 4, 3, 14, 23, 18, 15, 24, 25)
+        pins_dict = OrderedDict()
+        for i, pin in enumerate(pins):
+            pins_dict[f'led{i:d}'] = pin
+        super().__init__(
+            outer=LEDBoard(
+                pwm=pwm, initial_value=initial_value,
+                _order=pins_dict.keys(),
+                pin_factory=pin_factory,
+                **pins_dict),
+            inner=2,
+            pwm=pwm, initial_value=initial_value,
+            _order=('inner', 'outer'),
+            pin_factory=pin_factory
+            )
+
+
 class LedBorg(RGBLED):
     """
     Extends :class:`RGBLED` for the `PiBorg LedBorg`_: an add-on board

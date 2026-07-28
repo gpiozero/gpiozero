@@ -95,6 +95,7 @@ from .boards import (
     LEDCharFont,
     LedBorg,
     PiHutXmasTree,
+    ModMyPiStar,
     PiLiter,
     PiLiterBarGraph,
     TrafficLights,
