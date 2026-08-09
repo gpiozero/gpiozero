@@ -17,6 +17,7 @@ from unittest import mock
 import pytest
 
 from gpiozero import *
+from gpiozero.mixins import GPIOQueue
 from gpiozero.threads import _threads_shutdown
 
 
@@ -157,3 +158,90 @@ def test_shared_key(mock_factory):
             pass
         with pytest.raises(GPIOPinInUse):
             GPIODevice(4)
+
+
+def test_gpioqueue_thread_safe_value():
+    # Regression test for https://github.com/gpiozero/gpiozero/issues/975:
+    # GPIOQueue.fill() runs in a background thread and appends to a bounded
+    # deque, while .value reads the same deque by iterating over it (e.g.
+    # via statistics.mean/median). If an append lands while that iteration
+    # is part-way through, the deque raises "RuntimeError: deque mutated
+    # during iteration" -- exactly the traceback reported by several users
+    # polling MotionSensor.is_active in a tight loop.
+    #
+    # Rather than relying on real thread-scheduling timing to *happen* to
+    # trigger this (found, empirically, to be extremely environment
+    # sensitive -- reliably reproducible as a bare `python -c` script, but
+    # not from a thread inside a running pytest process), this deterministically
+    # forces the exact interleaving: .value's average() is paused
+    # mid-iteration by a synthetic average function, an append is attempted
+    # (on a separate thread, exactly as fill() would do it -- through
+    # queue.lock if it exists), and only then is the iteration allowed to
+    # resume.
+    #
+    # On unpatched code there's no queue.lock, so the append lands
+    # immediately, while the paused iterator is still alive, and resuming
+    # the iteration raises RuntimeError. On patched code the append blocks
+    # on the same lock .value is holding for the duration of average(), so
+    # it can't land until iteration has already finished.
+    class FakeParent:
+        def _read(self):
+            return 1
+
+    queue = GPIOQueue(FakeParent(), queue_len=5, sample_wait=0.0, partial=True)
+    for v in range(3):
+        queue.queue.append(v)
+
+    entered = Event()
+    resume = Event()
+
+    def pausing_average(data):
+        total = 0
+        count = 0
+        for i, item in enumerate(data):
+            total += item
+            count += 1
+            if i == 0:
+                entered.set()
+                assert resume.wait(2), 'test setup timed out'
+        return total / count if count else 0
+
+    queue.average = pausing_average
+
+    result = {}
+
+    def call_value():
+        try:
+            result['value'] = queue.value
+        except RuntimeError as e:
+            result['error'] = e
+
+    value_thread = threading.Thread(target=call_value)
+    value_thread.start()
+    assert entered.wait(2), 'average() never started iterating'
+
+    append_finished = Event()
+
+    def do_append():
+        lock = getattr(queue, 'lock', None)
+        if lock is not None:
+            with lock:
+                queue.queue.append(999)
+        else:
+            queue.queue.append(999)
+        append_finished.set()
+
+    append_thread = threading.Thread(target=do_append)
+    append_thread.start()
+    sleep(0.05)  # give the append a moment to run (or block, if locked)
+
+    if hasattr(queue, 'lock'):
+        assert not append_finished.is_set(), (
+            'append completed while .value was still iterating -- '
+            'the lock is not protecting the queue')
+
+    resume.set()
+    value_thread.join(2)
+    append_thread.join(2)
+
+    assert 'error' not in result, result.get('error')
