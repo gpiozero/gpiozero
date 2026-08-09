@@ -212,7 +212,7 @@ class DigitalOutputDevice(OutputDevice):
         self._stop_blink()
         self._write(False)
 
-    def blink(self, on_time=1, off_time=1, n=None, background=True):
+    def blink(self, on_time=1.0, off_time=1.0, n=None, background=True):
         """
         Make the device turn on and off repeatedly.
 
@@ -382,7 +382,7 @@ class PWMOutputDevice(OutputDevice):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, pin=None, *, active_high=True, initial_value=0,
+    def __init__(self, pin=None, *, active_high=True, initial_value=0.0,
                  frequency=100, pin_factory=None):
         self._blink_thread = None
         self._controller = None
@@ -473,7 +473,7 @@ class PWMOutputDevice(OutputDevice):
         self.pin.frequency = value
 
     def blink(
-            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            self, on_time=1.0, off_time=1.0, fade_in_time=0.0, fade_out_time=0.0,
             n=None, background=True):
         """
         Make the device turn on and off repeatedly.
@@ -510,7 +510,7 @@ class PWMOutputDevice(OutputDevice):
             self._blink_thread.join()
             self._blink_thread = None
 
-    def pulse(self, fade_in_time=1, fade_out_time=1, n=None, background=True):
+    def pulse(self, fade_in_time=1.0, fade_out_time=1.0, n=None, background=True):
         """
         Make the device fade in and out repeatedly.
 
@@ -1005,7 +1005,7 @@ class RGBLED(SourceMixin, Device):
         self.value = (1 - r, 1 - g, 1 - b)
 
     def blink(
-            self, on_time=1, off_time=1, fade_in_time=0, fade_out_time=0,
+            self, on_time=1.0, off_time=1.0, fade_in_time=0.0, fade_out_time=0.0,
             on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
         """
         Make the device turn on and off repeatedly.
@@ -1063,7 +1063,7 @@ class RGBLED(SourceMixin, Device):
             self._blink_thread = None
 
     def pulse(
-            self, fade_in_time=1, fade_out_time=1,
+            self, fade_in_time=1.0, fade_out_time=1.0,
             on_color=(1, 1, 1), off_color=(0, 0, 0), n=None, background=True):
         """
         Make the device fade in and out repeatedly.
@@ -1238,7 +1238,7 @@ class Motor(SourceMixin, CompositeDevice):
         """
         return self.value != 0
 
-    def forward(self, speed=1):
+    def forward(self, speed=1.0):
         """
         Drive the motor forwards.
 
@@ -1257,7 +1257,7 @@ class Motor(SourceMixin, CompositeDevice):
         self.backward_device.off()
         self.forward_device.value = speed
 
-    def backward(self, speed=1):
+    def backward(self, speed=1.0):
         """
         Drive the motor backwards.
 
@@ -1367,7 +1367,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         """
         return self.value != 0
 
-    def forward(self, speed=1):
+    def forward(self, speed=1.0):
         """
         Drive the motor forwards.
 
@@ -1383,7 +1383,7 @@ class PhaseEnableMotor(SourceMixin, CompositeDevice):
         self.phase_device.off()
         self.enable_device.value = speed
 
-    def backward(self, speed=1):
+    def backward(self, speed=1.0):
         """
         Drive the motor backwards.
 
@@ -1701,8 +1701,8 @@ class AngularServo(Servo):
         See :doc:`api_pins` for more information (this is an advanced feature
         which most users can ignore).
     """
-    def __init__(self, pin=None, *, initial_angle=0.0, min_angle=-90,
-                 max_angle=90, min_pulse_width=1/1000, max_pulse_width=2/1000,
+    def __init__(self, pin=None, *, initial_angle=0.0, min_angle=-90.0,
+                 max_angle=90.0, min_pulse_width=1/1000, max_pulse_width=2/1000,
                  frame_width=20/1000, pin_factory=None):
         self._min_angle = min_angle
         self._angular_range = max_angle - min_angle
