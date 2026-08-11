@@ -269,6 +269,9 @@ class EventsMixin:
         Pause the script until the device is activated, or the timeout is
         reached.
 
+        Returns :data:`True` if the device is active, or :data:`False` if the
+        timeout was reached.
+
         :type timeout: float or None
         :param timeout:
             Number of seconds to wait before proceeding. If this is
@@ -281,6 +284,9 @@ class EventsMixin:
         """
         Pause the script until the device is deactivated, or the timeout is
         reached.
+
+        Returns :data:`True` if the device is inactive, or :data:`False` if
+        the timeout was reached.
 
         :type timeout: float or None
         :param timeout:
