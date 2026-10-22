@@ -13,6 +13,15 @@ Changelog
 .. currentmodule:: gpiozero
 
 
+Unreleased
+==========
+
+* Fix nested :class:`LEDBoard` collections reporting active when every LED is
+  off. The :attr:`~LEDCollection.is_lit` alias follows the same state (`#832`_).
+
+.. _#832: https://github.com/gpiozero/gpiozero/issues/832
+
+
 Release 2.0.1.post3 (2026-07-27)
 ================================
 

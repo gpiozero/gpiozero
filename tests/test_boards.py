@@ -323,6 +323,33 @@ def test_led_board_nested(mock_factory):
         assert not pin2.state
         assert pin3.state
 
+@pytest.mark.parametrize('use_pwm', [False, True])
+@pytest.mark.parametrize('active_high', [False, True])
+def test_led_board_nested_active(mock_factory, pwm, use_pwm, active_high):
+    with LEDBoard(
+            2, LEDBoard(3, LEDBoard(4, 5, pwm=use_pwm,
+                                  active_high=active_high),
+                        pwm=use_pwm, active_high=active_high),
+            pwm=use_pwm, active_high=active_high) as board:
+        assert not board.is_active
+        assert not board.is_lit
+        board[1][1][0].value = 0.5 if use_pwm else 1
+        assert board.is_active
+        assert board.is_lit
+        board[1].off()
+        assert not board.is_active
+        board[0].on()
+        assert board.is_active
+        board.off()
+        assert not board.is_active
+        assert not board.is_lit
+
+@pytest.mark.parametrize('value', [-1, -0.5, 0, 0.5, 1])
+def test_led_bar_graph_active(mock_factory, pwm, value):
+    with LEDBarGraph(2, 3, pwm=True, initial_value=value) as graph:
+        assert graph.is_active == bool(value)
+        assert graph.is_lit == bool(value)
+
 def test_led_board_bad_blink(mock_factory):
     pin1 = mock_factory.pin(2)
     pin2 = mock_factory.pin(3)

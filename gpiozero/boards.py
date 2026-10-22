@@ -332,6 +332,13 @@ class LEDCollection(CompositeOutputDevice):
         return self._leds
 
     @property
+    def is_active(self):
+        """
+        The collection is active if any LED in it or its sub-collections is lit.
+        """
+        return any(led.is_active for led in self.leds)
+
+    @property
     def active_high(self):
         return self[0].active_high
 
