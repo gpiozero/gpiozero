@@ -136,6 +136,27 @@ def test_find_pin():
         for (head, pin) in board_info.find_pin('GPIO47')
     }
 
+def test_find_pin_leading_zero():
+    board_info = PiBoardInfo.from_revision(0xa21041)
+    # Leading zeros in the numeric part of a pin name are ignored
+    assert {('J8', 29)} == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('GPIO05')
+    }
+    assert {('J8', 29)} == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('BCM05')
+    }
+    assert {('J8', 29)} == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('BOARD029')
+    }
+    # A pin that does not exist still matches nothing, zeros or not
+    assert set() == {
+        (head.name, pin.number)
+        for (head, pin) in board_info.find_pin('GPIO047')
+    }
+
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_physical_pins():
     # Assert physical pins for some well-known Pi's; a21041 is a Pi2B

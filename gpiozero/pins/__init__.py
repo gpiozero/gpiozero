@@ -11,6 +11,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import re
 import warnings
 from weakref import ref
 from threading import Lock
@@ -1255,7 +1256,15 @@ class BoardInfo(namedtuple('BoardInfo', (
         A generator function which, given a pin *name*, yields tuples of
         :class:`HeaderInfo` and :class:`PinInfo` instances for which *name*
         equals :attr:`PinInfo.name`.
+
+        Leading zeros in the numeric part of a pin name are ignored, so
+        ``"GPIO05"`` matches the same pin as ``"GPIO5"`` (likewise
+        ``"BCM05"`` and ``"BOARD029"``).
         """
+        if isinstance(name, str):
+            match = re.match(r'^([A-Za-z]+)0+(\d+)$', name)
+            if match:
+                name = f'{match.group(1)}{match.group(2)}'
         for header in self.headers.values():
             for pin in header.pins.values():
                 if name in pin.names:
