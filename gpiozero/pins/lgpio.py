@@ -162,7 +162,7 @@ class LGPIOPin(LocalPiPin):
     def _set_state(self, value):
         if self._pwm:
             freq, duty = self._pwm
-            self._pwm = (freq, int(value * 100))
+            self._pwm = (freq, value * 100)
             try:
                 lgpio.tx_pwm(self.factory._handle, self._number, *self._pwm)
             except lgpio.error:

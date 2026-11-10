@@ -255,7 +255,8 @@ def test_duty_cycles(pins):
             test_pin=test_pin))
     else:
         try:
-            for duty_cycle in (0.0, 0.1, 0.5, 1.0):
+            # 0.075 checks that a fractional duty cycle is not rounded away
+            for duty_cycle in (0.0, 0.075, 0.1, 0.5, 1.0):
                 test_pin.state = duty_cycle
                 assert test_pin.state == duty_cycle
                 total = sum(input_pin.state for i in range(20000))
