@@ -324,7 +324,9 @@ class LGPIOHardwareSPI(SPI):
         self._check_open()
         if not 0 <= value < 4:
             raise SPIInvalidClockMode(f"{value} is not a valid SPI clock mode")
-        lgpio.spi_close(self._handle)
+        handle = self._handle
+        self._handle = None
+        lgpio.spi_close(handle)
         self._spi_flags = value
         self._handle = lgpio.spi_open(
             self._port, self._device, self._baud, self._spi_flags)
@@ -335,7 +337,9 @@ class LGPIOHardwareSPI(SPI):
     def _set_rate(self, value):
         self._check_open()
         value = int(value)
-        lgpio.spi_close(self._handle)
+        handle = self._handle
+        self._handle = None
+        lgpio.spi_close(handle)
         self._baud = value
         self._handle = lgpio.spi_open(
             self._port, self._device, self._baud, self._spi_flags)
