@@ -126,6 +126,8 @@ For a Raspberry Pi model 3B, this will output something like the following:
     GPIO26 (37) (38) GPIO20
        GND (39) (40) GPIO21
 
+    pinout is part of the gpiozero project: https://github.com/gpiozero/gpiozero
+
     For further information, please refer to https://pinout.xyz/
 
 By default, if stdout is a console that supports color, ANSI codes will be used

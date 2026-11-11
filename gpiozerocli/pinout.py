@@ -69,6 +69,9 @@ class PinoutTool(CliTool):
             sys.stdout.write(f'{board_info:{style} full}')
             formatter = self.get_formatter()
             formatter.add_text(
+                "pinout is part of the gpiozero project: "
+                "https://github.com/gpiozero/gpiozero")
+            formatter.add_text(
                 "For further information, please refer to "
                 "https://pinout.xyz/")
             sys.stdout.write('\n\n')
