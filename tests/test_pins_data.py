@@ -230,6 +230,20 @@ def test_format_headers(capsys):
     with pytest.raises(ValueError):
         f'{board_info.headers["J8"]:mono foo}'
 
+def test_format_rev_full():
+    header = PiBoardInfo.from_revision(0xa02082).headers['J8']
+    normal = f'{header:mono full}'.splitlines()
+    rotated = f'{header:mono rev full}'.splitlines()
+    assert len(rotated) == len(normal) == 20
+    assert rotated[0].index('(40)') < rotated[0].index('(39)')
+    assert rotated[-1].index('(2)') < rotated[-1].index('(1)')
+    # board-level rev full rotates the headers too
+    board_info = PiBoardInfo.from_revision(0xa02082)
+    j8 = f'{board_info:mono rev full}'.split('J8:\n')[1].splitlines()
+    assert j8[0].index('(40)') < j8[0].index('(39)')
+    with pytest.raises(ValueError):
+        f'{board_info:mono rev foo}'
+
 def test_pprint_color(capsys):
     board_info = PiBoardInfo.from_revision(0x900092)
     board_info.pprint(color=False)

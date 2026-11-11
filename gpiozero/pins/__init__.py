@@ -926,7 +926,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
     "color" and "mono" can be prefixed to format specifications to force the
     use of `ANSI color codes`_. If neither is specified, ANSI codes will only
     be used if stdout is detected to be a tty. "rev" can be added to output the
-    row or column in reverse order::
+    row, column, or full diagram in reverse order (the full diagram is
+    rotated 180 degrees)::
 
         # force use of ANSI codes
         j8 = factory.board_info.headers['J8']
@@ -935,6 +936,8 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         print(f'{j8:mono row2}')
         # output in reverse order
         print(f'{j8:color rev row1}')
+        # output the full diagram rotated 180 degrees
+        print(f'{j8:color rev full}')
 
     The following attributes are defined:
 
@@ -973,21 +976,23 @@ class HeaderInfo(namedtuple('HeaderInfo', (
         else:
             return style('yellow')
 
-    def _format_full(self, style):
+    def _format_full(self, style, rev=False):
         Cell = namedtuple('Cell', ('content', 'align', 'style'))
 
         lines = []
-        for row in range(self.rows):
+        row_order = range(self.rows - 1, -1, -1) if rev else range(self.rows)
+        col_order = range(self.columns - 1, -1, -1) if rev else range(self.columns)
+        for row in row_order:
             line = []
-            for col in range(self.columns):
+            for display_col, col in enumerate(col_order):
                 pin = (row * self.columns) + col + 1
                 try:
                     pin = self.pins[pin]
                     cells = [
-                        Cell(pin.name, '><'[col % 2], self._pin_style(pin, style)),
-                        Cell(f'({pin.number})', '><'[col % 2], ''),
+                        Cell(pin.name, '><'[display_col % 2], self._pin_style(pin, style)),
+                        Cell(f'({pin.number})', '><'[display_col % 2], ''),
                         ]
-                    if col % 2:
+                    if display_col % 2:
                         cells = reversed(cells)
                     line.extend(cells)
                 except KeyError:
@@ -1049,7 +1054,7 @@ class HeaderInfo(namedtuple('HeaderInfo', (
             raise ValueError('Invalid format specifier')
         content = content.pop()
         if content == 'full':
-            return self._format_full(style)
+            return self._format_full(style, rev)
         elif content.startswith('row') and content[3:].isdigit():
             return self._format_row(int(content[3:]), style, rev=rev)
         elif content.startswith('col') and content[3:].isdigit():
@@ -1108,12 +1113,15 @@ class BoardInfo(namedtuple('BoardInfo', (
 
     "color" and "mono" can be prefixed to format specifications to force the
     use of `ANSI color codes`_. If neither is specified, ANSI codes will only
-    be used if stdout is detected to be a tty::
+    be used if stdout is detected to be a tty. "rev" can be added to rotate
+    the header diagrams 180 degrees::
 
         # force use of ANSI codes
         print(f'{factory.board_info:color board}')
         # force plain ASCII
         print(f'{factory.board_info:mono board}')
+        # output the header diagrams rotated 180 degrees
+        print(f'{factory.board_info:color rev full}')
 
     .. _ANSI color codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -1357,11 +1365,21 @@ class BoardInfo(namedtuple('BoardInfo', (
 
     def __format__(self, format_spec):
         style, content = Style.from_style_content(format_spec)
+        content = set(content.split())
+        try:
+            content.remove('rev')
+            rev = True
+        except KeyError:
+            rev = False
+        if len(content) != 1:
+            raise ValueError('Invalid format specifier')
+        content = content.pop()
         if content == 'full':
+            headers_spec = 'rev headers' if rev else 'headers'
             return '\n\n'.join((
                 f'{self:{style} specs}',
                 f'{self:{style} board}',
-                f'{self:{style} headers}',
+                f'{self:{style} {headers_spec}}',
             ))
         elif content == 'board':
             kw = self._asdict()
@@ -1389,9 +1407,10 @@ class BoardInfo(namedtuple('BoardInfo', (
                 {style:bold}Display ports (DSI){style:reset}: {self.dsi}"""
             )
         elif content == 'headers':
+            header_spec = 'rev full' if rev else 'full'
             return '\n\n'.join(
                 f'{style:bold}{header.name}{style:reset}:\n'
-                f'{header:{style} full}'
+                f'{header:{style} {header_spec}}'
                 for header in self.headers.values()
             )
         else:
