@@ -24,7 +24,7 @@ Synopsis
 
 ::
 
-    pinout [-h] [-r REVISION] [-c] [-m] [-x]
+    pinout [-h] [-r REVISION] [-c] [-m] [-x] [-R]
 
 
 Description
@@ -63,6 +63,11 @@ Options
 .. option:: -x, --xyz
 
     Open `pinout.xyz`_ in the default web browser
+
+.. option:: -R, --rotate
+
+    Rotate the GPIO header diagram by 180 degrees. Useful when the Pi is
+    mounted upside-down
 
 
 Examples
@@ -141,6 +146,13 @@ capable of supporting ANSI codes:
 .. code-block:: console
 
     $ pinout --color | less -SR
+
+To rotate the header diagram by 180 degrees, for example when the Pi is
+mounted upside-down, use :option:`--rotate`:
+
+.. code-block:: console
+
+    $ pinout --rotate
 
 To manually specify the revision of Pi you want to query, use
 :option:`--revision`. The tool understands both old-style `revision codes`_

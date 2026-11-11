@@ -47,6 +47,11 @@ class PinoutTool(CliTool):
             dest='xyz',
             action='store_true',
             help='Open pinout.xyz in the default web browser')
+        self.parser.add_argument(
+            '-R', '--rotate',
+            dest='rotate',
+            action='store_true',
+            help='Rotate the pin-out diagram by 180 degrees')
 
     def main(self, args):
         warnings.simplefilter('ignore')
@@ -66,7 +71,8 @@ class PinoutTool(CliTool):
             else:
                 board_info = PiBoardInfo.from_revision(args.revision)
             style = Style(color=args.color)
-            sys.stdout.write(f'{board_info:{style} full}')
+            spec = 'rev full' if args.rotate else 'full'
+            sys.stdout.write(f'{board_info:{style} {spec}}')
             formatter = self.get_formatter()
             formatter.add_text(
                 "For further information, please refer to "
