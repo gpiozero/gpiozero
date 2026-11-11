@@ -38,3 +38,9 @@ def test_help(capsys):
 def test_execution(capsys, no_default_factory):
     os.environ['GPIOZERO_PIN_FACTORY'] = 'mock'
     assert main([]) == 0
+
+def test_execution_credit(capsys):
+    assert main(['--revision', 'a02082', '--monochrome']) == 0
+    out, err = capsys.readouterr()
+    assert 'pinout is part of the gpiozero project: https://github.com/gpiozero/gpiozero' in out
+    assert 'For further information, please refer to https://pinout.xyz/' in out
