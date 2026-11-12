@@ -532,5 +532,5 @@ class MockSPIInterface(SPISoftware):
 class MockSPIInterfaceShared(SharedMixin, MockSPIInterface):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
-                    pin_factory):
+                    pin_factory, rate=None):
         return (clock_pin, select_pin)

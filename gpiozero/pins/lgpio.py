@@ -276,12 +276,13 @@ class LGPIOHardwareSPI(SPI):
 
     .. _lgpio: http://abyz.me.uk/lg/py_lgpio.html
     """
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory,
+                 rate=500000):
         port, device = spi_port_device(
             clock_pin, mosi_pin, miso_pin, select_pin)
         self._port = port
         self._device = device
-        self._baud = 500000
+        self._baud = int(rate)
         self._spi_flags = 0
         self._handle = None
         super().__init__(pin_factory=pin_factory)
@@ -364,5 +365,6 @@ class LGPIOHardwareSPI(SPI):
 
 class LGPIOHardwareSPIShared(SharedMixin, LGPIOHardwareSPI):
     @classmethod
-    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory, rate=None):
         return (clock_pin, select_pin)

@@ -14,6 +14,7 @@ import pytest
 from math import isclose
 
 from gpiozero.pins.mock import MockSPIDevice
+from gpiozero.exc import SPIFixedRate
 from gpiozero import *
 
 
@@ -276,6 +277,13 @@ def test_spi_software_read(mock_factory):
         master.clock_phase = True
         assert master.read(3) == [0, 1, 2]
         assert master.read(6) == [0, 1, 2, 3, 4, 5]
+
+
+def test_spi_software_rate(mock_factory):
+    # Software SPI has no rate control, so requesting a rate must fail
+    # instead of silently ignoring it
+    with pytest.raises(SPIFixedRate):
+        mock_factory.spi(rate=1000000)
 
 
 def test_spi_software_write(mock_factory):

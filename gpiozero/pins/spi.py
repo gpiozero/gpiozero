@@ -14,7 +14,7 @@ from . import SPI
 from ..devices import Device, SharedMixin
 from ..input_devices import InputDevice
 from ..output_devices import OutputDevice
-from ..exc import DeviceClosed, SPIInvalidClockMode
+from ..exc import DeviceClosed, SPIFixedRate, SPIInvalidClockMode
 
 
 class SPISoftware(SPI):
@@ -32,7 +32,10 @@ class SPISoftware(SPI):
     transfer logic.
     """
     def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, *,
-                 pin_factory):
+                 pin_factory, rate=None):
+        if rate is not None:
+            raise SPIFixedRate(
+                'rate cannot be set on software SPI; it has no rate control')
         self._bus = None
         self._select = None
         super().__init__(pin_factory=pin_factory)

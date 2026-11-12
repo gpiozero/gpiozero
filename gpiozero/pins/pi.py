@@ -484,6 +484,12 @@ class PiFactory(Factory):
         if kwargs:
             raise SPIBadArgs(
                 f'unrecognized keyword argument {kwargs.popitem()[0]}')
+        # rate is not part of the pin/port selection, so keep it out of the
+        # arguments used to resolve the port and device, and pass it to the
+        # SPI implementation separately
+        spi_kwargs = {}
+        if 'rate' in spi_args:
+            spi_kwargs['rate'] = spi_args.pop('rate')
         try:
             port, device = spi_port_device(**spi_args)
         except SPIBadArgs:
@@ -492,7 +498,7 @@ class PiFactory(Factory):
         else:
             try:
                 return self._get_spi_class(shared, hardware=True)(
-                    pin_factory=self, **spi_args)
+                    pin_factory=self, **spi_args, **spi_kwargs)
             except GPIOPinInUse:
                 # If a pin is already reserved, don't fallback to software SPI
                 # as it'll just be reserved there too
@@ -503,7 +509,7 @@ class PiFactory(Factory):
                         f'failed to initialize hardware SPI, falling back to '
                         f'software (error was: {e!s})'))
         return self._get_spi_class(shared, hardware=False)(
-            pin_factory=self, **spi_args)
+            pin_factory=self, **spi_args, **spi_kwargs)
 
     def _extract_spi_args(self, **kwargs):
         """
@@ -533,6 +539,9 @@ class PiFactory(Factory):
             key: value for (key, value) in kwargs.items()
             if key not in spi_args
             }
+        # rate is an SPI argument too, but it is not part of the pin/port
+        # selection schemes below, so set it aside until they are resolved
+        rate = kwargs.pop('rate', None)
         if not spi_args:
             spi_args = pin_defaults
         elif set(spi_args) <= set(pin_defaults):
@@ -567,6 +576,8 @@ class PiFactory(Factory):
                 'you must either specify port and device, or clock_pin, '
                 'mosi_pin, miso_pin, and select_pin; combinations of the two '
                 'schemes (e.g. port and clock_pin) are not permitted')
+        if rate is not None:
+            spi_args['rate'] = rate
         return spi_args, kwargs
 
     def _get_spi_class(self, shared, hardware):
