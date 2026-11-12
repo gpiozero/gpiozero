@@ -460,6 +460,19 @@ def test_spi_hardware_modes(default_factory):
             assert intf.rate == 500000
 
 
+def test_spi_hardware_rate(default_factory):
+    local_only()
+    with mock.patch('gpiozero.pins.local.SpiDev') as spidev:
+        with Device.pin_factory.spi() as intf:
+            local_hardware_spi_only(intf)
+            assert intf.rate == 500000
+            assert spidev.return_value.max_speed_hz == 500000
+        with Device.pin_factory.spi(rate=1000000) as intf:
+            local_hardware_spi_only(intf)
+            assert intf.rate == 1000000
+            assert spidev.return_value.max_speed_hz == 1000000
+
+
 # XXX Test two simultaneous SPI devices sharing clock, MOSI, and MISO, with
 # separate select pins (including threaded tests which attempt simultaneous
 # reading/writing)

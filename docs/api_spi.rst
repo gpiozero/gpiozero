@@ -75,6 +75,11 @@ omit any arguments from either scheme. The defaults are:
 * *clock_pin* defaults to 11, *mosi_pin* defaults to 10, *miso_pin* defaults
   to 9, and *select_pin* defaults to 8.
 
+* *rate* defaults to 500000. This sets the speed of the SPI interface in Hz
+  (see :attr:`SPI.rate`). It only applies to hardware SPI implementations;
+  software SPI has no rate control, so specifying a *rate* with a software
+  interface will raise :exc:`SPIFixedRate`.
+
 * As with other GPIO based devices you can optionally specify a *pin_factory*
   argument overriding the default pin factory (see :doc:`api_pins` for more
   information).

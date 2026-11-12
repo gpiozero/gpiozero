@@ -330,7 +330,8 @@ class PiGPIOHardwareSPI(SPI):
 
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory,
+                 rate=500000):
         port, device = spi_port_device(
             clock_pin, mosi_pin, miso_pin, select_pin)
         self._port = port
@@ -344,7 +345,7 @@ class PiGPIOHardwareSPI(SPI):
             to_reserve.add(miso_pin)
         self.pin_factory.reserve_pins(self, *to_reserve)
         self._spi_flags = (8 << 16) | (port << 8)
-        self._baud = 500000
+        self._baud = int(rate)
         self._handle = self.pin_factory.connection.spi_open(
             device, self._baud, self._spi_flags)
 
@@ -457,7 +458,8 @@ class PiGPIOSoftwareSPI(SPI):
 
     .. _pigpio: http://abyz.me.uk/rpi/pigpio/
     """
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory,
+                 rate=100000):
         self._closed = True
         self._select_pin = select_pin
         self._clock_pin = clock_pin
@@ -473,7 +475,7 @@ class PiGPIOSoftwareSPI(SPI):
             select_pin,
             )
         self._spi_flags = 0
-        self._baud = 100000
+        self._baud = int(rate)
         try:
             self.pin_factory.connection.bb_spi_open(
                 select_pin, miso_pin, mosi_pin, clock_pin,
@@ -589,11 +591,13 @@ class PiGPIOSoftwareSPI(SPI):
 
 class PiGPIOHardwareSPIShared(SharedMixin, PiGPIOHardwareSPI):
     @classmethod
-    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory, rate=None):
         return (pin_factory.host, clock_pin, select_pin)
 
 
 class PiGPIOSoftwareSPIShared(SharedMixin, PiGPIOSoftwareSPI):
     @classmethod
-    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
+                    pin_factory, rate=None):
         return (pin_factory.host, clock_pin, select_pin)

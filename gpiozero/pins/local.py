@@ -114,7 +114,8 @@ class LocalPiPin(PiPin):
 
 
 class LocalPiHardwareSPI(SPI):
-    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory):
+    def __init__(self, clock_pin, mosi_pin, miso_pin, select_pin, pin_factory,
+                 rate=500000):
         self._port, self._device = spi_port_device(
             clock_pin, mosi_pin, miso_pin, select_pin)
         self._bus = None
@@ -129,7 +130,7 @@ class LocalPiHardwareSPI(SPI):
         self.pin_factory.reserve_pins(self, *to_reserve)
         self._bus = SpiDev()
         self._bus.open(self._port, self._device)
-        self._bus.max_speed_hz = 500000
+        self._bus.max_speed_hz = int(rate)
 
     def _conflicts_with(self, other):
         if isinstance(other, LocalPiHardwareSPI):
@@ -203,12 +204,12 @@ class LocalPiSoftwareSPI(SPISoftware):
 class LocalPiHardwareSPIShared(SharedMixin, LocalPiHardwareSPI):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
-                    pin_factory):
+                    pin_factory, rate=None):
         return (clock_pin, select_pin)
 
 
 class LocalPiSoftwareSPIShared(SharedMixin, LocalPiSoftwareSPI):
     @classmethod
     def _shared_key(cls, clock_pin, mosi_pin, miso_pin, select_pin,
-                    pin_factory):
+                    pin_factory, rate=None):
         return (clock_pin, select_pin)
