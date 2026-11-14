@@ -122,9 +122,15 @@ Forums`_.
 .. _Raspberry Pi Stack Exchange: https://raspberrypi.stackexchange.com/
 .. _Raspberry Pi Forums: https://forums.raspberrypi.com/
 
-Contributors
+Contributing
 ============
 
-See the `contributors page`_ on GitHub.
+Please see the `Contributing guide`_on GitHub for more information, including
+our guidance on AI contributions.
 
-.. _contributors page: https://github.com/gpiozero/gpiozero/graphs/contributors
+.. _Contributing guide: https://github.com/gpiozero/gpiozero/blob/dev/.github/CONTRIBUTING.md
+
+For a list of people who have contributed to the project, see the `contributors
+page`_ on GitHub.
+
+.. _contributors page: https://github.com/gpiozero/gpiozero/graphs/contributors?all=1
