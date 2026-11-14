@@ -134,3 +134,16 @@ For a list of people who have contributed to the project, see the `contributors
 page`_ on GitHub.
 
 .. _contributors page: https://github.com/gpiozero/gpiozero/graphs/contributors?all=1
+
+GPIO Zero Flow
+==============
+
+Flow is a visual, node-based interface for gpiozero devices. Drag components
+onto a canvas and connect them up with no code. Flow runs in the browser, and
+can connect to a Raspberry Pi to control real GPIO devices remotely.
+
+See the `announcement blog post`_ and the `Flow webapp`_ for more information.
+
+.. _announcement blog post: https://bennuttall.com/blog/2026/07/gpiozero-flow/
+
+.. _Flow webapp: https://flow.bennuttall.com/
