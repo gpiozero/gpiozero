@@ -7,7 +7,7 @@ PYTEST ?= pytest
 TWINE ?= twine
 PYFLAGS ?=
 DEST_DIR ?= /
-DOC_HTML=docs/build/html
+DOC_HTML=build/html
 DOC_REQS=rtd_requirements.txt
 
 # Calculate the base names of the distribution, the location of all source,
