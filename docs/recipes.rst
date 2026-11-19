@@ -14,8 +14,7 @@ Basic Recipes
 .. currentmodule:: gpiozero
 
 The following recipes demonstrate some of the capabilities of the GPIO Zero
-library. Please note that all recipes are written assuming Python 3. Recipes
-*may* work under Python 2, but no guarantees!
+library.
 
 Importing GPIO Zero
 ===================
@@ -390,8 +389,8 @@ Rotary encoder
     but this same circuit will work equally well with this commonly available
     `illuminated rotary encoder`_ instead.
 
-Have a :class:`RotaryEncoder`, an :class:`RGBLED`, and :class:`Button` act as a
-color picker:
+Have a :class:`RotaryEncoder`, an :class:`RGBLED`, and a :class:`Button` act as
+a color picker:
 
 .. literalinclude:: examples/color_picker.py
 
@@ -542,8 +541,8 @@ Internet connection status indicator
 
 You can use a pair of green and red LEDs to indicate whether or not your
 internet connection is working. Simply use the :class:`PingServer` class to
-identify whether a ping to `google.com` is successful. If successful, the green
-LED is lit, and if not, the red LED is lit:
+identify whether a ping to ``google.com`` is successful. If successful, the
+green LED is lit, and if not, the red LED is lit:
 
 .. literalinclude:: examples/internet_status_indicator.py
 

@@ -26,10 +26,10 @@ Zero's code::
     except GPIOZeroError:
         print('A GPIO Zero error occurred')
 
-Since all GPIO Zero's exceptions descend from :exc:`GPIOZeroError`, this will
+Since all of GPIO Zero's exceptions descend from :exc:`GPIOZeroError`, this will
 work. However, certain specific errors have multiple parents. For example, in
-the case that an out of range value is passed to :attr:`OutputDevice.value` you
-would expect a :exc:`ValueError` to be raised. In fact, a
+the case that an out-of-range value is passed to :attr:`OutputDevice.value` you
+would expect a :exc:`ValueError` to be raised. In fact, an
 :exc:`OutputDeviceBadValue` error will be raised. However, note that this
 descends from both :exc:`GPIOZeroError` (indirectly) and from :exc:`ValueError`
 so you can still do the obvious::

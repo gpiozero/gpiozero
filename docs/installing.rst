@@ -33,7 +33,7 @@ GPIO Zero is packaged in the apt repositories of Raspberry Pi OS, `Debian`_ and
 .. warning::
 
     The version of GPIO Zero in Debian may fall significantly behind the pip and
-    Raspberry Pi OS versions
+    Raspberry Pi OS versions.
 
 apt
 ---
@@ -44,17 +44,11 @@ First, update your repositories list:
 
     pi@raspberrypi:~$ sudo apt update
 
-Then install the package for Python 3:
+Then install the package:
 
 .. code-block:: console
 
     pi@raspberrypi:~$ sudo apt install python3-gpiozero
-
-or Python 2:
-
-.. code-block:: console
-
-    pi@raspberrypi:~$ sudo apt install python-gpiozero
 
 Virtual environment
 -------------------
@@ -120,9 +114,9 @@ See :doc:`api_pins` for more information on pin libraries.
 PC/Mac
 ======
 
-You may wish to install GPIO Zero on a PC or Mac for either development
-purposes, using :ref:`mock-pins` or :doc:`remote_gpio`. Simply install GPIO Zero
-with pip, as above. For remote GPIO, you may need the relevant pin library too.
+You may wish to install GPIO Zero on a PC or Mac for development purposes using
+:ref:`mock-pins`, or for :doc:`remote_gpio`. Simply install GPIO Zero with pip,
+as above. For remote GPIO, you may need the relevant pin library too.
 
 Documentation
 =============

@@ -63,9 +63,9 @@ Options
 
 .. option:: -h, --help
 
-    show this help message and exit
+    Show this help message and exit
 
-.. option::  --version
+.. option:: --version
 
     Show the program's version number and exit
 
@@ -77,7 +77,7 @@ Options
 
 .. option:: -s SKIP, --skip SKIP
 
-    The pin(s) to skip testing. Can be specified as comma-separated list of
+    The pin(s) to skip testing. Can be specified as a comma-separated list of
     pins. Pin numbers can be given in any form accepted by gpiozero, e.g. 14,
     GPIO14, BOARD8. The default is to skip no pins
 
@@ -87,9 +87,9 @@ Options
 
 .. option:: -r REVISION, --revision REVISION
 
-    Force board revision. Default is to autodetect revision of current device.
-    You should avoid this option unless you are very sure the detection is
-    incorrect
+    Force board revision. Default is to autodetect the revision of the current
+    device. You should avoid this option unless you are very sure the detection
+    is incorrect
 
 
 Examples

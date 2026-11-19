@@ -29,8 +29,8 @@ Release 2.0.1.post3 (2026-07-27)
 Release 2.0.1 (2024-02-15)
 ==========================
 
-* Fixed Python 3.12 compatibility, and clarify that 3.9 is the lowest supported
-  version in our CI configuration (`#1113`_)
+* Fixed Python 3.12 compatibility, and clarified that 3.9 is the lowest
+  supported version in our CI configuration (`#1113`_)
 
 .. _#1113: https://github.com/gpiozero/gpiozero/issues/1113
 
@@ -88,7 +88,7 @@ Release 1.6.0 (2021-03-14)
   Daniele Procida at the PyCon UK sprints) (`#795`_, `#797`_)
 * Added event-driven functionality to :doc:`internal devices <api_internal>`
   (`#941`_)
-* Allowed :class:`Energenie` sockets preserve their state on construction
+* Allowed :class:`Energenie` sockets to preserve their state on construction
   (thanks to Jack Wearden) (`#865`_)
 * Added source tools :func:`~gpiozero.tools.scaled_half` and
   :func:`~gpiozero.tools.scaled_full`
@@ -327,7 +327,7 @@ Release 1.3.0 (2016-08-31)
 Not quite as much as we'd hoped to get done this time, but we're rushing to
 make a Raspbian freeze. As always, thanks to the community - your suggestions
 and PRs have been brilliant and even if we don't take stuff exactly as is, it's
-always great to see your ideas. Onto 1.4!
+always great to see your ideas. On to 1.4!
 
 .. _#248: https://github.com/gpiozero/gpiozero/issues/248
 .. _#289: https://github.com/gpiozero/gpiozero/issues/289
@@ -344,11 +344,11 @@ Release 1.2.0 (2016-04-10)
 
 * Added :class:`Energenie` class for controlling Energenie plugs (`#69`_)
 * Added :class:`LineSensor` class for single line-sensors (`#109`_)
-* Added :class:`DistanceSensor` class for HC-SR04 ultra-sonic sensors (`#114`_)
+* Added :class:`DistanceSensor` class for HC-SR04 ultrasonic sensors (`#114`_)
 * Added :class:`SnowPi` class for the Ryanteck Snow-pi board (`#130`_)
 * Added :attr:`~Button.when_held` (and related properties) to :class:`Button`
   (`#115`_)
-* Fixed issues with installing GPIO Zero for python 3 on Raspbian Wheezy
+* Fixed issues with installing GPIO Zero for Python 3 on Raspbian Wheezy
   releases (`#140`_)
 * Added support for lots of ADC chips (MCP3xxx family) (`#162`_) - many thanks
   to pcopa and lurch!

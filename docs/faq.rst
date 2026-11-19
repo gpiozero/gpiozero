@@ -85,7 +85,7 @@ depending on your use case.
   :meth:`~gpiozero.Button.wait_for_release()`::
 
     while True:
-        print("Released. Waiting for press..")
+        print("Released. Waiting for press...")
         btn.wait_for_press()
         print("Pressed. Waiting for release...")
         btn.wait_for_release()
@@ -224,8 +224,7 @@ The pinout command line tool incorrectly identifies my Raspberry Pi model
 
 If your Raspberry Pi model is new, it's possible it wasn't known about at the
 time of the gpiozero release you are using. Ensure you have the latest version
-installed (remember, the :doc:`cli_pinout` tool usually comes from the Python 3
-version of the package as noted in the previous FAQ).
+installed.
 
 If the Pi model you are using isn't known to gpiozero, it may have been added
 since the last release. You can check the `GitHub issues`_ to see if it's been
@@ -241,7 +240,7 @@ What's the gpiozero equivalent of GPIO.cleanup()?
 
 Many people ask how to do the equivalent of the ``cleanup`` function from
 ``RPi.GPIO``. In gpiozero, at the end of your script, cleanup is run
-automatically, restoring your GPIO pins to the state they were found.
+automatically, restoring your GPIO pins to the state they were found in.
 
 To explicitly close a connection to a pin, you can manually call the
 :meth:`~Device.close` method on a device object:
@@ -339,8 +338,8 @@ initialization, you'll find you can't:
 This is in order to prevent users accidentally setting new attributes by
 mistake. Because gpiozero provides functionality through setting attributes via
 properties, such as callbacks on buttons (and often there is no immediate
-feedback when setting a property), this could lead to bugs very difficult to
-find. Consider the following example::
+feedback when setting a property), this could lead to bugs that are very
+difficult to find. Consider the following example::
 
     from gpiozero import Button
 
@@ -367,7 +366,7 @@ create it in the class before initializing your object:
     >>> btn = Button(2)
     >>> btn.label = 'alarm'
     >>> def press(btn):
-    ...:    print(btn.label, "was pressed")
+    ...     print(btn.label, "was pressed")
     >>> btn.when_pressed = press
 
 
@@ -376,9 +375,9 @@ Why is it called GPIO Zero? Does it only work on Pi Zero?
 
 gpiozero works on all Raspberry Pi models, not just the Pi Zero.
 
-The "zero" is part of a naming convention for "zero-boilerplate" education
-friendly libraries, which started with `Pygame Zero`_, and has been followed by
-`NetworkZero`_, `guizero`_ and more.
+The "zero" is part of a naming convention for "zero-boilerplate"
+education-friendly libraries, which started with `Pygame Zero`_, and has been
+followed by `NetworkZero`_, `guizero`_ and more.
 
 These libraries aim to remove barriers to entry and provide a smooth learning
 curve for beginners by making it easy to get started and easy to build up to

@@ -34,11 +34,11 @@ meaning it usually requires four pins to operate:
 
 The gpiozero library provides two SPI implementations:
 
-* A software based implementation. This is always available, can use any four
+* A software-based implementation. This is always available, can use any four
   GPIO pins for SPI communication, but is rather slow and won't work with all
   devices.
 
-* A hardware based implementation. This is only available when the SPI kernel
+* A hardware-based implementation. This is only available when the SPI kernel
   module is loaded, and the Python spidev library is available. It can only use
   specific pins for SPI communication (GPIO11=clock, GPIO10=MOSI, GPIO9=MISO,
   while GPIO8 is select for device 0 and GPIO7 is select for device 1).
@@ -75,7 +75,7 @@ omit any arguments from either scheme. The defaults are:
 * *clock_pin* defaults to 11, *mosi_pin* defaults to 10, *miso_pin* defaults
   to 9, and *select_pin* defaults to 8.
 
-* As with other GPIO based devices you can optionally specify a *pin_factory*
+* As with other GPIO-based devices you can optionally specify a *pin_factory*
   argument overriding the default pin factory (see :doc:`api_pins` for more
   information).
 

@@ -15,7 +15,7 @@ API - Pins
 
 As of release 1.1, the GPIO Zero library can be roughly divided into two
 things: pins and the devices that are connected to them. The majority of the
-documentation focuses on devices as pins are below the level that most users
+documentation focuses on devices, as pins are below the level that most users
 are concerned with. However, some users may wish to take advantage of the
 capabilities of alternative GPIO implementations or (in future) use GPIO
 extender chips. This is the purpose of the pins portion of the library.
@@ -57,7 +57,7 @@ will come into effect:
     >>> led.pin_factory
     <gpiozero.pins.lgpio.LGPIOFactory object at 0xb6323530>
 
-As above, on a Raspberry Pi with the lgpio library installed, (assuming no
+As above, on a Raspberry Pi with the lgpio library installed (assuming no
 environment variables are set), the default pin factory will be
 :class:`~gpiozero.pins.lgpio.LGPIOFactory`.
 
@@ -111,7 +111,7 @@ To set the :envvar:`GPIOZERO_PIN_FACTORY` for the rest of your session you can
     Python 3.7.3 (default, Apr  3 2019, 05:39:12)
     [GCC 8.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
-    >>> import gpiozero
+    >>> from gpiozero import Device
     >>> Device._default_pin_factory()
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
     >>> quit()
@@ -119,7 +119,7 @@ To set the :envvar:`GPIOZERO_PIN_FACTORY` for the rest of your session you can
     Python 3.7.3 (default, Apr  3 2019, 05:39:12)
     [GCC 8.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
-    >>> import gpiozero
+    >>> from gpiozero import Device
     >>> Device._default_pin_factory()
     <gpiozero.pins.native.NativeFactory object at 0x762c26b0>
 
@@ -127,7 +127,7 @@ If you add the :command:`export` command to your :file:`~/.bashrc` file, you'll
 set the default pin factory for all future sessions too.
 
 If the environment variable is set, the corresponding pin factory will be used,
-otherwise each of the four GPIO pin factories will be attempted to be used in
+otherwise each of the four GPIO pin factories will be tried in
 turn.
 
 The following values, and the corresponding :class:`Factory` and :class:`Pin`
@@ -154,7 +154,7 @@ If you need to change the default pin factory from within a script, either set
 
     Device.pin_factory = NativeFactory()
 
-    # These will now implicitly use NativePin instead of RPiGPIOPin
+    # These will now implicitly use NativePin instead of LGPIOPin
     led1 = LED(16)
     led2 = LED(17)
 
@@ -165,14 +165,14 @@ Or use the *pin_factory* keyword parameter mentioned above::
 
     my_factory = NativeFactory()
 
-    # This will use NativePin instead of RPiGPIOPin for led1
-    # but led2 will continue to use RPiGPIOPin
+    # This will use NativePin instead of LGPIOPin for led1
+    # but led2 will continue to use LGPIOPin
     led1 = LED(16, pin_factory=my_factory)
     led2 = LED(17)
 
 Certain factories may take default information from additional sources.
 For example, to default to creating pins with
-:class:`gpiozero.pins.pigpio.PiGPIOPin` on a remote pi called "remote-pi"
+:class:`gpiozero.pins.pigpio.PiGPIOPin` on a remote Pi called "remote-pi"
 you can set the :envvar:`PIGPIO_ADDR` environment variable when running your
 script:
 
@@ -279,7 +279,7 @@ You can even control pin state changes to simulate device behaviour:
 
 Several sub-classes of mock pins exist for emulating various other things
 (pins that do/don't support PWM, pins that are connected together, pins that
-drive high after a delay, etc), for example, you have to use
+drive high after a delay, etc.). For example, you have to use
 :class:`~gpiozero.pins.mock.MockPWMPin` to be able to use devices requiring PWM:
 
 .. code-block:: console

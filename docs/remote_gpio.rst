@@ -134,29 +134,18 @@ First, update your repositories list:
 
     $ sudo apt update
 
-Then install GPIO Zero and the pigpio library for Python 3:
+Then install GPIO Zero and the pigpio library:
 
 .. code-block:: console
 
     $ sudo apt install python3-gpiozero python3-pigpio
 
-or Python 2:
+Alternatively, install with pip in a virtual environment (see
+:doc:`installing`):
 
 .. code-block:: console
 
-    $ sudo apt install python-gpiozero python-pigpio
-
-Alternatively, install with pip:
-
-.. code-block:: console
-
-    $ sudo pip3 install gpiozero pigpio
-
-or for Python 2:
-
-.. code-block:: console
-
-    $ sudo pip install gpiozero pigpio
+    (gpiozero-env) $ pip install gpiozero pigpio
 
 
 Linux
@@ -168,31 +157,19 @@ First, update your distribution's repositories list. For example:
 
     $ sudo apt update
 
-Then install pip for Python 3:
+Then install pip:
 
 .. code-block:: console
 
     $ sudo apt install python3-pip
 
-or Python 2:
-
-.. code-block:: console
-
-    $ sudo apt install python-pip
-
 (Alternatively, install pip with `get-pip`_.)
 
-Next, install GPIO Zero and pigpio for Python 3:
+Next, install GPIO Zero and pigpio (ideally in a virtual environment):
 
 .. code-block:: console
 
-    $ sudo pip3 install gpiozero pigpio
-
-or Python 2:
-
-.. code-block:: console
-
-    $ sudo pip install gpiozero pigpio
+    $ pip3 install gpiozero pigpio
 
 
 Mac OS
@@ -206,12 +183,6 @@ Next, install GPIO Zero and pigpio with pip:
 .. code-block:: console
 
     $ pip3 install gpiozero pigpio
-
-Or for Python 2:
-
-.. code-block:: console
-
-    $ pip install gpiozero pigpio
 
 
 Windows

@@ -51,27 +51,25 @@ title.
 
 Copyrights on submissions are owned by their authors (we don't bother with
 copyright assignments), and we assume that authors are happy for their code to
-be released under the project's :doc:`license <license>`. Do feel free to add
-your name to the list of contributors in :file:`README.rst` at the top level of
-the project in your pull request! Don't worry about adding your name to the
-copyright headers in whatever files you touch; these are updated automatically
-from the git metadata before each release.
+be released under the project's :doc:`license <license>`. Don't worry about
+adding your name to the copyright headers in whatever files you touch; these are
+updated automatically from the git metadata before each release.
 
 
 Backwards compatibility
 =======================
 
-Since this library reached v1.0 we aim to maintain backwards-compatibility
+Since this library reached v2.0 we aim to maintain backwards-compatibility
 thereafter. Changes which break backwards-compatibility will not be accepted.
 
 
-Python 2/3
-==========
+Python versions
+===============
 
-Since Python 2 is now past its `end-of-life`_, the 1.6.2 release (2021-03-18)
-was the last to support Python 2.
+GPIO Zero supports Python 3.10 and above. The 1.6.2 release (2021-03-18) was the
+last to support Python 2.
 
 
 .. _docs: https://github.com/gpiozero/gpiozero/tree/main/docs
 .. _issue: https://github.com/gpiozero/gpiozero/issues/new
-.. _end-of-life: http://legacy.python.org/dev/peps/pep-0373/
+

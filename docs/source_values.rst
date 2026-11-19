@@ -200,7 +200,7 @@ In this example, all three devices are following the `sine wave`_. The motor
 value ramps up from 0 (stopped) to 1 (full speed forwards), then back down to 0
 and on to -1 (full speed backwards) in a cycle. Similarly, the servo moves from
 its mid point to the right, then towards the left; and the buzzer starts with
-its mid tone, gradually raises its frequency, to its highest tone, then down
+its mid tone, gradually raises its frequency to its highest tone, then down
 towards its lowest tone. Note that setting :attr:`~SourceMixin.source_delay`
 will alter the speed at which the device iterates through the values.
 Alternatively, the tool :func:`~tools.cos_values` could be used to start from -1
@@ -281,7 +281,4 @@ To include reverse direction, scale the potentiometer values from 0->1 to -1->1:
 
 Note that this example uses the built-in :func:`zip` rather than the tool
 :func:`~tools.zip_values` as the :func:`~tools.scaled` tool yields values which
-do not need converting, just zipping. Also note that this use of :func:`zip`
-will not work in Python 2, instead use `izip`_.
-
-.. _izip: https://docs.python.org/2/library/itertools.html#itertools.izip
+do not need converting, just zipping.

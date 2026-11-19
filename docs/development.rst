@@ -33,16 +33,16 @@ Development installation
 ========================
 
 If you wish to develop GPIO Zero itself, we recommend obtaining the source by
-cloning the GitHub repository and then use the "develop" target of the Makefile
-which will install the package as a link to the cloned repository allowing
-in-place development (it also builds a tags file for use with vim/emacs with
-Exuberant’s ctags utility). The following example demonstrates this method
-within a virtual Python environment:
+cloning the GitHub repository and then using the "develop" target of the
+Makefile which will install the package as a link to the cloned repository
+allowing in-place development (it also builds a tags file for use with
+vim/emacs with the Exuberant Ctags utility). The following example demonstrates
+this method within a virtual Python environment:
 
 .. code-block:: console
 
     $ sudo apt install lsb-release build-essential git exuberant-ctags \
-        virtualenvwrapper python3-virtualenv python3-dev
+        virtualenvwrapper python3-virtualenv python3-dev swig liblgpio-dev
 
 After installing ``virtualenvwrapper`` you'll need to restart your shell before
 commands like :command:`mkvirtualenv` will operate correctly. Once you've
@@ -64,11 +64,11 @@ like PWM):
 
 .. code-block:: console
 
-    (gpiozero) $ pip install rpi.gpio pigpio
+    (gpiozero) $ pip install lgpio
 
 If you are working on SPI devices you may also wish to install the ``spidev``
 package to provide hardware SPI capabilities (again, GPIO Zero will work
-without this, but a big-banging software SPI implementation will be used
+without this, but a bit-banging software SPI implementation will be used
 instead which limits bandwidth):
 
 .. code-block:: console
@@ -142,22 +142,19 @@ to 22) and :envvar:`GPIOZERO_TEST_INPUT_PIN` (defaults to 27).
 
 .. warning::
 
-    When wiring GPIOs together, ensure a load (like a 1KΩ resistor) is placed
+    When wiring GPIOs together, ensure a load (like a 1kΩ resistor) is placed
     between them. Failure to do so may lead to blown GPIO pins (your humble
     author has a fried GPIO27 as a result of such laziness, although it did
     take *many* runs of the test suite before this occurred!).
 
-The test suite is also setup for usage with the :command:`tox` utility, in
+The test suite is also set up for use with the :command:`tox` utility, in
 which case it will attempt to execute the test suite with all supported
 versions of Python. If you are developing under Ubuntu you may wish to look
-into the `Dead Snakes PPA`_ in order to install old/new versions of Python; the
-tox setup *should* work with the version of tox shipped with Ubuntu Xenial, but
-more features (like parallel test execution) are available with later versions.
+into the `Dead Snakes PPA`_ in order to install old/new versions of Python.
 
-On the subject of parallel test execution, this is also supported in the tox
-setup, including the "real" pin tests (a file-system level lock is used to
-ensure different interpreters don't try to access the physical pins
-simultaneously).
+Parallel test execution is also supported in the tox setup, including the
+"real" pin tests (a file-system level lock is used to ensure different
+interpreters don't try to access the physical pins simultaneously).
 
 For example, to execute the test suite under tox, skipping interpreter versions
 which are not installed:

@@ -237,7 +237,7 @@ multiple device connections within one object, such as :class:`RGBLED`,
 With RPi.GPIO, you would have one output pin for the trigger, and one input pin
 for the echo. You would time the echo and calculate the distance. With GPIO
 Zero, you create a single :class:`DistanceSensor` object, specifying the
-trigger and echo pins, and you would read the :attr:`DistanceSensor.distance`
+trigger and echo pins, and read the :attr:`DistanceSensor.distance`
 property which automatically calculates the distance within the implementation
 of the class.
 
@@ -257,8 +257,8 @@ PWM (Pulse-width modulation)
 ============================
 
 Both libraries support software PWM control on any pin. Depending on the pin
-library used, GPIO Zero can also support hardware PWM (using
-:class:`~pins.rpigpio.RPiGPIOPin` or :class:`~pins.pigpio.PiGPIOPin`).
+library used, GPIO Zero can also support hardware-timed PWM (using
+:class:`~pins.pigpio.PiGPIOPin`).
 
 A simple example of using PWM is to control the brightness of an LED.
 
@@ -290,7 +290,7 @@ In GPIO Zero::
         sleep(0.01)
 
 :class:`PWMLED` has a :meth:`~PWMLED.blink` method which can be used the same
-was as :class:`LED`'s :meth:`~LED.blink` method, but its PWM capabilities allow
+way as :class:`LED`'s :meth:`~LED.blink` method, but its PWM capabilities allow
 for ``fade_in`` and ``fade_out`` options to be provided. There is also the
 :meth:`~PWMLED.pulse` method which provides a neat way to have an LED fade in
 and out repeatedly.
@@ -312,23 +312,25 @@ Pin state cleanup is explicit in RPi.GPIO, and is done manually with
 pin used, at the end of the script. Manual cleanup is possible by use of the
 :meth:`~Device.close` method on the device.
 
-Note that cleanup only occurs at the point of normal termination of the script.
-If the script exits due to a program error, cleanup will not be performed. To
-ensure that cleanup is performed after an exception is raised, the exception
-must be handled, for example::
+Cleanup is performed whenever the Python interpreter exits, including when the
+script ends because of an unhandled exception (such as :exc:`KeyboardInterrupt`
+when pressing Ctrl+C). However, it will not be performed if the process is
+killed by a signal, such as the ``SIGTERM`` sent by :command:`kill` or
+:command:`systemctl stop`. To ensure cleanup happens in this case, convert the
+signal into a normal exit::
 
-    from gpiozero import Button
+    from gpiozero import LED
+    from signal import signal, pause, SIGTERM
+    import sys
 
-    btn = Button(4)
+    signal(SIGTERM, lambda signum, frame: sys.exit(0))
 
-    while True:
-        try:
-            if btn.is_pressed:
-                print("Pressed")
-        except KeyboardInterrupt:
-            print("Ending program")
+    led = LED(2)
+    led.on()
 
-Read more in the relevant FAQ: :ref:`gpio-cleanup`
+    pause()
+
+Read more in the relevant FAQ: :ref:`gpio-cleanup`.
 
 
 Pi Information
@@ -354,7 +356,7 @@ Read more about what :class:`PiBoardInfo` provides.
 More
 ====
 
-GPIO Zero provides more than just GPIO device support, it includes some support
+GPIO Zero provides more than just GPIO device support; it includes some support
 for :doc:`SPI devices <api_spi>` including a range of analog to digital
 converters.
 
@@ -364,7 +366,7 @@ relation to GPIO pins, such as :class:`CPUTemperature`, :class:`TimeOfDay`,
 
 GPIO Zero features support for multiple pin libraries. The default is to use
 ``lgpio`` to control the pins, but you can choose to use another library,
-such as ``RPi.GPIO`` or ``pigpio`` (which supports network controlled GPIO).
+such as ``RPi.GPIO`` or ``pigpio`` (which supports network-controlled GPIO).
 See :ref:`changing-pin-factory` and :doc:`remote_gpio` for more information.
 
 It is possible to run GPIO Zero on your PC, both for remote GPIO and for testing

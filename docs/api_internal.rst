@@ -53,11 +53,11 @@ to control an :class:`~gpiozero.LED` using the same method::
     pause()
 
 Here, rather than the LED being controlled by the press of a button, it's
-controlled by the time. When the time reaches 09:00AM, the LED comes on, and at
-10:00AM it goes off.
+controlled by the time. When the time reaches 09:00, the LED comes on, and at
+10:00 it goes off.
 
 Like the :class:`~gpiozero.Button` object, internal devices like the
-:class:`TimeOfDay` object has :attr:`~TimeOfDay.value`,
+:class:`TimeOfDay` object have :attr:`~TimeOfDay.value`,
 :attr:`~TimeOfDay.values`, :attr:`~TimeOfDay.is_active`,
 :attr:`~TimeOfDay.when_activated` and :attr:`~TimeOfDay.when_deactivated`
 attributes, so alternative methods using the other paradigms would also work.

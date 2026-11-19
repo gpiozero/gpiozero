@@ -13,7 +13,7 @@ Backwards Compatibility
 
 .. currentmodule:: gpiozero
 
-GPIO Zero 2.x is a new major version and thus backwards incompatible changes
+GPIO Zero 2.x is a new major version and thus backwards-incompatible changes
 can be expected. We have attempted to keep these as minimal as reasonably
 possible while taking advantage of the opportunity to clean up things. This
 chapter documents breaking changes from version 1.x of the library to 2.x, and
@@ -74,7 +74,7 @@ And produces the following output on the console when run:
 
 This tells us which pieces of deprecated functionality are being used in our
 script, but it doesn't tell us where in the script they were used. For this,
-it is more useful to have warnings converted into full blown exceptions. With
+it is more useful to have warnings converted into full-blown exceptions. With
 this change, each time a :exc:`DeprecationWarning` would have been printed, it
 will instead cause the script to terminate with an unhandled exception and a
 full stack trace::
@@ -142,11 +142,11 @@ no longer supported (in practice, this means Python 2.7 is no longer
 supported). If your code is not compatible with Python 3, you should follow the
 `porting guide`_ in the `Python documentation`_.
 
-As of GPIO Zero 2.0, the lowest supported Python version will be 3.5. This base
-version may advance with minor releases, but we will make a reasonable best
-effort not to break compatibility with old Python 3.x versions, and to ensure
-that GPIO Zero can run on the version of Python in Debian oldstable at the
-time of its release.
+The lowest supported Python version is currently 3.10. This base version may
+advance with minor releases, but we will make a reasonable best effort not to
+break compatibility with old Python 3.x versions, and to ensure that GPIO Zero
+can run on the version of Python in Debian oldstable at the time of its
+release.
 
 
 RPIO pin factory removed
@@ -220,7 +220,7 @@ Robots take Motors, and PhaseEnableRobot is deprecated
 The GPIO Zero 1.x API specified that a :class:`Robot` was constructed with two
 tuples that were in turn used to construct two :class:`Motor` instances. The
 2.x API replaces this with simply passing in the :class:`Motor`, or
-:func:`PhaseEnableMotor` instances you wish to use as the left and right
+:class:`PhaseEnableMotor` instances you wish to use as the left and right
 wheels.
 
 If your current code uses pins 4 and 14 for the left wheel, and 17 and 18 for
@@ -256,12 +256,12 @@ keyword-only parameters, including the *enable* pin. However, *enable* was
 treated as a positional argument for the sake of constructing :class:`Robot`
 which was inconsistent. Furthermore, :func:`PhaseEnableRobot` was more or less
 a redundant duplicate of :class:`Robot` but was lacking a couple of features
-added to :class:`Robot` later (notable "curved" turning).
+added to :class:`Robot` later (notably "curved" turning).
 
-Although the new API requires a little more typing, it does mean that phase
-enable robot boards now inherit all the functionality of :class:`Robot` because
-that's all they use. Theoretically you could also mix and match regular motors
-and phase-enable motors although there's little sense in doing so.
+Although the new API requires a little more typing, it does mean that
+phase-enable robot boards now inherit all the functionality of :class:`Robot`
+because that's all they use. Theoretically you could also mix and match regular
+motors and phase-enable motors although there's little sense in doing so.
 
 The former functionality (passing tuples to the :class:`Robot` constructor)
 will remain as deprecated functionality for gpiozero 2.0, but will be removed
@@ -274,7 +274,7 @@ PiBoardInfo, HeaderInfo, PinInfo
 ================================
 
 The :class:`PiBoardInfo` class, and the associated :class:`HeaderInfo` and
-:class:`PinInfo` classes have undergone a major re-structuring. This is partly
+:class:`PinInfo` classes have undergone a major restructuring. This is partly
 because some of the prior terminology was confusing (e.g. the meaning of
 :attr:`PinInfo.function` and :attr:`Pin.function` clashed), and partly because
 with the addition of the "lgpio" factory it's entirely possible to use gpiozero
@@ -293,7 +293,7 @@ As a result the following classes, methods, and attributes are deprecated
 * :attr:`PinInfo.function` is deprecated in favour of :attr:`PinInfo.name`.
 
 * :meth:`BoardInfo.physical_pins`, :meth:`BoardInfo.physical_pin`, and
-  :meth:`BoardInfo.pulled_up`, are all deprecated in favour of a combination of
+  :meth:`BoardInfo.pulled_up` are all deprecated in favour of a combination of
   the new :meth:`BoardInfo.find_pin` and the attributes mentioned above.
 
 * :attr:`PiPin.number` is deprecated in favour of :attr:`Pin.info.name`.

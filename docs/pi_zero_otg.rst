@@ -36,7 +36,7 @@ Usage from Windows and Mac OS is not supported at present.
 Raspberry Pi Desktop x86 setup
 ------------------------------
 
-1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.com
+1. Download an ISO of the `Raspberry Pi Desktop OS`_ from raspberrypi.com.
 
 2. Write the image to a USB stick or burn to a DVD.
 
@@ -63,7 +63,7 @@ Ubuntu setup
     $ sudo add-apt-repository ppa:rpi-distro/ppa
 
 2. If you have previously installed ``gpiozero`` or ``pigpio`` with pip,
-uninstall these first:
+   uninstall these first:
 
 .. code-block:: console
 
@@ -132,7 +132,7 @@ configure the boot partition like so:
    ``rootwait``.
 
 (See guides on `blog.gbaman.info`_ and `learn.adafruit.com`_ for more detailed
-instructions)
+instructions.)
 
 Then connect the Pi Zero to your computer using a micro USB cable (connecting
 it to the USB port, not the power port). You'll see the indicator LED flashing

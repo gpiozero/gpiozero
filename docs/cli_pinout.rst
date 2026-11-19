@@ -33,7 +33,7 @@ Description
 A utility for querying Raspberry Pi GPIO pin-out information. Running
 :program:`pinout` on its own will output a board diagram, and GPIO header
 diagram for the current Raspberry Pi. It is also possible to manually specify a
-revision of Pi, or (by :doc:`remote_gpio`) to output information about a
+revision of Pi, or (via :doc:`remote_gpio`) to output information about a
 remote Pi.
 
 
@@ -49,7 +49,8 @@ Options
 .. option:: -r REVISION, --revision REVISION
 
     Specifies a particular Raspberry Pi board revision code. The default is to
-    autodetect revision of current device by reading :file:`/proc/cpuinfo`
+    autodetect the revision of the current device by reading
+    :file:`/proc/cpuinfo`
 
 .. option:: -c, --color
 
@@ -161,7 +162,7 @@ Or new-style `revision codes`_ (such as for the Pi Zero W):
     :width: 537px
 
 You can also use the tool with :doc:`remote_gpio` to query remote Raspberry
-Pi's:
+Pis:
 
 .. code-block:: console
 

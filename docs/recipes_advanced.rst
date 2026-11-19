@@ -12,8 +12,7 @@ Advanced Recipes
 .. currentmodule:: gpiozero
 
 The following recipes demonstrate some of the capabilities of the GPIO Zero
-library. Please note that all recipes are written assuming Python 3. Recipes
-*may* work under Python 2, but no guarantees!
+library.
 
 .. _ledboard-advanced:
 
@@ -34,8 +33,8 @@ This also means you can use slicing to access a subset of the LEDs:
 
 .. literalinclude:: examples/led_board_5.py
 
-:class:`LEDBoard` objects can have their `LED` objects named upon construction.
-This means the individual LEDs can be accessed by their name:
+:class:`LEDBoard` objects can have their :class:`LED` objects named upon
+construction. This means the individual LEDs can be accessed by their name:
 
 .. literalinclude:: examples/led_board_6.py
 
@@ -51,7 +50,7 @@ Multi-character 7-segment display
 
 The 7-segment display demonstrated in the previous chapter is often available
 in multi-character variants (typically 4 characters long). Such displays are
-multiplexed meaning that the LED pins are typically the same as for the single
+multiplexed, meaning that the LED pins are typically the same as for the single
 character display but are shared across all characters. Each character in turn
 then has its own common line which can be tied to ground (in the case of a
 common cathode display) to enable that particular character. By activating each
@@ -67,7 +66,7 @@ control that component from a GPIO.
 .. image:: images/7seg_multi_bb.*
 
 This circuit demonstrates a 4-character 7-segment (actually 8-segment, with
-decimal-point) display, controlled by the Pi's GPIOs with 4 2N-3904 NPN
+decimal-point) display, controlled by the Pi's GPIOs with four 2N3904 NPN
 transistors to control the digits.
 
 .. warning::
@@ -98,21 +97,22 @@ Alternatively, using the `STATUS Zero`_ board:
 
 .. literalinclude:: examples/whos_home_status.py
 
-Travis build LED indicator
-==========================
+GitHub Actions build LED indicator
+==================================
 
-Use LEDs to indicate the status of a Travis build. A green light means the
-tests are passing, a red light means the build is broken:
+Use LEDs to indicate the status of the latest `GitHub Actions`_ run of a
+repository's test workflow. A green light means the tests are passing, a red
+light means the build is broken:
 
-.. literalinclude:: examples/led_travis.py
+.. literalinclude:: examples/led_github_actions.py
 
-Note this recipe requires `travispy`_. Install with ``sudo pip3 install
-travispy``.
+Note that GitHub limits unauthenticated API requests to 60 per hour, so avoid
+reducing :attr:`~SourceMixin.source_delay` much below a minute.
 
 Button controlled robot
 =======================
 
-Alternatively to the examples in the simple recipes, you can use four buttons
+As an alternative to the examples in the basic recipes, you can use four buttons
 to program the directions and add a fifth button to process them in turn, like
 a Bee-Bot or Turtle robot.
 
@@ -129,16 +129,11 @@ To include reverse direction, scale the potentiometer values from 0->1 to -1->1:
 
 .. literalinclude:: examples/robot_pots_2.py
 
-.. note::
-
-    Please note the example above requires Python 3. In Python 2, :func:`zip`
-    doesn't support lazy evaluation so the script will simply hang.
-
 BlueDot LED
 ===========
 
-BlueDot is a Python library an Android app which allows you to easily add
-Bluetooth control to your Raspberry Pi project. A simple example to control a
+BlueDot is a Python library and an Android app which allows you to easily add
+Bluetooth control to your Raspberry Pi project. A simple example to control an
 LED using the BlueDot app:
 
 .. literalinclude:: examples/bluedot_led.py
@@ -149,7 +144,7 @@ Note this recipe requires ``bluedot`` and the associated Android app. See the
 BlueDot robot
 =============
 
-You can create a Bluetooth controlled robot which moves forward when the dot is
+You can create a Bluetooth-controlled robot which moves forward when the dot is
 pressed and stops when it is released:
 
 .. literalinclude:: examples/bluedot_robot_1.py
@@ -202,6 +197,6 @@ run the following commands:
     accessible from gpiozero (yet).
 
 
-.. _travispy: https://travispy.readthedocs.io/
+.. _GitHub Actions: https://docs.github.com/en/actions
 .. _STATUS Zero: https://thepihut.com/status
 .. _BlueDot documentation: https://bluedot.readthedocs.io/en/latest/index.html
