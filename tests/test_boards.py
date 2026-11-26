@@ -1692,3 +1692,30 @@ def test_led_multichar_display_value(mock_factory):
                 # Static value requires no transitions despite still having
                 # active characters
                 assert not multichar._plex_thread
+
+
+@pytest.mark.parametrize('initial_value', ['11', '12'])
+@pytest.mark.parametrize('active_high', [True, False])
+def test_led_multichar_display_off(mock_factory, initial_value, active_high):
+    with LEDCharDisplay(*range(10, 17), active_high=active_high) as char:
+        with LEDMultiCharDisplay(char, 18, 19, initial_value=initial_value,
+                                 active_high=active_high) as display:
+            worker = display._plex_thread
+            display.off()
+            if worker is not None:
+                assert not worker.is_alive()
+            assert display.value == (' ', ' ')
+            assert not any(led.value for led in char)
+            assert display.plex.value == (0, 0)
+            display.value = '12'
+            assert display._plex_thread.is_alive()
+
+
+def test_led_multichar_display_off_without_space(mock_factory):
+    font = {'x': (1, 0), 'y': (0, 1)}
+    with LEDCharDisplay(10, 11, font=font, initial_value='x') as char:
+        with LEDMultiCharDisplay(char, 18, 19, initial_value='xy') as display:
+            display.off()
+            assert display.value == (None, None)
+            assert display.plex.value == (0, 0)
+            assert not any(led.value for led in char)
