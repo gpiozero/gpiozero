@@ -1110,6 +1110,12 @@ class LEDMultiCharDisplay(CompositeOutputDevice):
             pass
         super().close()
 
+    def off(self):
+        """Stop multiplexing and turn all characters off."""
+        self._stop_plex()
+        super().off()
+        self._value = (self.char.value,) * len(self.plex)
+
     def _stop_plex(self):
         if self._plex_thread:
             self._plex_thread.stop()
