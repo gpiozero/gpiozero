@@ -414,6 +414,7 @@ class HoldMixin(EventsMixin):
     """
     def __init__(self, *args, **kwargs):
         self._hold_thread = None
+        self._holding = Event()
         super().__init__(*args, **kwargs)
         self._when_held = None
         self._held_from = None
@@ -429,7 +430,7 @@ class HoldMixin(EventsMixin):
 
     def _fire_activated(self):
         super()._fire_activated()
-        self._hold_thread.holding.set()
+        self._holding.set()
 
     def _fire_deactivated(self):
         self._held_from = None
@@ -514,7 +515,7 @@ class HoldThread(GPIOThread):
     def __init__(self, parent):
         super().__init__(
             target=self.held, args=(weakref.proxy(parent),))
-        self.holding = Event()
+        self.holding = parent._holding
         self.start()
 
     def held(self, parent):

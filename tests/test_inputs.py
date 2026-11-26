@@ -497,3 +497,36 @@ def test_input_rotary_encoder_wait(mock_factory):
         assert test_thread.result
         assert not test_thread_cw.result
         assert test_thread_ccw.result
+
+
+def test_button_edges_during_initialization(mock_factory):
+    # A backend can deliver edges as soon as its callback is registered.
+    from gpiozero.pins.mock import MockPin
+
+    class StartupEdgesPin(MockPin):
+        def _enable_event_detect(self):
+            self.drive_low()
+            self.drive_high()
+            self.drive_low()
+
+    mock_factory.pin_class = StartupEdgesPin
+    held = Event()
+    with Button(4, hold_time=0.01) as button:
+        button.when_held = held.set
+        assert button.is_pressed
+        assert held.wait(2)
+        assert button.is_held
+
+
+def test_button_edge_during_close(mock_factory):
+    # A pending backend callback can arrive while event detection is disabled.
+    from gpiozero.pins.mock import MockPin
+
+    class ShutdownEdgePin(MockPin):
+        def _disable_event_detect(self):
+            self.drive_low()
+
+    mock_factory.pin_class = ShutdownEdgePin
+    button = Button(4)
+    button.close()
+    assert button.closed
